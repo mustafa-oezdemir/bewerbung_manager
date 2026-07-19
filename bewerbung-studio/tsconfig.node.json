@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "noEmit": true,
+    "types": ["node", "electron"]
+  },
+  "include": [
+    "electron",
+    "src/shared",
+    "src/config",
+    "src/features/templates/template.types.ts",
+    "src/features/templates/template.constants.ts",
+    "src/features/templates/template.errors.ts",
+    "src/features/knowledge/knowledge.types.ts",
+    "src/features/knowledge/knowledge.constants.ts",
+    "src/features/knowledge/knowledge.validation.ts",
+    "src/features/knowledge/knowledge.utils.ts",
+    "src/features/knowledge/knowledge.service.ts",
+    "src/features/knowledge/knowledge.presets.ts",
+    "vite.config.ts"
+  ]
+}

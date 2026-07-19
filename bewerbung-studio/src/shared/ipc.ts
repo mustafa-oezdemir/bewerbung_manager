@@ -1,0 +1,88 @@
+import type {
+  ApplicantProfile,
+  Application,
+  ApplicationInput,
+  ApplicationStatus,
+  AppSettings,
+  AttachmentCategory,
+  Attachment,
+  CalendarEvent,
+  RejectionReason,
+  Workspace,
+} from "./schema";
+import type {
+  AddTemplateInput,
+  CreatedDocumentResult,
+  DocumentTemplate,
+  TemplateScanResult,
+  UseTemplateInput,
+} from "../features/templates/template.types";
+
+export type ExportTarget = "deckblatt" | "anschreiben" | "lebenslauf" | "mappe";
+export type ProfileMediaKind = "photo" | "signature";
+
+export type PickedProfileMedia = {
+  dataUrl: string;
+  fileName: string;
+};
+
+export interface BewerbungsManagerApi {
+  workspace: {
+    get: () => Promise<Workspace>;
+  };
+  applications: {
+    create: (input: ApplicationInput) => Promise<Workspace>;
+    save: (application: Application) => Promise<Workspace>;
+    remove: (id: string) => Promise<Workspace>;
+    duplicate: (id: string) => Promise<Workspace>;
+    changeStatus: (
+      id: string,
+      status: ApplicationStatus,
+      reason?: RejectionReason,
+    ) => Promise<Workspace>;
+    openFolder: (id: string) => Promise<void>;
+  };
+  profiles: {
+    save: (profile: ApplicantProfile) => Promise<Workspace>;
+  };
+  templates: {
+    scan: () => Promise<TemplateScanResult>;
+    add: (input: AddTemplateInput) => Promise<DocumentTemplate | null>;
+    use: (input: UseTemplateInput) => Promise<CreatedDocumentResult>;
+    duplicate: (templateId: string) => Promise<DocumentTemplate | null>;
+    copyToMuster: (templateId: string) => Promise<DocumentTemplate>;
+    toggleFavorite: (templateId: string) => Promise<TemplateScanResult>;
+    remove: (templateId: string) => Promise<TemplateScanResult>;
+    open: (templateId: string) => Promise<void>;
+    openFolder: (templateId: string) => Promise<void>;
+  };
+  media: {
+    pickProfileImage: (
+      kind: ProfileMediaKind,
+    ) => Promise<PickedProfileMedia | null>;
+  };
+  settings: {
+    save: (settings: AppSettings) => Promise<Workspace>;
+  };
+  events: {
+    save: (event: CalendarEvent) => Promise<Workspace>;
+  };
+  attachments: {
+    add: (applicationId: string, category: AttachmentCategory) => Promise<Workspace>;
+    save: (attachment: Attachment) => Promise<Workspace>;
+    move: (id: string, direction: -1 | 1) => Promise<Workspace>;
+    remove: (id: string) => Promise<Workspace>;
+    open: (id: string) => Promise<void>;
+  };
+  export: {
+    pdf: (applicationId: string, target: ExportTarget) => Promise<string | null>;
+    backup: () => Promise<string | null>;
+    importBackup: () => Promise<Workspace | null>;
+    settings: () => Promise<string | null>;
+    importSettings: () => Promise<Workspace | null>;
+  };
+  system: {
+    openExternal: (url: string) => Promise<void>;
+    dataPath: () => Promise<string>;
+  };
+}

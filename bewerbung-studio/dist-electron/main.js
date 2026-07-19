@@ -1,0 +1,23496 @@
+import path from "node:path";
+import { access, copyFile, mkdir, open, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { BrowserWindow, Notification, app, dialog, ipcMain, shell } from "electron";
+import { PDFDocument } from "pdf-lib";
+import { createHash } from "node:crypto";
+//#region \0rolldown/runtime.js
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __commonJSMin = (cb, mod) => () => (mod || (cb((mod = { exports: {} }).exports, mod), cb = null), mod.exports);
+var __copyProps = (to, from, except, desc) => {
+	if (from && typeof from === "object" || typeof from === "function") for (var keys = __getOwnPropNames(from), i = 0, n = keys.length, key; i < n; i++) {
+		key = keys[i];
+		if (!__hasOwnProp.call(to, key) && key !== except) __defProp(to, key, {
+			get: ((k) => from[k]).bind(null, key),
+			enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
+		});
+	}
+	return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", {
+	value: mod,
+	enumerable: true
+}) : target, mod));
+//#endregion
+//#region node_modules/zod/v4/core/core.js
+var _a$1;
+function $constructor(name, initializer, params) {
+	function init(inst, def) {
+		if (!inst._zod) Object.defineProperty(inst, "_zod", {
+			value: {
+				def,
+				constr: _,
+				traits: /* @__PURE__ */ new Set()
+			},
+			enumerable: false
+		});
+		if (inst._zod.traits.has(name)) return;
+		inst._zod.traits.add(name);
+		initializer(inst, def);
+		const proto = _.prototype;
+		const keys = Object.keys(proto);
+		for (let i = 0; i < keys.length; i++) {
+			const k = keys[i];
+			if (!(k in inst)) inst[k] = proto[k].bind(inst);
+		}
+	}
+	const Parent = params?.Parent ?? Object;
+	class Definition extends Parent {}
+	Object.defineProperty(Definition, "name", { value: name });
+	function _(def) {
+		var _a;
+		const inst = params?.Parent ? new Definition() : this;
+		init(inst, def);
+		(_a = inst._zod).deferred ?? (_a.deferred = []);
+		for (const fn of inst._zod.deferred) fn();
+		return inst;
+	}
+	Object.defineProperty(_, "init", { value: init });
+	Object.defineProperty(_, Symbol.hasInstance, { value: (inst) => {
+		if (params?.Parent && inst instanceof params.Parent) return true;
+		return inst?._zod?.traits?.has(name);
+	} });
+	Object.defineProperty(_, "name", { value: name });
+	return _;
+}
+var $ZodAsyncError = class extends Error {
+	constructor() {
+		super(`Encountered Promise during synchronous parse. Use .parseAsync() instead.`);
+	}
+};
+var $ZodEncodeError = class extends Error {
+	constructor(name) {
+		super(`Encountered unidirectional transform during encode: ${name}`);
+		this.name = "ZodEncodeError";
+	}
+};
+(_a$1 = globalThis).__zod_globalConfig ?? (_a$1.__zod_globalConfig = {});
+var globalConfig = globalThis.__zod_globalConfig;
+function config(newConfig) {
+	if (newConfig) Object.assign(globalConfig, newConfig);
+	return globalConfig;
+}
+//#endregion
+//#region node_modules/zod/v4/core/util.js
+function getEnumValues(entries) {
+	const numericValues = Object.values(entries).filter((v) => typeof v === "number");
+	return Object.entries(entries).filter(([k, _]) => numericValues.indexOf(+k) === -1).map(([_, v]) => v);
+}
+function jsonStringifyReplacer(_, value) {
+	if (typeof value === "bigint") return value.toString();
+	return value;
+}
+function cached(getter) {
+	return { get value() {
+		{
+			const value = getter();
+			Object.defineProperty(this, "value", { value });
+			return value;
+		}
+		throw new Error("cached value already set");
+	} };
+}
+function nullish(input) {
+	return input === null || input === void 0;
+}
+function cleanRegex(source) {
+	const start = source.startsWith("^") ? 1 : 0;
+	const end = source.endsWith("$") ? source.length - 1 : source.length;
+	return source.slice(start, end);
+}
+function floatSafeRemainder(val, step) {
+	const ratio = val / step;
+	const roundedRatio = Math.round(ratio);
+	const tolerance = Number.EPSILON * Math.max(Math.abs(ratio), 1);
+	if (Math.abs(ratio - roundedRatio) < tolerance) return 0;
+	return ratio - roundedRatio;
+}
+var EVALUATING = /* @__PURE__*/ Symbol("evaluating");
+function defineLazy(object, key, getter) {
+	let value = void 0;
+	Object.defineProperty(object, key, {
+		get() {
+			if (value === EVALUATING) return;
+			if (value === void 0) {
+				value = EVALUATING;
+				value = getter();
+			}
+			return value;
+		},
+		set(v) {
+			Object.defineProperty(object, key, { value: v });
+		},
+		configurable: true
+	});
+}
+function assignProp(target, prop, value) {
+	Object.defineProperty(target, prop, {
+		value,
+		writable: true,
+		enumerable: true,
+		configurable: true
+	});
+}
+function mergeDefs(...defs) {
+	const mergedDescriptors = {};
+	for (const def of defs) {
+		const descriptors = Object.getOwnPropertyDescriptors(def);
+		Object.assign(mergedDescriptors, descriptors);
+	}
+	return Object.defineProperties({}, mergedDescriptors);
+}
+function esc(str) {
+	return JSON.stringify(str);
+}
+function slugify(input) {
+	return input.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/[\s_-]+/g, "-").replace(/^-+|-+$/g, "");
+}
+var captureStackTrace = "captureStackTrace" in Error ? Error.captureStackTrace : (..._args) => {};
+function isObject(data) {
+	return typeof data === "object" && data !== null && !Array.isArray(data);
+}
+var allowsEval = /* @__PURE__*/ cached(() => {
+	if (globalConfig.jitless) return false;
+	if (typeof navigator !== "undefined" && navigator?.userAgent?.includes("Cloudflare")) return false;
+	try {
+		new Function("");
+		return true;
+	} catch (_) {
+		return false;
+	}
+});
+function isPlainObject(o) {
+	if (isObject(o) === false) return false;
+	const ctor = o.constructor;
+	if (ctor === void 0) return true;
+	if (typeof ctor !== "function") return true;
+	const prot = ctor.prototype;
+	if (isObject(prot) === false) return false;
+	if (Object.prototype.hasOwnProperty.call(prot, "isPrototypeOf") === false) return false;
+	return true;
+}
+function shallowClone(o) {
+	if (isPlainObject(o)) return { ...o };
+	if (Array.isArray(o)) return [...o];
+	if (o instanceof Map) return new Map(o);
+	if (o instanceof Set) return new Set(o);
+	return o;
+}
+var propertyKeyTypes = /* @__PURE__*/ new Set([
+	"string",
+	"number",
+	"symbol"
+]);
+function escapeRegex(str) {
+	return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function clone(inst, def, params) {
+	const cl = new inst._zod.constr(def ?? inst._zod.def);
+	if (!def || params?.parent) cl._zod.parent = inst;
+	return cl;
+}
+function normalizeParams(_params) {
+	const params = _params;
+	if (!params) return {};
+	if (typeof params === "string") return { error: () => params };
+	if (params?.message !== void 0) {
+		if (params?.error !== void 0) throw new Error("Cannot specify both `message` and `error` params");
+		params.error = params.message;
+	}
+	delete params.message;
+	if (typeof params.error === "string") return {
+		...params,
+		error: () => params.error
+	};
+	return params;
+}
+function optionalKeys(shape) {
+	return Object.keys(shape).filter((k) => {
+		return shape[k]._zod.optin === "optional" && shape[k]._zod.optout === "optional";
+	});
+}
+var NUMBER_FORMAT_RANGES = {
+	safeint: [Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
+	int32: [-2147483648, 2147483647],
+	uint32: [0, 4294967295],
+	float32: [-34028234663852886e22, 34028234663852886e22],
+	float64: [-Number.MAX_VALUE, Number.MAX_VALUE]
+};
+function pick(schema, mask) {
+	const currDef = schema._zod.def;
+	const checks = currDef.checks;
+	if (checks && checks.length > 0) throw new Error(".pick() cannot be used on object schemas containing refinements");
+	return clone(schema, mergeDefs(schema._zod.def, {
+		get shape() {
+			const newShape = {};
+			for (const key in mask) {
+				if (!(key in currDef.shape)) throw new Error(`Unrecognized key: "${key}"`);
+				if (!mask[key]) continue;
+				newShape[key] = currDef.shape[key];
+			}
+			assignProp(this, "shape", newShape);
+			return newShape;
+		},
+		checks: []
+	}));
+}
+function omit(schema, mask) {
+	const currDef = schema._zod.def;
+	const checks = currDef.checks;
+	if (checks && checks.length > 0) throw new Error(".omit() cannot be used on object schemas containing refinements");
+	return clone(schema, mergeDefs(schema._zod.def, {
+		get shape() {
+			const newShape = { ...schema._zod.def.shape };
+			for (const key in mask) {
+				if (!(key in currDef.shape)) throw new Error(`Unrecognized key: "${key}"`);
+				if (!mask[key]) continue;
+				delete newShape[key];
+			}
+			assignProp(this, "shape", newShape);
+			return newShape;
+		},
+		checks: []
+	}));
+}
+function extend(schema, shape) {
+	if (!isPlainObject(shape)) throw new Error("Invalid input to extend: expected a plain object");
+	const checks = schema._zod.def.checks;
+	if (checks && checks.length > 0) {
+		const existingShape = schema._zod.def.shape;
+		for (const key in shape) if (Object.getOwnPropertyDescriptor(existingShape, key) !== void 0) throw new Error("Cannot overwrite keys on object schemas containing refinements. Use `.safeExtend()` instead.");
+	}
+	return clone(schema, mergeDefs(schema._zod.def, { get shape() {
+		const _shape = {
+			...schema._zod.def.shape,
+			...shape
+		};
+		assignProp(this, "shape", _shape);
+		return _shape;
+	} }));
+}
+function safeExtend(schema, shape) {
+	if (!isPlainObject(shape)) throw new Error("Invalid input to safeExtend: expected a plain object");
+	return clone(schema, mergeDefs(schema._zod.def, { get shape() {
+		const _shape = {
+			...schema._zod.def.shape,
+			...shape
+		};
+		assignProp(this, "shape", _shape);
+		return _shape;
+	} }));
+}
+function merge(a, b) {
+	if (a._zod.def.checks?.length) throw new Error(".merge() cannot be used on object schemas containing refinements. Use .safeExtend() instead.");
+	return clone(a, mergeDefs(a._zod.def, {
+		get shape() {
+			const _shape = {
+				...a._zod.def.shape,
+				...b._zod.def.shape
+			};
+			assignProp(this, "shape", _shape);
+			return _shape;
+		},
+		get catchall() {
+			return b._zod.def.catchall;
+		},
+		checks: b._zod.def.checks ?? []
+	}));
+}
+function partial(Class, schema, mask) {
+	const checks = schema._zod.def.checks;
+	if (checks && checks.length > 0) throw new Error(".partial() cannot be used on object schemas containing refinements");
+	return clone(schema, mergeDefs(schema._zod.def, {
+		get shape() {
+			const oldShape = schema._zod.def.shape;
+			const shape = { ...oldShape };
+			if (mask) for (const key in mask) {
+				if (!(key in oldShape)) throw new Error(`Unrecognized key: "${key}"`);
+				if (!mask[key]) continue;
+				shape[key] = Class ? new Class({
+					type: "optional",
+					innerType: oldShape[key]
+				}) : oldShape[key];
+			}
+			else for (const key in oldShape) shape[key] = Class ? new Class({
+				type: "optional",
+				innerType: oldShape[key]
+			}) : oldShape[key];
+			assignProp(this, "shape", shape);
+			return shape;
+		},
+		checks: []
+	}));
+}
+function required(Class, schema, mask) {
+	return clone(schema, mergeDefs(schema._zod.def, { get shape() {
+		const oldShape = schema._zod.def.shape;
+		const shape = { ...oldShape };
+		if (mask) for (const key in mask) {
+			if (!(key in shape)) throw new Error(`Unrecognized key: "${key}"`);
+			if (!mask[key]) continue;
+			shape[key] = new Class({
+				type: "nonoptional",
+				innerType: oldShape[key]
+			});
+		}
+		else for (const key in oldShape) shape[key] = new Class({
+			type: "nonoptional",
+			innerType: oldShape[key]
+		});
+		assignProp(this, "shape", shape);
+		return shape;
+	} }));
+}
+function aborted(x, startIndex = 0) {
+	if (x.aborted === true) return true;
+	for (let i = startIndex; i < x.issues.length; i++) if (x.issues[i]?.continue !== true) return true;
+	return false;
+}
+function explicitlyAborted(x, startIndex = 0) {
+	if (x.aborted === true) return true;
+	for (let i = startIndex; i < x.issues.length; i++) if (x.issues[i]?.continue === false) return true;
+	return false;
+}
+function prefixIssues(path, issues) {
+	return issues.map((iss) => {
+		var _a;
+		(_a = iss).path ?? (_a.path = []);
+		iss.path.unshift(path);
+		return iss;
+	});
+}
+function unwrapMessage(message) {
+	return typeof message === "string" ? message : message?.message;
+}
+function finalizeIssue(iss, ctx, config) {
+	const message = iss.message ? iss.message : unwrapMessage(iss.inst?._zod.def?.error?.(iss)) ?? unwrapMessage(ctx?.error?.(iss)) ?? unwrapMessage(config.customError?.(iss)) ?? unwrapMessage(config.localeError?.(iss)) ?? "Invalid input";
+	const { inst: _inst, continue: _continue, input: _input, ...rest } = iss;
+	rest.path ?? (rest.path = []);
+	rest.message = message;
+	if (ctx?.reportInput) rest.input = _input;
+	return rest;
+}
+function getLengthableOrigin(input) {
+	if (Array.isArray(input)) return "array";
+	if (typeof input === "string") return "string";
+	return "unknown";
+}
+function issue(...args) {
+	const [iss, input, inst] = args;
+	if (typeof iss === "string") return {
+		message: iss,
+		code: "custom",
+		input,
+		inst
+	};
+	return { ...iss };
+}
+//#endregion
+//#region node_modules/zod/v4/core/errors.js
+var initializer$1 = (inst, def) => {
+	inst.name = "$ZodError";
+	Object.defineProperty(inst, "_zod", {
+		value: inst._zod,
+		enumerable: false
+	});
+	Object.defineProperty(inst, "issues", {
+		value: def,
+		enumerable: false
+	});
+	inst.message = JSON.stringify(def, jsonStringifyReplacer, 2);
+	Object.defineProperty(inst, "toString", {
+		value: () => inst.message,
+		enumerable: false
+	});
+};
+var $ZodError = $constructor("$ZodError", initializer$1);
+var $ZodRealError = $constructor("$ZodError", initializer$1, { Parent: Error });
+function flattenError(error, mapper = (issue) => issue.message) {
+	const fieldErrors = {};
+	const formErrors = [];
+	for (const sub of error.issues) if (sub.path.length > 0) {
+		fieldErrors[sub.path[0]] = fieldErrors[sub.path[0]] || [];
+		fieldErrors[sub.path[0]].push(mapper(sub));
+	} else formErrors.push(mapper(sub));
+	return {
+		formErrors,
+		fieldErrors
+	};
+}
+function formatError(error, mapper = (issue) => issue.message) {
+	const fieldErrors = { _errors: [] };
+	const processError = (error, path = []) => {
+		for (const issue of error.issues) if (issue.code === "invalid_union" && issue.errors.length) issue.errors.map((issues) => processError({ issues }, [...path, ...issue.path]));
+		else if (issue.code === "invalid_key") processError({ issues: issue.issues }, [...path, ...issue.path]);
+		else if (issue.code === "invalid_element") processError({ issues: issue.issues }, [...path, ...issue.path]);
+		else {
+			const fullpath = [...path, ...issue.path];
+			if (fullpath.length === 0) fieldErrors._errors.push(mapper(issue));
+			else {
+				let curr = fieldErrors;
+				let i = 0;
+				while (i < fullpath.length) {
+					const el = fullpath[i];
+					if (!(i === fullpath.length - 1)) curr[el] = curr[el] || { _errors: [] };
+					else {
+						curr[el] = curr[el] || { _errors: [] };
+						curr[el]._errors.push(mapper(issue));
+					}
+					curr = curr[el];
+					i++;
+				}
+			}
+		}
+	};
+	processError(error);
+	return fieldErrors;
+}
+//#endregion
+//#region node_modules/zod/v4/core/parse.js
+var _parse = (_Err) => (schema, value, _ctx, _params) => {
+	const ctx = _ctx ? {
+		..._ctx,
+		async: false
+	} : { async: false };
+	const result = schema._zod.run({
+		value,
+		issues: []
+	}, ctx);
+	if (result instanceof Promise) throw new $ZodAsyncError();
+	if (result.issues.length) {
+		const e = new ((_params?.Err) ?? _Err)(result.issues.map((iss) => finalizeIssue(iss, ctx, config())));
+		captureStackTrace(e, _params?.callee);
+		throw e;
+	}
+	return result.value;
+};
+var _parseAsync = (_Err) => async (schema, value, _ctx, params) => {
+	const ctx = _ctx ? {
+		..._ctx,
+		async: true
+	} : { async: true };
+	let result = schema._zod.run({
+		value,
+		issues: []
+	}, ctx);
+	if (result instanceof Promise) result = await result;
+	if (result.issues.length) {
+		const e = new ((params?.Err) ?? _Err)(result.issues.map((iss) => finalizeIssue(iss, ctx, config())));
+		captureStackTrace(e, params?.callee);
+		throw e;
+	}
+	return result.value;
+};
+var _safeParse = (_Err) => (schema, value, _ctx) => {
+	const ctx = _ctx ? {
+		..._ctx,
+		async: false
+	} : { async: false };
+	const result = schema._zod.run({
+		value,
+		issues: []
+	}, ctx);
+	if (result instanceof Promise) throw new $ZodAsyncError();
+	return result.issues.length ? {
+		success: false,
+		error: new (_Err ?? $ZodError)(result.issues.map((iss) => finalizeIssue(iss, ctx, config())))
+	} : {
+		success: true,
+		data: result.value
+	};
+};
+var safeParse$1 = /* @__PURE__*/ _safeParse($ZodRealError);
+var _safeParseAsync = (_Err) => async (schema, value, _ctx) => {
+	const ctx = _ctx ? {
+		..._ctx,
+		async: true
+	} : { async: true };
+	let result = schema._zod.run({
+		value,
+		issues: []
+	}, ctx);
+	if (result instanceof Promise) result = await result;
+	return result.issues.length ? {
+		success: false,
+		error: new _Err(result.issues.map((iss) => finalizeIssue(iss, ctx, config())))
+	} : {
+		success: true,
+		data: result.value
+	};
+};
+var safeParseAsync$1 = /* @__PURE__*/ _safeParseAsync($ZodRealError);
+var _encode = (_Err) => (schema, value, _ctx) => {
+	const ctx = _ctx ? {
+		..._ctx,
+		direction: "backward"
+	} : { direction: "backward" };
+	return _parse(_Err)(schema, value, ctx);
+};
+var _decode = (_Err) => (schema, value, _ctx) => {
+	return _parse(_Err)(schema, value, _ctx);
+};
+var _encodeAsync = (_Err) => async (schema, value, _ctx) => {
+	const ctx = _ctx ? {
+		..._ctx,
+		direction: "backward"
+	} : { direction: "backward" };
+	return _parseAsync(_Err)(schema, value, ctx);
+};
+var _decodeAsync = (_Err) => async (schema, value, _ctx) => {
+	return _parseAsync(_Err)(schema, value, _ctx);
+};
+var _safeEncode = (_Err) => (schema, value, _ctx) => {
+	const ctx = _ctx ? {
+		..._ctx,
+		direction: "backward"
+	} : { direction: "backward" };
+	return _safeParse(_Err)(schema, value, ctx);
+};
+var _safeDecode = (_Err) => (schema, value, _ctx) => {
+	return _safeParse(_Err)(schema, value, _ctx);
+};
+var _safeEncodeAsync = (_Err) => async (schema, value, _ctx) => {
+	const ctx = _ctx ? {
+		..._ctx,
+		direction: "backward"
+	} : { direction: "backward" };
+	return _safeParseAsync(_Err)(schema, value, ctx);
+};
+var _safeDecodeAsync = (_Err) => async (schema, value, _ctx) => {
+	return _safeParseAsync(_Err)(schema, value, _ctx);
+};
+//#endregion
+//#region node_modules/zod/v4/core/regexes.js
+/**
+* @deprecated CUID v1 is deprecated by its authors due to information leakage
+* (timestamps embedded in the id). Use {@link cuid2} instead.
+* See https://github.com/paralleldrive/cuid.
+*/
+var cuid = /^[cC][0-9a-z]{6,}$/;
+var cuid2 = /^[0-9a-z]+$/;
+var ulid = /^[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}$/;
+var xid = /^[0-9a-vA-V]{20}$/;
+var ksuid = /^[A-Za-z0-9]{27}$/;
+var nanoid = /^[a-zA-Z0-9_-]{21}$/;
+/** ISO 8601-1 duration regex. Does not support the 8601-2 extensions like negative durations or fractional/negative components. */
+var duration$1 = /^P(?:(\d+W)|(?!.*W)(?=\d|T\d)(\d+Y)?(\d+M)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+([.,]\d+)?S)?)?)$/;
+/** A regex for any UUID-like identifier: 8-4-4-4-12 hex pattern */
+var guid = /^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/;
+/** Returns a regex for validating an RFC 9562/4122 UUID.
+*
+* @param version Optionally specify a version 1-8. If no version is specified, all versions are supported. */
+var uuid$1 = (version) => {
+	if (!version) return /^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$/;
+	return new RegExp(`^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-${version}[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$`);
+};
+/** Practical email validation */
+var email$1 = /^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$/;
+var _emoji$1 = `^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$`;
+function emoji() {
+	return new RegExp(_emoji$1, "u");
+}
+var ipv4 = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/;
+var ipv6 = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:))$/;
+var cidrv4 = /^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/([0-9]|[1-2][0-9]|3[0-2])$/;
+var cidrv6 = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|::|([0-9a-fA-F]{1,4})?::([0-9a-fA-F]{1,4}:?){0,6})\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/;
+var base64 = /^$|^(?:[0-9a-zA-Z+/]{4})*(?:(?:[0-9a-zA-Z+/]{2}==)|(?:[0-9a-zA-Z+/]{3}=))?$/;
+var base64url = /^[A-Za-z0-9_-]*$/;
+var httpProtocol = /^https?$/;
+var e164 = /^\+[1-9]\d{6,14}$/;
+var dateSource = `(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))`;
+var date$1 = /*@__PURE__*/ new RegExp(`^${dateSource}$`);
+function timeSource(args) {
+	const hhmm = `(?:[01]\\d|2[0-3]):[0-5]\\d`;
+	return typeof args.precision === "number" ? args.precision === -1 ? `${hhmm}` : args.precision === 0 ? `${hhmm}:[0-5]\\d` : `${hhmm}:[0-5]\\d\\.\\d{${args.precision}}` : `${hhmm}(?::[0-5]\\d(?:\\.\\d+)?)?`;
+}
+function time$1(args) {
+	return new RegExp(`^${timeSource(args)}$`);
+}
+function datetime$1(args) {
+	const time = timeSource({ precision: args.precision });
+	const opts = ["Z"];
+	if (args.local) opts.push("");
+	if (args.offset) opts.push(`([+-](?:[01]\\d|2[0-3]):[0-5]\\d)`);
+	const timeRegex = `${time}(?:${opts.join("|")})`;
+	return new RegExp(`^${dateSource}T(?:${timeRegex})$`);
+}
+var string$1 = (params) => {
+	const regex = params ? `[\\s\\S]{${params?.minimum ?? 0},${params?.maximum ?? ""}}` : `[\\s\\S]*`;
+	return new RegExp(`^${regex}$`);
+};
+var integer = /^-?\d+$/;
+var number$1 = /^-?\d+(?:\.\d+)?$/;
+var boolean$1 = /^(?:true|false)$/i;
+var lowercase = /^[^A-Z]*$/;
+var uppercase = /^[^a-z]*$/;
+//#endregion
+//#region node_modules/zod/v4/core/checks.js
+var $ZodCheck = /*@__PURE__*/ $constructor("$ZodCheck", (inst, def) => {
+	var _a;
+	inst._zod ?? (inst._zod = {});
+	inst._zod.def = def;
+	(_a = inst._zod).onattach ?? (_a.onattach = []);
+});
+var numericOriginMap = {
+	number: "number",
+	bigint: "bigint",
+	object: "date"
+};
+var $ZodCheckLessThan = /*@__PURE__*/ $constructor("$ZodCheckLessThan", (inst, def) => {
+	$ZodCheck.init(inst, def);
+	const origin = numericOriginMap[typeof def.value];
+	inst._zod.onattach.push((inst) => {
+		const bag = inst._zod.bag;
+		const curr = (def.inclusive ? bag.maximum : bag.exclusiveMaximum) ?? Number.POSITIVE_INFINITY;
+		if (def.value < curr) if (def.inclusive) bag.maximum = def.value;
+		else bag.exclusiveMaximum = def.value;
+	});
+	inst._zod.check = (payload) => {
+		if (def.inclusive ? payload.value <= def.value : payload.value < def.value) return;
+		payload.issues.push({
+			origin,
+			code: "too_big",
+			maximum: typeof def.value === "object" ? def.value.getTime() : def.value,
+			input: payload.value,
+			inclusive: def.inclusive,
+			inst,
+			continue: !def.abort
+		});
+	};
+});
+var $ZodCheckGreaterThan = /*@__PURE__*/ $constructor("$ZodCheckGreaterThan", (inst, def) => {
+	$ZodCheck.init(inst, def);
+	const origin = numericOriginMap[typeof def.value];
+	inst._zod.onattach.push((inst) => {
+		const bag = inst._zod.bag;
+		const curr = (def.inclusive ? bag.minimum : bag.exclusiveMinimum) ?? Number.NEGATIVE_INFINITY;
+		if (def.value > curr) if (def.inclusive) bag.minimum = def.value;
+		else bag.exclusiveMinimum = def.value;
+	});
+	inst._zod.check = (payload) => {
+		if (def.inclusive ? payload.value >= def.value : payload.value > def.value) return;
+		payload.issues.push({
+			origin,
+			code: "too_small",
+			minimum: typeof def.value === "object" ? def.value.getTime() : def.value,
+			input: payload.value,
+			inclusive: def.inclusive,
+			inst,
+			continue: !def.abort
+		});
+	};
+});
+var $ZodCheckMultipleOf = /*@__PURE__*/ $constructor("$ZodCheckMultipleOf", (inst, def) => {
+	$ZodCheck.init(inst, def);
+	inst._zod.onattach.push((inst) => {
+		var _a;
+		(_a = inst._zod.bag).multipleOf ?? (_a.multipleOf = def.value);
+	});
+	inst._zod.check = (payload) => {
+		if (typeof payload.value !== typeof def.value) throw new Error("Cannot mix number and bigint in multiple_of check.");
+		if (typeof payload.value === "bigint" ? payload.value % def.value === BigInt(0) : floatSafeRemainder(payload.value, def.value) === 0) return;
+		payload.issues.push({
+			origin: typeof payload.value,
+			code: "not_multiple_of",
+			divisor: def.value,
+			input: payload.value,
+			inst,
+			continue: !def.abort
+		});
+	};
+});
+var $ZodCheckNumberFormat = /*@__PURE__*/ $constructor("$ZodCheckNumberFormat", (inst, def) => {
+	$ZodCheck.init(inst, def);
+	def.format = def.format || "float64";
+	const isInt = def.format?.includes("int");
+	const origin = isInt ? "int" : "number";
+	const [minimum, maximum] = NUMBER_FORMAT_RANGES[def.format];
+	inst._zod.onattach.push((inst) => {
+		const bag = inst._zod.bag;
+		bag.format = def.format;
+		bag.minimum = minimum;
+		bag.maximum = maximum;
+		if (isInt) bag.pattern = integer;
+	});
+	inst._zod.check = (payload) => {
+		const input = payload.value;
+		if (isInt) {
+			if (!Number.isInteger(input)) {
+				payload.issues.push({
+					expected: origin,
+					format: def.format,
+					code: "invalid_type",
+					continue: false,
+					input,
+					inst
+				});
+				return;
+			}
+			if (!Number.isSafeInteger(input)) {
+				if (input > 0) payload.issues.push({
+					input,
+					code: "too_big",
+					maximum: Number.MAX_SAFE_INTEGER,
+					note: "Integers must be within the safe integer range.",
+					inst,
+					origin,
+					inclusive: true,
+					continue: !def.abort
+				});
+				else payload.issues.push({
+					input,
+					code: "too_small",
+					minimum: Number.MIN_SAFE_INTEGER,
+					note: "Integers must be within the safe integer range.",
+					inst,
+					origin,
+					inclusive: true,
+					continue: !def.abort
+				});
+				return;
+			}
+		}
+		if (input < minimum) payload.issues.push({
+			origin: "number",
+			input,
+			code: "too_small",
+			minimum,
+			inclusive: true,
+			inst,
+			continue: !def.abort
+		});
+		if (input > maximum) payload.issues.push({
+			origin: "number",
+			input,
+			code: "too_big",
+			maximum,
+			inclusive: true,
+			inst,
+			continue: !def.abort
+		});
+	};
+});
+var $ZodCheckMaxLength = /*@__PURE__*/ $constructor("$ZodCheckMaxLength", (inst, def) => {
+	var _a;
+	$ZodCheck.init(inst, def);
+	(_a = inst._zod.def).when ?? (_a.when = (payload) => {
+		const val = payload.value;
+		return !nullish(val) && val.length !== void 0;
+	});
+	inst._zod.onattach.push((inst) => {
+		const curr = inst._zod.bag.maximum ?? Number.POSITIVE_INFINITY;
+		if (def.maximum < curr) inst._zod.bag.maximum = def.maximum;
+	});
+	inst._zod.check = (payload) => {
+		const input = payload.value;
+		if (input.length <= def.maximum) return;
+		const origin = getLengthableOrigin(input);
+		payload.issues.push({
+			origin,
+			code: "too_big",
+			maximum: def.maximum,
+			inclusive: true,
+			input,
+			inst,
+			continue: !def.abort
+		});
+	};
+});
+var $ZodCheckMinLength = /*@__PURE__*/ $constructor("$ZodCheckMinLength", (inst, def) => {
+	var _a;
+	$ZodCheck.init(inst, def);
+	(_a = inst._zod.def).when ?? (_a.when = (payload) => {
+		const val = payload.value;
+		return !nullish(val) && val.length !== void 0;
+	});
+	inst._zod.onattach.push((inst) => {
+		const curr = inst._zod.bag.minimum ?? Number.NEGATIVE_INFINITY;
+		if (def.minimum > curr) inst._zod.bag.minimum = def.minimum;
+	});
+	inst._zod.check = (payload) => {
+		const input = payload.value;
+		if (input.length >= def.minimum) return;
+		const origin = getLengthableOrigin(input);
+		payload.issues.push({
+			origin,
+			code: "too_small",
+			minimum: def.minimum,
+			inclusive: true,
+			input,
+			inst,
+			continue: !def.abort
+		});
+	};
+});
+var $ZodCheckLengthEquals = /*@__PURE__*/ $constructor("$ZodCheckLengthEquals", (inst, def) => {
+	var _a;
+	$ZodCheck.init(inst, def);
+	(_a = inst._zod.def).when ?? (_a.when = (payload) => {
+		const val = payload.value;
+		return !nullish(val) && val.length !== void 0;
+	});
+	inst._zod.onattach.push((inst) => {
+		const bag = inst._zod.bag;
+		bag.minimum = def.length;
+		bag.maximum = def.length;
+		bag.length = def.length;
+	});
+	inst._zod.check = (payload) => {
+		const input = payload.value;
+		const length = input.length;
+		if (length === def.length) return;
+		const origin = getLengthableOrigin(input);
+		const tooBig = length > def.length;
+		payload.issues.push({
+			origin,
+			...tooBig ? {
+				code: "too_big",
+				maximum: def.length
+			} : {
+				code: "too_small",
+				minimum: def.length
+			},
+			inclusive: true,
+			exact: true,
+			input: payload.value,
+			inst,
+			continue: !def.abort
+		});
+	};
+});
+var $ZodCheckStringFormat = /*@__PURE__*/ $constructor("$ZodCheckStringFormat", (inst, def) => {
+	var _a, _b;
+	$ZodCheck.init(inst, def);
+	inst._zod.onattach.push((inst) => {
+		const bag = inst._zod.bag;
+		bag.format = def.format;
+		if (def.pattern) {
+			bag.patterns ?? (bag.patterns = /* @__PURE__ */ new Set());
+			bag.patterns.add(def.pattern);
+		}
+	});
+	if (def.pattern) (_a = inst._zod).check ?? (_a.check = (payload) => {
+		def.pattern.lastIndex = 0;
+		if (def.pattern.test(payload.value)) return;
+		payload.issues.push({
+			origin: "string",
+			code: "invalid_format",
+			format: def.format,
+			input: payload.value,
+			...def.pattern ? { pattern: def.pattern.toString() } : {},
+			inst,
+			continue: !def.abort
+		});
+	});
+	else (_b = inst._zod).check ?? (_b.check = () => {});
+});
+var $ZodCheckRegex = /*@__PURE__*/ $constructor("$ZodCheckRegex", (inst, def) => {
+	$ZodCheckStringFormat.init(inst, def);
+	inst._zod.check = (payload) => {
+		def.pattern.lastIndex = 0;
+		if (def.pattern.test(payload.value)) return;
+		payload.issues.push({
+			origin: "string",
+			code: "invalid_format",
+			format: "regex",
+			input: payload.value,
+			pattern: def.pattern.toString(),
+			inst,
+			continue: !def.abort
+		});
+	};
+});
+var $ZodCheckLowerCase = /*@__PURE__*/ $constructor("$ZodCheckLowerCase", (inst, def) => {
+	def.pattern ?? (def.pattern = lowercase);
+	$ZodCheckStringFormat.init(inst, def);
+});
+var $ZodCheckUpperCase = /*@__PURE__*/ $constructor("$ZodCheckUpperCase", (inst, def) => {
+	def.pattern ?? (def.pattern = uppercase);
+	$ZodCheckStringFormat.init(inst, def);
+});
+var $ZodCheckIncludes = /*@__PURE__*/ $constructor("$ZodCheckIncludes", (inst, def) => {
+	$ZodCheck.init(inst, def);
+	const escapedRegex = escapeRegex(def.includes);
+	const pattern = new RegExp(typeof def.position === "number" ? `^.{${def.position}}${escapedRegex}` : escapedRegex);
+	def.pattern = pattern;
+	inst._zod.onattach.push((inst) => {
+		const bag = inst._zod.bag;
+		bag.patterns ?? (bag.patterns = /* @__PURE__ */ new Set());
+		bag.patterns.add(pattern);
+	});
+	inst._zod.check = (payload) => {
+		if (payload.value.includes(def.includes, def.position)) return;
+		payload.issues.push({
+			origin: "string",
+			code: "invalid_format",
+			format: "includes",
+			includes: def.includes,
+			input: payload.value,
+			inst,
+			continue: !def.abort
+		});
+	};
+});
+var $ZodCheckStartsWith = /*@__PURE__*/ $constructor("$ZodCheckStartsWith", (inst, def) => {
+	$ZodCheck.init(inst, def);
+	const pattern = new RegExp(`^${escapeRegex(def.prefix)}.*`);
+	def.pattern ?? (def.pattern = pattern);
+	inst._zod.onattach.push((inst) => {
+		const bag = inst._zod.bag;
+		bag.patterns ?? (bag.patterns = /* @__PURE__ */ new Set());
+		bag.patterns.add(pattern);
+	});
+	inst._zod.check = (payload) => {
+		if (payload.value.startsWith(def.prefix)) return;
+		payload.issues.push({
+			origin: "string",
+			code: "invalid_format",
+			format: "starts_with",
+			prefix: def.prefix,
+			input: payload.value,
+			inst,
+			continue: !def.abort
+		});
+	};
+});
+var $ZodCheckEndsWith = /*@__PURE__*/ $constructor("$ZodCheckEndsWith", (inst, def) => {
+	$ZodCheck.init(inst, def);
+	const pattern = new RegExp(`.*${escapeRegex(def.suffix)}$`);
+	def.pattern ?? (def.pattern = pattern);
+	inst._zod.onattach.push((inst) => {
+		const bag = inst._zod.bag;
+		bag.patterns ?? (bag.patterns = /* @__PURE__ */ new Set());
+		bag.patterns.add(pattern);
+	});
+	inst._zod.check = (payload) => {
+		if (payload.value.endsWith(def.suffix)) return;
+		payload.issues.push({
+			origin: "string",
+			code: "invalid_format",
+			format: "ends_with",
+			suffix: def.suffix,
+			input: payload.value,
+			inst,
+			continue: !def.abort
+		});
+	};
+});
+var $ZodCheckOverwrite = /*@__PURE__*/ $constructor("$ZodCheckOverwrite", (inst, def) => {
+	$ZodCheck.init(inst, def);
+	inst._zod.check = (payload) => {
+		payload.value = def.tx(payload.value);
+	};
+});
+//#endregion
+//#region node_modules/zod/v4/core/doc.js
+var Doc = class {
+	constructor(args = []) {
+		this.content = [];
+		this.indent = 0;
+		if (this) this.args = args;
+	}
+	indented(fn) {
+		this.indent += 1;
+		fn(this);
+		this.indent -= 1;
+	}
+	write(arg) {
+		if (typeof arg === "function") {
+			arg(this, { execution: "sync" });
+			arg(this, { execution: "async" });
+			return;
+		}
+		const lines = arg.split("\n").filter((x) => x);
+		const minIndent = Math.min(...lines.map((x) => x.length - x.trimStart().length));
+		const dedented = lines.map((x) => x.slice(minIndent)).map((x) => " ".repeat(this.indent * 2) + x);
+		for (const line of dedented) this.content.push(line);
+	}
+	compile() {
+		const F = Function;
+		const args = this?.args;
+		const lines = [...(this?.content ?? [``]).map((x) => `  ${x}`)];
+		return new F(...args, lines.join("\n"));
+	}
+};
+//#endregion
+//#region node_modules/zod/v4/core/versions.js
+var version = {
+	major: 4,
+	minor: 4,
+	patch: 3
+};
+//#endregion
+//#region node_modules/zod/v4/core/schemas.js
+var $ZodType = /*@__PURE__*/ $constructor("$ZodType", (inst, def) => {
+	var _a;
+	inst ?? (inst = {});
+	inst._zod.def = def;
+	inst._zod.bag = inst._zod.bag || {};
+	inst._zod.version = version;
+	const checks = [...inst._zod.def.checks ?? []];
+	if (inst._zod.traits.has("$ZodCheck")) checks.unshift(inst);
+	for (const ch of checks) for (const fn of ch._zod.onattach) fn(inst);
+	if (checks.length === 0) {
+		(_a = inst._zod).deferred ?? (_a.deferred = []);
+		inst._zod.deferred?.push(() => {
+			inst._zod.run = inst._zod.parse;
+		});
+	} else {
+		const runChecks = (payload, checks, ctx) => {
+			let isAborted = aborted(payload);
+			let asyncResult;
+			for (const ch of checks) {
+				if (ch._zod.def.when) {
+					if (explicitlyAborted(payload)) continue;
+					if (!ch._zod.def.when(payload)) continue;
+				} else if (isAborted) continue;
+				const currLen = payload.issues.length;
+				const _ = ch._zod.check(payload);
+				if (_ instanceof Promise && ctx?.async === false) throw new $ZodAsyncError();
+				if (asyncResult || _ instanceof Promise) asyncResult = (asyncResult ?? Promise.resolve()).then(async () => {
+					await _;
+					if (payload.issues.length === currLen) return;
+					if (!isAborted) isAborted = aborted(payload, currLen);
+				});
+				else {
+					if (payload.issues.length === currLen) continue;
+					if (!isAborted) isAborted = aborted(payload, currLen);
+				}
+			}
+			if (asyncResult) return asyncResult.then(() => {
+				return payload;
+			});
+			return payload;
+		};
+		const handleCanaryResult = (canary, payload, ctx) => {
+			if (aborted(canary)) {
+				canary.aborted = true;
+				return canary;
+			}
+			const checkResult = runChecks(payload, checks, ctx);
+			if (checkResult instanceof Promise) {
+				if (ctx.async === false) throw new $ZodAsyncError();
+				return checkResult.then((checkResult) => inst._zod.parse(checkResult, ctx));
+			}
+			return inst._zod.parse(checkResult, ctx);
+		};
+		inst._zod.run = (payload, ctx) => {
+			if (ctx.skipChecks) return inst._zod.parse(payload, ctx);
+			if (ctx.direction === "backward") {
+				const canary = inst._zod.parse({
+					value: payload.value,
+					issues: []
+				}, {
+					...ctx,
+					skipChecks: true
+				});
+				if (canary instanceof Promise) return canary.then((canary) => {
+					return handleCanaryResult(canary, payload, ctx);
+				});
+				return handleCanaryResult(canary, payload, ctx);
+			}
+			const result = inst._zod.parse(payload, ctx);
+			if (result instanceof Promise) {
+				if (ctx.async === false) throw new $ZodAsyncError();
+				return result.then((result) => runChecks(result, checks, ctx));
+			}
+			return runChecks(result, checks, ctx);
+		};
+	}
+	defineLazy(inst, "~standard", () => ({
+		validate: (value) => {
+			try {
+				const r = safeParse$1(inst, value);
+				return r.success ? { value: r.data } : { issues: r.error?.issues };
+			} catch (_) {
+				return safeParseAsync$1(inst, value).then((r) => r.success ? { value: r.data } : { issues: r.error?.issues });
+			}
+		},
+		vendor: "zod",
+		version: 1
+	}));
+});
+var $ZodString = /*@__PURE__*/ $constructor("$ZodString", (inst, def) => {
+	$ZodType.init(inst, def);
+	inst._zod.pattern = [...inst?._zod.bag?.patterns ?? []].pop() ?? string$1(inst._zod.bag);
+	inst._zod.parse = (payload, _) => {
+		if (def.coerce) try {
+			payload.value = String(payload.value);
+		} catch (_) {}
+		if (typeof payload.value === "string") return payload;
+		payload.issues.push({
+			expected: "string",
+			code: "invalid_type",
+			input: payload.value,
+			inst
+		});
+		return payload;
+	};
+});
+var $ZodStringFormat = /*@__PURE__*/ $constructor("$ZodStringFormat", (inst, def) => {
+	$ZodCheckStringFormat.init(inst, def);
+	$ZodString.init(inst, def);
+});
+var $ZodGUID = /*@__PURE__*/ $constructor("$ZodGUID", (inst, def) => {
+	def.pattern ?? (def.pattern = guid);
+	$ZodStringFormat.init(inst, def);
+});
+var $ZodUUID = /*@__PURE__*/ $constructor("$ZodUUID", (inst, def) => {
+	if (def.version) {
+		const v = {
+			v1: 1,
+			v2: 2,
+			v3: 3,
+			v4: 4,
+			v5: 5,
+			v6: 6,
+			v7: 7,
+			v8: 8
+		}[def.version];
+		if (v === void 0) throw new Error(`Invalid UUID version: "${def.version}"`);
+		def.pattern ?? (def.pattern = uuid$1(v));
+	} else def.pattern ?? (def.pattern = uuid$1());
+	$ZodStringFormat.init(inst, def);
+});
+var $ZodEmail = /*@__PURE__*/ $constructor("$ZodEmail", (inst, def) => {
+	def.pattern ?? (def.pattern = email$1);
+	$ZodStringFormat.init(inst, def);
+});
+var $ZodURL = /*@__PURE__*/ $constructor("$ZodURL", (inst, def) => {
+	$ZodStringFormat.init(inst, def);
+	inst._zod.check = (payload) => {
+		try {
+			const trimmed = payload.value.trim();
+			if (!def.normalize && def.protocol?.source === httpProtocol.source) {
+				if (!/^https?:\/\//i.test(trimmed)) {
+					payload.issues.push({
+						code: "invalid_format",
+						format: "url",
+						note: "Invalid URL format",
+						input: payload.value,
+						inst,
+						continue: !def.abort
+					});
+					return;
+				}
+			}
+			const url = new URL(trimmed);
+			if (def.hostname) {
+				def.hostname.lastIndex = 0;
+				if (!def.hostname.test(url.hostname)) payload.issues.push({
+					code: "invalid_format",
+					format: "url",
+					note: "Invalid hostname",
+					pattern: def.hostname.source,
+					input: payload.value,
+					inst,
+					continue: !def.abort
+				});
+			}
+			if (def.protocol) {
+				def.protocol.lastIndex = 0;
+				if (!def.protocol.test(url.protocol.endsWith(":") ? url.protocol.slice(0, -1) : url.protocol)) payload.issues.push({
+					code: "invalid_format",
+					format: "url",
+					note: "Invalid protocol",
+					pattern: def.protocol.source,
+					input: payload.value,
+					inst,
+					continue: !def.abort
+				});
+			}
+			if (def.normalize) payload.value = url.href;
+			else payload.value = trimmed;
+			return;
+		} catch (_) {
+			payload.issues.push({
+				code: "invalid_format",
+				format: "url",
+				input: payload.value,
+				inst,
+				continue: !def.abort
+			});
+		}
+	};
+});
+var $ZodEmoji = /*@__PURE__*/ $constructor("$ZodEmoji", (inst, def) => {
+	def.pattern ?? (def.pattern = emoji());
+	$ZodStringFormat.init(inst, def);
+});
+var $ZodNanoID = /*@__PURE__*/ $constructor("$ZodNanoID", (inst, def) => {
+	def.pattern ?? (def.pattern = nanoid);
+	$ZodStringFormat.init(inst, def);
+});
+/**
+* @deprecated CUID v1 is deprecated by its authors due to information leakage
+* (timestamps embedded in the id). Use {@link $ZodCUID2} instead.
+* See https://github.com/paralleldrive/cuid.
+*/
+var $ZodCUID = /*@__PURE__*/ $constructor("$ZodCUID", (inst, def) => {
+	def.pattern ?? (def.pattern = cuid);
+	$ZodStringFormat.init(inst, def);
+});
+var $ZodCUID2 = /*@__PURE__*/ $constructor("$ZodCUID2", (inst, def) => {
+	def.pattern ?? (def.pattern = cuid2);
+	$ZodStringFormat.init(inst, def);
+});
+var $ZodULID = /*@__PURE__*/ $constructor("$ZodULID", (inst, def) => {
+	def.pattern ?? (def.pattern = ulid);
+	$ZodStringFormat.init(inst, def);
+});
+var $ZodXID = /*@__PURE__*/ $constructor("$ZodXID", (inst, def) => {
+	def.pattern ?? (def.pattern = xid);
+	$ZodStringFormat.init(inst, def);
+});
+var $ZodKSUID = /*@__PURE__*/ $constructor("$ZodKSUID", (inst, def) => {
+	def.pattern ?? (def.pattern = ksuid);
+	$ZodStringFormat.init(inst, def);
+});
+var $ZodISODateTime = /*@__PURE__*/ $constructor("$ZodISODateTime", (inst, def) => {
+	def.pattern ?? (def.pattern = datetime$1(def));
+	$ZodStringFormat.init(inst, def);
+});
+var $ZodISODate = /*@__PURE__*/ $constructor("$ZodISODate", (inst, def) => {
+	def.pattern ?? (def.pattern = date$1);
+	$ZodStringFormat.init(inst, def);
+});
+var $ZodISOTime = /*@__PURE__*/ $constructor("$ZodISOTime", (inst, def) => {
+	def.pattern ?? (def.pattern = time$1(def));
+	$ZodStringFormat.init(inst, def);
+});
+var $ZodISODuration = /*@__PURE__*/ $constructor("$ZodISODuration", (inst, def) => {
+	def.pattern ?? (def.pattern = duration$1);
+	$ZodStringFormat.init(inst, def);
+});
+var $ZodIPv4 = /*@__PURE__*/ $constructor("$ZodIPv4", (inst, def) => {
+	def.pattern ?? (def.pattern = ipv4);
+	$ZodStringFormat.init(inst, def);
+	inst._zod.bag.format = `ipv4`;
+});
+var $ZodIPv6 = /*@__PURE__*/ $constructor("$ZodIPv6", (inst, def) => {
+	def.pattern ?? (def.pattern = ipv6);
+	$ZodStringFormat.init(inst, def);
+	inst._zod.bag.format = `ipv6`;
+	inst._zod.check = (payload) => {
+		try {
+			new URL(`http://[${payload.value}]`);
+		} catch {
+			payload.issues.push({
+				code: "invalid_format",
+				format: "ipv6",
+				input: payload.value,
+				inst,
+				continue: !def.abort
+			});
+		}
+	};
+});
+var $ZodCIDRv4 = /*@__PURE__*/ $constructor("$ZodCIDRv4", (inst, def) => {
+	def.pattern ?? (def.pattern = cidrv4);
+	$ZodStringFormat.init(inst, def);
+});
+var $ZodCIDRv6 = /*@__PURE__*/ $constructor("$ZodCIDRv6", (inst, def) => {
+	def.pattern ?? (def.pattern = cidrv6);
+	$ZodStringFormat.init(inst, def);
+	inst._zod.check = (payload) => {
+		const parts = payload.value.split("/");
+		try {
+			if (parts.length !== 2) throw new Error();
+			const [address, prefix] = parts;
+			if (!prefix) throw new Error();
+			const prefixNum = Number(prefix);
+			if (`${prefixNum}` !== prefix) throw new Error();
+			if (prefixNum < 0 || prefixNum > 128) throw new Error();
+			new URL(`http://[${address}]`);
+		} catch {
+			payload.issues.push({
+				code: "invalid_format",
+				format: "cidrv6",
+				input: payload.value,
+				inst,
+				continue: !def.abort
+			});
+		}
+	};
+});
+function isValidBase64(data) {
+	if (data === "") return true;
+	if (/\s/.test(data)) return false;
+	if (data.length % 4 !== 0) return false;
+	try {
+		atob(data);
+		return true;
+	} catch {
+		return false;
+	}
+}
+var $ZodBase64 = /*@__PURE__*/ $constructor("$ZodBase64", (inst, def) => {
+	def.pattern ?? (def.pattern = base64);
+	$ZodStringFormat.init(inst, def);
+	inst._zod.bag.contentEncoding = "base64";
+	inst._zod.check = (payload) => {
+		if (isValidBase64(payload.value)) return;
+		payload.issues.push({
+			code: "invalid_format",
+			format: "base64",
+			input: payload.value,
+			inst,
+			continue: !def.abort
+		});
+	};
+});
+function isValidBase64URL(data) {
+	if (!base64url.test(data)) return false;
+	const base64 = data.replace(/[-_]/g, (c) => c === "-" ? "+" : "/");
+	return isValidBase64(base64.padEnd(Math.ceil(base64.length / 4) * 4, "="));
+}
+var $ZodBase64URL = /*@__PURE__*/ $constructor("$ZodBase64URL", (inst, def) => {
+	def.pattern ?? (def.pattern = base64url);
+	$ZodStringFormat.init(inst, def);
+	inst._zod.bag.contentEncoding = "base64url";
+	inst._zod.check = (payload) => {
+		if (isValidBase64URL(payload.value)) return;
+		payload.issues.push({
+			code: "invalid_format",
+			format: "base64url",
+			input: payload.value,
+			inst,
+			continue: !def.abort
+		});
+	};
+});
+var $ZodE164 = /*@__PURE__*/ $constructor("$ZodE164", (inst, def) => {
+	def.pattern ?? (def.pattern = e164);
+	$ZodStringFormat.init(inst, def);
+});
+function isValidJWT(token, algorithm = null) {
+	try {
+		const tokensParts = token.split(".");
+		if (tokensParts.length !== 3) return false;
+		const [header] = tokensParts;
+		if (!header) return false;
+		const parsedHeader = JSON.parse(atob(header));
+		if ("typ" in parsedHeader && parsedHeader?.typ !== "JWT") return false;
+		if (!parsedHeader.alg) return false;
+		if (algorithm && (!("alg" in parsedHeader) || parsedHeader.alg !== algorithm)) return false;
+		return true;
+	} catch {
+		return false;
+	}
+}
+var $ZodJWT = /*@__PURE__*/ $constructor("$ZodJWT", (inst, def) => {
+	$ZodStringFormat.init(inst, def);
+	inst._zod.check = (payload) => {
+		if (isValidJWT(payload.value, def.alg)) return;
+		payload.issues.push({
+			code: "invalid_format",
+			format: "jwt",
+			input: payload.value,
+			inst,
+			continue: !def.abort
+		});
+	};
+});
+var $ZodNumber = /*@__PURE__*/ $constructor("$ZodNumber", (inst, def) => {
+	$ZodType.init(inst, def);
+	inst._zod.pattern = inst._zod.bag.pattern ?? number$1;
+	inst._zod.parse = (payload, _ctx) => {
+		if (def.coerce) try {
+			payload.value = Number(payload.value);
+		} catch (_) {}
+		const input = payload.value;
+		if (typeof input === "number" && !Number.isNaN(input) && Number.isFinite(input)) return payload;
+		const received = typeof input === "number" ? Number.isNaN(input) ? "NaN" : !Number.isFinite(input) ? "Infinity" : void 0 : void 0;
+		payload.issues.push({
+			expected: "number",
+			code: "invalid_type",
+			input,
+			inst,
+			...received ? { received } : {}
+		});
+		return payload;
+	};
+});
+var $ZodNumberFormat = /*@__PURE__*/ $constructor("$ZodNumberFormat", (inst, def) => {
+	$ZodCheckNumberFormat.init(inst, def);
+	$ZodNumber.init(inst, def);
+});
+var $ZodBoolean = /*@__PURE__*/ $constructor("$ZodBoolean", (inst, def) => {
+	$ZodType.init(inst, def);
+	inst._zod.pattern = boolean$1;
+	inst._zod.parse = (payload, _ctx) => {
+		if (def.coerce) try {
+			payload.value = Boolean(payload.value);
+		} catch (_) {}
+		const input = payload.value;
+		if (typeof input === "boolean") return payload;
+		payload.issues.push({
+			expected: "boolean",
+			code: "invalid_type",
+			input,
+			inst
+		});
+		return payload;
+	};
+});
+var $ZodUnknown = /*@__PURE__*/ $constructor("$ZodUnknown", (inst, def) => {
+	$ZodType.init(inst, def);
+	inst._zod.parse = (payload) => payload;
+});
+var $ZodNever = /*@__PURE__*/ $constructor("$ZodNever", (inst, def) => {
+	$ZodType.init(inst, def);
+	inst._zod.parse = (payload, _ctx) => {
+		payload.issues.push({
+			expected: "never",
+			code: "invalid_type",
+			input: payload.value,
+			inst
+		});
+		return payload;
+	};
+});
+function handleArrayResult(result, final, index) {
+	if (result.issues.length) final.issues.push(...prefixIssues(index, result.issues));
+	final.value[index] = result.value;
+}
+var $ZodArray = /*@__PURE__*/ $constructor("$ZodArray", (inst, def) => {
+	$ZodType.init(inst, def);
+	inst._zod.parse = (payload, ctx) => {
+		const input = payload.value;
+		if (!Array.isArray(input)) {
+			payload.issues.push({
+				expected: "array",
+				code: "invalid_type",
+				input,
+				inst
+			});
+			return payload;
+		}
+		payload.value = Array(input.length);
+		const proms = [];
+		for (let i = 0; i < input.length; i++) {
+			const item = input[i];
+			const result = def.element._zod.run({
+				value: item,
+				issues: []
+			}, ctx);
+			if (result instanceof Promise) proms.push(result.then((result) => handleArrayResult(result, payload, i)));
+			else handleArrayResult(result, payload, i);
+		}
+		if (proms.length) return Promise.all(proms).then(() => payload);
+		return payload;
+	};
+});
+function handlePropertyResult(result, final, key, input, isOptionalIn, isOptionalOut) {
+	const isPresent = key in input;
+	if (result.issues.length) {
+		if (isOptionalIn && isOptionalOut && !isPresent) return;
+		final.issues.push(...prefixIssues(key, result.issues));
+	}
+	if (!isPresent && !isOptionalIn) {
+		if (!result.issues.length) final.issues.push({
+			code: "invalid_type",
+			expected: "nonoptional",
+			input: void 0,
+			path: [key]
+		});
+		return;
+	}
+	if (result.value === void 0) {
+		if (isPresent) final.value[key] = void 0;
+	} else final.value[key] = result.value;
+}
+function normalizeDef(def) {
+	const keys = Object.keys(def.shape);
+	for (const k of keys) if (!def.shape?.[k]?._zod?.traits?.has("$ZodType")) throw new Error(`Invalid element at key "${k}": expected a Zod schema`);
+	const okeys = optionalKeys(def.shape);
+	return {
+		...def,
+		keys,
+		keySet: new Set(keys),
+		numKeys: keys.length,
+		optionalKeys: new Set(okeys)
+	};
+}
+function handleCatchall(proms, input, payload, ctx, def, inst) {
+	const unrecognized = [];
+	const keySet = def.keySet;
+	const _catchall = def.catchall._zod;
+	const t = _catchall.def.type;
+	const isOptionalIn = _catchall.optin === "optional";
+	const isOptionalOut = _catchall.optout === "optional";
+	for (const key in input) {
+		if (key === "__proto__") continue;
+		if (keySet.has(key)) continue;
+		if (t === "never") {
+			unrecognized.push(key);
+			continue;
+		}
+		const r = _catchall.run({
+			value: input[key],
+			issues: []
+		}, ctx);
+		if (r instanceof Promise) proms.push(r.then((r) => handlePropertyResult(r, payload, key, input, isOptionalIn, isOptionalOut)));
+		else handlePropertyResult(r, payload, key, input, isOptionalIn, isOptionalOut);
+	}
+	if (unrecognized.length) payload.issues.push({
+		code: "unrecognized_keys",
+		keys: unrecognized,
+		input,
+		inst
+	});
+	if (!proms.length) return payload;
+	return Promise.all(proms).then(() => {
+		return payload;
+	});
+}
+var $ZodObject = /*@__PURE__*/ $constructor("$ZodObject", (inst, def) => {
+	$ZodType.init(inst, def);
+	if (!Object.getOwnPropertyDescriptor(def, "shape")?.get) {
+		const sh = def.shape;
+		Object.defineProperty(def, "shape", { get: () => {
+			const newSh = { ...sh };
+			Object.defineProperty(def, "shape", { value: newSh });
+			return newSh;
+		} });
+	}
+	const _normalized = cached(() => normalizeDef(def));
+	defineLazy(inst._zod, "propValues", () => {
+		const shape = def.shape;
+		const propValues = {};
+		for (const key in shape) {
+			const field = shape[key]._zod;
+			if (field.values) {
+				propValues[key] ?? (propValues[key] = /* @__PURE__ */ new Set());
+				for (const v of field.values) propValues[key].add(v);
+			}
+		}
+		return propValues;
+	});
+	const isObject$2 = isObject;
+	const catchall = def.catchall;
+	let value;
+	inst._zod.parse = (payload, ctx) => {
+		value ?? (value = _normalized.value);
+		const input = payload.value;
+		if (!isObject$2(input)) {
+			payload.issues.push({
+				expected: "object",
+				code: "invalid_type",
+				input,
+				inst
+			});
+			return payload;
+		}
+		payload.value = {};
+		const proms = [];
+		const shape = value.shape;
+		for (const key of value.keys) {
+			const el = shape[key];
+			const isOptionalIn = el._zod.optin === "optional";
+			const isOptionalOut = el._zod.optout === "optional";
+			const r = el._zod.run({
+				value: input[key],
+				issues: []
+			}, ctx);
+			if (r instanceof Promise) proms.push(r.then((r) => handlePropertyResult(r, payload, key, input, isOptionalIn, isOptionalOut)));
+			else handlePropertyResult(r, payload, key, input, isOptionalIn, isOptionalOut);
+		}
+		if (!catchall) return proms.length ? Promise.all(proms).then(() => payload) : payload;
+		return handleCatchall(proms, input, payload, ctx, _normalized.value, inst);
+	};
+});
+var $ZodObjectJIT = /*@__PURE__*/ $constructor("$ZodObjectJIT", (inst, def) => {
+	$ZodObject.init(inst, def);
+	const superParse = inst._zod.parse;
+	const _normalized = cached(() => normalizeDef(def));
+	const generateFastpass = (shape) => {
+		const doc = new Doc([
+			"shape",
+			"payload",
+			"ctx"
+		]);
+		const normalized = _normalized.value;
+		const parseStr = (key) => {
+			const k = esc(key);
+			return `shape[${k}]._zod.run({ value: input[${k}], issues: [] }, ctx)`;
+		};
+		doc.write(`const input = payload.value;`);
+		const ids = Object.create(null);
+		let counter = 0;
+		for (const key of normalized.keys) ids[key] = `key_${counter++}`;
+		doc.write(`const newResult = {};`);
+		for (const key of normalized.keys) {
+			const id = ids[key];
+			const k = esc(key);
+			const schema = shape[key];
+			const isOptionalIn = schema?._zod?.optin === "optional";
+			const isOptionalOut = schema?._zod?.optout === "optional";
+			doc.write(`const ${id} = ${parseStr(key)};`);
+			if (isOptionalIn && isOptionalOut) doc.write(`
+        if (${id}.issues.length) {
+          if (${k} in input) {
+            payload.issues = payload.issues.concat(${id}.issues.map(iss => ({
+              ...iss,
+              path: iss.path ? [${k}, ...iss.path] : [${k}]
+            })));
+          }
+        }
+        
+        if (${id}.value === undefined) {
+          if (${k} in input) {
+            newResult[${k}] = undefined;
+          }
+        } else {
+          newResult[${k}] = ${id}.value;
+        }
+        
+      `);
+			else if (!isOptionalIn) doc.write(`
+        const ${id}_present = ${k} in input;
+        if (${id}.issues.length) {
+          payload.issues = payload.issues.concat(${id}.issues.map(iss => ({
+            ...iss,
+            path: iss.path ? [${k}, ...iss.path] : [${k}]
+          })));
+        }
+        if (!${id}_present && !${id}.issues.length) {
+          payload.issues.push({
+            code: "invalid_type",
+            expected: "nonoptional",
+            input: undefined,
+            path: [${k}]
+          });
+        }
+
+        if (${id}_present) {
+          if (${id}.value === undefined) {
+            newResult[${k}] = undefined;
+          } else {
+            newResult[${k}] = ${id}.value;
+          }
+        }
+
+      `);
+			else doc.write(`
+        if (${id}.issues.length) {
+          payload.issues = payload.issues.concat(${id}.issues.map(iss => ({
+            ...iss,
+            path: iss.path ? [${k}, ...iss.path] : [${k}]
+          })));
+        }
+        
+        if (${id}.value === undefined) {
+          if (${k} in input) {
+            newResult[${k}] = undefined;
+          }
+        } else {
+          newResult[${k}] = ${id}.value;
+        }
+        
+      `);
+		}
+		doc.write(`payload.value = newResult;`);
+		doc.write(`return payload;`);
+		const fn = doc.compile();
+		return (payload, ctx) => fn(shape, payload, ctx);
+	};
+	let fastpass;
+	const isObject$1 = isObject;
+	const jit = !globalConfig.jitless;
+	const fastEnabled = jit && allowsEval.value;
+	const catchall = def.catchall;
+	let value;
+	inst._zod.parse = (payload, ctx) => {
+		value ?? (value = _normalized.value);
+		const input = payload.value;
+		if (!isObject$1(input)) {
+			payload.issues.push({
+				expected: "object",
+				code: "invalid_type",
+				input,
+				inst
+			});
+			return payload;
+		}
+		if (jit && fastEnabled && ctx?.async === false && ctx.jitless !== true) {
+			if (!fastpass) fastpass = generateFastpass(def.shape);
+			payload = fastpass(payload, ctx);
+			if (!catchall) return payload;
+			return handleCatchall([], input, payload, ctx, value, inst);
+		}
+		return superParse(payload, ctx);
+	};
+});
+function handleUnionResults(results, final, inst, ctx) {
+	for (const result of results) if (result.issues.length === 0) {
+		final.value = result.value;
+		return final;
+	}
+	const nonaborted = results.filter((r) => !aborted(r));
+	if (nonaborted.length === 1) {
+		final.value = nonaborted[0].value;
+		return nonaborted[0];
+	}
+	final.issues.push({
+		code: "invalid_union",
+		input: final.value,
+		inst,
+		errors: results.map((result) => result.issues.map((iss) => finalizeIssue(iss, ctx, config())))
+	});
+	return final;
+}
+var $ZodUnion = /*@__PURE__*/ $constructor("$ZodUnion", (inst, def) => {
+	$ZodType.init(inst, def);
+	defineLazy(inst._zod, "optin", () => def.options.some((o) => o._zod.optin === "optional") ? "optional" : void 0);
+	defineLazy(inst._zod, "optout", () => def.options.some((o) => o._zod.optout === "optional") ? "optional" : void 0);
+	defineLazy(inst._zod, "values", () => {
+		if (def.options.every((o) => o._zod.values)) return new Set(def.options.flatMap((option) => Array.from(option._zod.values)));
+	});
+	defineLazy(inst._zod, "pattern", () => {
+		if (def.options.every((o) => o._zod.pattern)) {
+			const patterns = def.options.map((o) => o._zod.pattern);
+			return new RegExp(`^(${patterns.map((p) => cleanRegex(p.source)).join("|")})$`);
+		}
+	});
+	const first = def.options.length === 1 ? def.options[0]._zod.run : null;
+	inst._zod.parse = (payload, ctx) => {
+		if (first) return first(payload, ctx);
+		let async = false;
+		const results = [];
+		for (const option of def.options) {
+			const result = option._zod.run({
+				value: payload.value,
+				issues: []
+			}, ctx);
+			if (result instanceof Promise) {
+				results.push(result);
+				async = true;
+			} else {
+				if (result.issues.length === 0) return result;
+				results.push(result);
+			}
+		}
+		if (!async) return handleUnionResults(results, payload, inst, ctx);
+		return Promise.all(results).then((results) => {
+			return handleUnionResults(results, payload, inst, ctx);
+		});
+	};
+});
+var $ZodIntersection = /*@__PURE__*/ $constructor("$ZodIntersection", (inst, def) => {
+	$ZodType.init(inst, def);
+	inst._zod.parse = (payload, ctx) => {
+		const input = payload.value;
+		const left = def.left._zod.run({
+			value: input,
+			issues: []
+		}, ctx);
+		const right = def.right._zod.run({
+			value: input,
+			issues: []
+		}, ctx);
+		if (left instanceof Promise || right instanceof Promise) return Promise.all([left, right]).then(([left, right]) => {
+			return handleIntersectionResults(payload, left, right);
+		});
+		return handleIntersectionResults(payload, left, right);
+	};
+});
+function mergeValues(a, b) {
+	if (a === b) return {
+		valid: true,
+		data: a
+	};
+	if (a instanceof Date && b instanceof Date && +a === +b) return {
+		valid: true,
+		data: a
+	};
+	if (isPlainObject(a) && isPlainObject(b)) {
+		const bKeys = Object.keys(b);
+		const sharedKeys = Object.keys(a).filter((key) => bKeys.indexOf(key) !== -1);
+		const newObj = {
+			...a,
+			...b
+		};
+		for (const key of sharedKeys) {
+			const sharedValue = mergeValues(a[key], b[key]);
+			if (!sharedValue.valid) return {
+				valid: false,
+				mergeErrorPath: [key, ...sharedValue.mergeErrorPath]
+			};
+			newObj[key] = sharedValue.data;
+		}
+		return {
+			valid: true,
+			data: newObj
+		};
+	}
+	if (Array.isArray(a) && Array.isArray(b)) {
+		if (a.length !== b.length) return {
+			valid: false,
+			mergeErrorPath: []
+		};
+		const newArray = [];
+		for (let index = 0; index < a.length; index++) {
+			const itemA = a[index];
+			const itemB = b[index];
+			const sharedValue = mergeValues(itemA, itemB);
+			if (!sharedValue.valid) return {
+				valid: false,
+				mergeErrorPath: [index, ...sharedValue.mergeErrorPath]
+			};
+			newArray.push(sharedValue.data);
+		}
+		return {
+			valid: true,
+			data: newArray
+		};
+	}
+	return {
+		valid: false,
+		mergeErrorPath: []
+	};
+}
+function handleIntersectionResults(result, left, right) {
+	const unrecKeys = /* @__PURE__ */ new Map();
+	let unrecIssue;
+	for (const iss of left.issues) if (iss.code === "unrecognized_keys") {
+		unrecIssue ?? (unrecIssue = iss);
+		for (const k of iss.keys) {
+			if (!unrecKeys.has(k)) unrecKeys.set(k, {});
+			unrecKeys.get(k).l = true;
+		}
+	} else result.issues.push(iss);
+	for (const iss of right.issues) if (iss.code === "unrecognized_keys") for (const k of iss.keys) {
+		if (!unrecKeys.has(k)) unrecKeys.set(k, {});
+		unrecKeys.get(k).r = true;
+	}
+	else result.issues.push(iss);
+	const bothKeys = [...unrecKeys].filter(([, f]) => f.l && f.r).map(([k]) => k);
+	if (bothKeys.length && unrecIssue) result.issues.push({
+		...unrecIssue,
+		keys: bothKeys
+	});
+	if (aborted(result)) return result;
+	const merged = mergeValues(left.value, right.value);
+	if (!merged.valid) throw new Error(`Unmergable intersection. Error path: ${JSON.stringify(merged.mergeErrorPath)}`);
+	result.value = merged.data;
+	return result;
+}
+var $ZodEnum = /*@__PURE__*/ $constructor("$ZodEnum", (inst, def) => {
+	$ZodType.init(inst, def);
+	const values = getEnumValues(def.entries);
+	const valuesSet = new Set(values);
+	inst._zod.values = valuesSet;
+	inst._zod.pattern = new RegExp(`^(${values.filter((k) => propertyKeyTypes.has(typeof k)).map((o) => typeof o === "string" ? escapeRegex(o) : o.toString()).join("|")})$`);
+	inst._zod.parse = (payload, _ctx) => {
+		const input = payload.value;
+		if (valuesSet.has(input)) return payload;
+		payload.issues.push({
+			code: "invalid_value",
+			values,
+			input,
+			inst
+		});
+		return payload;
+	};
+});
+var $ZodLiteral = /*@__PURE__*/ $constructor("$ZodLiteral", (inst, def) => {
+	$ZodType.init(inst, def);
+	if (def.values.length === 0) throw new Error("Cannot create literal schema with no valid values");
+	const values = new Set(def.values);
+	inst._zod.values = values;
+	inst._zod.pattern = new RegExp(`^(${def.values.map((o) => typeof o === "string" ? escapeRegex(o) : o ? escapeRegex(o.toString()) : String(o)).join("|")})$`);
+	inst._zod.parse = (payload, _ctx) => {
+		const input = payload.value;
+		if (values.has(input)) return payload;
+		payload.issues.push({
+			code: "invalid_value",
+			values: def.values,
+			input,
+			inst
+		});
+		return payload;
+	};
+});
+var $ZodTransform = /*@__PURE__*/ $constructor("$ZodTransform", (inst, def) => {
+	$ZodType.init(inst, def);
+	inst._zod.optin = "optional";
+	inst._zod.parse = (payload, ctx) => {
+		if (ctx.direction === "backward") throw new $ZodEncodeError(inst.constructor.name);
+		const _out = def.transform(payload.value, payload);
+		if (ctx.async) return (_out instanceof Promise ? _out : Promise.resolve(_out)).then((output) => {
+			payload.value = output;
+			payload.fallback = true;
+			return payload;
+		});
+		if (_out instanceof Promise) throw new $ZodAsyncError();
+		payload.value = _out;
+		payload.fallback = true;
+		return payload;
+	};
+});
+function handleOptionalResult(result, input) {
+	if (input === void 0 && (result.issues.length || result.fallback)) return {
+		issues: [],
+		value: void 0
+	};
+	return result;
+}
+var $ZodOptional = /*@__PURE__*/ $constructor("$ZodOptional", (inst, def) => {
+	$ZodType.init(inst, def);
+	inst._zod.optin = "optional";
+	inst._zod.optout = "optional";
+	defineLazy(inst._zod, "values", () => {
+		return def.innerType._zod.values ? /* @__PURE__ */ new Set([...def.innerType._zod.values, void 0]) : void 0;
+	});
+	defineLazy(inst._zod, "pattern", () => {
+		const pattern = def.innerType._zod.pattern;
+		return pattern ? new RegExp(`^(${cleanRegex(pattern.source)})?$`) : void 0;
+	});
+	inst._zod.parse = (payload, ctx) => {
+		if (def.innerType._zod.optin === "optional") {
+			const input = payload.value;
+			const result = def.innerType._zod.run(payload, ctx);
+			if (result instanceof Promise) return result.then((r) => handleOptionalResult(r, input));
+			return handleOptionalResult(result, input);
+		}
+		if (payload.value === void 0) return payload;
+		return def.innerType._zod.run(payload, ctx);
+	};
+});
+var $ZodExactOptional = /*@__PURE__*/ $constructor("$ZodExactOptional", (inst, def) => {
+	$ZodOptional.init(inst, def);
+	defineLazy(inst._zod, "values", () => def.innerType._zod.values);
+	defineLazy(inst._zod, "pattern", () => def.innerType._zod.pattern);
+	inst._zod.parse = (payload, ctx) => {
+		return def.innerType._zod.run(payload, ctx);
+	};
+});
+var $ZodNullable = /*@__PURE__*/ $constructor("$ZodNullable", (inst, def) => {
+	$ZodType.init(inst, def);
+	defineLazy(inst._zod, "optin", () => def.innerType._zod.optin);
+	defineLazy(inst._zod, "optout", () => def.innerType._zod.optout);
+	defineLazy(inst._zod, "pattern", () => {
+		const pattern = def.innerType._zod.pattern;
+		return pattern ? new RegExp(`^(${cleanRegex(pattern.source)}|null)$`) : void 0;
+	});
+	defineLazy(inst._zod, "values", () => {
+		return def.innerType._zod.values ? /* @__PURE__ */ new Set([...def.innerType._zod.values, null]) : void 0;
+	});
+	inst._zod.parse = (payload, ctx) => {
+		if (payload.value === null) return payload;
+		return def.innerType._zod.run(payload, ctx);
+	};
+});
+var $ZodDefault = /*@__PURE__*/ $constructor("$ZodDefault", (inst, def) => {
+	$ZodType.init(inst, def);
+	inst._zod.optin = "optional";
+	defineLazy(inst._zod, "values", () => def.innerType._zod.values);
+	inst._zod.parse = (payload, ctx) => {
+		if (ctx.direction === "backward") return def.innerType._zod.run(payload, ctx);
+		if (payload.value === void 0) {
+			payload.value = def.defaultValue;
+			/**
+			* $ZodDefault returns the default value immediately in forward direction.
+			* It doesn't pass the default value into the validator ("prefault"). There's no reason to pass the default value through validation. The validity of the default is enforced by TypeScript statically. Otherwise, it's the responsibility of the user to ensure the default is valid. In the case of pipes with divergent in/out types, you can specify the default on the `in` schema of your ZodPipe to set a "prefault" for the pipe.   */
+			return payload;
+		}
+		const result = def.innerType._zod.run(payload, ctx);
+		if (result instanceof Promise) return result.then((result) => handleDefaultResult(result, def));
+		return handleDefaultResult(result, def);
+	};
+});
+function handleDefaultResult(payload, def) {
+	if (payload.value === void 0) payload.value = def.defaultValue;
+	return payload;
+}
+var $ZodPrefault = /*@__PURE__*/ $constructor("$ZodPrefault", (inst, def) => {
+	$ZodType.init(inst, def);
+	inst._zod.optin = "optional";
+	defineLazy(inst._zod, "values", () => def.innerType._zod.values);
+	inst._zod.parse = (payload, ctx) => {
+		if (ctx.direction === "backward") return def.innerType._zod.run(payload, ctx);
+		if (payload.value === void 0) payload.value = def.defaultValue;
+		return def.innerType._zod.run(payload, ctx);
+	};
+});
+var $ZodNonOptional = /*@__PURE__*/ $constructor("$ZodNonOptional", (inst, def) => {
+	$ZodType.init(inst, def);
+	defineLazy(inst._zod, "values", () => {
+		const v = def.innerType._zod.values;
+		return v ? new Set([...v].filter((x) => x !== void 0)) : void 0;
+	});
+	inst._zod.parse = (payload, ctx) => {
+		const result = def.innerType._zod.run(payload, ctx);
+		if (result instanceof Promise) return result.then((result) => handleNonOptionalResult(result, inst));
+		return handleNonOptionalResult(result, inst);
+	};
+});
+function handleNonOptionalResult(payload, inst) {
+	if (!payload.issues.length && payload.value === void 0) payload.issues.push({
+		code: "invalid_type",
+		expected: "nonoptional",
+		input: payload.value,
+		inst
+	});
+	return payload;
+}
+var $ZodCatch = /*@__PURE__*/ $constructor("$ZodCatch", (inst, def) => {
+	$ZodType.init(inst, def);
+	inst._zod.optin = "optional";
+	defineLazy(inst._zod, "optout", () => def.innerType._zod.optout);
+	defineLazy(inst._zod, "values", () => def.innerType._zod.values);
+	inst._zod.parse = (payload, ctx) => {
+		if (ctx.direction === "backward") return def.innerType._zod.run(payload, ctx);
+		const result = def.innerType._zod.run(payload, ctx);
+		if (result instanceof Promise) return result.then((result) => {
+			payload.value = result.value;
+			if (result.issues.length) {
+				payload.value = def.catchValue({
+					...payload,
+					error: { issues: result.issues.map((iss) => finalizeIssue(iss, ctx, config())) },
+					input: payload.value
+				});
+				payload.issues = [];
+				payload.fallback = true;
+			}
+			return payload;
+		});
+		payload.value = result.value;
+		if (result.issues.length) {
+			payload.value = def.catchValue({
+				...payload,
+				error: { issues: result.issues.map((iss) => finalizeIssue(iss, ctx, config())) },
+				input: payload.value
+			});
+			payload.issues = [];
+			payload.fallback = true;
+		}
+		return payload;
+	};
+});
+var $ZodPipe = /*@__PURE__*/ $constructor("$ZodPipe", (inst, def) => {
+	$ZodType.init(inst, def);
+	defineLazy(inst._zod, "values", () => def.in._zod.values);
+	defineLazy(inst._zod, "optin", () => def.in._zod.optin);
+	defineLazy(inst._zod, "optout", () => def.out._zod.optout);
+	defineLazy(inst._zod, "propValues", () => def.in._zod.propValues);
+	inst._zod.parse = (payload, ctx) => {
+		if (ctx.direction === "backward") {
+			const right = def.out._zod.run(payload, ctx);
+			if (right instanceof Promise) return right.then((right) => handlePipeResult(right, def.in, ctx));
+			return handlePipeResult(right, def.in, ctx);
+		}
+		const left = def.in._zod.run(payload, ctx);
+		if (left instanceof Promise) return left.then((left) => handlePipeResult(left, def.out, ctx));
+		return handlePipeResult(left, def.out, ctx);
+	};
+});
+function handlePipeResult(left, next, ctx) {
+	if (left.issues.length) {
+		left.aborted = true;
+		return left;
+	}
+	return next._zod.run({
+		value: left.value,
+		issues: left.issues,
+		fallback: left.fallback
+	}, ctx);
+}
+var $ZodReadonly = /*@__PURE__*/ $constructor("$ZodReadonly", (inst, def) => {
+	$ZodType.init(inst, def);
+	defineLazy(inst._zod, "propValues", () => def.innerType._zod.propValues);
+	defineLazy(inst._zod, "values", () => def.innerType._zod.values);
+	defineLazy(inst._zod, "optin", () => def.innerType?._zod?.optin);
+	defineLazy(inst._zod, "optout", () => def.innerType?._zod?.optout);
+	inst._zod.parse = (payload, ctx) => {
+		if (ctx.direction === "backward") return def.innerType._zod.run(payload, ctx);
+		const result = def.innerType._zod.run(payload, ctx);
+		if (result instanceof Promise) return result.then(handleReadonlyResult);
+		return handleReadonlyResult(result);
+	};
+});
+function handleReadonlyResult(payload) {
+	payload.value = Object.freeze(payload.value);
+	return payload;
+}
+var $ZodCustom = /*@__PURE__*/ $constructor("$ZodCustom", (inst, def) => {
+	$ZodCheck.init(inst, def);
+	$ZodType.init(inst, def);
+	inst._zod.parse = (payload, _) => {
+		return payload;
+	};
+	inst._zod.check = (payload) => {
+		const input = payload.value;
+		const r = def.fn(input);
+		if (r instanceof Promise) return r.then((r) => handleRefineResult(r, payload, input, inst));
+		handleRefineResult(r, payload, input, inst);
+	};
+});
+function handleRefineResult(result, payload, input, inst) {
+	if (!result) {
+		const _iss = {
+			code: "custom",
+			input,
+			inst,
+			path: [...inst._zod.def.path ?? []],
+			continue: !inst._zod.def.abort
+		};
+		if (inst._zod.def.params) _iss.params = inst._zod.def.params;
+		payload.issues.push(issue(_iss));
+	}
+}
+//#endregion
+//#region node_modules/zod/v4/core/registries.js
+var _a;
+var $ZodRegistry = class {
+	constructor() {
+		this._map = /* @__PURE__ */ new WeakMap();
+		this._idmap = /* @__PURE__ */ new Map();
+	}
+	add(schema, ..._meta) {
+		const meta = _meta[0];
+		this._map.set(schema, meta);
+		if (meta && typeof meta === "object" && "id" in meta) this._idmap.set(meta.id, schema);
+		return this;
+	}
+	clear() {
+		this._map = /* @__PURE__ */ new WeakMap();
+		this._idmap = /* @__PURE__ */ new Map();
+		return this;
+	}
+	remove(schema) {
+		const meta = this._map.get(schema);
+		if (meta && typeof meta === "object" && "id" in meta) this._idmap.delete(meta.id);
+		this._map.delete(schema);
+		return this;
+	}
+	get(schema) {
+		const p = schema._zod.parent;
+		if (p) {
+			const pm = { ...this.get(p) ?? {} };
+			delete pm.id;
+			const f = {
+				...pm,
+				...this._map.get(schema)
+			};
+			return Object.keys(f).length ? f : void 0;
+		}
+		return this._map.get(schema);
+	}
+	has(schema) {
+		return this._map.has(schema);
+	}
+};
+function registry() {
+	return new $ZodRegistry();
+}
+(_a = globalThis).__zod_globalRegistry ?? (_a.__zod_globalRegistry = registry());
+var globalRegistry = globalThis.__zod_globalRegistry;
+//#endregion
+//#region node_modules/zod/v4/core/api.js
+// @__NO_SIDE_EFFECTS__
+function _string(Class, params) {
+	return new Class({
+		type: "string",
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _email(Class, params) {
+	return new Class({
+		type: "string",
+		format: "email",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _guid(Class, params) {
+	return new Class({
+		type: "string",
+		format: "guid",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _uuid(Class, params) {
+	return new Class({
+		type: "string",
+		format: "uuid",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _uuidv4(Class, params) {
+	return new Class({
+		type: "string",
+		format: "uuid",
+		check: "string_format",
+		abort: false,
+		version: "v4",
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _uuidv6(Class, params) {
+	return new Class({
+		type: "string",
+		format: "uuid",
+		check: "string_format",
+		abort: false,
+		version: "v6",
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _uuidv7(Class, params) {
+	return new Class({
+		type: "string",
+		format: "uuid",
+		check: "string_format",
+		abort: false,
+		version: "v7",
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _url(Class, params) {
+	return new Class({
+		type: "string",
+		format: "url",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _emoji(Class, params) {
+	return new Class({
+		type: "string",
+		format: "emoji",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _nanoid(Class, params) {
+	return new Class({
+		type: "string",
+		format: "nanoid",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+/**
+* @deprecated CUID v1 is deprecated by its authors due to information leakage
+* (timestamps embedded in the id). Use {@link _cuid2} instead.
+* See https://github.com/paralleldrive/cuid.
+*/
+// @__NO_SIDE_EFFECTS__
+function _cuid(Class, params) {
+	return new Class({
+		type: "string",
+		format: "cuid",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _cuid2(Class, params) {
+	return new Class({
+		type: "string",
+		format: "cuid2",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _ulid(Class, params) {
+	return new Class({
+		type: "string",
+		format: "ulid",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _xid(Class, params) {
+	return new Class({
+		type: "string",
+		format: "xid",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _ksuid(Class, params) {
+	return new Class({
+		type: "string",
+		format: "ksuid",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _ipv4(Class, params) {
+	return new Class({
+		type: "string",
+		format: "ipv4",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _ipv6(Class, params) {
+	return new Class({
+		type: "string",
+		format: "ipv6",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _cidrv4(Class, params) {
+	return new Class({
+		type: "string",
+		format: "cidrv4",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _cidrv6(Class, params) {
+	return new Class({
+		type: "string",
+		format: "cidrv6",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _base64(Class, params) {
+	return new Class({
+		type: "string",
+		format: "base64",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _base64url(Class, params) {
+	return new Class({
+		type: "string",
+		format: "base64url",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _e164(Class, params) {
+	return new Class({
+		type: "string",
+		format: "e164",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _jwt(Class, params) {
+	return new Class({
+		type: "string",
+		format: "jwt",
+		check: "string_format",
+		abort: false,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _isoDateTime(Class, params) {
+	return new Class({
+		type: "string",
+		format: "datetime",
+		check: "string_format",
+		offset: false,
+		local: false,
+		precision: null,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _isoDate(Class, params) {
+	return new Class({
+		type: "string",
+		format: "date",
+		check: "string_format",
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _isoTime(Class, params) {
+	return new Class({
+		type: "string",
+		format: "time",
+		check: "string_format",
+		precision: null,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _isoDuration(Class, params) {
+	return new Class({
+		type: "string",
+		format: "duration",
+		check: "string_format",
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _number(Class, params) {
+	return new Class({
+		type: "number",
+		checks: [],
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _int(Class, params) {
+	return new Class({
+		type: "number",
+		check: "number_format",
+		abort: false,
+		format: "safeint",
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _boolean(Class, params) {
+	return new Class({
+		type: "boolean",
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _unknown(Class) {
+	return new Class({ type: "unknown" });
+}
+// @__NO_SIDE_EFFECTS__
+function _never(Class, params) {
+	return new Class({
+		type: "never",
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _lt(value, params) {
+	return new $ZodCheckLessThan({
+		check: "less_than",
+		...normalizeParams(params),
+		value,
+		inclusive: false
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _lte(value, params) {
+	return new $ZodCheckLessThan({
+		check: "less_than",
+		...normalizeParams(params),
+		value,
+		inclusive: true
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _gt(value, params) {
+	return new $ZodCheckGreaterThan({
+		check: "greater_than",
+		...normalizeParams(params),
+		value,
+		inclusive: false
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _gte(value, params) {
+	return new $ZodCheckGreaterThan({
+		check: "greater_than",
+		...normalizeParams(params),
+		value,
+		inclusive: true
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _multipleOf(value, params) {
+	return new $ZodCheckMultipleOf({
+		check: "multiple_of",
+		...normalizeParams(params),
+		value
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _maxLength(maximum, params) {
+	return new $ZodCheckMaxLength({
+		check: "max_length",
+		...normalizeParams(params),
+		maximum
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _minLength(minimum, params) {
+	return new $ZodCheckMinLength({
+		check: "min_length",
+		...normalizeParams(params),
+		minimum
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _length(length, params) {
+	return new $ZodCheckLengthEquals({
+		check: "length_equals",
+		...normalizeParams(params),
+		length
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _regex(pattern, params) {
+	return new $ZodCheckRegex({
+		check: "string_format",
+		format: "regex",
+		...normalizeParams(params),
+		pattern
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _lowercase(params) {
+	return new $ZodCheckLowerCase({
+		check: "string_format",
+		format: "lowercase",
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _uppercase(params) {
+	return new $ZodCheckUpperCase({
+		check: "string_format",
+		format: "uppercase",
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _includes(includes, params) {
+	return new $ZodCheckIncludes({
+		check: "string_format",
+		format: "includes",
+		...normalizeParams(params),
+		includes
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _startsWith(prefix, params) {
+	return new $ZodCheckStartsWith({
+		check: "string_format",
+		format: "starts_with",
+		...normalizeParams(params),
+		prefix
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _endsWith(suffix, params) {
+	return new $ZodCheckEndsWith({
+		check: "string_format",
+		format: "ends_with",
+		...normalizeParams(params),
+		suffix
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _overwrite(tx) {
+	return new $ZodCheckOverwrite({
+		check: "overwrite",
+		tx
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _normalize(form) {
+	return /* @__PURE__ */ _overwrite((input) => input.normalize(form));
+}
+// @__NO_SIDE_EFFECTS__
+function _trim() {
+	return /* @__PURE__ */ _overwrite((input) => input.trim());
+}
+// @__NO_SIDE_EFFECTS__
+function _toLowerCase() {
+	return /* @__PURE__ */ _overwrite((input) => input.toLowerCase());
+}
+// @__NO_SIDE_EFFECTS__
+function _toUpperCase() {
+	return /* @__PURE__ */ _overwrite((input) => input.toUpperCase());
+}
+// @__NO_SIDE_EFFECTS__
+function _slugify() {
+	return /* @__PURE__ */ _overwrite((input) => slugify(input));
+}
+// @__NO_SIDE_EFFECTS__
+function _array(Class, element, params) {
+	return new Class({
+		type: "array",
+		element,
+		...normalizeParams(params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _refine(Class, fn, _params) {
+	return new Class({
+		type: "custom",
+		check: "custom",
+		fn,
+		...normalizeParams(_params)
+	});
+}
+// @__NO_SIDE_EFFECTS__
+function _superRefine(fn, params) {
+	const ch = /* @__PURE__ */ _check((payload) => {
+		payload.addIssue = (issue$2) => {
+			if (typeof issue$2 === "string") payload.issues.push(issue(issue$2, payload.value, ch._zod.def));
+			else {
+				const _issue = issue$2;
+				if (_issue.fatal) _issue.continue = false;
+				_issue.code ?? (_issue.code = "custom");
+				_issue.input ?? (_issue.input = payload.value);
+				_issue.inst ?? (_issue.inst = ch);
+				_issue.continue ?? (_issue.continue = !ch._zod.def.abort);
+				payload.issues.push(issue(_issue));
+			}
+		};
+		return fn(payload.value, payload);
+	}, params);
+	return ch;
+}
+// @__NO_SIDE_EFFECTS__
+function _check(fn, params) {
+	const ch = new $ZodCheck({
+		check: "custom",
+		...normalizeParams(params)
+	});
+	ch._zod.check = fn;
+	return ch;
+}
+//#endregion
+//#region node_modules/zod/v4/core/to-json-schema.js
+function initializeContext(params) {
+	let target = params?.target ?? "draft-2020-12";
+	if (target === "draft-4") target = "draft-04";
+	if (target === "draft-7") target = "draft-07";
+	return {
+		processors: params.processors ?? {},
+		metadataRegistry: params?.metadata ?? globalRegistry,
+		target,
+		unrepresentable: params?.unrepresentable ?? "throw",
+		override: params?.override ?? (() => {}),
+		io: params?.io ?? "output",
+		counter: 0,
+		seen: /* @__PURE__ */ new Map(),
+		cycles: params?.cycles ?? "ref",
+		reused: params?.reused ?? "inline",
+		external: params?.external ?? void 0
+	};
+}
+function process$1(schema, ctx, _params = {
+	path: [],
+	schemaPath: []
+}) {
+	var _a;
+	const def = schema._zod.def;
+	const seen = ctx.seen.get(schema);
+	if (seen) {
+		seen.count++;
+		if (_params.schemaPath.includes(schema)) seen.cycle = _params.path;
+		return seen.schema;
+	}
+	const result = {
+		schema: {},
+		count: 1,
+		cycle: void 0,
+		path: _params.path
+	};
+	ctx.seen.set(schema, result);
+	const overrideSchema = schema._zod.toJSONSchema?.();
+	if (overrideSchema) result.schema = overrideSchema;
+	else {
+		const params = {
+			..._params,
+			schemaPath: [..._params.schemaPath, schema],
+			path: _params.path
+		};
+		if (schema._zod.processJSONSchema) schema._zod.processJSONSchema(ctx, result.schema, params);
+		else {
+			const _json = result.schema;
+			const processor = ctx.processors[def.type];
+			if (!processor) throw new Error(`[toJSONSchema]: Non-representable type encountered: ${def.type}`);
+			processor(schema, ctx, _json, params);
+		}
+		const parent = schema._zod.parent;
+		if (parent) {
+			if (!result.ref) result.ref = parent;
+			process$1(parent, ctx, params);
+			ctx.seen.get(parent).isParent = true;
+		}
+	}
+	const meta = ctx.metadataRegistry.get(schema);
+	if (meta) Object.assign(result.schema, meta);
+	if (ctx.io === "input" && isTransforming(schema)) {
+		delete result.schema.examples;
+		delete result.schema.default;
+	}
+	if (ctx.io === "input" && "_prefault" in result.schema) (_a = result.schema).default ?? (_a.default = result.schema._prefault);
+	delete result.schema._prefault;
+	return ctx.seen.get(schema).schema;
+}
+function extractDefs(ctx, schema) {
+	const root = ctx.seen.get(schema);
+	if (!root) throw new Error("Unprocessed schema. This is a bug in Zod.");
+	const idToSchema = /* @__PURE__ */ new Map();
+	for (const entry of ctx.seen.entries()) {
+		const id = ctx.metadataRegistry.get(entry[0])?.id;
+		if (id) {
+			const existing = idToSchema.get(id);
+			if (existing && existing !== entry[0]) throw new Error(`Duplicate schema id "${id}" detected during JSON Schema conversion. Two different schemas cannot share the same id when converted together.`);
+			idToSchema.set(id, entry[0]);
+		}
+	}
+	const makeURI = (entry) => {
+		const defsSegment = ctx.target === "draft-2020-12" ? "$defs" : "definitions";
+		if (ctx.external) {
+			const externalId = ctx.external.registry.get(entry[0])?.id;
+			const uriGenerator = ctx.external.uri ?? ((id) => id);
+			if (externalId) return { ref: uriGenerator(externalId) };
+			const id = entry[1].defId ?? entry[1].schema.id ?? `schema${ctx.counter++}`;
+			entry[1].defId = id;
+			return {
+				defId: id,
+				ref: `${uriGenerator("__shared")}#/${defsSegment}/${id}`
+			};
+		}
+		if (entry[1] === root) return { ref: "#" };
+		const defUriPrefix = `#/${defsSegment}/`;
+		const defId = entry[1].schema.id ?? `__schema${ctx.counter++}`;
+		return {
+			defId,
+			ref: defUriPrefix + defId
+		};
+	};
+	const extractToDef = (entry) => {
+		if (entry[1].schema.$ref) return;
+		const seen = entry[1];
+		const { ref, defId } = makeURI(entry);
+		seen.def = { ...seen.schema };
+		if (defId) seen.defId = defId;
+		const schema = seen.schema;
+		for (const key in schema) delete schema[key];
+		schema.$ref = ref;
+	};
+	if (ctx.cycles === "throw") for (const entry of ctx.seen.entries()) {
+		const seen = entry[1];
+		if (seen.cycle) throw new Error(`Cycle detected: #/${seen.cycle?.join("/")}/<root>
+
+Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.`);
+	}
+	for (const entry of ctx.seen.entries()) {
+		const seen = entry[1];
+		if (schema === entry[0]) {
+			extractToDef(entry);
+			continue;
+		}
+		if (ctx.external) {
+			const ext = ctx.external.registry.get(entry[0])?.id;
+			if (schema !== entry[0] && ext) {
+				extractToDef(entry);
+				continue;
+			}
+		}
+		if (ctx.metadataRegistry.get(entry[0])?.id) {
+			extractToDef(entry);
+			continue;
+		}
+		if (seen.cycle) {
+			extractToDef(entry);
+			continue;
+		}
+		if (seen.count > 1) {
+			if (ctx.reused === "ref") {
+				extractToDef(entry);
+				continue;
+			}
+		}
+	}
+}
+function finalize(ctx, schema) {
+	const root = ctx.seen.get(schema);
+	if (!root) throw new Error("Unprocessed schema. This is a bug in Zod.");
+	const flattenRef = (zodSchema) => {
+		const seen = ctx.seen.get(zodSchema);
+		if (seen.ref === null) return;
+		const schema = seen.def ?? seen.schema;
+		const _cached = { ...schema };
+		const ref = seen.ref;
+		seen.ref = null;
+		if (ref) {
+			flattenRef(ref);
+			const refSeen = ctx.seen.get(ref);
+			const refSchema = refSeen.schema;
+			if (refSchema.$ref && (ctx.target === "draft-07" || ctx.target === "draft-04" || ctx.target === "openapi-3.0")) {
+				schema.allOf = schema.allOf ?? [];
+				schema.allOf.push(refSchema);
+			} else Object.assign(schema, refSchema);
+			Object.assign(schema, _cached);
+			if (zodSchema._zod.parent === ref) for (const key in schema) {
+				if (key === "$ref" || key === "allOf") continue;
+				if (!(key in _cached)) delete schema[key];
+			}
+			if (refSchema.$ref && refSeen.def) for (const key in schema) {
+				if (key === "$ref" || key === "allOf") continue;
+				if (key in refSeen.def && JSON.stringify(schema[key]) === JSON.stringify(refSeen.def[key])) delete schema[key];
+			}
+		}
+		const parent = zodSchema._zod.parent;
+		if (parent && parent !== ref) {
+			flattenRef(parent);
+			const parentSeen = ctx.seen.get(parent);
+			if (parentSeen?.schema.$ref) {
+				schema.$ref = parentSeen.schema.$ref;
+				if (parentSeen.def) for (const key in schema) {
+					if (key === "$ref" || key === "allOf") continue;
+					if (key in parentSeen.def && JSON.stringify(schema[key]) === JSON.stringify(parentSeen.def[key])) delete schema[key];
+				}
+			}
+		}
+		ctx.override({
+			zodSchema,
+			jsonSchema: schema,
+			path: seen.path ?? []
+		});
+	};
+	for (const entry of [...ctx.seen.entries()].reverse()) flattenRef(entry[0]);
+	const result = {};
+	if (ctx.target === "draft-2020-12") result.$schema = "https://json-schema.org/draft/2020-12/schema";
+	else if (ctx.target === "draft-07") result.$schema = "http://json-schema.org/draft-07/schema#";
+	else if (ctx.target === "draft-04") result.$schema = "http://json-schema.org/draft-04/schema#";
+	else if (ctx.target === "openapi-3.0") {}
+	if (ctx.external?.uri) {
+		const id = ctx.external.registry.get(schema)?.id;
+		if (!id) throw new Error("Schema is missing an `id` property");
+		result.$id = ctx.external.uri(id);
+	}
+	Object.assign(result, root.def ?? root.schema);
+	const rootMetaId = ctx.metadataRegistry.get(schema)?.id;
+	if (rootMetaId !== void 0 && result.id === rootMetaId) delete result.id;
+	const defs = ctx.external?.defs ?? {};
+	for (const entry of ctx.seen.entries()) {
+		const seen = entry[1];
+		if (seen.def && seen.defId) {
+			if (seen.def.id === seen.defId) delete seen.def.id;
+			defs[seen.defId] = seen.def;
+		}
+	}
+	if (ctx.external) {} else if (Object.keys(defs).length > 0) if (ctx.target === "draft-2020-12") result.$defs = defs;
+	else result.definitions = defs;
+	try {
+		const finalized = JSON.parse(JSON.stringify(result));
+		Object.defineProperty(finalized, "~standard", {
+			value: {
+				...schema["~standard"],
+				jsonSchema: {
+					input: createStandardJSONSchemaMethod(schema, "input", ctx.processors),
+					output: createStandardJSONSchemaMethod(schema, "output", ctx.processors)
+				}
+			},
+			enumerable: false,
+			writable: false
+		});
+		return finalized;
+	} catch (_err) {
+		throw new Error("Error converting schema to JSON.");
+	}
+}
+function isTransforming(_schema, _ctx) {
+	const ctx = _ctx ?? { seen: /* @__PURE__ */ new Set() };
+	if (ctx.seen.has(_schema)) return false;
+	ctx.seen.add(_schema);
+	const def = _schema._zod.def;
+	if (def.type === "transform") return true;
+	if (def.type === "array") return isTransforming(def.element, ctx);
+	if (def.type === "set") return isTransforming(def.valueType, ctx);
+	if (def.type === "lazy") return isTransforming(def.getter(), ctx);
+	if (def.type === "promise" || def.type === "optional" || def.type === "nonoptional" || def.type === "nullable" || def.type === "readonly" || def.type === "default" || def.type === "prefault") return isTransforming(def.innerType, ctx);
+	if (def.type === "intersection") return isTransforming(def.left, ctx) || isTransforming(def.right, ctx);
+	if (def.type === "record" || def.type === "map") return isTransforming(def.keyType, ctx) || isTransforming(def.valueType, ctx);
+	if (def.type === "pipe") {
+		if (_schema._zod.traits.has("$ZodCodec")) return true;
+		return isTransforming(def.in, ctx) || isTransforming(def.out, ctx);
+	}
+	if (def.type === "object") {
+		for (const key in def.shape) if (isTransforming(def.shape[key], ctx)) return true;
+		return false;
+	}
+	if (def.type === "union") {
+		for (const option of def.options) if (isTransforming(option, ctx)) return true;
+		return false;
+	}
+	if (def.type === "tuple") {
+		for (const item of def.items) if (isTransforming(item, ctx)) return true;
+		if (def.rest && isTransforming(def.rest, ctx)) return true;
+		return false;
+	}
+	return false;
+}
+/**
+* Creates a toJSONSchema method for a schema instance.
+* This encapsulates the logic of initializing context, processing, extracting defs, and finalizing.
+*/
+var createToJSONSchemaMethod = (schema, processors = {}) => (params) => {
+	const ctx = initializeContext({
+		...params,
+		processors
+	});
+	process$1(schema, ctx);
+	extractDefs(ctx, schema);
+	return finalize(ctx, schema);
+};
+var createStandardJSONSchemaMethod = (schema, io, processors = {}) => (params) => {
+	const { libraryOptions, target } = params ?? {};
+	const ctx = initializeContext({
+		...libraryOptions ?? {},
+		target,
+		io,
+		processors
+	});
+	process$1(schema, ctx);
+	extractDefs(ctx, schema);
+	return finalize(ctx, schema);
+};
+//#endregion
+//#region node_modules/zod/v4/core/json-schema-processors.js
+var formatMap = {
+	guid: "uuid",
+	url: "uri",
+	datetime: "date-time",
+	json_string: "json-string",
+	regex: ""
+};
+var stringProcessor = (schema, ctx, _json, _params) => {
+	const json = _json;
+	json.type = "string";
+	const { minimum, maximum, format, patterns, contentEncoding } = schema._zod.bag;
+	if (typeof minimum === "number") json.minLength = minimum;
+	if (typeof maximum === "number") json.maxLength = maximum;
+	if (format) {
+		json.format = formatMap[format] ?? format;
+		if (json.format === "") delete json.format;
+		if (format === "time") delete json.format;
+	}
+	if (contentEncoding) json.contentEncoding = contentEncoding;
+	if (patterns && patterns.size > 0) {
+		const regexes = [...patterns];
+		if (regexes.length === 1) json.pattern = regexes[0].source;
+		else if (regexes.length > 1) json.allOf = [...regexes.map((regex) => ({
+			...ctx.target === "draft-07" || ctx.target === "draft-04" || ctx.target === "openapi-3.0" ? { type: "string" } : {},
+			pattern: regex.source
+		}))];
+	}
+};
+var numberProcessor = (schema, ctx, _json, _params) => {
+	const json = _json;
+	const { minimum, maximum, format, multipleOf, exclusiveMaximum, exclusiveMinimum } = schema._zod.bag;
+	if (typeof format === "string" && format.includes("int")) json.type = "integer";
+	else json.type = "number";
+	const exMin = typeof exclusiveMinimum === "number" && exclusiveMinimum >= (minimum ?? Number.NEGATIVE_INFINITY);
+	const exMax = typeof exclusiveMaximum === "number" && exclusiveMaximum <= (maximum ?? Number.POSITIVE_INFINITY);
+	const legacy = ctx.target === "draft-04" || ctx.target === "openapi-3.0";
+	if (exMin) if (legacy) {
+		json.minimum = exclusiveMinimum;
+		json.exclusiveMinimum = true;
+	} else json.exclusiveMinimum = exclusiveMinimum;
+	else if (typeof minimum === "number") json.minimum = minimum;
+	if (exMax) if (legacy) {
+		json.maximum = exclusiveMaximum;
+		json.exclusiveMaximum = true;
+	} else json.exclusiveMaximum = exclusiveMaximum;
+	else if (typeof maximum === "number") json.maximum = maximum;
+	if (typeof multipleOf === "number") json.multipleOf = multipleOf;
+};
+var booleanProcessor = (_schema, _ctx, json, _params) => {
+	json.type = "boolean";
+};
+var neverProcessor = (_schema, _ctx, json, _params) => {
+	json.not = {};
+};
+var enumProcessor = (schema, _ctx, json, _params) => {
+	const def = schema._zod.def;
+	const values = getEnumValues(def.entries);
+	if (values.every((v) => typeof v === "number")) json.type = "number";
+	if (values.every((v) => typeof v === "string")) json.type = "string";
+	json.enum = values;
+};
+var literalProcessor = (schema, ctx, json, _params) => {
+	const def = schema._zod.def;
+	const vals = [];
+	for (const val of def.values) if (val === void 0) {
+		if (ctx.unrepresentable === "throw") throw new Error("Literal `undefined` cannot be represented in JSON Schema");
+	} else if (typeof val === "bigint") if (ctx.unrepresentable === "throw") throw new Error("BigInt literals cannot be represented in JSON Schema");
+	else vals.push(Number(val));
+	else vals.push(val);
+	if (vals.length === 0) {} else if (vals.length === 1) {
+		const val = vals[0];
+		json.type = val === null ? "null" : typeof val;
+		if (ctx.target === "draft-04" || ctx.target === "openapi-3.0") json.enum = [val];
+		else json.const = val;
+	} else {
+		if (vals.every((v) => typeof v === "number")) json.type = "number";
+		if (vals.every((v) => typeof v === "string")) json.type = "string";
+		if (vals.every((v) => typeof v === "boolean")) json.type = "boolean";
+		if (vals.every((v) => v === null)) json.type = "null";
+		json.enum = vals;
+	}
+};
+var customProcessor = (_schema, ctx, _json, _params) => {
+	if (ctx.unrepresentable === "throw") throw new Error("Custom types cannot be represented in JSON Schema");
+};
+var transformProcessor = (_schema, ctx, _json, _params) => {
+	if (ctx.unrepresentable === "throw") throw new Error("Transforms cannot be represented in JSON Schema");
+};
+var arrayProcessor = (schema, ctx, _json, params) => {
+	const json = _json;
+	const def = schema._zod.def;
+	const { minimum, maximum } = schema._zod.bag;
+	if (typeof minimum === "number") json.minItems = minimum;
+	if (typeof maximum === "number") json.maxItems = maximum;
+	json.type = "array";
+	json.items = process$1(def.element, ctx, {
+		...params,
+		path: [...params.path, "items"]
+	});
+};
+var objectProcessor = (schema, ctx, _json, params) => {
+	const json = _json;
+	const def = schema._zod.def;
+	json.type = "object";
+	json.properties = {};
+	const shape = def.shape;
+	for (const key in shape) json.properties[key] = process$1(shape[key], ctx, {
+		...params,
+		path: [
+			...params.path,
+			"properties",
+			key
+		]
+	});
+	const allKeys = new Set(Object.keys(shape));
+	const requiredKeys = new Set([...allKeys].filter((key) => {
+		const v = def.shape[key]._zod;
+		if (ctx.io === "input") return v.optin === void 0;
+		else return v.optout === void 0;
+	}));
+	if (requiredKeys.size > 0) json.required = Array.from(requiredKeys);
+	if (def.catchall?._zod.def.type === "never") json.additionalProperties = false;
+	else if (!def.catchall) {
+		if (ctx.io === "output") json.additionalProperties = false;
+	} else if (def.catchall) json.additionalProperties = process$1(def.catchall, ctx, {
+		...params,
+		path: [...params.path, "additionalProperties"]
+	});
+};
+var unionProcessor = (schema, ctx, json, params) => {
+	const def = schema._zod.def;
+	const isExclusive = def.inclusive === false;
+	const options = def.options.map((x, i) => process$1(x, ctx, {
+		...params,
+		path: [
+			...params.path,
+			isExclusive ? "oneOf" : "anyOf",
+			i
+		]
+	}));
+	if (isExclusive) json.oneOf = options;
+	else json.anyOf = options;
+};
+var intersectionProcessor = (schema, ctx, json, params) => {
+	const def = schema._zod.def;
+	const a = process$1(def.left, ctx, {
+		...params,
+		path: [
+			...params.path,
+			"allOf",
+			0
+		]
+	});
+	const b = process$1(def.right, ctx, {
+		...params,
+		path: [
+			...params.path,
+			"allOf",
+			1
+		]
+	});
+	const isSimpleIntersection = (val) => "allOf" in val && Object.keys(val).length === 1;
+	json.allOf = [...isSimpleIntersection(a) ? a.allOf : [a], ...isSimpleIntersection(b) ? b.allOf : [b]];
+};
+var nullableProcessor = (schema, ctx, json, params) => {
+	const def = schema._zod.def;
+	const inner = process$1(def.innerType, ctx, params);
+	const seen = ctx.seen.get(schema);
+	if (ctx.target === "openapi-3.0") {
+		seen.ref = def.innerType;
+		json.nullable = true;
+	} else json.anyOf = [inner, { type: "null" }];
+};
+var nonoptionalProcessor = (schema, ctx, _json, params) => {
+	const def = schema._zod.def;
+	process$1(def.innerType, ctx, params);
+	const seen = ctx.seen.get(schema);
+	seen.ref = def.innerType;
+};
+var defaultProcessor = (schema, ctx, json, params) => {
+	const def = schema._zod.def;
+	process$1(def.innerType, ctx, params);
+	const seen = ctx.seen.get(schema);
+	seen.ref = def.innerType;
+	json.default = JSON.parse(JSON.stringify(def.defaultValue));
+};
+var prefaultProcessor = (schema, ctx, json, params) => {
+	const def = schema._zod.def;
+	process$1(def.innerType, ctx, params);
+	const seen = ctx.seen.get(schema);
+	seen.ref = def.innerType;
+	if (ctx.io === "input") json._prefault = JSON.parse(JSON.stringify(def.defaultValue));
+};
+var catchProcessor = (schema, ctx, json, params) => {
+	const def = schema._zod.def;
+	process$1(def.innerType, ctx, params);
+	const seen = ctx.seen.get(schema);
+	seen.ref = def.innerType;
+	let catchValue;
+	try {
+		catchValue = def.catchValue(void 0);
+	} catch {
+		throw new Error("Dynamic catch values are not supported in JSON Schema");
+	}
+	json.default = catchValue;
+};
+var pipeProcessor = (schema, ctx, _json, params) => {
+	const def = schema._zod.def;
+	const inIsTransform = def.in._zod.traits.has("$ZodTransform");
+	const innerType = ctx.io === "input" ? inIsTransform ? def.out : def.in : def.out;
+	process$1(innerType, ctx, params);
+	const seen = ctx.seen.get(schema);
+	seen.ref = innerType;
+};
+var readonlyProcessor = (schema, ctx, json, params) => {
+	const def = schema._zod.def;
+	process$1(def.innerType, ctx, params);
+	const seen = ctx.seen.get(schema);
+	seen.ref = def.innerType;
+	json.readOnly = true;
+};
+var optionalProcessor = (schema, ctx, _json, params) => {
+	const def = schema._zod.def;
+	process$1(def.innerType, ctx, params);
+	const seen = ctx.seen.get(schema);
+	seen.ref = def.innerType;
+};
+//#endregion
+//#region node_modules/zod/v4/classic/iso.js
+var ZodISODateTime = /*@__PURE__*/ $constructor("ZodISODateTime", (inst, def) => {
+	$ZodISODateTime.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+function datetime(params) {
+	return /* @__PURE__ */ _isoDateTime(ZodISODateTime, params);
+}
+var ZodISODate = /*@__PURE__*/ $constructor("ZodISODate", (inst, def) => {
+	$ZodISODate.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+function date(params) {
+	return /* @__PURE__ */ _isoDate(ZodISODate, params);
+}
+var ZodISOTime = /*@__PURE__*/ $constructor("ZodISOTime", (inst, def) => {
+	$ZodISOTime.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+function time(params) {
+	return /* @__PURE__ */ _isoTime(ZodISOTime, params);
+}
+var ZodISODuration = /*@__PURE__*/ $constructor("ZodISODuration", (inst, def) => {
+	$ZodISODuration.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+function duration(params) {
+	return /* @__PURE__ */ _isoDuration(ZodISODuration, params);
+}
+//#endregion
+//#region node_modules/zod/v4/classic/errors.js
+var initializer = (inst, issues) => {
+	$ZodError.init(inst, issues);
+	inst.name = "ZodError";
+	Object.defineProperties(inst, {
+		format: { value: (mapper) => formatError(inst, mapper) },
+		flatten: { value: (mapper) => flattenError(inst, mapper) },
+		addIssue: { value: (issue) => {
+			inst.issues.push(issue);
+			inst.message = JSON.stringify(inst.issues, jsonStringifyReplacer, 2);
+		} },
+		addIssues: { value: (issues) => {
+			inst.issues.push(...issues);
+			inst.message = JSON.stringify(inst.issues, jsonStringifyReplacer, 2);
+		} },
+		isEmpty: { get() {
+			return inst.issues.length === 0;
+		} }
+	});
+};
+var ZodRealError = /*@__PURE__*/ $constructor("ZodError", initializer, { Parent: Error });
+//#endregion
+//#region node_modules/zod/v4/classic/parse.js
+var parse = /* @__PURE__ */ _parse(ZodRealError);
+var parseAsync = /* @__PURE__ */ _parseAsync(ZodRealError);
+var safeParse = /* @__PURE__ */ _safeParse(ZodRealError);
+var safeParseAsync = /* @__PURE__ */ _safeParseAsync(ZodRealError);
+var encode = /* @__PURE__ */ _encode(ZodRealError);
+var decode = /* @__PURE__ */ _decode(ZodRealError);
+var encodeAsync = /* @__PURE__ */ _encodeAsync(ZodRealError);
+var decodeAsync = /* @__PURE__ */ _decodeAsync(ZodRealError);
+var safeEncode = /* @__PURE__ */ _safeEncode(ZodRealError);
+var safeDecode = /* @__PURE__ */ _safeDecode(ZodRealError);
+var safeEncodeAsync = /* @__PURE__ */ _safeEncodeAsync(ZodRealError);
+var safeDecodeAsync = /* @__PURE__ */ _safeDecodeAsync(ZodRealError);
+//#endregion
+//#region node_modules/zod/v4/classic/schemas.js
+var _installedGroups = /* @__PURE__ */ new WeakMap();
+function _installLazyMethods(inst, group, methods) {
+	const proto = Object.getPrototypeOf(inst);
+	let installed = _installedGroups.get(proto);
+	if (!installed) {
+		installed = /* @__PURE__ */ new Set();
+		_installedGroups.set(proto, installed);
+	}
+	if (installed.has(group)) return;
+	installed.add(group);
+	for (const key in methods) {
+		const fn = methods[key];
+		Object.defineProperty(proto, key, {
+			configurable: true,
+			enumerable: false,
+			get() {
+				const bound = fn.bind(this);
+				Object.defineProperty(this, key, {
+					configurable: true,
+					writable: true,
+					enumerable: true,
+					value: bound
+				});
+				return bound;
+			},
+			set(v) {
+				Object.defineProperty(this, key, {
+					configurable: true,
+					writable: true,
+					enumerable: true,
+					value: v
+				});
+			}
+		});
+	}
+}
+var ZodType = /*@__PURE__*/ $constructor("ZodType", (inst, def) => {
+	$ZodType.init(inst, def);
+	Object.assign(inst["~standard"], { jsonSchema: {
+		input: createStandardJSONSchemaMethod(inst, "input"),
+		output: createStandardJSONSchemaMethod(inst, "output")
+	} });
+	inst.toJSONSchema = createToJSONSchemaMethod(inst, {});
+	inst.def = def;
+	inst.type = def.type;
+	Object.defineProperty(inst, "_def", { value: def });
+	inst.parse = (data, params) => parse(inst, data, params, { callee: inst.parse });
+	inst.safeParse = (data, params) => safeParse(inst, data, params);
+	inst.parseAsync = async (data, params) => parseAsync(inst, data, params, { callee: inst.parseAsync });
+	inst.safeParseAsync = async (data, params) => safeParseAsync(inst, data, params);
+	inst.spa = inst.safeParseAsync;
+	inst.encode = (data, params) => encode(inst, data, params);
+	inst.decode = (data, params) => decode(inst, data, params);
+	inst.encodeAsync = async (data, params) => encodeAsync(inst, data, params);
+	inst.decodeAsync = async (data, params) => decodeAsync(inst, data, params);
+	inst.safeEncode = (data, params) => safeEncode(inst, data, params);
+	inst.safeDecode = (data, params) => safeDecode(inst, data, params);
+	inst.safeEncodeAsync = async (data, params) => safeEncodeAsync(inst, data, params);
+	inst.safeDecodeAsync = async (data, params) => safeDecodeAsync(inst, data, params);
+	_installLazyMethods(inst, "ZodType", {
+		check(...chks) {
+			const def = this.def;
+			return this.clone(mergeDefs(def, { checks: [...def.checks ?? [], ...chks.map((ch) => typeof ch === "function" ? { _zod: {
+				check: ch,
+				def: { check: "custom" },
+				onattach: []
+			} } : ch)] }), { parent: true });
+		},
+		with(...chks) {
+			return this.check(...chks);
+		},
+		clone(def, params) {
+			return clone(this, def, params);
+		},
+		brand() {
+			return this;
+		},
+		register(reg, meta) {
+			reg.add(this, meta);
+			return this;
+		},
+		refine(check, params) {
+			return this.check(refine(check, params));
+		},
+		superRefine(refinement, params) {
+			return this.check(superRefine(refinement, params));
+		},
+		overwrite(fn) {
+			return this.check(/* @__PURE__ */ _overwrite(fn));
+		},
+		optional() {
+			return optional(this);
+		},
+		exactOptional() {
+			return exactOptional(this);
+		},
+		nullable() {
+			return nullable(this);
+		},
+		nullish() {
+			return optional(nullable(this));
+		},
+		nonoptional(params) {
+			return nonoptional(this, params);
+		},
+		array() {
+			return array(this);
+		},
+		or(arg) {
+			return union([this, arg]);
+		},
+		and(arg) {
+			return intersection(this, arg);
+		},
+		transform(tx) {
+			return pipe(this, transform(tx));
+		},
+		default(d) {
+			return _default(this, d);
+		},
+		prefault(d) {
+			return prefault(this, d);
+		},
+		catch(params) {
+			return _catch(this, params);
+		},
+		pipe(target) {
+			return pipe(this, target);
+		},
+		readonly() {
+			return readonly(this);
+		},
+		describe(description) {
+			const cl = this.clone();
+			globalRegistry.add(cl, { description });
+			return cl;
+		},
+		meta(...args) {
+			if (args.length === 0) return globalRegistry.get(this);
+			const cl = this.clone();
+			globalRegistry.add(cl, args[0]);
+			return cl;
+		},
+		isOptional() {
+			return this.safeParse(void 0).success;
+		},
+		isNullable() {
+			return this.safeParse(null).success;
+		},
+		apply(fn) {
+			return fn(this);
+		}
+	});
+	Object.defineProperty(inst, "description", {
+		get() {
+			return globalRegistry.get(inst)?.description;
+		},
+		configurable: true
+	});
+	return inst;
+});
+/** @internal */
+var _ZodString = /*@__PURE__*/ $constructor("_ZodString", (inst, def) => {
+	$ZodString.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => stringProcessor(inst, ctx, json, params);
+	const bag = inst._zod.bag;
+	inst.format = bag.format ?? null;
+	inst.minLength = bag.minimum ?? null;
+	inst.maxLength = bag.maximum ?? null;
+	_installLazyMethods(inst, "_ZodString", {
+		regex(...args) {
+			return this.check(/* @__PURE__ */ _regex(...args));
+		},
+		includes(...args) {
+			return this.check(/* @__PURE__ */ _includes(...args));
+		},
+		startsWith(...args) {
+			return this.check(/* @__PURE__ */ _startsWith(...args));
+		},
+		endsWith(...args) {
+			return this.check(/* @__PURE__ */ _endsWith(...args));
+		},
+		min(...args) {
+			return this.check(/* @__PURE__ */ _minLength(...args));
+		},
+		max(...args) {
+			return this.check(/* @__PURE__ */ _maxLength(...args));
+		},
+		length(...args) {
+			return this.check(/* @__PURE__ */ _length(...args));
+		},
+		nonempty(...args) {
+			return this.check(/* @__PURE__ */ _minLength(1, ...args));
+		},
+		lowercase(params) {
+			return this.check(/* @__PURE__ */ _lowercase(params));
+		},
+		uppercase(params) {
+			return this.check(/* @__PURE__ */ _uppercase(params));
+		},
+		trim() {
+			return this.check(/* @__PURE__ */ _trim());
+		},
+		normalize(...args) {
+			return this.check(/* @__PURE__ */ _normalize(...args));
+		},
+		toLowerCase() {
+			return this.check(/* @__PURE__ */ _toLowerCase());
+		},
+		toUpperCase() {
+			return this.check(/* @__PURE__ */ _toUpperCase());
+		},
+		slugify() {
+			return this.check(/* @__PURE__ */ _slugify());
+		}
+	});
+});
+var ZodString = /*@__PURE__*/ $constructor("ZodString", (inst, def) => {
+	$ZodString.init(inst, def);
+	_ZodString.init(inst, def);
+	inst.email = (params) => inst.check(/* @__PURE__ */ _email(ZodEmail, params));
+	inst.url = (params) => inst.check(/* @__PURE__ */ _url(ZodURL, params));
+	inst.jwt = (params) => inst.check(/* @__PURE__ */ _jwt(ZodJWT, params));
+	inst.emoji = (params) => inst.check(/* @__PURE__ */ _emoji(ZodEmoji, params));
+	inst.guid = (params) => inst.check(/* @__PURE__ */ _guid(ZodGUID, params));
+	inst.uuid = (params) => inst.check(/* @__PURE__ */ _uuid(ZodUUID, params));
+	inst.uuidv4 = (params) => inst.check(/* @__PURE__ */ _uuidv4(ZodUUID, params));
+	inst.uuidv6 = (params) => inst.check(/* @__PURE__ */ _uuidv6(ZodUUID, params));
+	inst.uuidv7 = (params) => inst.check(/* @__PURE__ */ _uuidv7(ZodUUID, params));
+	inst.nanoid = (params) => inst.check(/* @__PURE__ */ _nanoid(ZodNanoID, params));
+	inst.guid = (params) => inst.check(/* @__PURE__ */ _guid(ZodGUID, params));
+	inst.cuid = (params) => inst.check(/* @__PURE__ */ _cuid(ZodCUID, params));
+	inst.cuid2 = (params) => inst.check(/* @__PURE__ */ _cuid2(ZodCUID2, params));
+	inst.ulid = (params) => inst.check(/* @__PURE__ */ _ulid(ZodULID, params));
+	inst.base64 = (params) => inst.check(/* @__PURE__ */ _base64(ZodBase64, params));
+	inst.base64url = (params) => inst.check(/* @__PURE__ */ _base64url(ZodBase64URL, params));
+	inst.xid = (params) => inst.check(/* @__PURE__ */ _xid(ZodXID, params));
+	inst.ksuid = (params) => inst.check(/* @__PURE__ */ _ksuid(ZodKSUID, params));
+	inst.ipv4 = (params) => inst.check(/* @__PURE__ */ _ipv4(ZodIPv4, params));
+	inst.ipv6 = (params) => inst.check(/* @__PURE__ */ _ipv6(ZodIPv6, params));
+	inst.cidrv4 = (params) => inst.check(/* @__PURE__ */ _cidrv4(ZodCIDRv4, params));
+	inst.cidrv6 = (params) => inst.check(/* @__PURE__ */ _cidrv6(ZodCIDRv6, params));
+	inst.e164 = (params) => inst.check(/* @__PURE__ */ _e164(ZodE164, params));
+	inst.datetime = (params) => inst.check(datetime(params));
+	inst.date = (params) => inst.check(date(params));
+	inst.time = (params) => inst.check(time(params));
+	inst.duration = (params) => inst.check(duration(params));
+});
+function string(params) {
+	return /* @__PURE__ */ _string(ZodString, params);
+}
+var ZodStringFormat = /*@__PURE__*/ $constructor("ZodStringFormat", (inst, def) => {
+	$ZodStringFormat.init(inst, def);
+	_ZodString.init(inst, def);
+});
+var ZodEmail = /*@__PURE__*/ $constructor("ZodEmail", (inst, def) => {
+	$ZodEmail.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+function email(params) {
+	return /* @__PURE__ */ _email(ZodEmail, params);
+}
+var ZodGUID = /*@__PURE__*/ $constructor("ZodGUID", (inst, def) => {
+	$ZodGUID.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+var ZodUUID = /*@__PURE__*/ $constructor("ZodUUID", (inst, def) => {
+	$ZodUUID.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+function uuid(params) {
+	return /* @__PURE__ */ _uuid(ZodUUID, params);
+}
+var ZodURL = /*@__PURE__*/ $constructor("ZodURL", (inst, def) => {
+	$ZodURL.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+function url(params) {
+	return /* @__PURE__ */ _url(ZodURL, params);
+}
+var ZodEmoji = /*@__PURE__*/ $constructor("ZodEmoji", (inst, def) => {
+	$ZodEmoji.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+var ZodNanoID = /*@__PURE__*/ $constructor("ZodNanoID", (inst, def) => {
+	$ZodNanoID.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+/**
+* @deprecated CUID v1 is deprecated by its authors due to information leakage
+* (timestamps embedded in the id). Use {@link ZodCUID2} instead.
+* See https://github.com/paralleldrive/cuid.
+*/
+var ZodCUID = /*@__PURE__*/ $constructor("ZodCUID", (inst, def) => {
+	$ZodCUID.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+var ZodCUID2 = /*@__PURE__*/ $constructor("ZodCUID2", (inst, def) => {
+	$ZodCUID2.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+var ZodULID = /*@__PURE__*/ $constructor("ZodULID", (inst, def) => {
+	$ZodULID.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+var ZodXID = /*@__PURE__*/ $constructor("ZodXID", (inst, def) => {
+	$ZodXID.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+var ZodKSUID = /*@__PURE__*/ $constructor("ZodKSUID", (inst, def) => {
+	$ZodKSUID.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+var ZodIPv4 = /*@__PURE__*/ $constructor("ZodIPv4", (inst, def) => {
+	$ZodIPv4.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+var ZodIPv6 = /*@__PURE__*/ $constructor("ZodIPv6", (inst, def) => {
+	$ZodIPv6.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+var ZodCIDRv4 = /*@__PURE__*/ $constructor("ZodCIDRv4", (inst, def) => {
+	$ZodCIDRv4.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+var ZodCIDRv6 = /*@__PURE__*/ $constructor("ZodCIDRv6", (inst, def) => {
+	$ZodCIDRv6.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+var ZodBase64 = /*@__PURE__*/ $constructor("ZodBase64", (inst, def) => {
+	$ZodBase64.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+var ZodBase64URL = /*@__PURE__*/ $constructor("ZodBase64URL", (inst, def) => {
+	$ZodBase64URL.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+var ZodE164 = /*@__PURE__*/ $constructor("ZodE164", (inst, def) => {
+	$ZodE164.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+var ZodJWT = /*@__PURE__*/ $constructor("ZodJWT", (inst, def) => {
+	$ZodJWT.init(inst, def);
+	ZodStringFormat.init(inst, def);
+});
+var ZodNumber = /*@__PURE__*/ $constructor("ZodNumber", (inst, def) => {
+	$ZodNumber.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => numberProcessor(inst, ctx, json, params);
+	_installLazyMethods(inst, "ZodNumber", {
+		gt(value, params) {
+			return this.check(/* @__PURE__ */ _gt(value, params));
+		},
+		gte(value, params) {
+			return this.check(/* @__PURE__ */ _gte(value, params));
+		},
+		min(value, params) {
+			return this.check(/* @__PURE__ */ _gte(value, params));
+		},
+		lt(value, params) {
+			return this.check(/* @__PURE__ */ _lt(value, params));
+		},
+		lte(value, params) {
+			return this.check(/* @__PURE__ */ _lte(value, params));
+		},
+		max(value, params) {
+			return this.check(/* @__PURE__ */ _lte(value, params));
+		},
+		int(params) {
+			return this.check(int(params));
+		},
+		safe(params) {
+			return this.check(int(params));
+		},
+		positive(params) {
+			return this.check(/* @__PURE__ */ _gt(0, params));
+		},
+		nonnegative(params) {
+			return this.check(/* @__PURE__ */ _gte(0, params));
+		},
+		negative(params) {
+			return this.check(/* @__PURE__ */ _lt(0, params));
+		},
+		nonpositive(params) {
+			return this.check(/* @__PURE__ */ _lte(0, params));
+		},
+		multipleOf(value, params) {
+			return this.check(/* @__PURE__ */ _multipleOf(value, params));
+		},
+		step(value, params) {
+			return this.check(/* @__PURE__ */ _multipleOf(value, params));
+		},
+		finite() {
+			return this;
+		}
+	});
+	const bag = inst._zod.bag;
+	inst.minValue = Math.max(bag.minimum ?? Number.NEGATIVE_INFINITY, bag.exclusiveMinimum ?? Number.NEGATIVE_INFINITY) ?? null;
+	inst.maxValue = Math.min(bag.maximum ?? Number.POSITIVE_INFINITY, bag.exclusiveMaximum ?? Number.POSITIVE_INFINITY) ?? null;
+	inst.isInt = (bag.format ?? "").includes("int") || Number.isSafeInteger(bag.multipleOf ?? .5);
+	inst.isFinite = true;
+	inst.format = bag.format ?? null;
+});
+function number(params) {
+	return /* @__PURE__ */ _number(ZodNumber, params);
+}
+var ZodNumberFormat = /*@__PURE__*/ $constructor("ZodNumberFormat", (inst, def) => {
+	$ZodNumberFormat.init(inst, def);
+	ZodNumber.init(inst, def);
+});
+function int(params) {
+	return /* @__PURE__ */ _int(ZodNumberFormat, params);
+}
+var ZodBoolean = /*@__PURE__*/ $constructor("ZodBoolean", (inst, def) => {
+	$ZodBoolean.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => booleanProcessor(inst, ctx, json, params);
+});
+function boolean(params) {
+	return /* @__PURE__ */ _boolean(ZodBoolean, params);
+}
+var ZodUnknown = /*@__PURE__*/ $constructor("ZodUnknown", (inst, def) => {
+	$ZodUnknown.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => void 0;
+});
+function unknown() {
+	return /* @__PURE__ */ _unknown(ZodUnknown);
+}
+var ZodNever = /*@__PURE__*/ $constructor("ZodNever", (inst, def) => {
+	$ZodNever.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => neverProcessor(inst, ctx, json, params);
+});
+function never(params) {
+	return /* @__PURE__ */ _never(ZodNever, params);
+}
+var ZodArray = /*@__PURE__*/ $constructor("ZodArray", (inst, def) => {
+	$ZodArray.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => arrayProcessor(inst, ctx, json, params);
+	inst.element = def.element;
+	_installLazyMethods(inst, "ZodArray", {
+		min(n, params) {
+			return this.check(/* @__PURE__ */ _minLength(n, params));
+		},
+		nonempty(params) {
+			return this.check(/* @__PURE__ */ _minLength(1, params));
+		},
+		max(n, params) {
+			return this.check(/* @__PURE__ */ _maxLength(n, params));
+		},
+		length(n, params) {
+			return this.check(/* @__PURE__ */ _length(n, params));
+		},
+		unwrap() {
+			return this.element;
+		}
+	});
+});
+function array(element, params) {
+	return /* @__PURE__ */ _array(ZodArray, element, params);
+}
+var ZodObject = /*@__PURE__*/ $constructor("ZodObject", (inst, def) => {
+	$ZodObjectJIT.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => objectProcessor(inst, ctx, json, params);
+	defineLazy(inst, "shape", () => {
+		return def.shape;
+	});
+	_installLazyMethods(inst, "ZodObject", {
+		keyof() {
+			return _enum(Object.keys(this._zod.def.shape));
+		},
+		catchall(catchall) {
+			return this.clone({
+				...this._zod.def,
+				catchall
+			});
+		},
+		passthrough() {
+			return this.clone({
+				...this._zod.def,
+				catchall: unknown()
+			});
+		},
+		loose() {
+			return this.clone({
+				...this._zod.def,
+				catchall: unknown()
+			});
+		},
+		strict() {
+			return this.clone({
+				...this._zod.def,
+				catchall: never()
+			});
+		},
+		strip() {
+			return this.clone({
+				...this._zod.def,
+				catchall: void 0
+			});
+		},
+		extend(incoming) {
+			return extend(this, incoming);
+		},
+		safeExtend(incoming) {
+			return safeExtend(this, incoming);
+		},
+		merge(other) {
+			return merge(this, other);
+		},
+		pick(mask) {
+			return pick(this, mask);
+		},
+		omit(mask) {
+			return omit(this, mask);
+		},
+		partial(...args) {
+			return partial(ZodOptional, this, args[0]);
+		},
+		required(...args) {
+			return required(ZodNonOptional, this, args[0]);
+		}
+	});
+});
+function object(shape, params) {
+	return new ZodObject({
+		type: "object",
+		shape: shape ?? {},
+		...normalizeParams(params)
+	});
+}
+var ZodUnion = /*@__PURE__*/ $constructor("ZodUnion", (inst, def) => {
+	$ZodUnion.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => unionProcessor(inst, ctx, json, params);
+	inst.options = def.options;
+});
+function union(options, params) {
+	return new ZodUnion({
+		type: "union",
+		options,
+		...normalizeParams(params)
+	});
+}
+var ZodIntersection = /*@__PURE__*/ $constructor("ZodIntersection", (inst, def) => {
+	$ZodIntersection.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => intersectionProcessor(inst, ctx, json, params);
+});
+function intersection(left, right) {
+	return new ZodIntersection({
+		type: "intersection",
+		left,
+		right
+	});
+}
+var ZodEnum = /*@__PURE__*/ $constructor("ZodEnum", (inst, def) => {
+	$ZodEnum.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => enumProcessor(inst, ctx, json, params);
+	inst.enum = def.entries;
+	inst.options = Object.values(def.entries);
+	const keys = new Set(Object.keys(def.entries));
+	inst.extract = (values, params) => {
+		const newEntries = {};
+		for (const value of values) if (keys.has(value)) newEntries[value] = def.entries[value];
+		else throw new Error(`Key ${value} not found in enum`);
+		return new ZodEnum({
+			...def,
+			checks: [],
+			...normalizeParams(params),
+			entries: newEntries
+		});
+	};
+	inst.exclude = (values, params) => {
+		const newEntries = { ...def.entries };
+		for (const value of values) if (keys.has(value)) delete newEntries[value];
+		else throw new Error(`Key ${value} not found in enum`);
+		return new ZodEnum({
+			...def,
+			checks: [],
+			...normalizeParams(params),
+			entries: newEntries
+		});
+	};
+});
+function _enum(values, params) {
+	return new ZodEnum({
+		type: "enum",
+		entries: Array.isArray(values) ? Object.fromEntries(values.map((v) => [v, v])) : values,
+		...normalizeParams(params)
+	});
+}
+var ZodLiteral = /*@__PURE__*/ $constructor("ZodLiteral", (inst, def) => {
+	$ZodLiteral.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => literalProcessor(inst, ctx, json, params);
+	inst.values = new Set(def.values);
+	Object.defineProperty(inst, "value", { get() {
+		if (def.values.length > 1) throw new Error("This schema contains multiple valid literal values. Use `.values` instead.");
+		return def.values[0];
+	} });
+});
+function literal(value, params) {
+	return new ZodLiteral({
+		type: "literal",
+		values: Array.isArray(value) ? value : [value],
+		...normalizeParams(params)
+	});
+}
+var ZodTransform = /*@__PURE__*/ $constructor("ZodTransform", (inst, def) => {
+	$ZodTransform.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => transformProcessor(inst, ctx, json, params);
+	inst._zod.parse = (payload, _ctx) => {
+		if (_ctx.direction === "backward") throw new $ZodEncodeError(inst.constructor.name);
+		payload.addIssue = (issue$1) => {
+			if (typeof issue$1 === "string") payload.issues.push(issue(issue$1, payload.value, def));
+			else {
+				const _issue = issue$1;
+				if (_issue.fatal) _issue.continue = false;
+				_issue.code ?? (_issue.code = "custom");
+				_issue.input ?? (_issue.input = payload.value);
+				_issue.inst ?? (_issue.inst = inst);
+				payload.issues.push(issue(_issue));
+			}
+		};
+		const output = def.transform(payload.value, payload);
+		if (output instanceof Promise) return output.then((output) => {
+			payload.value = output;
+			payload.fallback = true;
+			return payload;
+		});
+		payload.value = output;
+		payload.fallback = true;
+		return payload;
+	};
+});
+function transform(fn) {
+	return new ZodTransform({
+		type: "transform",
+		transform: fn
+	});
+}
+var ZodOptional = /*@__PURE__*/ $constructor("ZodOptional", (inst, def) => {
+	$ZodOptional.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => optionalProcessor(inst, ctx, json, params);
+	inst.unwrap = () => inst._zod.def.innerType;
+});
+function optional(innerType) {
+	return new ZodOptional({
+		type: "optional",
+		innerType
+	});
+}
+var ZodExactOptional = /*@__PURE__*/ $constructor("ZodExactOptional", (inst, def) => {
+	$ZodExactOptional.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => optionalProcessor(inst, ctx, json, params);
+	inst.unwrap = () => inst._zod.def.innerType;
+});
+function exactOptional(innerType) {
+	return new ZodExactOptional({
+		type: "optional",
+		innerType
+	});
+}
+var ZodNullable = /*@__PURE__*/ $constructor("ZodNullable", (inst, def) => {
+	$ZodNullable.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => nullableProcessor(inst, ctx, json, params);
+	inst.unwrap = () => inst._zod.def.innerType;
+});
+function nullable(innerType) {
+	return new ZodNullable({
+		type: "nullable",
+		innerType
+	});
+}
+var ZodDefault = /*@__PURE__*/ $constructor("ZodDefault", (inst, def) => {
+	$ZodDefault.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => defaultProcessor(inst, ctx, json, params);
+	inst.unwrap = () => inst._zod.def.innerType;
+	inst.removeDefault = inst.unwrap;
+});
+function _default(innerType, defaultValue) {
+	return new ZodDefault({
+		type: "default",
+		innerType,
+		get defaultValue() {
+			return typeof defaultValue === "function" ? defaultValue() : shallowClone(defaultValue);
+		}
+	});
+}
+var ZodPrefault = /*@__PURE__*/ $constructor("ZodPrefault", (inst, def) => {
+	$ZodPrefault.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => prefaultProcessor(inst, ctx, json, params);
+	inst.unwrap = () => inst._zod.def.innerType;
+});
+function prefault(innerType, defaultValue) {
+	return new ZodPrefault({
+		type: "prefault",
+		innerType,
+		get defaultValue() {
+			return typeof defaultValue === "function" ? defaultValue() : shallowClone(defaultValue);
+		}
+	});
+}
+var ZodNonOptional = /*@__PURE__*/ $constructor("ZodNonOptional", (inst, def) => {
+	$ZodNonOptional.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => nonoptionalProcessor(inst, ctx, json, params);
+	inst.unwrap = () => inst._zod.def.innerType;
+});
+function nonoptional(innerType, params) {
+	return new ZodNonOptional({
+		type: "nonoptional",
+		innerType,
+		...normalizeParams(params)
+	});
+}
+var ZodCatch = /*@__PURE__*/ $constructor("ZodCatch", (inst, def) => {
+	$ZodCatch.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => catchProcessor(inst, ctx, json, params);
+	inst.unwrap = () => inst._zod.def.innerType;
+	inst.removeCatch = inst.unwrap;
+});
+function _catch(innerType, catchValue) {
+	return new ZodCatch({
+		type: "catch",
+		innerType,
+		catchValue: typeof catchValue === "function" ? catchValue : () => catchValue
+	});
+}
+var ZodPipe = /*@__PURE__*/ $constructor("ZodPipe", (inst, def) => {
+	$ZodPipe.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => pipeProcessor(inst, ctx, json, params);
+	inst.in = def.in;
+	inst.out = def.out;
+});
+function pipe(in_, out) {
+	return new ZodPipe({
+		type: "pipe",
+		in: in_,
+		out
+	});
+}
+var ZodReadonly = /*@__PURE__*/ $constructor("ZodReadonly", (inst, def) => {
+	$ZodReadonly.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => readonlyProcessor(inst, ctx, json, params);
+	inst.unwrap = () => inst._zod.def.innerType;
+});
+function readonly(innerType) {
+	return new ZodReadonly({
+		type: "readonly",
+		innerType
+	});
+}
+var ZodCustom = /*@__PURE__*/ $constructor("ZodCustom", (inst, def) => {
+	$ZodCustom.init(inst, def);
+	ZodType.init(inst, def);
+	inst._zod.processJSONSchema = (ctx, json, params) => customProcessor(inst, ctx, json, params);
+});
+function refine(fn, _params = {}) {
+	return /* @__PURE__ */ _refine(ZodCustom, fn, _params);
+}
+function superRefine(fn, params) {
+	return /* @__PURE__ */ _superRefine(fn, params);
+}
+//#endregion
+//#region src/shared/documentDesign.ts
+var documentFontIds = [
+	"rubik",
+	"inter",
+	"roboto",
+	"open-sans",
+	"lato",
+	"arimo",
+	"raleway",
+	"bitter",
+	"exo-2",
+	"chivo",
+	"tinos",
+	"source-sans",
+	"merriweather",
+	"montserrat",
+	"oswald",
+	"volkhov",
+	"arial",
+	"georgia"
+];
+var fontSizeIds = [
+	"small",
+	"medium",
+	"large"
+];
+var columnLayoutIds = [
+	"template",
+	"single",
+	"two-column-left-wide",
+	"two-column-right-wide",
+	"two-column-equal",
+	"left-sidebar",
+	"right-sidebar",
+	"three-column",
+	"timeline",
+	"compact-ats"
+];
+var documentBackgroundIds = [
+	"white",
+	"soft",
+	"geometric",
+	"hexagons",
+	"waves",
+	"lines",
+	"dots",
+	"abstract",
+	"corner",
+	"pastel-gradient",
+	"top-band",
+	"bottom-band",
+	"programming-languages-bg"
+];
+var defaultDocumentDesign = {
+	marginLevel: 3,
+	sectionSpacingLevel: 3,
+	fontSize: "medium",
+	lineHeightLevel: 3,
+	fontId: "source-sans",
+	headingFontId: "source-sans",
+	columnLayout: "template",
+	backgroundId: "white",
+	showBackgroundInPrint: true
+};
+var documentFonts = [
+	{
+		id: "rubik",
+		name: "Rubik",
+		family: "Rubik, Arial, sans-serif",
+		category: "sans-serif",
+		headingWeight: 700,
+		bodyWeight: 400
+	},
+	{
+		id: "inter",
+		name: "Inter",
+		family: "Inter, Arial, sans-serif",
+		category: "sans-serif",
+		headingWeight: 750,
+		bodyWeight: 400
+	},
+	{
+		id: "roboto",
+		name: "Roboto",
+		family: "Roboto, Arial, sans-serif",
+		category: "sans-serif",
+		headingWeight: 700,
+		bodyWeight: 400
+	},
+	{
+		id: "open-sans",
+		name: "Open Sans",
+		family: "\"Open Sans\", Arial, sans-serif",
+		category: "sans-serif",
+		headingWeight: 700,
+		bodyWeight: 400
+	},
+	{
+		id: "lato",
+		name: "Lato",
+		family: "Lato, Arial, sans-serif",
+		category: "sans-serif",
+		headingWeight: 700,
+		bodyWeight: 400
+	},
+	{
+		id: "arimo",
+		name: "Arimo",
+		family: "Arimo, Arial, sans-serif",
+		category: "sans-serif",
+		headingWeight: 700,
+		bodyWeight: 400
+	},
+	{
+		id: "raleway",
+		name: "Raleway",
+		family: "Raleway, Arial, sans-serif",
+		category: "sans-serif",
+		headingWeight: 750,
+		bodyWeight: 400
+	},
+	{
+		id: "bitter",
+		name: "Bitter",
+		family: "Bitter, Georgia, serif",
+		category: "serif",
+		headingWeight: 700,
+		bodyWeight: 400
+	},
+	{
+		id: "exo-2",
+		name: "Exo 2",
+		family: "\"Exo 2\", Arial, sans-serif",
+		category: "sans-serif",
+		headingWeight: 700,
+		bodyWeight: 400
+	},
+	{
+		id: "chivo",
+		name: "Chivo",
+		family: "Chivo, Arial, sans-serif",
+		category: "sans-serif",
+		headingWeight: 700,
+		bodyWeight: 400
+	},
+	{
+		id: "tinos",
+		name: "Tinos",
+		family: "Tinos, \"Times New Roman\", serif",
+		category: "serif",
+		headingWeight: 700,
+		bodyWeight: 400
+	},
+	{
+		id: "source-sans",
+		name: "Source Sans 3",
+		family: "\"Source Sans 3\", \"Segoe UI\", Arial, sans-serif",
+		category: "sans-serif",
+		headingWeight: 700,
+		bodyWeight: 400
+	},
+	{
+		id: "merriweather",
+		name: "Merriweather",
+		family: "Merriweather, Georgia, serif",
+		category: "serif",
+		headingWeight: 700,
+		bodyWeight: 400
+	},
+	{
+		id: "montserrat",
+		name: "Montserrat",
+		family: "Montserrat, Arial, sans-serif",
+		category: "sans-serif",
+		headingWeight: 750,
+		bodyWeight: 400
+	},
+	{
+		id: "oswald",
+		name: "Oswald",
+		family: "Oswald, \"Arial Narrow\", Arial, sans-serif",
+		category: "sans-serif",
+		headingWeight: 700,
+		bodyWeight: 400
+	},
+	{
+		id: "volkhov",
+		name: "Volkhov",
+		family: "Volkhov, Georgia, serif",
+		category: "serif",
+		headingWeight: 700,
+		bodyWeight: 400
+	},
+	{
+		id: "arial",
+		name: "Arial",
+		family: "Arial, sans-serif",
+		category: "sans-serif",
+		headingWeight: 700,
+		bodyWeight: 400
+	},
+	{
+		id: "georgia",
+		name: "Georgia",
+		family: "Georgia, \"Times New Roman\", serif",
+		category: "serif",
+		headingWeight: 700,
+		bodyWeight: 400
+	}
+];
+var programmingLanguageBackgroundTokens = [
+	"Java",
+	"TypeScript",
+	"React",
+	"Electron",
+	"Go",
+	"Rust",
+	"C#",
+	".NET",
+	"Python",
+	"C",
+	"C++",
+	"HTML",
+	"CSS"
+];
+var marginLevelToMm = {
+	1: 11,
+	2: 14,
+	3: 17,
+	4: 20,
+	5: 23
+};
+var sectionSpacingLevelToMm = {
+	1: 3.5,
+	2: 4.5,
+	3: 5.5,
+	4: 7,
+	5: 8.5
+};
+var lineHeightLevelToValue = {
+	1: 1.2,
+	2: 1.3,
+	3: 1.4,
+	4: 1.52,
+	5: 1.65
+};
+var fontSizeToPt = {
+	small: 8.4,
+	medium: 9.2,
+	large: 10
+};
+var getDocumentFont = (id) => documentFonts.find((font) => font.id === id) ?? documentFonts.find((font) => font.id === "source-sans") ?? documentFonts[0];
+//#endregion
+//#region src/features/knowledge/knowledge.constants.ts
+var knowledgeLevelLabels = {
+	none: "",
+	basic: "Grundkenntnisse",
+	good: "Gute Kenntnisse",
+	advanced: "Fortgeschrittene Kenntnisse",
+	expert: "Expertenkenntnisse"
+};
+var knowledgeLevelScores = {
+	none: 0,
+	basic: 2,
+	good: 3,
+	advanced: 4,
+	expert: 5
+};
+var defaultKnowledgeSection = {
+	title: "Kenntnisse & Zusatzangaben",
+	categories: [],
+	isVisible: true
+};
+//#endregion
+//#region src/features/knowledge/knowledge.types.ts
+var knowledgeDisplayModes = [
+	"comma-separated",
+	"one-per-line",
+	"tags",
+	"bullets",
+	"level-bars",
+	"level-dots"
+];
+var knowledgeLevels = [
+	"basic",
+	"good",
+	"advanced",
+	"expert",
+	"none"
+];
+var knowledgeCategoryTypes = [
+	"it",
+	"engineering",
+	"business",
+	"language",
+	"software",
+	"method",
+	"certificate",
+	"additional",
+	"custom"
+];
+//#endregion
+//#region src/features/knowledge/knowledge.validation.ts
+var optionalNumber = number().nonnegative().optional();
+var knowledgeItemSchema = object({
+	id: uuid(),
+	name: string().trim(),
+	description: string().trim().optional(),
+	level: _enum(knowledgeLevels),
+	yearsOfExperience: optionalNumber,
+	lastUsedYear: number().int().min(1900).max(2200).optional(),
+	isVisible: boolean(),
+	sortOrder: number().int().nonnegative()
+});
+var knowledgeSubcategorySchema = object({
+	id: uuid(),
+	title: string().trim(),
+	items: array(knowledgeItemSchema),
+	displayMode: _enum(knowledgeDisplayModes).optional(),
+	isVisible: boolean(),
+	sortOrder: number().int().nonnegative()
+});
+var knowledgeCategorySchema = object({
+	id: uuid(),
+	title: string().trim(),
+	type: _enum(knowledgeCategoryTypes),
+	subtitle: string().trim().optional(),
+	items: array(knowledgeItemSchema),
+	subcategories: array(knowledgeSubcategorySchema),
+	displayMode: _enum(knowledgeDisplayModes),
+	showLevels: boolean(),
+	showYearsOfExperience: boolean(),
+	isVisible: boolean(),
+	sortOrder: number().int().nonnegative()
+});
+var knowledgeSectionSchema = object({
+	title: string().trim().default("Kenntnisse & Zusatzangaben"),
+	categories: array(knowledgeCategorySchema).default([]),
+	isVisible: boolean().default(true)
+});
+//#endregion
+//#region src/shared/schema.ts
+var applicationStatuses = [
+	"Entwurf",
+	"Bewerbungsbereit",
+	"Beworben",
+	"Eingangsbestätigung",
+	"In Prüfung",
+	"Vorstellungsgespräch",
+	"Zweites Gespräch",
+	"Zusage",
+	"Absage",
+	"Zurückgezogen",
+	"Archiviert"
+];
+var rejectionReasons = [
+	"Keine Begründung",
+	"Andere Kandidatin / anderer Kandidat",
+	"Qualifikation nicht passend",
+	"Stelle bereits besetzt",
+	"Stelle gestrichen",
+	"Gehaltsvorstellung",
+	"Standort / Entfernung",
+	"Sprachkenntnisse",
+	"Berufserfahrung",
+	"Automatische Absage",
+	"Eigene Absage",
+	"Sonstiges"
+];
+var workModels = [
+	"Vor Ort",
+	"Hybrid",
+	"Remote"
+];
+var contractTypes = [
+	"Unbefristet",
+	"Befristet",
+	"Praktikum",
+	"Ausbildung",
+	"Werkstudent",
+	"Freelance"
+];
+var attachmentCategories = ["Zeugnisse", "Zertifikate"];
+var calendarEventTypes = [
+	"application-sent",
+	"application-deadline",
+	"interview",
+	"second-interview",
+	"phone-interview",
+	"online-interview",
+	"trial-work",
+	"assessment",
+	"follow-up-call",
+	"follow-up-email",
+	"contract-start",
+	"contract-end",
+	"fixed-term-end",
+	"probation-end",
+	"custom"
+];
+var optionalText = string().trim().optional().default("");
+var optionalIsoDate = datetime().optional();
+var companySchema = object({
+	name: string().trim().min(1, "Unternehmen ist erforderlich."),
+	street: optionalText,
+	postalCode: optionalText,
+	city: string().trim().min(1, "Ort ist erforderlich."),
+	country: string().trim().default("Deutschland"),
+	website: union([url(), literal("")]).default("")
+});
+var contactPersonSchema = object({
+	salutation: _enum([
+		"Frau",
+		"Herr",
+		"Divers",
+		""
+	]).default(""),
+	firstName: optionalText,
+	lastName: optionalText,
+	position: optionalText,
+	email: union([email(), literal("")]).default(""),
+	phone: optionalText
+});
+var jobAdvertisementSchema = object({
+	title: string().trim().min(1, "Position ist erforderlich."),
+	source: optionalText,
+	url: union([url(), literal("")]).default(""),
+	fullText: optionalText,
+	workModel: _enum(workModels).default("Hybrid"),
+	contractType: _enum(contractTypes).default("Unbefristet"),
+	salaryExpectation: optionalText
+});
+var statusHistorySchema = object({
+	at: datetime(),
+	from: _enum(applicationStatuses).optional(),
+	to: _enum(applicationStatuses),
+	note: optionalText
+});
+var documentDraftSchema = object({
+	coverSubject: optionalText,
+	coverIntroduction: optionalText,
+	coverMotivation: optionalText,
+	coverQualification: optionalText,
+	coverCompanyFit: optionalText,
+	coverClosing: optionalText,
+	resumeProfile: optionalText,
+	deckblattStatement: optionalText
+});
+var designLevelSchema = union([
+	literal(1),
+	literal(2),
+	literal(3),
+	literal(4),
+	literal(5)
+]);
+var documentDesignSchema = object({
+	marginLevel: designLevelSchema,
+	sectionSpacingLevel: designLevelSchema,
+	fontSize: _enum(fontSizeIds),
+	lineHeightLevel: designLevelSchema,
+	fontId: _enum(documentFontIds),
+	headingFontId: _enum(documentFontIds),
+	columnLayout: _enum(columnLayoutIds),
+	backgroundId: _enum(documentBackgroundIds),
+	showBackgroundInPrint: boolean()
+});
+var applicationSchema = object({
+	schemaVersion: literal(1),
+	id: uuid(),
+	folderName: string().min(1),
+	company: companySchema,
+	contact: contactPersonSchema,
+	job: jobAdvertisementSchema,
+	status: _enum(applicationStatuses),
+	templateId: string().min(1),
+	accentColor: string().regex(/^#[0-9a-fA-F]{6}$/),
+	secondaryColor: string().regex(/^#[0-9a-fA-F]{6}$/).default("#244766"),
+	designSettings: documentDesignSchema.default(defaultDocumentDesign),
+	profileId: uuid().optional(),
+	notes: optionalText,
+	sentAt: optionalIsoDate,
+	deadlineAt: optionalIsoDate,
+	interviewAt: optionalIsoDate,
+	secondInterviewAt: optionalIsoDate,
+	startAt: optionalIsoDate,
+	contractEndAt: optionalIsoDate,
+	fixedTermEndAt: optionalIsoDate,
+	probationEndAt: optionalIsoDate,
+	rejectionAt: optionalIsoDate,
+	rejectionReason: _enum(rejectionReasons).optional(),
+	acceptedAt: optionalIsoDate,
+	withdrawnAt: optionalIsoDate,
+	archivedAt: optionalIsoDate,
+	documents: documentDraftSchema,
+	attachmentIds: array(uuid()).default([]),
+	statusHistory: array(statusHistorySchema),
+	createdAt: datetime(),
+	updatedAt: datetime()
+});
+var applicationInputSchema = object({
+	company: companySchema,
+	contact: contactPersonSchema,
+	job: jobAdvertisementSchema,
+	templateId: string().min(1),
+	accentColor: string().regex(/^#[0-9a-fA-F]{6}$/),
+	secondaryColor: string().regex(/^#[0-9a-fA-F]{6}$/).default("#244766"),
+	designSettings: documentDesignSchema.default(defaultDocumentDesign),
+	profileId: uuid().optional(),
+	notes: optionalText,
+	sentAt: optionalIsoDate,
+	deadlineAt: optionalIsoDate,
+	interviewAt: optionalIsoDate,
+	startAt: optionalIsoDate
+});
+object({
+	company: object({
+		name: string().optional(),
+		street: string().optional(),
+		postalCode: string().optional(),
+		city: string().optional(),
+		country: string().optional(),
+		website: string().optional()
+	}).optional(),
+	contact: object({
+		salutation: _enum([
+			"Frau",
+			"Herr",
+			"Divers",
+			""
+		]).optional(),
+		firstName: string().optional(),
+		lastName: string().optional(),
+		position: string().optional(),
+		email: string().optional(),
+		phone: string().optional()
+	}).optional(),
+	job: object({
+		title: string().optional(),
+		source: string().optional(),
+		url: string().optional(),
+		fullText: string().optional(),
+		workModel: _enum(workModels).optional(),
+		contractType: _enum(contractTypes).optional(),
+		salaryExpectation: string().optional()
+	}).optional(),
+	templateId: string().optional(),
+	accentColor: string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+	secondaryColor: string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+	designSettings: documentDesignSchema.partial().optional(),
+	profileId: uuid().optional(),
+	notes: string().optional(),
+	sentAt: optionalIsoDate,
+	deadlineAt: optionalIsoDate,
+	interviewAt: optionalIsoDate,
+	startAt: optionalIsoDate
+});
+var profileSchema = object({
+	id: uuid(),
+	isDefault: boolean(),
+	firstName: string().trim().min(1),
+	lastName: string().trim().min(1),
+	title: optionalText,
+	street: optionalText,
+	postalCode: optionalText,
+	city: optionalText,
+	country: string().default("Deutschland"),
+	phone: optionalText,
+	email: union([email(), literal("")]).default(""),
+	linkedin: optionalText,
+	github: optionalText,
+	portfolio: optionalText,
+	birthDate: optionalText,
+	birthPlace: optionalText,
+	nationality: optionalText,
+	photoPath: optionalText,
+	signaturePath: optionalText,
+	summary: optionalText,
+	skills: array(string()).default([]),
+	knowledgeSection: knowledgeSectionSchema.default(defaultKnowledgeSection),
+	experiences: array(object({
+		id: uuid(),
+		from: string(),
+		to: string(),
+		role: string(),
+		company: string(),
+		city: optionalText,
+		achievements: array(string())
+	})).default([]),
+	education: array(object({
+		id: uuid(),
+		from: string(),
+		to: string(),
+		degree: string(),
+		institution: string(),
+		city: optionalText
+	})).default([]),
+	languages: array(string()).default([]),
+	certifications: array(string()).default([]),
+	resumeSections: object({
+		profile: boolean(),
+		experience: boolean(),
+		education: boolean(),
+		skills: boolean(),
+		languages: boolean(),
+		certifications: boolean()
+	}).default({
+		profile: true,
+		experience: true,
+		education: true,
+		skills: true,
+		languages: true,
+		certifications: true
+	}),
+	updatedAt: datetime()
+});
+var calendarEventSchema = object({
+	id: uuid(),
+	applicationId: uuid().optional(),
+	type: _enum(calendarEventTypes),
+	title: string().min(1),
+	description: optionalText,
+	startAt: datetime(),
+	endAt: optionalIsoDate,
+	allDay: boolean(),
+	completed: boolean(),
+	cancelled: boolean(),
+	reminderMinutes: array(number().int().nonnegative()),
+	createdAt: datetime(),
+	updatedAt: datetime()
+});
+var attachmentSchema = object({
+	id: uuid(),
+	applicationId: uuid(),
+	category: _enum(attachmentCategories),
+	fileName: string().min(1),
+	storedName: string().min(1),
+	description: optionalText,
+	documentDate: optionalText,
+	order: number().int().nonnegative(),
+	includedInPackage: boolean().default(true),
+	createdAt: datetime()
+});
+var appSettingsSchema = object({
+	followUpDays: number().int().positive().nullable(),
+	notificationsEnabled: boolean(),
+	theme: _enum([
+		"light",
+		"dark",
+		"system"
+	]),
+	archiveAccepted: boolean(),
+	autoBackupEnabled: boolean().default(true),
+	backupRetention: number().int().min(3).max(50).default(10),
+	autoSaveDelaySeconds: number().int().min(1).max(30).default(2),
+	language: literal("de")
+});
+var workspaceSchema = object({
+	schemaVersion: literal(1),
+	applications: array(applicationSchema),
+	profiles: array(profileSchema),
+	events: array(calendarEventSchema),
+	attachments: array(attachmentSchema),
+	settings: appSettingsSchema,
+	updatedAt: datetime()
+});
+var defaultSettings = {
+	followUpDays: 14,
+	notificationsEnabled: true,
+	theme: "system",
+	archiveAccepted: false,
+	autoBackupEnabled: true,
+	backupRetention: 10,
+	autoSaveDelaySeconds: 2,
+	language: "de"
+};
+//#endregion
+//#region src/config/application-paths.ts
+var resolveApplicationPaths = (documentsPath) => {
+	const dataRoot = path.join(documentsPath, "BewerbungsManager", "data");
+	const musterRoot = path.join(dataRoot, "Muster");
+	return {
+		dataRoot,
+		musterRoot,
+		anschreibenTemplates: path.join(musterRoot, "Anschreiben"),
+		deckblattTemplates: path.join(musterRoot, "Deckblatt"),
+		lebenslaufTemplates: path.join(musterRoot, "Lebenslauf"),
+		anschreibenDocuments: path.join(dataRoot, "Anschreiben"),
+		previewCache: path.join(dataRoot, "cache", "template-previews")
+	};
+};
+//#endregion
+//#region src/shared/templates.ts
+var templates = [
+	{
+		id: "classic-professional",
+		name: "Klar & Zentriert",
+		description: "Einspaltig, ruhig und besonders ATS-freundlich.",
+		accent: "#123f8c",
+		secondary: "#eef4ff",
+		font: "Segoe UI",
+		layout: "centered",
+		features: [
+			"Zentrierter Kopf",
+			"Einspaltig",
+			"ATS-freundlich"
+		]
+	},
+	{
+		id: "modern-sidebar",
+		name: "Sidebar Rechts",
+		description: "Markante Seitenleiste für Profil, Skills und Sprachen.",
+		accent: "#1597ff",
+		secondary: "#244766",
+		font: "Segoe UI",
+		layout: "sidebar-right",
+		features: [
+			"Rechte Seitenleiste",
+			"Profilfokus",
+			"Kompakt"
+		]
+	},
+	{
+		id: "minimal-clean",
+		name: "Minimal Elegant",
+		description: "Viel Weißraum, feine Linien und dezente Typografie.",
+		accent: "#263746",
+		secondary: "#eef1f3",
+		font: "Arial",
+		layout: "minimal",
+		features: [
+			"Viel Weißraum",
+			"Dezente Linien",
+			"Zeitlos"
+		]
+	},
+	{
+		id: "technical-developer",
+		name: "Modern Split",
+		description: "Klare Zweiteilung mit starker Kompetenzdarstellung.",
+		accent: "#0f4aa0",
+		secondary: "#f1f5fb",
+		font: "Segoe UI",
+		layout: "split-clean",
+		features: [
+			"Zwei Spalten",
+			"Skill-Chips",
+			"Modern"
+		]
+	},
+	{
+		id: "executive-dark",
+		name: "Sidebar Links",
+		description: "Farbige linke Bühne für Senior- und Kreativprofile.",
+		accent: "#16b8b5",
+		secondary: "#087573",
+		font: "Segoe UI",
+		layout: "sidebar-left",
+		features: [
+			"Linke Seitenleiste",
+			"Starke Farbe",
+			"Foto-Platzhalter"
+		]
+	},
+	{
+		id: "creative-accent",
+		name: "Bold Grid",
+		description: "Kräftige Überschriften und ein strukturiertes Zweispaltenraster.",
+		accent: "#0d3e91",
+		secondary: "#edf4ff",
+		font: "Arial",
+		layout: "bold-grid",
+		features: [
+			"Kräftige Titel",
+			"Zweispaltenraster",
+			"Dynamisch"
+		]
+	}
+];
+var getTemplate = (id) => templates.find((template) => template.id === id) ?? templates[0];
+var getReadableTextColor = (hex) => {
+	const normalized = hex.replace("#", "");
+	if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return "#ffffff";
+	const [red, green, blue] = [
+		0,
+		2,
+		4
+	].map((offset) => Number.parseInt(normalized.slice(offset, offset + 2), 16) / 255).map((channel) => channel <= .03928 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4);
+	return .2126 * red + .7152 * green + .0722 * blue > .46 ? "#26313a" : "#ffffff";
+};
+//#endregion
+//#region src/features/knowledge/knowledge.presets.ts
+var categories = (type, titles) => titles.map((title) => ({
+	title,
+	type
+}));
+categories("it", [
+	"Programmiersprachen",
+	"Backend",
+	"Frontend",
+	"Fullstack",
+	"Frameworks",
+	"Datenbanken",
+	"Cloud",
+	"DevOps",
+	"Testing",
+	"Versionsverwaltung",
+	"Methoden",
+	"Tools"
+]), categories("engineering", [
+	"CAD",
+	"FEM",
+	"Berechnung",
+	"Konstruktion",
+	"Prozessplanung",
+	"Produktionsplanung",
+	"Werkstofftechnik",
+	"Qualitätsmanagement",
+	"Normen und Regelwerke",
+	"Technische Dokumentation",
+	"Projektmanagement"
+]), categories("engineering", [
+	"CAD/BIM",
+	"Bauplanung",
+	"Bauleitung",
+	"Ausschreibung",
+	"Kostenplanung",
+	"Terminplanung",
+	"Qualitätssicherung",
+	"Baurecht und Normen",
+	"Projektmanagement",
+	"Software"
+]), categories("engineering", [
+	"Schaltungstechnik",
+	"Automatisierung",
+	"SPS",
+	"EPLAN",
+	"Messtechnik",
+	"Regelungstechnik",
+	"Embedded Systems",
+	"Normen",
+	"Projektplanung",
+	"Software"
+]), categories("business", [
+	"Buchhaltung",
+	"Controlling",
+	"ERP",
+	"SAP",
+	"Office",
+	"Personalverwaltung",
+	"Lohnabrechnung",
+	"Steuerrecht",
+	"Projektmanagement",
+	"Kommunikation"
+]);
+//#endregion
+//#region src/features/knowledge/knowledge.utils.ts
+var createKnowledgeItem = (name = "", sortOrder = 0) => ({
+	id: crypto.randomUUID(),
+	name,
+	description: "",
+	level: "none",
+	isVisible: true,
+	sortOrder
+});
+var createKnowledgeCategory = (title = "", sortOrder = 0, type = "custom") => ({
+	id: crypto.randomUUID(),
+	title,
+	type,
+	subtitle: "",
+	items: [],
+	subcategories: [],
+	displayMode: "comma-separated",
+	showLevels: false,
+	showYearsOfExperience: false,
+	isVisible: true,
+	sortOrder
+});
+var visibleKnowledgeItems = (items) => items.filter((item) => item.isVisible && item.name.trim()).sort((left, right) => left.sortOrder - right.sortOrder);
+var formatKnowledgeItem = (item, showLevel, showYears, mode) => {
+	const extras = [];
+	if (showLevel && item.level !== "none") if (mode === "level-dots") {
+		const score = knowledgeLevelScores[item.level];
+		extras.push(`${"●".repeat(score)}${"○".repeat(5 - score)} ${knowledgeLevelLabels[item.level]}`);
+	} else if (mode === "level-bars") extras.push(knowledgeLevelLabels[item.level]);
+	else extras.push(knowledgeLevelLabels[item.level]);
+	if (showYears && item.yearsOfExperience !== void 0) extras.push(`${item.yearsOfExperience} ${item.yearsOfExperience === 1 ? "Jahr" : "Jahre"}`);
+	if (item.lastUsedYear !== void 0) extras.push(`zuletzt ${item.lastUsedYear}`);
+	if (item.description?.trim()) extras.push(item.description.trim());
+	return `${item.name}${extras.length ? ` – ${extras.join(", ")}` : ""}`;
+};
+var flattenKnowledgeNames = (section) => section.categories.filter((category) => category.isVisible).flatMap((category) => [...visibleKnowledgeItems(category.items).map((item) => item.name), ...category.subcategories.filter((subcategory) => subcategory.isVisible).flatMap((subcategory) => visibleKnowledgeItems(subcategory.items).map((item) => item.name))]);
+var formatKnowledgeSectionAsText = (section, atsMode = false) => {
+	if (!section.isVisible) return "";
+	return section.categories.filter((category) => category.isVisible).sort((left, right) => left.sortOrder - right.sortOrder).flatMap((category) => {
+		const lines = [];
+		const mode = atsMode ? "comma-separated" : category.displayMode;
+		const directItems = visibleKnowledgeItems(category.items);
+		if (directItems.length) {
+			const formatted = directItems.map((item) => formatKnowledgeItem(item, category.showLevels, category.showYearsOfExperience, mode));
+			lines.push(mode === "comma-separated" || mode === "tags" ? `${category.title}: ${formatted.join(", ")}` : `${category.title}\n${formatted.map((item) => `• ${item}`).join("\n")}`);
+		}
+		category.subcategories.filter((subcategory) => subcategory.isVisible).sort((left, right) => left.sortOrder - right.sortOrder).forEach((subcategory) => {
+			const items = visibleKnowledgeItems(subcategory.items);
+			if (!items.length) return;
+			const subMode = atsMode ? "comma-separated" : subcategory.displayMode ?? mode;
+			const formatted = items.map((item) => formatKnowledgeItem(item, category.showLevels, category.showYearsOfExperience, subMode));
+			lines.push(subMode === "comma-separated" || subMode === "tags" ? `${category.title} – ${subcategory.title}: ${formatted.join(", ")}` : `${category.title} – ${subcategory.title}\n${formatted.map((item) => `• ${item}`).join("\n")}`);
+		});
+		return lines;
+	}).filter(Boolean).join("\n");
+};
+//#endregion
+//#region src/features/knowledge/knowledge.service.ts
+var ensureKnowledgeSection = (section, legacySkills) => {
+	if (section?.categories.length) return structuredClone(section);
+	if (!legacySkills.filter(Boolean).length) return structuredClone(section ?? defaultKnowledgeSection);
+	const category = createKnowledgeCategory("Kenntnisse", 0, "custom");
+	category.items = legacySkills.filter(Boolean).map((skill, sortOrder) => createKnowledgeItem(skill, sortOrder));
+	return {
+		title: section?.title || defaultKnowledgeSection.title,
+		categories: [category],
+		isVisible: section?.isVisible ?? true
+	};
+};
+//#endregion
+//#region src/shared/documentPagination.ts
+var FIRST_PAGE_CAPACITY = 30;
+var SECOND_PAGE_CAPACITY = 38;
+var RECOMMENDED_LETTER_CHARACTERS = 3300;
+var textWeight = (value, charactersPerUnit = 95) => Math.max(0, Math.ceil(value.trim().length / charactersPerUnit));
+var experienceWeight = (experience) => 4 + textWeight(`${experience.role} ${experience.company}`, 70) + experience.achievements.reduce((total, achievement) => total + 1 + textWeight(achievement), 0);
+var educationWeight = (education) => 2 + textWeight(`${education.degree} ${education.institution}`, 80);
+var sidebarWeight = (profile, resumeProfile) => {
+	if (!profile) return 4;
+	const summary = resumeProfile || profile.summary;
+	const knowledgeCount = flattenKnowledgeNames(ensureKnowledgeSection(profile.knowledgeSection, profile.skills)).length;
+	return textWeight(summary, 105) + Math.ceil(knowledgeCount / 3) + Math.ceil(profile.languages.length / 2) + Math.ceil(profile.certifications.length / 2);
+};
+var densityForWeight = (weight, capacity) => {
+	if (weight > capacity * 1.3) return "dense";
+	if (weight > capacity * .9) return "compact";
+	return "standard";
+};
+var createResumePagePlan = (profile, resumeProfile = "") => {
+	const items = [...(profile?.experiences ?? []).map((experience) => ({
+		kind: "experience",
+		id: experience.id,
+		weight: experienceWeight(experience)
+	})), ...(profile?.education ?? []).map((education) => ({
+		kind: "education",
+		id: education.id,
+		weight: educationWeight(education)
+	}))];
+	const totalMainWeight = items.reduce((total, item) => total + item.weight, 0);
+	const firstPageWeight = Math.max(totalMainWeight, sidebarWeight(profile, resumeProfile));
+	if (firstPageWeight <= FIRST_PAGE_CAPACITY || items.length <= 1) return [{
+		pageNumber: 1,
+		items,
+		density: densityForWeight(firstPageWeight, FIRST_PAGE_CAPACITY)
+	}];
+	const pageOneItems = [];
+	const pageTwoItems = [];
+	let pageOneWeight = 0;
+	for (const item of items) if (pageOneItems.length === 0 || pageOneWeight + item.weight <= FIRST_PAGE_CAPACITY) {
+		pageOneItems.push(item);
+		pageOneWeight += item.weight;
+	} else pageTwoItems.push(item);
+	if (pageTwoItems.length === 0 && pageOneItems.length > 1) {
+		pageTwoItems.unshift(pageOneItems.pop());
+		pageOneWeight = pageOneItems.reduce((total, item) => total + item.weight, 0);
+	}
+	const pageTwoWeight = pageTwoItems.reduce((total, item) => total + item.weight, 0);
+	return [{
+		pageNumber: 1,
+		items: pageOneItems,
+		density: densityForWeight(Math.max(pageOneWeight, sidebarWeight(profile, resumeProfile)), FIRST_PAGE_CAPACITY)
+	}, {
+		pageNumber: 2,
+		items: pageTwoItems,
+		density: densityForWeight(pageTwoWeight, SECOND_PAGE_CAPACITY)
+	}];
+};
+var getLetterPageStatus = (documents) => {
+	const characterCount = [
+		documents.coverSubject,
+		documents.coverIntroduction,
+		documents.coverMotivation,
+		documents.coverQualification,
+		documents.coverCompanyFit,
+		documents.coverClosing
+	].reduce((total, value) => total + value.trim().length, 0);
+	return {
+		characterCount,
+		recommendedMaximum: RECOMMENDED_LETTER_CHARACTERS,
+		density: characterCount > RECOMMENDED_LETTER_CHARACTERS ? "dense" : characterCount > 2500 ? "compact" : "standard",
+		isOverRecommendedLength: characterCount > RECOMMENDED_LETTER_CHARACTERS
+	};
+};
+//#endregion
+//#region src/shared/profileMedia.ts
+var supportedProfileMedia = /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=\s]+$/i;
+var getProfileMediaSource = (value) => value && supportedProfileMedia.test(value) ? value : "";
+//#endregion
+//#region electron/documents.ts
+var escapeHtml = (value = "") => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#039;");
+var programmingBackgroundMarkup = (settings) => settings.backgroundId === "programming-languages-bg" && settings.columnLayout !== "compact-ats" ? `<div class="document-background-layer programming-languages-layer" aria-hidden="true">${programmingLanguageBackgroundTokens.map((token) => `<span>${escapeHtml(token)}</span>`).join("")}</div>` : "";
+var renderKnowledgeItems = (items, category, mode) => {
+	const visible = visibleKnowledgeItems(items);
+	if (!visible.length) return "";
+	const formatted = visible.map((item) => formatKnowledgeItem(item, category.showLevels, category.showYearsOfExperience, mode));
+	if (mode === "comma-separated") return `<p class="knowledge-comma">${formatted.map(escapeHtml).join(", ")}</p>`;
+	if (mode === "tags") return `<div class="knowledge-tags">${formatted.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>`;
+	if (mode === "level-bars" || mode === "level-dots") return `<div class="knowledge-level-list ${mode}">${visible.map((item) => {
+		const score = knowledgeLevelScores[item.level];
+		const label = item.level === "none" ? "" : knowledgeLevelLabels[item.level];
+		const years = category.showYearsOfExperience && item.yearsOfExperience !== void 0 ? ` · ${item.yearsOfExperience} Jahre` : "";
+		const indicator = mode === "level-bars" ? `<i class="knowledge-level-bar"><b style="width:${score * 20}%"></b></i>` : `<i class="knowledge-level-dots">${"●".repeat(score)}<em>${"○".repeat(5 - score)}</em></i>`;
+		return `<div class="knowledge-level-row"><span>${escapeHtml(item.name)}</span>${indicator}<small>${escapeHtml(label + years)}</small></div>`;
+	}).join("")}</div>`;
+	const tag = mode === "bullets" ? "ul" : "div";
+	return `<${tag} class="knowledge-lines ${mode}">${formatted.map((item) => mode === "bullets" ? `<li>${escapeHtml(item)}</li>` : `<p>${escapeHtml(item)}</p>`).join("")}</${tag}>`;
+};
+var renderKnowledgeSection = (profile, atsMode) => {
+	if (!profile) return "";
+	const section = ensureKnowledgeSection(profile.knowledgeSection, profile.skills);
+	if (!section.isVisible) return "";
+	const categories = section.categories.filter((category) => category.isVisible).sort((left, right) => left.sortOrder - right.sortOrder).map((category) => {
+		const mode = atsMode ? "comma-separated" : category.displayMode;
+		const direct = renderKnowledgeItems(category.items, category, mode);
+		const subcategories = category.subcategories.filter((subcategory) => subcategory.isVisible).sort((left, right) => left.sortOrder - right.sortOrder).map((subcategory) => {
+			const items = renderKnowledgeItems(subcategory.items, category, atsMode ? "comma-separated" : subcategory.displayMode ?? mode);
+			return items ? `<div class="knowledge-subcategory"><h5>${escapeHtml(subcategory.title)}</h5>${items}</div>` : "";
+		}).join("");
+		if (!direct && !subcategories) return "";
+		return `<div class="knowledge-category"><h4>${escapeHtml(category.title)}</h4>${category.subtitle ? `<small>${escapeHtml(category.subtitle)}</small>` : ""}${direct}${subcategories}</div>`;
+	}).join("");
+	return categories ? `<section class="knowledge-section"><h3>${escapeHtml(section.title)}</h3>${categories}</section>` : "";
+};
+var fullName = (profile) => profile ? `${profile.firstName} ${profile.lastName}`.trim() : "Vorname Nachname";
+var contactName = (application) => [application.contact.firstName, application.contact.lastName].filter(Boolean).join(" ");
+var salutation = (application) => {
+	const name = contactName(application);
+	if (!name) return "Sehr geehrte Damen und Herren";
+	if (application.contact.salutation === "Frau") return `Sehr geehrte Frau ${application.contact.lastName}`;
+	if (application.contact.salutation === "Herr") return `Sehr geehrter Herr ${application.contact.lastName}`;
+	return `Guten Tag ${name}`;
+};
+var addressBlock = (application) => [
+	application.company.name,
+	contactName(application),
+	application.company.street,
+	`${application.company.postalCode} ${application.company.city}`.trim()
+].filter(Boolean).map(escapeHtml).join("<br>");
+var senderLine = (profile) => profile ? [
+	fullName(profile),
+	profile.street,
+	`${profile.postalCode} ${profile.city}`.trim(),
+	profile.phone,
+	profile.email
+].filter(Boolean).map(escapeHtml).join(" · ") : "Bitte unter Profile Ihre Absenderdaten ergänzen.";
+var documentCss = (accent, secondary, onSecondary, settings) => {
+	const bodyFont = getDocumentFont(settings.fontId);
+	const headingFont = getDocumentFont(settings.headingFontId);
+	return `
+  :root{--accent:${accent};--secondary:${secondary};--on-secondary:${onSecondary};--ink:#172026;--muted:#5c6870;--line:#d9e0e3;--doc-margin:${marginLevelToMm[settings.marginLevel]}mm;--section-gap:${sectionSpacingLevelToMm[settings.sectionSpacingLevel]}mm;--body-size:${fontSizeToPt[settings.fontSize]}pt;--body-line:${lineHeightLevelToValue[settings.lineHeightLevel]};--body-font:${bodyFont.family};--heading-font:${headingFont.family};--heading-weight:${headingFont.headingWeight}}
+  @page{size:A4;margin:0}
+  *{box-sizing:border-box}body{margin:0;background:#eef1f1;color:var(--ink);font-family:var(--body-font)}
+  .page{width:210mm;height:297mm;min-height:297mm;max-height:297mm;margin:0 auto 8mm;overflow:hidden;background:#fff;break-after:page;page-break-after:always;position:relative;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .page:last-child{break-after:auto;page-break-after:auto}.page-content{position:relative;z-index:1;width:100%;height:100%;transform-origin:top left}.standard-page-content{padding:var(--doc-margin)}
+  .document-background-layer{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;user-select:none}.programming-languages-layer{color:color-mix(in srgb,var(--accent),#70808a 45%);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;opacity:.105}.programming-languages-layer:before,.programming-languages-layer:after{position:absolute;border:1px solid currentColor;border-radius:4mm;content:""}.programming-languages-layer:before{width:54mm;height:37mm;right:-15mm;top:-9mm}.programming-languages-layer:after{width:61mm;height:42mm;left:-20mm;bottom:-12mm}.programming-languages-layer span{position:absolute;padding:1.2mm 2.3mm;border:1px solid currentColor;border-radius:2.5mm;font-size:7.8pt;font-weight:650;letter-spacing:.025em;white-space:nowrap}.programming-languages-layer span:nth-child(1){right:9mm;top:12mm}.programming-languages-layer span:nth-child(2){right:31mm;top:23mm}.programming-languages-layer span:nth-child(3){right:7mm;top:38mm}.programming-languages-layer span:nth-child(4){right:26mm;top:52mm}.programming-languages-layer span:nth-child(5){right:8mm;top:68mm}.programming-languages-layer span:nth-child(6){left:8mm;bottom:77mm}.programming-languages-layer span:nth-child(7){left:25mm;bottom:62mm}.programming-languages-layer span:nth-child(8){left:7mm;bottom:47mm}.programming-languages-layer span:nth-child(9){left:31mm;bottom:33mm}.programming-languages-layer span:nth-child(10){left:8mm;bottom:18mm}.programming-languages-layer span:nth-child(11){left:51mm;bottom:13mm}.programming-languages-layer span:nth-child(12){right:8mm;bottom:16mm}.programming-languages-layer span:nth-child(13){right:26mm;bottom:31mm}
+  .rule{height:4px;background:var(--accent);margin-bottom:22mm}
+  .kicker{color:var(--accent);font-size:10pt;text-transform:uppercase;letter-spacing:.16em;font-weight:700}
+  h1,h2,h3{font-family:var(--heading-font);font-weight:var(--heading-weight)}h1{font-size:29pt;line-height:1.05;margin:8mm 0 4mm}h2{font-size:14pt;color:var(--accent);margin:8mm 0 3mm}
+  h3{font-size:11pt;margin:0 0 1mm}.muted{color:var(--muted)}p,li{font-size:var(--body-size);line-height:var(--body-line)}
+  .cover-content{display:flex;flex-direction:column;justify-content:flex-end}.cover-content h1{font-size:36pt;max-width:145mm}
+  .contact{padding-top:8mm;border-top:1px solid var(--line)}.sender{font-size:8.5pt;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:2mm}
+  .recipient{margin-top:13mm;min-height:35mm}.date{text-align:right}.subject{font-weight:800;font-size:12pt;margin:8mm 0 5mm}
+  .signature{margin-top:8mm}.signature-image{display:block;width:auto;max-width:48mm;height:auto;max-height:16mm;margin:2mm 0 1mm;object-fit:contain;object-position:left center}
+  .letter-content{padding:var(--doc-margin)}.letter-content>p:not(.date,.subject){margin:0 0 calc(var(--section-gap) * .72)}
+  .letter-compact .letter-content{padding:16mm 20mm}.letter-compact .rule{margin-bottom:15mm}.letter-compact .recipient{margin-top:10mm;min-height:30mm}.letter-compact p{font-size:9.6pt;line-height:1.42}.letter-compact .signature{margin-top:6mm}
+  .letter-dense .letter-content{padding:14mm 18mm}.letter-dense .rule{height:3px;margin-bottom:10mm}.letter-dense .recipient{margin-top:7mm;min-height:24mm}.letter-dense p{font-size:9pt;line-height:1.32}.letter-dense .letter-content>p:not(.date,.subject){margin-bottom:2.6mm}.letter-dense .subject{margin:5mm 0 3mm}.letter-dense .signature{margin-top:4mm}
+  .cv-page{padding:0;display:grid;grid-template:"header header" auto "main side" 1fr/64% 36%;overflow:hidden}
+  .cv-header{grid-area:header;display:flex;align-items:center;justify-content:space-between;gap:9mm;padding:var(--doc-margin) var(--doc-margin) calc(var(--doc-margin) * .6)}
+  .cv-header h1{margin:1mm 0 0;font-size:25pt;line-height:1;letter-spacing:.015em;text-transform:uppercase}
+  .cv-header h2{margin:2mm 0;color:var(--accent);font-size:14pt;font-weight:500}
+  .cv-contact-line{margin:0;color:var(--muted);font-size:8.4pt}
+  .cv-avatar{display:grid;width:24mm;height:24mm;flex:0 0 auto;place-items:center;border:2px solid color-mix(in srgb,var(--accent),white 60%);border-radius:50%;color:var(--accent);background:color-mix(in srgb,var(--accent),white 89%);font-size:16pt;font-weight:800}.cv-avatar.has-image{overflow:hidden;padding:0}.cv-avatar-image{display:block;width:100%;height:100%;object-fit:cover}
+  .cv-primary{grid-area:main;min-width:0;padding:0 calc(var(--doc-margin) * .65) var(--doc-margin) var(--doc-margin)}
+  .cv-secondary{grid-area:side;min-width:0;padding:2mm calc(var(--doc-margin) * .75) var(--doc-margin) calc(var(--doc-margin) * .35)}
+  .cv-page section{margin-top:var(--section-gap)}.cv-page section>h3{margin:0 0 3mm;padding-bottom:2mm;border-bottom:1px solid #aeb6b5;color:#535c5b;font-size:11pt;font-weight:600;letter-spacing:.025em;text-transform:uppercase}
+  .cv-page p,.cv-page li{font-size:var(--body-size);line-height:var(--body-line)}.cv-entry{margin:0 0 calc(var(--section-gap) * .8)}.cv-entry-head{display:flex;align-items:flex-start;justify-content:space-between;gap:5mm}
+  .cv-entry-head strong{color:color-mix(in srgb,var(--accent),#172125 24%);font-size:11.5pt}.cv-entry-head p{margin:1mm 0;color:var(--accent);font-weight:600}
+  .cv-entry-head small{flex:0 0 31mm;color:var(--muted);font-size:8pt;line-height:1.35;text-align:right}.cv-entry ul,.cv-secondary ul{margin:1mm 0;padding-left:5mm}
+  .skills,.knowledge-tags{display:flex;flex-wrap:wrap;gap:1.5mm}.chip,.knowledge-tags span{padding:1mm 2mm;border-bottom:1px solid #b6bdbc;color:color-mix(in srgb,var(--accent),#202827 25%);font-size:8.2pt}
+  .knowledge-category{margin-bottom:3mm}.knowledge-category h4,.knowledge-subcategory h5{font-size:9pt;margin:0 0 1mm;color:var(--accent)}.knowledge-category>small{display:block;margin:-.5mm 0 1mm}.knowledge-comma,.knowledge-lines p{margin:0 0 1mm}.knowledge-lines{margin:0;padding-left:4mm}.knowledge-subcategory{margin-top:1.5mm}.knowledge-level-row{display:grid;grid-template-columns:minmax(20mm,1fr) 18mm;gap:.8mm 2mm;margin-bottom:1mm}.knowledge-level-row small{grid-column:1/-1;font-size:7pt}.knowledge-level-bar{height:1.4mm;background:#dfe5e4;align-self:center}.knowledge-level-bar b{display:block;height:100%;background:var(--accent)}.knowledge-level-dots{font-style:normal;color:var(--accent);letter-spacing:.4mm}.knowledge-level-dots em{font-style:normal;color:#c9cfce}
+  .language{display:flex;justify-content:space-between;gap:4mm;margin:2mm 0}.language i{color:var(--accent);font-size:7pt;font-style:normal;letter-spacing:1px;white-space:nowrap}
+  .side-avatar{display:none;margin:0 auto 8mm}
+  .cv-sidebar-right{grid-template:"header side" auto "main side" 1fr/66% 34%}.cv-sidebar-left{grid-template:"side header" auto "side main" 1fr/35% 65%}
+  .cv-sidebar-right .cv-secondary,.cv-sidebar-left .cv-secondary{padding:17mm 10mm 14mm;color:var(--on-secondary);background:var(--secondary)}
+  .cv-sidebar-right .cv-secondary section>h3,.cv-sidebar-left .cv-secondary section>h3{border-bottom-color:color-mix(in srgb,var(--on-secondary),transparent 25%);color:var(--on-secondary)}
+  .cv-sidebar-right .cv-secondary p,.cv-sidebar-right .cv-secondary li,.cv-sidebar-left .cv-secondary p,.cv-sidebar-left .cv-secondary li{color:var(--on-secondary)}
+  .cv-sidebar-right .cv-secondary .chip,.cv-sidebar-left .cv-secondary .chip{border-color:color-mix(in srgb,var(--on-secondary),transparent 45%);color:var(--on-secondary)}
+  .cv-sidebar-right .language i,.cv-sidebar-left .language i{color:var(--on-secondary)}
+  .cv-sidebar-right .cv-header>.cv-avatar,.cv-sidebar-left .cv-header>.cv-avatar{display:none}.cv-sidebar-right .side-avatar,.cv-sidebar-left .side-avatar{display:grid;border-color:color-mix(in srgb,var(--on-secondary),transparent 35%);color:var(--on-secondary);background:color-mix(in srgb,var(--on-secondary),transparent 83%)}
+  .cv-sidebar-right .cv-header{padding-right:9mm}.cv-sidebar-left .cv-header{padding-left:10mm}.cv-sidebar-left .cv-primary{padding-right:14mm;padding-left:10mm}
+  .cv-centered,.cv-minimal{grid-template:"header" auto "side" auto "main" 1fr/1fr}.cv-centered .cv-header{justify-content:center;text-align:center}.cv-centered .cv-contact-line{text-align:center}
+  .cv-centered .cv-header>.cv-avatar,.cv-minimal .cv-header>.cv-avatar{display:none}.cv-centered .cv-secondary{display:grid;grid-template-columns:repeat(3,1fr);gap:6mm;padding:0 15mm 3mm}.cv-centered .cv-secondary section{margin-top:3mm}.cv-centered .cv-secondary section:first-of-type{grid-column:1/-1}
+  .cv-centered .cv-primary,.cv-minimal .cv-primary{padding:0 15mm 14mm}.cv-minimal .cv-header{padding-bottom:5mm;border-bottom:1px solid #cfd4d3}.cv-minimal .cv-secondary{display:grid;grid-template-columns:2fr 1fr 1fr;gap:7mm;padding:0 15mm 2mm}.cv-minimal .cv-secondary section{margin-top:5mm}
+  .cv-split-clean .cv-secondary,.cv-bold-grid .cv-secondary{margin:0 12mm 14mm 0;padding:0 0 0 6mm;border-left:1px solid #d8dddc}.cv-split-clean .cv-secondary{background:linear-gradient(180deg,var(--secondary),white 70%)}
+  .cv-bold-grid section>h3{border-bottom:2px solid var(--accent);color:color-mix(in srgb,var(--accent),#14202a 15%);font-size:13pt;font-weight:800}.cv-bold-grid .cv-header h1{color:color-mix(in srgb,var(--accent),#15202a 15%);font-weight:850}
+  .cv-compact .cv-header{padding-top:11mm;padding-bottom:6mm}.cv-compact section{margin-top:5mm}.cv-compact .cv-entry{margin-bottom:3.5mm}.cv-compact p,.cv-compact li{font-size:8.15pt;line-height:1.3}
+  .cv-dense .cv-header{padding-top:9mm;padding-bottom:4mm}.cv-dense .cv-header h1{font-size:22pt}.cv-dense .cv-header h2{font-size:12pt}.cv-dense section{margin-top:3.5mm}.cv-dense section>h3{margin-bottom:2mm;padding-bottom:1mm;font-size:10pt}.cv-dense .cv-entry{margin-bottom:2.5mm}.cv-dense p,.cv-dense li{font-size:7.6pt;line-height:1.24}.cv-dense .cv-entry-head strong{font-size:10pt}
+  .cv-continuation{grid-template:"header" auto "main" 1fr/1fr}.cv-continuation .cv-header{padding:11mm 15mm 6mm;border-bottom:1px solid var(--line)}.cv-continuation .cv-header h1{font-size:18pt;margin:0}.cv-continuation .cv-header h2,.cv-continuation .cv-avatar{display:none}.cv-continuation .cv-primary{padding:0 15mm 14mm}.cv-continuation .cv-secondary{display:none}
+  .column-single{grid-template:"header" auto "side" auto "main" 1fr/1fr}.column-single .cv-secondary{display:grid;grid-template-columns:2fr 1fr 1fr;gap:5mm;padding:0 var(--doc-margin)}.column-single .cv-secondary section{margin-top:3mm}.column-single .cv-primary{padding:0 var(--doc-margin) var(--doc-margin)}
+  .column-two-column-left-wide{grid-template:"header header" auto "main side" 1fr/65% 35%}.column-two-column-right-wide{grid-template:"side header" auto "side main" 1fr/36% 64%}.column-two-column-right-wide .cv-secondary{padding:var(--doc-margin) calc(var(--doc-margin) * .55);background:var(--secondary);color:var(--on-secondary)}.column-two-column-right-wide .cv-secondary h3,.column-two-column-right-wide .cv-secondary p,.column-two-column-right-wide .cv-secondary li,.column-two-column-right-wide .cv-secondary .chip{color:var(--on-secondary)}
+  .column-two-column-equal{grid-template:"header header" auto "main side" 1fr/50% 50%}.column-left-sidebar{grid-template:"side header" auto "side main" 1fr/35% 65%}.column-right-sidebar{grid-template:"header side" auto "main side" 1fr/65% 35%}.column-left-sidebar .cv-secondary,.column-right-sidebar .cv-secondary{padding:var(--doc-margin) calc(var(--doc-margin) * .55);background:var(--secondary);color:var(--on-secondary)}.column-left-sidebar .cv-secondary h3,.column-left-sidebar .cv-secondary p,.column-left-sidebar .cv-secondary li,.column-left-sidebar .cv-secondary .chip,.column-right-sidebar .cv-secondary h3,.column-right-sidebar .cv-secondary p,.column-right-sidebar .cv-secondary li,.column-right-sidebar .cv-secondary .chip{color:var(--on-secondary)}
+  .column-three-column{grid-template:"header header" auto "main side" 1fr/56% 44%}.column-three-column .cv-secondary{display:grid;grid-template-columns:1fr 1fr;align-content:start;gap:0 5mm}.column-three-column .cv-secondary section:first-of-type{grid-column:1/-1}
+  .column-timeline{grid-template:"header" auto "side" auto "main" 1fr/1fr}.column-timeline .cv-secondary{display:grid;grid-template-columns:2fr 1fr 1fr;gap:5mm;padding:0 var(--doc-margin)}.column-timeline .cv-primary{padding:0 var(--doc-margin) var(--doc-margin)}.column-timeline .cv-entry{padding-left:6mm;border-left:2px solid var(--accent);position:relative}.column-timeline .cv-entry:before{position:absolute;left:-2.3mm;top:1mm;width:3.5mm;height:3.5mm;border:1mm solid white;border-radius:50%;background:var(--accent);content:""}
+  .column-compact-ats{grid-template:"header" auto "side" auto "main" 1fr/1fr}.column-compact-ats .cv-avatar{display:none}.column-compact-ats .cv-header{padding-bottom:5mm;border-bottom:1px solid var(--line)}.column-compact-ats .cv-secondary{display:grid;grid-template-columns:2fr 1fr 1fr;gap:4mm;padding:0 var(--doc-margin)}.column-compact-ats .cv-primary{padding:0 var(--doc-margin) var(--doc-margin)}.column-compact-ats section{margin-top:3.5mm}.column-compact-ats p,.column-compact-ats li{font-size:8.2pt;line-height:1.28}
+  .background-soft{background:color-mix(in srgb,var(--accent),white 96%)}.background-geometric{background-color:#fff;background-image:linear-gradient(135deg,color-mix(in srgb,var(--accent),transparent 95%) 25%,transparent 25%),linear-gradient(315deg,color-mix(in srgb,var(--accent),transparent 96%) 25%,transparent 25%);background-size:28mm 28mm}.background-hexagons{background-color:#fff;background-image:radial-gradient(circle at 25% 25%,color-mix(in srgb,var(--accent),transparent 92%) 1px,transparent 1.5px);background-size:8mm 8mm}.background-waves{background:radial-gradient(ellipse at 100% 0,color-mix(in srgb,var(--accent),transparent 88%) 0 18%,transparent 18.2% 25%,color-mix(in srgb,var(--accent),transparent 95%) 25.2% 31%,transparent 31.2%),#fff}.background-lines{background-color:#fff;background-image:linear-gradient(color-mix(in srgb,var(--accent),transparent 96%) 1px,transparent 1px);background-size:100% 8mm}.background-dots{background-color:#fff;background-image:radial-gradient(color-mix(in srgb,var(--accent),transparent 88%) .55px,transparent .7px);background-size:5mm 5mm}.background-abstract{background:radial-gradient(ellipse at 105% 15%,color-mix(in srgb,var(--accent),transparent 86%) 0 12%,transparent 12.2% 18%,color-mix(in srgb,var(--secondary),transparent 94%) 18.2% 24%,transparent 24.2%),#fff}.background-corner{background:linear-gradient(135deg,color-mix(in srgb,var(--accent),white 28%) 0 13%,transparent 13.2%),#fff}.background-pastel-gradient{background:linear-gradient(145deg,color-mix(in srgb,var(--accent),white 93%),#fff 52%,color-mix(in srgb,var(--secondary),white 94%))}.background-top-band{background:linear-gradient(180deg,color-mix(in srgb,var(--accent),white 80%) 0 24mm,#fff 24.2mm)}.background-bottom-band{background:linear-gradient(0deg,color-mix(in srgb,var(--accent),white 82%) 0 18mm,#fff 18.2mm)}
+  .page-number{position:absolute;right:10mm;bottom:7mm;color:var(--muted);font-size:7.5pt}
+  .cv-entry,.cv-page section,.signature{break-inside:avoid;page-break-inside:avoid}.cv-page section>h3{break-after:avoid;page-break-after:avoid}
+  @media print{body{background:#fff}.page{margin:0}.no-print-background{background:#fff!important}.no-print-background .document-background-layer{display:none!important}}
+`;
+};
+var pageFitScript = `
+  <script>
+    (() => {
+      const fit = (page) => {
+        const content = page.querySelector(".page-content");
+        if (!content) return;
+        content.style.transform = "";
+        content.style.width = "100%";
+        const heightRatio = page.clientHeight / Math.max(content.scrollHeight, 1);
+        const widthRatio = page.clientWidth / Math.max(content.scrollWidth, 1);
+        const scale = Math.min(1, heightRatio, widthRatio);
+        if (scale < 0.999) {
+          content.style.transform = "scale(" + scale + ")";
+          content.style.width = 100 / scale + "%";
+          content.dataset.fitScale = scale.toFixed(3);
+        } else {
+          content.dataset.fitScale = "1.000";
+        }
+      };
+      document.querySelectorAll(".page").forEach(fit);
+    })();
+  <\/script>`;
+var buildDocumentHtml = (application, profile, target) => {
+	const template = getTemplate(application.templateId);
+	const accent = application.accentColor || template.accent;
+	const secondary = application.secondaryColor || template.secondary;
+	const onSecondary = getReadableTextColor(secondary);
+	const designSettings = application.designSettings;
+	const designClasses = `background-${designSettings.backgroundId} ${designSettings.showBackgroundInPrint ? "print-background" : "no-print-background"}`;
+	const backgroundLayer = programmingBackgroundMarkup(designSettings);
+	const docs = application.documents;
+	const sections = profile?.resumeSections ?? {
+		profile: true,
+		experience: true,
+		education: true,
+		skills: true,
+		languages: true,
+		certifications: true
+	};
+	const name = fullName(profile);
+	const role = application.job.title;
+	const company = application.company.name;
+	const initials = profile ? `${profile.firstName.charAt(0)}${profile.lastName.charAt(0)}`.toUpperCase() : "VN";
+	const photoSource = getProfileMediaSource(profile?.photoPath);
+	const signatureSource = getProfileMediaSource(profile?.signaturePath);
+	const avatarMarkup = (side = false) => photoSource ? `<span class="cv-avatar${side ? " side-avatar" : ""} has-image"><img class="cv-avatar-image" src="${escapeHtml(photoSource)}" alt=""></span>` : `<span class="cv-avatar${side ? " side-avatar" : ""}">${escapeHtml(initials)}</span>`;
+	const resumeContacts = profile ? [
+		profile.phone,
+		profile.email,
+		profile.city,
+		profile.linkedin
+	].filter(Boolean).map(escapeHtml).join(" · ") : "Telefon · E-Mail · Ort";
+	const today = new Intl.DateTimeFormat("de-DE", { dateStyle: "long" }).format(/* @__PURE__ */ new Date());
+	const letterStatus = getLetterPageStatus(docs);
+	const cover = `
+    <section class="page cover-page ${designClasses}">
+      ${backgroundLayer}
+      <div class="page-content standard-page-content cover-content">
+        <div class="rule"></div>
+        <p class="kicker">Bewerbung</p>
+        <h1>${escapeHtml(role)}</h1>
+        <p class="muted">bei ${escapeHtml(company)}</p>
+        <h2>${escapeHtml(name)}</h2>
+        <p>${escapeHtml(docs.deckblattStatement || profile?.summary || "Motiviert, strukturiert und bereit für die nächste berufliche Aufgabe.")}</p>
+        <div class="contact"><p>${senderLine(profile)}</p></div>
+      </div>
+    </section>`;
+	const letter = `
+    <section class="page letter-page letter-${letterStatus.density} ${designClasses}">
+      ${backgroundLayer}
+      <div class="page-content letter-content">
+        <div class="rule"></div>
+        <div class="sender">${senderLine(profile)}</div>
+        <div class="recipient">${addressBlock(application)}</div>
+        <p class="date">${escapeHtml(profile?.city || application.company.city)}, ${today}</p>
+        <p class="subject">${escapeHtml(docs.coverSubject || `Bewerbung als ${role}`)}</p>
+        <p>${escapeHtml(salutation(application))},</p>
+        <p>${escapeHtml(docs.coverIntroduction || `die ausgeschriebene Position als ${role} bei ${company} spricht mich besonders an, weil sie fachliche Verantwortung mit konkretem Gestaltungsspielraum verbindet.`)}</p>
+        <p>${escapeHtml(docs.coverMotivation || "Meine Motivation entsteht aus der Möglichkeit, vorhandene Erfahrung gezielt einzusetzen, mich fachlich weiterzuentwickeln und gemeinsam mit Ihrem Team messbare Ergebnisse zu erzielen.")}</p>
+        <p>${escapeHtml(docs.coverQualification || profile?.summary || "Ich arbeite strukturiert, zuverlässig und lösungsorientiert. Neue Anforderungen erfasse ich schnell und überführe sie in nachvollziehbare, belastbare Ergebnisse.")}</p>
+        <p>${escapeHtml(docs.coverCompanyFit || `An ${company} überzeugt mich besonders die Verbindung aus professionellem Anspruch und zukunftsorientierter Arbeitsweise.`)}</p>
+        <p>${escapeHtml(docs.coverClosing || "Gerne überzeuge ich Sie in einem persönlichen Gespräch davon, welchen konkreten Beitrag ich in Ihrem Team leisten kann. Auf Ihren Terminvorschlag freue ich mich.")}</p>
+        <div class="signature"><p>Mit freundlichen Grüßen</p>${signatureSource ? `<img class="signature-image" src="${escapeHtml(signatureSource)}" alt="">` : ""}<strong>${escapeHtml(name)}</strong></div>
+      </div>
+    </section>`;
+	const experienceById = new Map((profile?.experiences ?? []).map((item) => [item.id, item]));
+	const educationById = new Map((profile?.education ?? []).map((item) => [item.id, item]));
+	const summarySection = sections.profile ? `<section><h3>Zusammenfassung</h3><p>${escapeHtml(docs.resumeProfile || profile?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>` : "";
+	const skillSection = sections.skills ? renderKnowledgeSection(profile, designSettings.columnLayout === "compact-ats") : "";
+	const languageSection = sections.languages && profile?.languages.length ? `<section><h3>Sprachen</h3>${profile.languages.map((language) => `<p class="language"><span>${escapeHtml(language)}</span><i>●●●●○</i></p>`).join("")}</section>` : "";
+	const certificationSection = sections.certifications && profile?.certifications.length ? `<section><h3>Zertifikate</h3><ul>${profile.certifications.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>` : "";
+	const resumePlan = createResumePagePlan(profile ? {
+		...profile,
+		experiences: sections.experience ? profile.experiences : [],
+		education: sections.education ? profile.education : []
+	} : void 0, docs.resumeProfile);
+	const renderExperience = (id) => {
+		const item = experienceById.get(id);
+		if (!item) return "";
+		return `
+      <article class="cv-entry">
+        <div class="cv-entry-head">
+          <div><strong>${escapeHtml(item.role)}</strong><p>${escapeHtml(item.company)}</p></div>
+          <small>${escapeHtml(item.from)} – ${escapeHtml(item.to)}${item.city ? `<br>${escapeHtml(item.city)}` : ""}</small>
+        </div>
+        <ul>${item.achievements.filter(Boolean).map((achievement) => `<li>${escapeHtml(achievement)}</li>`).join("")}</ul>
+      </article>`;
+	};
+	const renderEducation = (id) => {
+		const item = educationById.get(id);
+		if (!item) return "";
+		return `
+      <article class="cv-entry">
+        <div class="cv-entry-head">
+          <div><strong>${escapeHtml(item.degree)}</strong><p>${escapeHtml(item.institution)}</p></div>
+          <small>${escapeHtml(item.from)} – ${escapeHtml(item.to)}${item.city ? `<br>${escapeHtml(item.city)}` : ""}</small>
+        </div>
+      </article>`;
+	};
+	const renderResumePage = (plan) => {
+		const experienceItems = plan.items.filter((item) => item.kind === "experience").map((item) => renderExperience(item.id)).join("");
+		const educationItems = plan.items.filter((item) => item.kind === "education").map((item) => renderEducation(item.id)).join("");
+		const isContinuation = plan.pageNumber === 2;
+		const densityClass = plan.density === "standard" ? "" : ` cv-${plan.density}`;
+		return `
+      <section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}">
+        ${backgroundLayer}
+        <div class="page-content cv-page cv-${template.layout} column-${designSettings.columnLayout}${isContinuation ? " cv-continuation" : ""}${densityClass}">
+          <header class="cv-header">
+            <div>
+              <p class="kicker">${isContinuation ? "Lebenslauf · Fortsetzung" : "Lebenslauf"}</p>
+              <h1>${escapeHtml(name)}</h1>
+              <h2>${escapeHtml(profile?.title || role)}</h2>
+              <p class="cv-contact-line">${resumeContacts}</p>
+            </div>
+            ${avatarMarkup()}
+          </header>
+          <main class="cv-primary">
+            ${experienceItems ? `<section><h3>Berufserfahrung${isContinuation ? " · Fortsetzung" : ""}</h3>${experienceItems}</section>` : ""}
+            ${educationItems ? `<section><h3>Ausbildung</h3>${educationItems}</section>` : ""}
+            ${!experienceItems && !educationItems && plan.pageNumber === 1 ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}
+          </main>
+          ${isContinuation ? "" : `<aside class="cv-secondary">
+                  ${avatarMarkup(true)}
+                  ${summarySection}
+                  ${skillSection}
+                  ${languageSection}
+                  ${certificationSection}
+                </aside>`}
+          <span class="page-number">${plan.pageNumber} / ${resumePlan.length}</span>
+        </div>
+      </section>`;
+	};
+	const resume = resumePlan.map(renderResumePage).join("");
+	const selected = target === "mappe" ? [
+		cover,
+		letter,
+		resume
+	] : target === "deckblatt" ? [cover] : target === "anschreiben" ? [letter] : [resume];
+	return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
+};
+var buildCoverLetterMarkdown = (application, profile) => {
+	const docs = application.documents;
+	return `# ${docs.coverSubject || `Bewerbung als ${application.job.title}`}
+
+${salutation(application)},
+
+${docs.coverIntroduction}
+
+${docs.coverMotivation}
+
+${docs.coverQualification}
+
+${docs.coverCompanyFit}
+
+${docs.coverClosing}
+
+Mit freundlichen Grüßen
+
+${fullName(profile)}
+`;
+};
+//#endregion
+//#region electron/storage.ts
+var nowIso = () => (/* @__PURE__ */ new Date()).toISOString();
+var createId = () => crypto.randomUUID();
+var terminalStatuses = /* @__PURE__ */ new Set([
+	"Zusage",
+	"Absage",
+	"Zurückgezogen",
+	"Archiviert"
+]);
+var eventReminders = {
+	"application-sent": [],
+	"application-deadline": [4320, 1440],
+	interview: [1440, 60],
+	"second-interview": [1440, 60],
+	"phone-interview": [1440, 60],
+	"online-interview": [1440, 60],
+	"trial-work": [1440],
+	assessment: [1440],
+	"follow-up-call": [0],
+	"follow-up-email": [0],
+	"contract-start": [1440],
+	"contract-end": [10080],
+	"fixed-term-end": [20160],
+	"probation-end": [20160],
+	custom: []
+};
+var emptyWorkspace = () => ({
+	schemaVersion: 1,
+	applications: [],
+	profiles: [],
+	events: [],
+	attachments: [],
+	settings: defaultSettings,
+	updatedAt: nowIso()
+});
+var sanitizeFileName = (value) => value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[<>:"/\\|?*\u0000-\u001F]/g, "-").replace(/\s+/g, "_").replace(/[. ]+$/g, "").slice(0, 80) || "Bewerbung";
+var timestamp = () => (/* @__PURE__ */ new Date()).toISOString().replace(/\D/g, "").slice(0, 14);
+var addDaysAtNine = (value, days) => {
+	const date = new Date(value);
+	date.setDate(date.getDate() + days);
+	date.setHours(9, 0, 0, 0);
+	return date.toISOString();
+};
+var DataStore = class {
+	constructor(documentsPath) {
+		this.workspace = emptyWorkspace();
+		this.dataPath = path.join(documentsPath, "BewerbungsManager", "data");
+		this.workspacePath = path.join(this.dataPath, "Settings", "workspace.json");
+	}
+	async initialize() {
+		const directories = [
+			"Bewerbungen",
+			"Lebenslauf",
+			"Anschreiben",
+			"Zeugnisse",
+			"Zertifikate",
+			path.join("Muster", "Anschreiben"),
+			path.join("Muster", "Lebenslauf"),
+			path.join("Muster", "Deckblatt"),
+			"Profile",
+			"Settings",
+			"Backups"
+		];
+		await Promise.all(directories.map((directory) => mkdir(path.join(this.dataPath, directory), { recursive: true })));
+		this.workspace = await this.loadWorkspace();
+		await this.persist();
+	}
+	getWorkspace() {
+		return structuredClone(this.workspace);
+	}
+	async loadWorkspace() {
+		for (const candidate of [this.workspacePath, `${this.workspacePath}.bak`]) try {
+			const parsed = JSON.parse(await readFile(candidate, "utf8"));
+			const result = workspaceSchema.safeParse(parsed);
+			if (result.success) return result.data;
+		} catch {}
+		return emptyWorkspace();
+	}
+	async atomicWrite(filePath, content) {
+		await mkdir(path.dirname(filePath), { recursive: true });
+		const temporaryPath = `${filePath}.${createId()}.tmp`;
+		const backupPath = `${filePath}.bak`;
+		const handle = await open(temporaryPath, "w");
+		try {
+			await handle.writeFile(content, "utf8");
+			await handle.sync();
+		} finally {
+			await handle.close();
+		}
+		try {
+			await copyFile(filePath, backupPath);
+		} catch {}
+		try {
+			await rename(temporaryPath, filePath);
+		} catch {
+			await rm(filePath, { force: true });
+			await rename(temporaryPath, filePath);
+		}
+	}
+	async persist() {
+		this.workspace.updatedAt = nowIso();
+		const validated = workspaceSchema.parse(this.workspace);
+		await this.atomicWrite(this.workspacePath, JSON.stringify(validated, null, 2));
+		await Promise.all(validated.applications.map((application) => this.persistApplicationFiles(application)));
+		await this.createAutomaticBackup();
+	}
+	async createAutomaticBackup() {
+		if (!this.workspace.settings.autoBackupEnabled) return;
+		const backupRoot = path.join(this.dataPath, "Backups");
+		await mkdir(backupRoot, { recursive: true });
+		const date = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+		const backupPath = path.join(backupRoot, `workspace-${date}.json`);
+		try {
+			await stat(backupPath);
+		} catch {
+			await copyFile(this.workspacePath, backupPath);
+		}
+		const backups = (await readdir(backupRoot, { withFileTypes: true })).filter((entry) => entry.isFile() && /^workspace-\d{4}-\d{2}-\d{2}\.json$/.test(entry.name)).map((entry) => entry.name).sort().reverse();
+		for (const fileName of backups.slice(this.workspace.settings.backupRetention)) {
+			const target = path.resolve(backupRoot, fileName);
+			if (!target.startsWith(`${path.resolve(backupRoot)}${path.sep}`)) throw new Error("Ungültiger Sicherungspfad.");
+			await rm(target, { force: true });
+		}
+	}
+	applicationPath(application) {
+		return path.join(this.dataPath, "Bewerbungen", application.folderName);
+	}
+	getApplicationPath(id) {
+		const application = this.workspace.applications.find((item) => item.id === id);
+		if (!application) throw new Error("Bewerbung wurde nicht gefunden.");
+		return this.applicationPath(application);
+	}
+	async ensureApplicationDirectories(application) {
+		const root = this.applicationPath(application);
+		await Promise.all([
+			"Stellenanzeige",
+			"Anschreiben",
+			"Deckblatt",
+			"Lebenslauf",
+			"Zeugnisse",
+			"Zertifikate",
+			"Export"
+		].map((folder) => mkdir(path.join(root, folder), { recursive: true })));
+		return root;
+	}
+	async persistApplicationFiles(application) {
+		const root = await this.ensureApplicationDirectories(application);
+		const profile = this.workspace.profiles.find((item) => item.id === application.profileId || !application.profileId && item.isDefault);
+		await Promise.all([
+			this.atomicWrite(path.join(root, "bewerbung.json"), JSON.stringify(applicationSchema.parse(application), null, 2)),
+			this.atomicWrite(path.join(root, "Stellenanzeige", "stellenanzeige.json"), JSON.stringify(application.job, null, 2)),
+			this.atomicWrite(path.join(root, "Stellenanzeige", "stellenanzeige.txt"), application.job.fullText),
+			this.atomicWrite(path.join(root, "Anschreiben", `${sanitizeFileName(application.company.name)}.md`), buildCoverLetterMarkdown(application, profile)),
+			this.atomicWrite(path.join(root, "Export", "bewerbungsmappe.html"), buildDocumentHtml(application, profile, "mappe"))
+		]);
+	}
+	createEvent(applicationId, type, title, startAt, allDay) {
+		const now = nowIso();
+		return {
+			id: createId(),
+			applicationId,
+			type,
+			title,
+			description: "",
+			startAt,
+			allDay,
+			completed: false,
+			cancelled: false,
+			reminderMinutes: eventReminders[type],
+			createdAt: now,
+			updatedAt: now
+		};
+	}
+	ensureEvent(application, type, title, startAt, allDay = false) {
+		const existing = this.workspace.events.find((event) => event.applicationId === application.id && event.type === type);
+		if (!startAt) {
+			if (existing) {
+				existing.cancelled = true;
+				existing.updatedAt = nowIso();
+			}
+			return;
+		}
+		if (existing) {
+			Object.assign(existing, {
+				title,
+				startAt,
+				allDay,
+				cancelled: false,
+				updatedAt: nowIso()
+			});
+			return;
+		}
+		this.workspace.events.push(this.createEvent(application.id, type, title, startAt, allDay));
+	}
+	syncEvents(application) {
+		const company = application.company.name;
+		this.ensureEvent(application, "application-sent", `Bewerbung gesendet · ${company}`, application.sentAt, true);
+		this.ensureEvent(application, "application-deadline", `Bewerbungsfrist · ${company}`, application.deadlineAt, true);
+		this.ensureEvent(application, "interview", `Vorstellungsgespräch · ${company}`, application.interviewAt);
+		this.ensureEvent(application, "second-interview", `Zweites Gespräch · ${company}`, application.secondInterviewAt);
+		this.ensureEvent(application, "contract-start", `Vertragsbeginn · ${company}`, application.startAt, true);
+		this.ensureEvent(application, "contract-end", `Vertragsende · ${company}`, application.contractEndAt, true);
+		this.ensureEvent(application, "fixed-term-end", `Befristungsende · ${company}`, application.fixedTermEndAt, true);
+		this.ensureEvent(application, "probation-end", `Probezeitende · ${company}`, application.probationEndAt, true);
+		const followUp = application.status === "Beworben" && application.sentAt && this.workspace.settings.followUpDays !== null ? addDaysAtNine(application.sentAt, this.workspace.settings.followUpDays) : void 0;
+		this.ensureEvent(application, "follow-up-call", `Bei ${company} zum Stand der Bewerbung nachfragen`, followUp);
+		if (terminalStatuses.has(application.status)) {
+			const preserved = /* @__PURE__ */ new Set([
+				"application-sent",
+				"contract-start",
+				"contract-end",
+				"fixed-term-end",
+				"probation-end"
+			]);
+			this.workspace.events.forEach((event) => {
+				if (event.applicationId === application.id && !preserved.has(event.type) && new Date(event.startAt) > /* @__PURE__ */ new Date()) {
+					event.cancelled = true;
+					event.updatedAt = nowIso();
+				}
+			});
+		}
+	}
+	async createApplication(rawInput) {
+		const input = applicationInputSchema.parse(rawInput);
+		const now = nowIso();
+		const folderName = `${sanitizeFileName(input.company.name)}_${timestamp()}`;
+		const application = {
+			schemaVersion: 1,
+			id: createId(),
+			folderName,
+			...input,
+			status: input.sentAt ? "Beworben" : "Entwurf",
+			documents: {
+				coverSubject: `Bewerbung als ${input.job.title}`,
+				coverIntroduction: `die Position als ${input.job.title} bei ${input.company.name} verbindet genau die Aufgaben, in denen ich meine Erfahrung gezielt einbringen möchte.`,
+				coverMotivation: "",
+				coverQualification: "",
+				coverCompanyFit: "",
+				coverClosing: "Gerne überzeuge ich Sie in einem persönlichen Gespräch von meiner Motivation und Eignung. Auf Ihren Terminvorschlag freue ich mich.",
+				resumeProfile: "",
+				deckblattStatement: ""
+			},
+			attachmentIds: [],
+			statusHistory: [{
+				at: now,
+				to: input.sentAt ? "Beworben" : "Entwurf",
+				note: "Bewerbung angelegt"
+			}],
+			createdAt: now,
+			updatedAt: now
+		};
+		this.workspace.applications.unshift(applicationSchema.parse(application));
+		this.syncEvents(application);
+		await this.persist();
+		return this.getWorkspace();
+	}
+	async saveApplication(rawApplication) {
+		const application = applicationSchema.parse(rawApplication);
+		const index = this.workspace.applications.findIndex((item) => item.id === application.id);
+		if (index < 0) throw new Error("Bewerbung wurde nicht gefunden.");
+		application.updatedAt = nowIso();
+		this.workspace.applications[index] = application;
+		this.syncEvents(application);
+		await this.persist();
+		return this.getWorkspace();
+	}
+	async changeStatus(id, status, reason) {
+		const application = this.workspace.applications.find((item) => item.id === id);
+		if (!application) throw new Error("Bewerbung wurde nicht gefunden.");
+		if (application.status !== status) {
+			const now = nowIso();
+			const previous = application.status;
+			application.status = status;
+			application.updatedAt = now;
+			application.statusHistory.push({
+				at: now,
+				from: previous,
+				to: status,
+				note: ""
+			});
+			if (status === "Absage") {
+				application.rejectionAt = now;
+				application.rejectionReason = reason ?? "Keine Begründung";
+			}
+			if (status === "Zusage") application.acceptedAt = now;
+			if (status === "Zurückgezogen") application.withdrawnAt = now;
+			if (status === "Archiviert") application.archivedAt = now;
+			this.syncEvents(application);
+			await this.persist();
+		}
+		return this.getWorkspace();
+	}
+	async removeApplication(id) {
+		this.workspace.applications = this.workspace.applications.filter((application) => application.id !== id);
+		this.workspace.events = this.workspace.events.filter((event) => event.applicationId !== id);
+		this.workspace.attachments = this.workspace.attachments.filter((attachment) => attachment.applicationId !== id);
+		await this.persist();
+		return this.getWorkspace();
+	}
+	async duplicateApplication(id) {
+		const source = this.workspace.applications.find((item) => item.id === id);
+		if (!source) throw new Error("Bewerbung wurde nicht gefunden.");
+		const now = nowIso();
+		const duplicate = {
+			...structuredClone(source),
+			id: createId(),
+			folderName: `${sanitizeFileName(source.company.name)}_${timestamp()}`,
+			status: "Entwurf",
+			sentAt: void 0,
+			rejectionAt: void 0,
+			rejectionReason: void 0,
+			acceptedAt: void 0,
+			attachmentIds: [],
+			statusHistory: [{
+				at: now,
+				to: "Entwurf",
+				note: "Bewerbung dupliziert"
+			}],
+			createdAt: now,
+			updatedAt: now
+		};
+		this.workspace.applications.unshift(duplicate);
+		this.syncEvents(duplicate);
+		await this.persist();
+		return this.getWorkspace();
+	}
+	async saveProfile(rawProfile) {
+		const profile = profileSchema.parse(rawProfile);
+		if (profile.isDefault) this.workspace.profiles.forEach((item) => {
+			item.isDefault = false;
+		});
+		const index = this.workspace.profiles.findIndex((item) => item.id === profile.id);
+		if (index >= 0) this.workspace.profiles[index] = profile;
+		else this.workspace.profiles.push(profile);
+		await this.persist();
+		return this.getWorkspace();
+	}
+	async saveSettings(settings) {
+		this.workspace.settings = appSettingsSchema.parse(settings);
+		this.workspace.applications.forEach((application) => this.syncEvents(application));
+		await this.persist();
+		return this.getWorkspace();
+	}
+	async saveEvent(event) {
+		const index = this.workspace.events.findIndex((item) => item.id === event.id);
+		if (index < 0) throw new Error("Termin wurde nicht gefunden.");
+		this.workspace.events[index] = event;
+		await this.persist();
+		return this.getWorkspace();
+	}
+	async addAttachment(applicationId, category, sourcePath) {
+		const application = this.workspace.applications.find((item) => item.id === applicationId);
+		if (!application) throw new Error("Bewerbung wurde nicht gefunden.");
+		const sourceName = path.basename(sourcePath);
+		const storedName = `${timestamp()}_${sanitizeFileName(sourceName)}`;
+		const target = path.join(this.applicationPath(application), category, storedName);
+		await mkdir(path.dirname(target), { recursive: true });
+		await copyFile(sourcePath, target);
+		const attachment = {
+			id: createId(),
+			applicationId,
+			category,
+			fileName: sourceName,
+			storedName,
+			description: "",
+			documentDate: "",
+			order: application.attachmentIds.length,
+			includedInPackage: true,
+			createdAt: nowIso()
+		};
+		this.workspace.attachments.push(attachment);
+		application.attachmentIds.push(attachment.id);
+		await this.persist();
+		return this.getWorkspace();
+	}
+	getAttachmentPath(attachment) {
+		const application = this.getApplication(attachment.applicationId);
+		if (path.basename(attachment.storedName) !== attachment.storedName) throw new Error("Ungültiger gespeicherter Dateiname.");
+		const categoryRoot = path.resolve(this.applicationPath(application), attachment.category);
+		const filePath = path.resolve(categoryRoot, attachment.storedName);
+		if (!filePath.startsWith(`${categoryRoot}${path.sep}`)) throw new Error("Ungültiger Dokumentpfad.");
+		return filePath;
+	}
+	getAttachmentPathById(id) {
+		const attachment = this.workspace.attachments.find((item) => item.id === id);
+		if (!attachment) throw new Error("Dokument wurde nicht gefunden.");
+		return this.getAttachmentPath(attachment);
+	}
+	async saveAttachment(rawAttachment) {
+		const attachment = attachmentSchema.parse(rawAttachment);
+		const index = this.workspace.attachments.findIndex((item) => item.id === attachment.id);
+		if (index < 0) throw new Error("Dokument wurde nicht gefunden.");
+		const existing = this.workspace.attachments[index];
+		if (existing.applicationId !== attachment.applicationId) throw new Error("Die Zuordnung einer Datei kann nicht frei geändert werden.");
+		if (existing.category !== attachment.category) {
+			const oldPath = this.getAttachmentPath(existing);
+			const newPath = this.getAttachmentPath(attachment);
+			await mkdir(path.dirname(newPath), { recursive: true });
+			await rename(oldPath, newPath);
+		}
+		this.workspace.attachments[index] = attachment;
+		await this.persist();
+		return this.getWorkspace();
+	}
+	async moveAttachment(id, direction) {
+		const attachment = this.workspace.attachments.find((item) => item.id === id);
+		if (!attachment) throw new Error("Dokument wurde nicht gefunden.");
+		const siblings = this.workspace.attachments.filter((item) => item.applicationId === attachment.applicationId && item.category === attachment.category).sort((left, right) => left.order - right.order);
+		const index = siblings.findIndex((item) => item.id === id);
+		const target = index + direction;
+		if (index < 0 || target < 0 || target >= siblings.length) return this.getWorkspace();
+		const other = siblings[target];
+		const currentOrder = attachment.order;
+		attachment.order = other.order;
+		other.order = currentOrder;
+		await this.persist();
+		return this.getWorkspace();
+	}
+	async removeAttachment(id) {
+		const attachment = this.workspace.attachments.find((item) => item.id === id);
+		if (!attachment) throw new Error("Dokument wurde nicht gefunden.");
+		await rm(this.getAttachmentPath(attachment), { force: true });
+		this.workspace.attachments = this.workspace.attachments.filter((item) => item.id !== id);
+		const application = this.getApplication(attachment.applicationId);
+		application.attachmentIds = application.attachmentIds.filter((attachmentId) => attachmentId !== id);
+		await this.persist();
+		return this.getWorkspace();
+	}
+	getPackageAttachmentPaths(applicationId) {
+		const categoryOrder = {
+			Zeugnisse: 0,
+			Zertifikate: 1
+		};
+		return this.workspace.attachments.filter((attachment) => attachment.applicationId === applicationId && attachment.includedInPackage).sort((left, right) => categoryOrder[left.category] - categoryOrder[right.category] || left.order - right.order).map((attachment) => ({
+			fileName: attachment.fileName,
+			path: this.getAttachmentPath(attachment)
+		}));
+	}
+	getProfileForApplication(application) {
+		return this.workspace.profiles.find((profile) => profile.id === application.profileId || !application.profileId && profile.isDefault);
+	}
+	getApplication(id) {
+		const application = this.workspace.applications.find((item) => item.id === id);
+		if (!application) throw new Error("Bewerbung wurde nicht gefunden.");
+		return application;
+	}
+	getTemplateDocumentContext(id) {
+		const application = this.getApplication(id);
+		const profile = this.getProfileForApplication(application);
+		const applicantName = profile ? `${profile.firstName} ${profile.lastName}`.trim() : "";
+		const contactName = [application.contact.firstName, application.contact.lastName].filter(Boolean).join(" ");
+		const greeting = application.contact.lastName ? application.contact.salutation === "Herr" ? `Sehr geehrter Herr ${application.contact.lastName},` : application.contact.salutation === "Frau" ? `Sehr geehrte Frau ${application.contact.lastName},` : `Guten Tag ${contactName},` : "Sehr geehrte Damen und Herren,";
+		const targetRoot = this.applicationPath(application);
+		return {
+			application,
+			targetDirectories: {
+				anschreiben: path.join(targetRoot, "Anschreiben"),
+				deckblatt: path.join(targetRoot, "Deckblatt"),
+				lebenslauf: path.join(targetRoot, "Lebenslauf")
+			},
+			requestedBaseName: application.company.name,
+			data: {
+				BEWERBER_NAME: applicantName,
+				BEWERBER_VORNAME: profile?.firstName ?? "",
+				BEWERBER_NACHNAME: profile?.lastName ?? "",
+				BEWERBER_ADRESSE: profile?.street ?? "",
+				BEWERBER_PLZ: profile?.postalCode ?? "",
+				BEWERBER_ORT: profile?.city ?? "",
+				BEWERBER_TELEFON: profile?.phone ?? "",
+				BEWERBER_EMAIL: profile?.email ?? "",
+				FIRMA_NAME: application.company.name,
+				FIRMA_ADRESSE: application.company.street,
+				FIRMA_PLZ: application.company.postalCode,
+				FIRMA_ORT: application.company.city,
+				ANSPRECHPARTNER: contactName,
+				STELLENBEZEICHNUNG: application.job.title,
+				STELLENNUMMER: "",
+				BEWERBUNGSDATUM: new Intl.DateTimeFormat("de-DE").format(/* @__PURE__ */ new Date()),
+				BETREFF: application.documents.coverSubject || `Bewerbung als ${application.job.title}`,
+				ANREDE: greeting,
+				EINLEITUNG: application.documents.coverIntroduction,
+				HAUPTTEXT: [
+					application.documents.coverMotivation,
+					application.documents.coverQualification,
+					application.documents.coverCompanyFit
+				].filter(Boolean).join("\n\n"),
+				SCHLUSSTEXT: application.documents.coverClosing,
+				GRUSSFORMEL: "Mit freundlichen Grüßen",
+				UNTERSCHRIFT: applicantName,
+				KENNTNISSE: formatKnowledgeSectionAsText(ensureKnowledgeSection(profile?.knowledgeSection, profile?.skills ?? []), false)
+			}
+		};
+	}
+	getExportHtml(id, target) {
+		const application = this.getApplication(id);
+		return buildDocumentHtml(application, this.getProfileForApplication(application), target);
+	}
+	getExportDefaultName(id, target) {
+		const application = this.getApplication(id);
+		return `${sanitizeFileName(application.company.name)}_${sanitizeFileName(application.job.title)}_${target}.pdf`;
+	}
+	async writeBackup(filePath) {
+		await writeFile(filePath, JSON.stringify(workspaceSchema.parse(this.workspace), null, 2), "utf8");
+	}
+	async importBackup(filePath) {
+		const parsed = JSON.parse(await readFile(filePath, "utf8"));
+		const imported = workspaceSchema.parse(parsed);
+		const emergencyPath = path.join(this.dataPath, "Backups", `vor-import-${timestamp()}.json`);
+		await copyFile(this.workspacePath, emergencyPath);
+		const previous = this.workspace;
+		try {
+			this.workspace = imported;
+			const availableAttachments = [];
+			for (const attachment of this.workspace.attachments) try {
+				await stat(this.getAttachmentPath(attachment));
+				availableAttachments.push(attachment);
+			} catch {}
+			this.workspace.attachments = availableAttachments;
+			const availableIds = new Set(availableAttachments.map((attachment) => attachment.id));
+			this.workspace.applications.forEach((application) => {
+				application.attachmentIds = application.attachmentIds.filter((id) => availableIds.has(id));
+			});
+			await this.persist();
+			return this.getWorkspace();
+		} catch (error) {
+			this.workspace = previous;
+			try {
+				await this.persist();
+			} catch {}
+			throw error;
+		}
+	}
+	async writeSettings(filePath) {
+		await writeFile(filePath, JSON.stringify(appSettingsSchema.parse(this.workspace.settings), null, 2), "utf8");
+	}
+	async importSettings(filePath) {
+		const parsed = JSON.parse(await readFile(filePath, "utf8"));
+		this.workspace.settings = appSettingsSchema.parse(parsed);
+		this.workspace.applications.forEach((application) => this.syncEvents(application));
+		await this.persist();
+		return this.getWorkspace();
+	}
+	getTemplateIds() {
+		return new Set(templates.map((template) => template.id));
+	}
+};
+//#endregion
+//#region electron/pdf.ts
+var appendPages = async (target, sourceBytes, label) => {
+	try {
+		const source = await PDFDocument.load(sourceBytes);
+		(await target.copyPages(source, source.getPageIndices())).forEach((page) => target.addPage(page));
+	} catch (error) {
+		const detail = error instanceof Error ? error.message : "Unbekannter Fehler";
+		throw new Error(`PDF „${label}“ konnte nicht verarbeitet werden: ${detail}`);
+	}
+};
+var mergePdfDocuments = async (generatedDocument, additions) => {
+	const merged = await PDFDocument.create();
+	await appendPages(merged, generatedDocument, "Bewerbungsunterlagen");
+	for (const addition of additions) await appendPages(merged, addition.bytes, addition.fileName);
+	return merged.save();
+};
+//#endregion
+//#region src/features/templates/template.constants.ts
+var allowedTemplateExtensions = /* @__PURE__ */ new Set([
+	".docx",
+	".dotx",
+	".doc"
+]);
+var templatePlaceholderKeys = [
+	"BEWERBER_NAME",
+	"BEWERBER_VORNAME",
+	"BEWERBER_NACHNAME",
+	"BEWERBER_ADRESSE",
+	"BEWERBER_PLZ",
+	"BEWERBER_ORT",
+	"BEWERBER_TELEFON",
+	"BEWERBER_EMAIL",
+	"FIRMA_NAME",
+	"FIRMA_ADRESSE",
+	"FIRMA_PLZ",
+	"FIRMA_ORT",
+	"ANSPRECHPARTNER",
+	"STELLENBEZEICHNUNG",
+	"STELLENNUMMER",
+	"BEWERBUNGSDATUM",
+	"BETREFF",
+	"ANREDE",
+	"EINLEITUNG",
+	"HAUPTTEXT",
+	"SCHLUSSTEXT",
+	"GRUSSFORMEL",
+	"UNTERSCHRIFT",
+	"KENNTNISSE"
+];
+//#endregion
+//#region src/features/templates/template.errors.ts
+var TemplateError = class extends Error {
+	code;
+	constructor(message, code) {
+		super(message);
+		this.code = code;
+		this.name = "TemplateError";
+	}
+};
+var toTemplateError = (error) => {
+	if (error instanceof TemplateError) return error;
+	const code = typeof error === "object" && error && "code" in error ? String(error.code) : "";
+	if ([
+		"EBUSY",
+		"EPERM",
+		"EACCES"
+	].includes(code)) return new TemplateError("Die Datei wird von einem anderen Programm verwendet.", "LOCKED");
+	if ([
+		"ENOENT",
+		"ENODATA",
+		"EIO"
+	].includes(code)) return new TemplateError("Die Vorlage ist derzeit nicht lokal verfügbar. Die Datei wird möglicherweise noch von OneDrive synchronisiert.", "NOT_LOCAL");
+	return new TemplateError("Die Vorlage konnte nicht gelesen werden.", "CORRUPT");
+};
+//#endregion
+//#region electron/templates/template-filename.service.ts
+var sanitizeTemplateFileName = (value) => value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-").replace(/\s+/g, "_").replace(/[. ]+$/g, "").slice(0, 100) || "Vorlage";
+var templateTimestamp = (date = /* @__PURE__ */ new Date()) => {
+	const pad = (value) => String(value).padStart(2, "0");
+	return [
+		date.getFullYear(),
+		pad(date.getMonth() + 1),
+		pad(date.getDate()),
+		"_",
+		pad(date.getHours()),
+		pad(date.getMinutes()),
+		pad(date.getSeconds())
+	].join("");
+};
+var createUniqueFilePath = async (directory, requestedBaseName, extension) => {
+	const baseName = sanitizeTemplateFileName(requestedBaseName);
+	const initial = path.join(directory, `${baseName}${extension}`);
+	try {
+		await access(initial);
+	} catch {
+		return initial;
+	}
+	for (let index = 2; index < 1e4; index += 1) {
+		const candidate = path.join(directory, `${baseName}_Kopie_${index}${extension}`);
+		try {
+			await access(candidate);
+		} catch {
+			return candidate;
+		}
+	}
+	return path.join(directory, `${baseName}_${templateTimestamp()}${extension}`);
+};
+//#endregion
+//#region node_modules/docxtemplater/node_modules/@xmldom/xmldom/lib/conventions.js
+var require_conventions = /* @__PURE__ */ __commonJSMin(((exports) => {
+	/**
+	* Ponyfill for `Array.prototype.find` which is only available in ES6 runtimes.
+	*
+	* Works with anything that has a `length` property and index access properties,
+	* including NodeList.
+	*
+	* @param {T[] | { length: number; [number]: T }} list
+	* @param {function (item: T, index: number, list:T[]):boolean} predicate
+	* @param {Partial<Pick<ArrayConstructor['prototype'], 'find'>>?} ac
+	* Allows injecting a custom implementation in tests (`Array.prototype` by default).
+	* @returns {T | undefined}
+	* @template {unknown} T
+	* @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
+	* @see https://tc39.es/ecma262/multipage/indexed-collections.html#sec-array.prototype.find
+	*/
+	function find(list, predicate, ac) {
+		if (ac === void 0) ac = Array.prototype;
+		if (list && typeof ac.find === "function") return ac.find.call(list, predicate);
+		for (var i = 0; i < list.length; i++) if (hasOwn(list, i)) {
+			var item = list[i];
+			if (predicate.call(void 0, item, i, list)) return item;
+		}
+	}
+	/**
+	* "Shallow freezes" an object to render it immutable.
+	* Uses `Object.freeze` if available,
+	* otherwise the immutability is only in the type.
+	*
+	* Is used to create "enum like" objects.
+	*
+	* If `Object.getOwnPropertyDescriptors` is available,
+	* a new object with all properties of object but without any prototype is created and returned
+	* after freezing it.
+	*
+	* @param {T} object
+	* The object to freeze.
+	* @param {Pick<ObjectConstructor, 'create' | 'freeze' | 'getOwnPropertyDescriptors'>} [oc=Object]
+	* `Object` by default,
+	* allows to inject custom object constructor for tests.
+	* @returns {Readonly<T>}
+	* @template {Object} T
+	* @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
+	* @prettierignore
+	*/
+	function freeze(object, oc) {
+		if (oc === void 0) oc = Object;
+		if (oc && typeof oc.getOwnPropertyDescriptors === "function") object = oc.create(null, oc.getOwnPropertyDescriptors(object));
+		return oc && typeof oc.freeze === "function" ? oc.freeze(object) : object;
+	}
+	/**
+	* Implementation for `Object.hasOwn` but ES5 compatible.
+	*
+	* @param {any} object
+	* @param {string | number} key
+	* @returns {boolean}
+	*/
+	function hasOwn(object, key) {
+		return Object.prototype.hasOwnProperty.call(object, key);
+	}
+	/**
+	* Since xmldom can not rely on `Object.assign`,
+	* it uses/provides a simplified version that is sufficient for its needs.
+	*
+	* @param {Object} target
+	* @param {Object | null | undefined} source
+	* @returns {Object}
+	* The target with the merged/overridden properties.
+	* @throws {TypeError}
+	* If target is not an object.
+	* @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
+	* @see https://tc39.es/ecma262/multipage/fundamental-objects.html#sec-object.assign
+	*/
+	function assign(target, source) {
+		if (target === null || typeof target !== "object") throw new TypeError("target is not an object");
+		for (var key in source) if (hasOwn(source, key)) target[key] = source[key];
+		return target;
+	}
+	/**
+	* A number of attributes are boolean attributes.
+	* The presence of a boolean attribute on an element represents the `true` value,
+	* and the absence of the attribute represents the `false` value.
+	*
+	* If the attribute is present, its value must either be the empty string, or a value that is
+	* an ASCII case-insensitive match for the attribute's canonical name,
+	* with no leading or trailing whitespace.
+	*
+	* Note: The values `"true"` and `"false"` are not allowed on boolean attributes.
+	* To represent a `false` value, the attribute has to be omitted altogether.
+	*
+	* @see https://html.spec.whatwg.org/#boolean-attributes
+	* @see https://html.spec.whatwg.org/#attributes-3
+	*/
+	var HTML_BOOLEAN_ATTRIBUTES = freeze({
+		allowfullscreen: true,
+		async: true,
+		autofocus: true,
+		autoplay: true,
+		checked: true,
+		controls: true,
+		default: true,
+		defer: true,
+		disabled: true,
+		formnovalidate: true,
+		hidden: true,
+		ismap: true,
+		itemscope: true,
+		loop: true,
+		multiple: true,
+		muted: true,
+		nomodule: true,
+		novalidate: true,
+		open: true,
+		playsinline: true,
+		readonly: true,
+		required: true,
+		reversed: true,
+		selected: true
+	});
+	/**
+	* Check if `name` is matching one of the HTML boolean attribute names.
+	* This method doesn't check if such attributes are allowed in the context of the current
+	* document/parsing.
+	*
+	* @param {string} name
+	* @returns {boolean}
+	* @see {@link HTML_BOOLEAN_ATTRIBUTES}
+	* @see https://html.spec.whatwg.org/#boolean-attributes
+	* @see https://html.spec.whatwg.org/#attributes-3
+	*/
+	function isHTMLBooleanAttribute(name) {
+		return hasOwn(HTML_BOOLEAN_ATTRIBUTES, name.toLowerCase());
+	}
+	/**
+	* Void elements only have a start tag; end tags must not be specified for void elements.
+	* These elements should be written as self-closing like this: `<area />`.
+	* This should not be confused with optional tags that HTML allows to omit the end tag for
+	* (like `li`, `tr` and others), which can have content after them,
+	* so they can not be written as self-closing.
+	* xmldom does not have any logic for optional end tags cases,
+	* and will report them as a warning.
+	* Content that would go into the unopened element,
+	* will instead be added as a sibling text node.
+	*
+	* @type {Readonly<{
+	* 	area: boolean;
+	* 	col: boolean;
+	* 	img: boolean;
+	* 	wbr: boolean;
+	* 	link: boolean;
+	* 	hr: boolean;
+	* 	source: boolean;
+	* 	br: boolean;
+	* 	input: boolean;
+	* 	param: boolean;
+	* 	meta: boolean;
+	* 	embed: boolean;
+	* 	track: boolean;
+	* 	base: boolean;
+	* }>}
+	* @see https://html.spec.whatwg.org/#void-elements
+	* @see https://html.spec.whatwg.org/#optional-tags
+	*/
+	var HTML_VOID_ELEMENTS = freeze({
+		area: true,
+		base: true,
+		br: true,
+		col: true,
+		embed: true,
+		hr: true,
+		img: true,
+		input: true,
+		link: true,
+		meta: true,
+		param: true,
+		source: true,
+		track: true,
+		wbr: true
+	});
+	/**
+	* Check if `tagName` is matching one of the HTML void element names.
+	* This method doesn't check if such tags are allowed in the context of the current
+	* document/parsing.
+	*
+	* @param {string} tagName
+	* @returns {boolean}
+	* @see {@link HTML_VOID_ELEMENTS}
+	* @see https://html.spec.whatwg.org/#void-elements
+	*/
+	function isHTMLVoidElement(tagName) {
+		return hasOwn(HTML_VOID_ELEMENTS, tagName.toLowerCase());
+	}
+	/**
+	* Tag names that are raw text elements according to HTML spec.
+	* The value denotes whether they are escapable or not.
+	*
+	* @see {@link isHTMLEscapableRawTextElement}
+	* @see {@link isHTMLRawTextElement}
+	* @see https://html.spec.whatwg.org/#raw-text-elements
+	* @see https://html.spec.whatwg.org/#escapable-raw-text-elements
+	*/
+	var HTML_RAW_TEXT_ELEMENTS = freeze({
+		script: false,
+		style: false,
+		textarea: true,
+		title: true
+	});
+	/**
+	* Check if `tagName` is matching one of the HTML raw text element names.
+	* This method doesn't check if such tags are allowed in the context of the current
+	* document/parsing.
+	*
+	* @param {string} tagName
+	* @returns {boolean}
+	* @see {@link isHTMLEscapableRawTextElement}
+	* @see {@link HTML_RAW_TEXT_ELEMENTS}
+	* @see https://html.spec.whatwg.org/#raw-text-elements
+	* @see https://html.spec.whatwg.org/#escapable-raw-text-elements
+	*/
+	function isHTMLRawTextElement(tagName) {
+		var key = tagName.toLowerCase();
+		return hasOwn(HTML_RAW_TEXT_ELEMENTS, key) && !HTML_RAW_TEXT_ELEMENTS[key];
+	}
+	/**
+	* Check if `tagName` is matching one of the HTML escapable raw text element names.
+	* This method doesn't check if such tags are allowed in the context of the current
+	* document/parsing.
+	*
+	* @param {string} tagName
+	* @returns {boolean}
+	* @see {@link isHTMLRawTextElement}
+	* @see {@link HTML_RAW_TEXT_ELEMENTS}
+	* @see https://html.spec.whatwg.org/#raw-text-elements
+	* @see https://html.spec.whatwg.org/#escapable-raw-text-elements
+	*/
+	function isHTMLEscapableRawTextElement(tagName) {
+		var key = tagName.toLowerCase();
+		return hasOwn(HTML_RAW_TEXT_ELEMENTS, key) && HTML_RAW_TEXT_ELEMENTS[key];
+	}
+	/**
+	* Only returns true if `value` matches MIME_TYPE.HTML, which indicates an HTML document.
+	*
+	* @param {string} mimeType
+	* @returns {mimeType is 'text/html'}
+	* @see https://www.iana.org/assignments/media-types/text/html
+	* @see https://en.wikipedia.org/wiki/HTML
+	* @see https://developer.mozilla.org/en-US/docs/Web/API/DOMParser/parseFromString
+	* @see https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-domparser-parsefromstring
+	*/
+	function isHTMLMimeType(mimeType) {
+		return mimeType === MIME_TYPE.HTML;
+	}
+	/**
+	* For both the `text/html` and the `application/xhtml+xml` namespace the spec defines that the
+	* HTML namespace is provided as the default.
+	*
+	* @param {string} mimeType
+	* @returns {boolean}
+	* @see https://dom.spec.whatwg.org/#dom-document-createelement
+	* @see https://dom.spec.whatwg.org/#dom-domimplementation-createdocument
+	* @see https://dom.spec.whatwg.org/#dom-domimplementation-createhtmldocument
+	*/
+	function hasDefaultHTMLNamespace(mimeType) {
+		return isHTMLMimeType(mimeType) || mimeType === MIME_TYPE.XML_XHTML_APPLICATION;
+	}
+	/**
+	* All mime types that are allowed as input to `DOMParser.parseFromString`
+	*
+	* @see https://developer.mozilla.org/en-US/docs/Web/API/DOMParser/parseFromString#Argument02
+	*      MDN
+	* @see https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#domparsersupportedtype
+	*      WHATWG HTML Spec
+	* @see {@link DOMParser.prototype.parseFromString}
+	*/
+	var MIME_TYPE = freeze({
+		/**
+		* `text/html`, the only mime type that triggers treating an XML document as HTML.
+		*
+		* @see https://www.iana.org/assignments/media-types/text/html IANA MimeType registration
+		* @see https://en.wikipedia.org/wiki/HTML Wikipedia
+		* @see https://developer.mozilla.org/en-US/docs/Web/API/DOMParser/parseFromString MDN
+		* @see https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-domparser-parsefromstring
+		*      WHATWG HTML Spec
+		*/
+		HTML: "text/html",
+		/**
+		* `application/xml`, the standard mime type for XML documents.
+		*
+		* @see https://www.iana.org/assignments/media-types/application/xml IANA MimeType
+		*      registration
+		* @see https://tools.ietf.org/html/rfc7303#section-9.1 RFC 7303
+		* @see https://en.wikipedia.org/wiki/XML_and_MIME Wikipedia
+		*/
+		XML_APPLICATION: "application/xml",
+		/**
+		* `text/xml`, an alias for `application/xml`.
+		*
+		* @see https://tools.ietf.org/html/rfc7303#section-9.2 RFC 7303
+		* @see https://www.iana.org/assignments/media-types/text/xml IANA MimeType registration
+		* @see https://en.wikipedia.org/wiki/XML_and_MIME Wikipedia
+		*/
+		XML_TEXT: "text/xml",
+		/**
+		* `application/xhtml+xml`, indicates an XML document that has the default HTML namespace,
+		* but is parsed as an XML document.
+		*
+		* @see https://www.iana.org/assignments/media-types/application/xhtml+xml IANA MimeType
+		*      registration
+		* @see https://dom.spec.whatwg.org/#dom-domimplementation-createdocument WHATWG DOM Spec
+		* @see https://en.wikipedia.org/wiki/XHTML Wikipedia
+		*/
+		XML_XHTML_APPLICATION: "application/xhtml+xml",
+		/**
+		* `image/svg+xml`,
+		*
+		* @see https://www.iana.org/assignments/media-types/image/svg+xml IANA MimeType registration
+		* @see https://www.w3.org/TR/SVG11/ W3C SVG 1.1
+		* @see https://en.wikipedia.org/wiki/Scalable_Vector_Graphics Wikipedia
+		*/
+		XML_SVG_IMAGE: "image/svg+xml"
+	});
+	/**
+	* @typedef {'application/xhtml+xml' | 'application/xml' | 'image/svg+xml' | 'text/html' | 'text/xml'}
+	* MimeType
+	*/
+	/**
+	* @type {MimeType[]}
+	* @private
+	* Basically `Object.values`, which is not available in ES5.
+	*/
+	var _MIME_TYPES = Object.keys(MIME_TYPE).map(function(key) {
+		return MIME_TYPE[key];
+	});
+	/**
+	* Only returns true if `mimeType` is one of the allowed values for
+	* `DOMParser.parseFromString`.
+	*
+	* @param {string} mimeType
+	* @returns {mimeType is 'application/xhtml+xml' | 'application/xml' | 'image/svg+xml' |  'text/html' | 'text/xml'}
+	*
+	*/
+	function isValidMimeType(mimeType) {
+		return _MIME_TYPES.indexOf(mimeType) > -1;
+	}
+	/**
+	* Namespaces that are used in this code base.
+	*
+	* @see http://www.w3.org/TR/REC-xml-names
+	*/
+	var NAMESPACE = freeze({
+		/**
+		* The XHTML namespace.
+		*
+		* @see http://www.w3.org/1999/xhtml
+		*/
+		HTML: "http://www.w3.org/1999/xhtml",
+		/**
+		* The SVG namespace.
+		*
+		* @see http://www.w3.org/2000/svg
+		*/
+		SVG: "http://www.w3.org/2000/svg",
+		/**
+		* The `xml:` namespace.
+		*
+		* @see http://www.w3.org/XML/1998/namespace
+		*/
+		XML: "http://www.w3.org/XML/1998/namespace",
+		/**
+		* The `xmlns:` namespace.
+		*
+		* @see https://www.w3.org/2000/xmlns/
+		*/
+		XMLNS: "http://www.w3.org/2000/xmlns/"
+	});
+	exports.assign = assign;
+	exports.find = find;
+	exports.freeze = freeze;
+	exports.HTML_BOOLEAN_ATTRIBUTES = HTML_BOOLEAN_ATTRIBUTES;
+	exports.HTML_RAW_TEXT_ELEMENTS = HTML_RAW_TEXT_ELEMENTS;
+	exports.HTML_VOID_ELEMENTS = HTML_VOID_ELEMENTS;
+	exports.hasDefaultHTMLNamespace = hasDefaultHTMLNamespace;
+	exports.hasOwn = hasOwn;
+	exports.isHTMLBooleanAttribute = isHTMLBooleanAttribute;
+	exports.isHTMLRawTextElement = isHTMLRawTextElement;
+	exports.isHTMLEscapableRawTextElement = isHTMLEscapableRawTextElement;
+	exports.isHTMLMimeType = isHTMLMimeType;
+	exports.isHTMLVoidElement = isHTMLVoidElement;
+	exports.isValidMimeType = isValidMimeType;
+	exports.MIME_TYPE = MIME_TYPE;
+	exports.NAMESPACE = NAMESPACE;
+}));
+//#endregion
+//#region node_modules/docxtemplater/node_modules/@xmldom/xmldom/lib/errors.js
+var require_errors$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
+	var conventions = require_conventions();
+	function extendError(constructor, writableName) {
+		constructor.prototype = Object.create(Error.prototype, {
+			constructor: { value: constructor },
+			name: {
+				value: constructor.name,
+				enumerable: true,
+				writable: writableName
+			}
+		});
+	}
+	var DOMExceptionName = conventions.freeze({
+		/**
+		* the default value as defined by the spec
+		*/
+		Error: "Error",
+		/**
+		* @deprecated
+		* Use RangeError instead.
+		*/
+		IndexSizeError: "IndexSizeError",
+		/**
+		* @deprecated
+		* Just to match the related static code, not part of the spec.
+		*/
+		DomstringSizeError: "DomstringSizeError",
+		HierarchyRequestError: "HierarchyRequestError",
+		WrongDocumentError: "WrongDocumentError",
+		InvalidCharacterError: "InvalidCharacterError",
+		/**
+		* @deprecated
+		* Just to match the related static code, not part of the spec.
+		*/
+		NoDataAllowedError: "NoDataAllowedError",
+		NoModificationAllowedError: "NoModificationAllowedError",
+		NotFoundError: "NotFoundError",
+		NotSupportedError: "NotSupportedError",
+		InUseAttributeError: "InUseAttributeError",
+		InvalidStateError: "InvalidStateError",
+		SyntaxError: "SyntaxError",
+		InvalidModificationError: "InvalidModificationError",
+		NamespaceError: "NamespaceError",
+		/**
+		* @deprecated
+		* Use TypeError for invalid arguments,
+		* "NotSupportedError" DOMException for unsupported operations,
+		* and "NotAllowedError" DOMException for denied requests instead.
+		*/
+		InvalidAccessError: "InvalidAccessError",
+		/**
+		* @deprecated
+		* Just to match the related static code, not part of the spec.
+		*/
+		ValidationError: "ValidationError",
+		/**
+		* @deprecated
+		* Use TypeError instead.
+		*/
+		TypeMismatchError: "TypeMismatchError",
+		SecurityError: "SecurityError",
+		NetworkError: "NetworkError",
+		AbortError: "AbortError",
+		/**
+		* @deprecated
+		* Just to match the related static code, not part of the spec.
+		*/
+		URLMismatchError: "URLMismatchError",
+		QuotaExceededError: "QuotaExceededError",
+		TimeoutError: "TimeoutError",
+		InvalidNodeTypeError: "InvalidNodeTypeError",
+		DataCloneError: "DataCloneError",
+		EncodingError: "EncodingError",
+		NotReadableError: "NotReadableError",
+		UnknownError: "UnknownError",
+		ConstraintError: "ConstraintError",
+		DataError: "DataError",
+		TransactionInactiveError: "TransactionInactiveError",
+		ReadOnlyError: "ReadOnlyError",
+		VersionError: "VersionError",
+		OperationError: "OperationError",
+		NotAllowedError: "NotAllowedError",
+		OptOutError: "OptOutError"
+	});
+	var DOMExceptionNames = Object.keys(DOMExceptionName);
+	function isValidDomExceptionCode(value) {
+		return typeof value === "number" && value >= 1 && value <= 25;
+	}
+	function endsWithError(value) {
+		return typeof value === "string" && value.substring(value.length - DOMExceptionName.Error.length) === DOMExceptionName.Error;
+	}
+	/**
+	* DOM operations only raise exceptions in "exceptional" circumstances, i.e., when an operation
+	* is impossible to perform (either for logical reasons, because data is lost, or because the
+	* implementation has become unstable). In general, DOM methods return specific error values in
+	* ordinary processing situations, such as out-of-bound errors when using NodeList.
+	*
+	* Implementations should raise other exceptions under other circumstances. For example,
+	* implementations should raise an implementation-dependent exception if a null argument is
+	* passed when null was not expected.
+	*
+	* This implementation supports the following usages:
+	* 1. according to the living standard (both arguments are optional):
+	* ```
+	* new DOMException("message (can be empty)", DOMExceptionNames.HierarchyRequestError)
+	* ```
+	* 2. according to previous xmldom implementation (only the first argument is required):
+	* ```
+	* new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "optional message")
+	* ```
+	* both result in the proper name being set.
+	*
+	* @class DOMException
+	* @param {number | string} messageOrCode
+	* The reason why an operation is not acceptable.
+	* If it is a number, it is used to determine the `name`, see
+	* {@link https://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-258A00AF ExceptionCode}
+	* @param {string | keyof typeof DOMExceptionName | Error} [nameOrMessage]
+	* The `name` to use for the error.
+	* If `messageOrCode` is a number, this arguments is used as the `message` instead.
+	* @augments Error
+	* @see https://webidl.spec.whatwg.org/#idl-DOMException
+	* @see https://webidl.spec.whatwg.org/#dfn-error-names-table
+	* @see https://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-17189187
+	* @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/ecma-script-binding.html
+	* @see http://www.w3.org/TR/REC-DOM-Level-1/ecma-script-language-binding.html
+	*/
+	function DOMException(messageOrCode, nameOrMessage) {
+		if (isValidDomExceptionCode(messageOrCode)) {
+			this.name = DOMExceptionNames[messageOrCode];
+			this.message = nameOrMessage || "";
+		} else {
+			this.message = messageOrCode;
+			this.name = endsWithError(nameOrMessage) ? nameOrMessage : DOMExceptionName.Error;
+		}
+		if (Error.captureStackTrace) Error.captureStackTrace(this, DOMException);
+	}
+	extendError(DOMException, true);
+	Object.defineProperties(DOMException.prototype, { code: {
+		enumerable: true,
+		get: function() {
+			var code = DOMExceptionNames.indexOf(this.name);
+			if (isValidDomExceptionCode(code)) return code;
+			return 0;
+		}
+	} });
+	var ExceptionCode = {
+		INDEX_SIZE_ERR: 1,
+		DOMSTRING_SIZE_ERR: 2,
+		HIERARCHY_REQUEST_ERR: 3,
+		WRONG_DOCUMENT_ERR: 4,
+		INVALID_CHARACTER_ERR: 5,
+		NO_DATA_ALLOWED_ERR: 6,
+		NO_MODIFICATION_ALLOWED_ERR: 7,
+		NOT_FOUND_ERR: 8,
+		NOT_SUPPORTED_ERR: 9,
+		INUSE_ATTRIBUTE_ERR: 10,
+		INVALID_STATE_ERR: 11,
+		SYNTAX_ERR: 12,
+		INVALID_MODIFICATION_ERR: 13,
+		NAMESPACE_ERR: 14,
+		INVALID_ACCESS_ERR: 15,
+		VALIDATION_ERR: 16,
+		TYPE_MISMATCH_ERR: 17,
+		SECURITY_ERR: 18,
+		NETWORK_ERR: 19,
+		ABORT_ERR: 20,
+		URL_MISMATCH_ERR: 21,
+		QUOTA_EXCEEDED_ERR: 22,
+		TIMEOUT_ERR: 23,
+		INVALID_NODE_TYPE_ERR: 24,
+		DATA_CLONE_ERR: 25
+	};
+	var entries = Object.entries(ExceptionCode);
+	for (var i = 0; i < entries.length; i++) {
+		var key = entries[i][0];
+		DOMException[key] = entries[i][1];
+	}
+	/**
+	* Creates an error that will not be caught by XMLReader aka the SAX parser.
+	*
+	* @class
+	* @param {string} message
+	* @param {any} [locator]
+	*/
+	function ParseError(message, locator) {
+		this.message = message;
+		this.locator = locator;
+		if (Error.captureStackTrace) Error.captureStackTrace(this, ParseError);
+	}
+	extendError(ParseError);
+	exports.DOMException = DOMException;
+	exports.DOMExceptionName = DOMExceptionName;
+	exports.ExceptionCode = ExceptionCode;
+	exports.ParseError = ParseError;
+}));
+//#endregion
+//#region node_modules/docxtemplater/node_modules/@xmldom/xmldom/lib/grammar.js
+var require_grammar = /* @__PURE__ */ __commonJSMin(((exports) => {
+	/**
+	* Detects relevant unicode support for regular expressions in the runtime.
+	* Should the runtime not accepts the flag `u` or unicode ranges,
+	* character classes without unicode handling will be used.
+	*
+	* @param {typeof RegExp} [RegExpImpl=RegExp]
+	* For testing: the RegExp class.
+	* @returns {boolean}
+	* @see https://node.green/#ES2015-syntax-RegExp--y--and--u--flags
+	*/
+	function detectUnicodeSupport(RegExpImpl) {
+		try {
+			if (typeof RegExpImpl !== "function") RegExpImpl = RegExp;
+			var match = new RegExpImpl("𝌆", "u").exec("𝌆");
+			return !!match && match[0].length === 2;
+		} catch (error) {}
+		return false;
+	}
+	var UNICODE_SUPPORT = detectUnicodeSupport();
+	/**
+	* Removes `[`, `]` and any trailing quantifiers from the source of a RegExp.
+	*
+	* @param {RegExp} regexp
+	*/
+	function chars(regexp) {
+		if (regexp.source[0] !== "[") throw new Error(regexp + " can not be used with chars");
+		return regexp.source.slice(1, regexp.source.lastIndexOf("]"));
+	}
+	/**
+	* Creates a new character list regular expression,
+	* by removing `search` from the source of `regexp`.
+	*
+	* @param {RegExp} regexp
+	* @param {string} search
+	* The character(s) to remove.
+	* @returns {RegExp}
+	*/
+	function chars_without(regexp, search) {
+		if (regexp.source[0] !== "[") throw new Error("/" + regexp.source + "/ can not be used with chars_without");
+		if (!search || typeof search !== "string") throw new Error(JSON.stringify(search) + " is not a valid search");
+		if (regexp.source.indexOf(search) === -1) throw new Error("\"" + search + "\" is not is /" + regexp.source + "/");
+		if (search === "-" && regexp.source.indexOf(search) !== 1) throw new Error("\"" + search + "\" is not at the first postion of /" + regexp.source + "/");
+		return new RegExp(regexp.source.replace(search, ""), UNICODE_SUPPORT ? "u" : "");
+	}
+	/**
+	* Combines and Regular expressions correctly by using `RegExp.source`.
+	*
+	* @param {...(RegExp | string)[]} args
+	* @returns {RegExp}
+	*/
+	function reg(args) {
+		var self = this;
+		return new RegExp(Array.prototype.slice.call(arguments).map(function(part) {
+			var isStr = typeof part === "string";
+			if (isStr && self === void 0 && part === "|") throw new Error("use regg instead of reg to wrap expressions with `|`!");
+			return isStr ? part : part.source;
+		}).join(""), UNICODE_SUPPORT ? "mu" : "m");
+	}
+	/**
+	* Like `reg` but wraps the expression in `(?:`,`)` to create a non tracking group.
+	*
+	* @param {...(RegExp | string)[]} args
+	* @returns {RegExp}
+	*/
+	function regg(args) {
+		if (arguments.length === 0) throw new Error("no parameters provided");
+		return reg.apply(regg, ["(?:"].concat(Array.prototype.slice.call(arguments), [")"]));
+	}
+	/**
+	* A character usually appearing in wrongly converted strings.
+	*
+	* @type {string}
+	* @see https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character
+	* @see https://nodejs.dev/en/api/v18/buffer/#buffers-and-character-encodings
+	* @see https://www.unicode.org/faq/utf_bom.html#BOM
+	* @readonly
+	*/
+	var UNICODE_REPLACEMENT_CHARACTER = "�";
+	var Char = /[-\x09\x0A\x0D\x20-\x2C\x2E-\uD7FF\uE000-\uFFFD]/;
+	if (UNICODE_SUPPORT) Char = reg("[", chars(Char), "\\u{10000}-\\u{10FFFF}", "]");
+	var InvalidChar = new RegExp("[^" + chars(Char) + "]", UNICODE_SUPPORT ? "u" : "");
+	var _SChar = /[\x20\x09\x0D\x0A]/;
+	var SChar_s = chars(_SChar);
+	var S = reg(_SChar, "+");
+	var S_OPT = reg(_SChar, "*");
+	var NameStartChar = /[:_a-zA-Z\xC0-\xD6\xD8-\xF6\xF8-\u02FF\u0370-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
+	if (UNICODE_SUPPORT) NameStartChar = reg("[", chars(NameStartChar), "\\u{10000}-\\u{10FFFF}", "]");
+	var NameChar = reg("[", chars(NameStartChar), chars(/[-.0-9\xB7]/), chars(/[\u0300-\u036F\u203F-\u2040]/), "]");
+	var Name = reg(NameStartChar, NameChar, "*");
+	var Nmtoken = reg(NameChar, "+");
+	var Reference = regg(reg("&", Name, ";"), "|", regg(/&#[0-9]+;|&#x[0-9a-fA-F]+;/));
+	var PEReference = reg("%", Name, ";");
+	var EntityValue = regg(reg("\"", regg(/[^%&"]/, "|", PEReference, "|", Reference), "*", "\""), "|", reg("'", regg(/[^%&']/, "|", PEReference, "|", Reference), "*", "'"));
+	var AttValue = regg("\"", regg(/[^<&"]/, "|", Reference), "*", "\"", "|", "'", regg(/[^<&']/, "|", Reference), "*", "'");
+	var NCName = reg(chars_without(NameStartChar, ":"), chars_without(NameChar, ":"), "*");
+	/**
+	https://www.w3.org/TR/xml-names/#ns-qualnames
+	
+	```
+	[7] QName ::= PrefixedName | UnprefixedName
+	=== (NCName ':' NCName) | NCName
+	=== NCName (':' NCName)?
+	[8] PrefixedName ::= Prefix ':' LocalPart
+	=== NCName ':' NCName
+	[9] UnprefixedName ::= LocalPart
+	=== NCName
+	[10] Prefix ::= NCName
+	[11] LocalPart ::= NCName
+	```
+	*/
+	var QName = reg(NCName, regg(":", NCName), "?");
+	var QName_exact = reg("^", QName, "$");
+	var QName_group = reg("(", QName, ")");
+	var SystemLiteral = regg(/"[^"]*"|'[^']*'/);
+	var PI = reg(/^<\?/, "(", Name, ")", regg(S, "(", Char, "*?)"), "?", /\?>/);
+	var PubidChar = /[\x20\x0D\x0Aa-zA-Z0-9-'()+,./:=?;!*#@$_%]/;
+	var PubidLiteral = regg("\"", PubidChar, "*\"", "|", "'", chars_without(PubidChar, "'"), "*'");
+	var COMMENT_START = "<!--";
+	var COMMENT_END = "-->";
+	var Comment = reg(COMMENT_START, regg(chars_without(Char, "-"), "|", reg("-", chars_without(Char, "-"))), "*", COMMENT_END);
+	var PCDATA = "#PCDATA";
+	var contentspec = regg("EMPTY", "|", "ANY", "|", regg(reg(/\(/, S_OPT, PCDATA, regg(S_OPT, /\|/, S_OPT, QName), "*", S_OPT, /\)\*/), "|", reg(/\(/, S_OPT, PCDATA, S_OPT, /\)/)), "|", reg(/\([^>]+\)/, /[?*+]?/));
+	var elementdecl = reg("<!ELEMENT", S, regg(QName, "|", PEReference), S, regg(contentspec, "|", PEReference), S_OPT, ">");
+	var AttlistDecl = reg("<!ATTLIST", S, Name, regg(S, Name, S, regg(/CDATA|ID|IDREF|IDREFS|ENTITY|ENTITIES|NMTOKEN|NMTOKENS/, "|", regg(reg("NOTATION", S, /\(/, S_OPT, Name, regg(S_OPT, /\|/, S_OPT, Name), "*", S_OPT, /\)/), "|", reg(/\(/, S_OPT, Nmtoken, regg(S_OPT, /\|/, S_OPT, Nmtoken), "*", S_OPT, /\)/))), S, regg(/#REQUIRED|#IMPLIED/, "|", regg(regg("#FIXED", S), "?", AttValue))), "*", S_OPT, ">");
+	var ABOUT_LEGACY_COMPAT = "about:legacy-compat";
+	var ABOUT_LEGACY_COMPAT_SystemLiteral = regg("\"" + ABOUT_LEGACY_COMPAT + "\"", "|", "'" + ABOUT_LEGACY_COMPAT + "'");
+	var SYSTEM = "SYSTEM";
+	var PUBLIC = "PUBLIC";
+	var ExternalID = regg(regg(SYSTEM, S, SystemLiteral), "|", regg(PUBLIC, S, PubidLiteral, S, SystemLiteral));
+	var ExternalID_match = reg("^", regg(regg(SYSTEM, S, "(?<SystemLiteralOnly>", SystemLiteral, ")"), "|", regg(PUBLIC, S, "(?<PubidLiteral>", PubidLiteral, ")", S, "(?<SystemLiteral>", SystemLiteral, ")")));
+	var PubidLiteral_match = reg("^", PubidLiteral, "$");
+	var SystemLiteral_match = reg("^", SystemLiteral, "$");
+	var EntityDef = regg(EntityValue, "|", regg(ExternalID, regg(S, "NDATA", S, Name), "?"));
+	var ENTITY_DECL_START = "<!ENTITY";
+	var EntityDecl = regg(reg(ENTITY_DECL_START, S, Name, S, EntityDef, S_OPT, ">"), "|", reg(ENTITY_DECL_START, S, "%", S, Name, S, regg(EntityValue, "|", ExternalID), S_OPT, ">"));
+	var NotationDecl = reg("<!NOTATION", S, Name, S, regg(ExternalID, "|", reg(PUBLIC, S, PubidLiteral)), S_OPT, ">");
+	var Eq = reg(S_OPT, "=", S_OPT);
+	var VersionNum = /1[.]\d+/;
+	var VersionInfo = reg(S, "version", Eq, regg("'", VersionNum, "'", "|", "\"", VersionNum, "\""));
+	var EncName = /[A-Za-z][-A-Za-z0-9._]*/;
+	var XMLDecl = reg(/^<\?xml/, VersionInfo, regg(S, "encoding", Eq, regg("\"", EncName, "\"", "|", "'", EncName, "'")), "?", regg(S, "standalone", Eq, regg("'", regg("yes", "|", "no"), "'", "|", "\"", regg("yes", "|", "no"), "\"")), "?", S_OPT, /\?>/);
+	var DOCTYPE_DECL_START = "<!DOCTYPE";
+	var CDATA_START = "<![CDATA[";
+	var CDATA_END = "]]>";
+	var CDSect = reg(/<!\[CDATA\[/, reg(Char, "*?", /\]\]>/));
+	exports.chars = chars;
+	exports.chars_without = chars_without;
+	exports.detectUnicodeSupport = detectUnicodeSupport;
+	exports.reg = reg;
+	exports.regg = regg;
+	exports.ABOUT_LEGACY_COMPAT = ABOUT_LEGACY_COMPAT;
+	exports.ABOUT_LEGACY_COMPAT_SystemLiteral = ABOUT_LEGACY_COMPAT_SystemLiteral;
+	exports.AttlistDecl = AttlistDecl;
+	exports.CDATA_START = CDATA_START;
+	exports.CDATA_END = CDATA_END;
+	exports.CDSect = CDSect;
+	exports.Char = Char;
+	exports.Comment = Comment;
+	exports.COMMENT_START = COMMENT_START;
+	exports.COMMENT_END = COMMENT_END;
+	exports.DOCTYPE_DECL_START = DOCTYPE_DECL_START;
+	exports.elementdecl = elementdecl;
+	exports.EntityDecl = EntityDecl;
+	exports.EntityValue = EntityValue;
+	exports.ExternalID = ExternalID;
+	exports.ExternalID_match = ExternalID_match;
+	exports.Name = Name;
+	exports.NotationDecl = NotationDecl;
+	exports.Reference = Reference;
+	exports.PEReference = PEReference;
+	exports.PI = PI;
+	exports.PUBLIC = PUBLIC;
+	exports.PubidLiteral = PubidLiteral;
+	exports.PubidLiteral_match = PubidLiteral_match;
+	exports.QName = QName;
+	exports.QName_exact = QName_exact;
+	exports.QName_group = QName_group;
+	exports.S = S;
+	exports.SChar_s = SChar_s;
+	exports.S_OPT = S_OPT;
+	exports.SYSTEM = SYSTEM;
+	exports.SystemLiteral = SystemLiteral;
+	exports.SystemLiteral_match = SystemLiteral_match;
+	exports.InvalidChar = InvalidChar;
+	exports.UNICODE_REPLACEMENT_CHARACTER = UNICODE_REPLACEMENT_CHARACTER;
+	exports.UNICODE_SUPPORT = UNICODE_SUPPORT;
+	exports.XMLDecl = XMLDecl;
+}));
+//#endregion
+//#region node_modules/docxtemplater/node_modules/@xmldom/xmldom/lib/dom.js
+var require_dom = /* @__PURE__ */ __commonJSMin(((exports) => {
+	var conventions = require_conventions();
+	var find = conventions.find;
+	var hasDefaultHTMLNamespace = conventions.hasDefaultHTMLNamespace;
+	var hasOwn = conventions.hasOwn;
+	var isHTMLMimeType = conventions.isHTMLMimeType;
+	var isHTMLRawTextElement = conventions.isHTMLRawTextElement;
+	var isHTMLVoidElement = conventions.isHTMLVoidElement;
+	var MIME_TYPE = conventions.MIME_TYPE;
+	var NAMESPACE = conventions.NAMESPACE;
+	/**
+	* Private DOM Constructor symbol
+	*
+	* Internal symbol used for construction of all classes whose constructors should be private.
+	* Currently used for checks in `Node`, `Document`, `Element`, `Attr`, `CharacterData`, `Text`, `Comment`,
+	* `CDATASection`, `DocumentType`, `Notation`, `Entity`, `EntityReference`, `DocumentFragment`, `ProcessingInstruction`
+	* so the constructor can't be used from outside the module.
+	*/
+	var PDC = Symbol();
+	var errors = require_errors$1();
+	var DOMException = errors.DOMException;
+	var DOMExceptionName = errors.DOMExceptionName;
+	var g = require_grammar();
+	/**
+	* Checks if the given symbol equals the Private DOM Constructor symbol (PDC)
+	* and throws an Illegal constructor exception when the symbols don't match.
+	* This ensures that the constructor remains private and can't be used outside this module.
+	*/
+	function checkSymbol(symbol) {
+		if (symbol !== PDC) throw new TypeError("Illegal constructor");
+	}
+	/**
+	* A prerequisite for `[].filter`, to drop elements that are empty.
+	*
+	* @param {string} input
+	* The string to be checked.
+	* @returns {boolean}
+	* Returns `true` if the input string is not empty, `false` otherwise.
+	*/
+	function notEmptyString(input) {
+		return input !== "";
+	}
+	/**
+	* Splits a string on ASCII whitespace characters (U+0009 TAB, U+000A LF, U+000C FF, U+000D CR,
+	* U+0020 SPACE).
+	* It follows the definition from the infra specification from WHATWG.
+	*
+	* @param {string} input
+	* The string to be split.
+	* @returns {string[]}
+	* An array of the split strings. The array can be empty if the input string is empty or only
+	* contains whitespace characters.
+	* @see {@link https://infra.spec.whatwg.org/#split-on-ascii-whitespace}
+	* @see {@link https://infra.spec.whatwg.org/#ascii-whitespace}
+	*/
+	function splitOnASCIIWhitespace(input) {
+		return input ? input.split(/[\t\n\f\r ]+/).filter(notEmptyString) : [];
+	}
+	/**
+	* Adds element as a key to current if it is not already present.
+	*
+	* @param {Record<string, boolean | undefined>} current
+	* The current record object to which the element will be added as a key.
+	* The object's keys are string types and values are either boolean or undefined.
+	* @param {string} element
+	* The string to be added as a key to the current record.
+	* @returns {Record<string, boolean | undefined>}
+	* The updated record object after the addition of the new element.
+	*/
+	function orderedSetReducer(current, element) {
+		if (!hasOwn(current, element)) current[element] = true;
+		return current;
+	}
+	/**
+	* Converts a string into an ordered set by splitting the input on ASCII whitespace and
+	* ensuring uniqueness of elements.
+	* This follows the definition of an ordered set from the infra specification by WHATWG.
+	*
+	* @param {string} input
+	* The input string to be transformed into an ordered set.
+	* @returns {string[]}
+	* An array of unique strings obtained from the input, preserving the original order.
+	* The array can be empty if the input string is empty or only contains whitespace characters.
+	* @see {@link https://infra.spec.whatwg.org/#ordered-set}
+	*/
+	function toOrderedSet(input) {
+		if (!input) return [];
+		var list = splitOnASCIIWhitespace(input);
+		return Object.keys(list.reduce(orderedSetReducer, {}));
+	}
+	/**
+	* Uses `list.indexOf` to implement a function that behaves like `Array.prototype.includes`.
+	* This function is used in environments where `Array.prototype.includes` may not be available.
+	*
+	* @param {any[]} list
+	* The array in which to search for the element.
+	* @returns {function(any): boolean}
+	* A function that accepts an element and returns a boolean indicating whether the element is
+	* included in the provided list.
+	*/
+	function arrayIncludes(list) {
+		return function(element) {
+			return list && list.indexOf(element) !== -1;
+		};
+	}
+	/**
+	* Validates a qualified name based on the criteria provided in the DOM specification by
+	* WHATWG.
+	*
+	* @param {string} qualifiedName
+	* The qualified name to be validated.
+	* @throws {DOMException}
+	* With code {@link DOMException.INVALID_CHARACTER_ERR} if the qualified name contains an
+	* invalid character.
+	* @see {@link https://dom.spec.whatwg.org/#validate}
+	*/
+	function validateQualifiedName(qualifiedName) {
+		if (!g.QName_exact.test(qualifiedName)) throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "invalid character in qualified name \"" + qualifiedName + "\"");
+	}
+	/**
+	* Validates a qualified name and the namespace associated with it,
+	* based on the criteria provided in the DOM specification by WHATWG.
+	*
+	* @param {string | null} namespace
+	* The namespace to be validated. It can be a string or null.
+	* @param {string} qualifiedName
+	* The qualified name to be validated.
+	* @returns {[namespace: string | null, prefix: string | null, localName: string]}
+	* Returns a tuple with the namespace,
+	* prefix and local name of the qualified name.
+	* @throws {DOMException}
+	* Throws a DOMException if the qualified name or the namespace is not valid.
+	* @see {@link https://dom.spec.whatwg.org/#validate-and-extract}
+	*/
+	function validateAndExtract(namespace, qualifiedName) {
+		validateQualifiedName(qualifiedName);
+		namespace = namespace || null;
+		/**
+		* @type {string | null}
+		*/
+		var prefix = null;
+		var localName = qualifiedName;
+		if (qualifiedName.indexOf(":") >= 0) {
+			var splitResult = qualifiedName.split(":");
+			prefix = splitResult[0];
+			localName = splitResult[1];
+		}
+		if (prefix !== null && namespace === null) throw new DOMException(DOMException.NAMESPACE_ERR, "prefix is non-null and namespace is null");
+		if (prefix === "xml" && namespace !== conventions.NAMESPACE.XML) throw new DOMException(DOMException.NAMESPACE_ERR, "prefix is \"xml\" and namespace is not the XML namespace");
+		if ((prefix === "xmlns" || qualifiedName === "xmlns") && namespace !== conventions.NAMESPACE.XMLNS) throw new DOMException(DOMException.NAMESPACE_ERR, "either qualifiedName or prefix is \"xmlns\" and namespace is not the XMLNS namespace");
+		if (namespace === conventions.NAMESPACE.XMLNS && prefix !== "xmlns" && qualifiedName !== "xmlns") throw new DOMException(DOMException.NAMESPACE_ERR, "namespace is the XMLNS namespace and neither qualifiedName nor prefix is \"xmlns\"");
+		return [
+			namespace,
+			prefix,
+			localName
+		];
+	}
+	/**
+	* Copies properties from one object to another.
+	* It only copies the object's own (not inherited) properties.
+	*
+	* @param {Object} src
+	* The source object from which properties are copied.
+	* @param {Object} dest
+	* The destination object to which properties are copied.
+	*/
+	function copy(src, dest) {
+		for (var p in src) if (hasOwn(src, p)) dest[p] = src[p];
+	}
+	/**
+	* Extends a class with the properties and methods of a super class.
+	* It uses a form of prototypal inheritance, and establishes the `constructor` property
+	* correctly(?).
+	*
+	* It is not clear to the current maintainers if this implementation is making sense,
+	* since it creates an intermediate prototype function,
+	* which all properties of `Super` are copied onto using `_copy`.
+	*
+	* @param {Object} Class
+	* The class that is to be extended.
+	* @param {Object} Super
+	* The super class from which properties and methods are inherited.
+	* @private
+	*/
+	function _extends(Class, Super) {
+		var pt = Class.prototype;
+		if (!(pt instanceof Super)) {
+			function t() {}
+			t.prototype = Super.prototype;
+			t = new t();
+			copy(pt, t);
+			Class.prototype = pt = t;
+		}
+		if (pt.constructor != Class) {
+			if (typeof Class != "function") console.error("unknown Class:" + Class);
+			pt.constructor = Class;
+		}
+	}
+	var NodeType = {};
+	var ELEMENT_NODE = NodeType.ELEMENT_NODE = 1;
+	var ATTRIBUTE_NODE = NodeType.ATTRIBUTE_NODE = 2;
+	var TEXT_NODE = NodeType.TEXT_NODE = 3;
+	var CDATA_SECTION_NODE = NodeType.CDATA_SECTION_NODE = 4;
+	var ENTITY_REFERENCE_NODE = NodeType.ENTITY_REFERENCE_NODE = 5;
+	var ENTITY_NODE = NodeType.ENTITY_NODE = 6;
+	var PROCESSING_INSTRUCTION_NODE = NodeType.PROCESSING_INSTRUCTION_NODE = 7;
+	var COMMENT_NODE = NodeType.COMMENT_NODE = 8;
+	var DOCUMENT_NODE = NodeType.DOCUMENT_NODE = 9;
+	var DOCUMENT_TYPE_NODE = NodeType.DOCUMENT_TYPE_NODE = 10;
+	var DOCUMENT_FRAGMENT_NODE = NodeType.DOCUMENT_FRAGMENT_NODE = 11;
+	var NOTATION_NODE = NodeType.NOTATION_NODE = 12;
+	var DocumentPosition = conventions.freeze({
+		DOCUMENT_POSITION_DISCONNECTED: 1,
+		DOCUMENT_POSITION_PRECEDING: 2,
+		DOCUMENT_POSITION_FOLLOWING: 4,
+		DOCUMENT_POSITION_CONTAINS: 8,
+		DOCUMENT_POSITION_CONTAINED_BY: 16,
+		DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC: 32
+	});
+	/**
+	* Finds the common ancestor in two parent chains.
+	*
+	* @param {Node[]} a
+	* The first parent chain.
+	* @param {Node[]} b
+	* The second parent chain.
+	* @returns {Node}
+	* The common ancestor node if it exists. If there is no common ancestor, the function will
+	* return `null`.
+	*/
+	function commonAncestor(a, b) {
+		if (b.length < a.length) return commonAncestor(b, a);
+		var c = null;
+		for (var n in a) {
+			if (a[n] !== b[n]) return c;
+			c = a[n];
+		}
+		return c;
+	}
+	/**
+	* Assigns a unique identifier to a document to ensure consistency while comparing unrelated
+	* nodes.
+	*
+	* @param {Document} doc
+	* The document to which a unique identifier is to be assigned.
+	* @returns {string}
+	* The unique identifier of the document. If the document already had a unique identifier, the
+	* function will return the existing one.
+	*/
+	function docGUID(doc) {
+		if (!doc.guid) doc.guid = Math.random();
+		return doc.guid;
+	}
+	/**
+	* The NodeList interface provides the abstraction of an ordered collection of nodes,
+	* without defining or constraining how this collection is implemented.
+	* NodeList objects in the DOM are live.
+	* The items in the NodeList are accessible via an integral index, starting from 0.
+	* You can also access the items of the NodeList with a `for...of` loop.
+	*
+	* @class NodeList
+	* @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-536297177
+	* @constructs NodeList
+	*/
+	function NodeList() {}
+	NodeList.prototype = {
+		/**
+		* The number of nodes in the list. The range of valid child node indices is 0 to length-1
+		* inclusive.
+		*
+		* @type {number}
+		*/
+		length: 0,
+		/**
+		* Returns the item at `index`. If index is greater than or equal to the number of nodes in
+		* the list, this returns null.
+		*
+		* @param index
+		* Unsigned long Index into the collection.
+		* @returns {Node | null}
+		* The node at position `index` in the NodeList,
+		* or null if that is not a valid index.
+		*/
+		item: function(index) {
+			return index >= 0 && index < this.length ? this[index] : null;
+		},
+		/**
+		* Returns a string representation of the NodeList.
+		*
+		* Accepts the same `options` object as `XMLSerializer.prototype.serializeToString`
+		* (`requireWellFormed`, `splitCDATASections`, `nodeFilter`). Passing a function is treated as
+		* a legacy `nodeFilter` for backward compatibility.
+		*
+		* @param {Object | function} [options]
+		* @param {boolean} [options.requireWellFormed=false]
+		* @param {boolean} [options.splitCDATASections=true]
+		* @param {function} [options.nodeFilter]
+		* @returns {string}
+		*/
+		toString: function(options) {
+			var opts;
+			if (typeof options === "function") opts = {
+				requireWellFormed: false,
+				splitCDATASections: true,
+				nodeFilter: options
+			};
+			else if (!!options) opts = {
+				requireWellFormed: !!options.requireWellFormed,
+				splitCDATASections: options.splitCDATASections !== false,
+				nodeFilter: options.nodeFilter || null
+			};
+			else opts = {
+				requireWellFormed: false,
+				splitCDATASections: true,
+				nodeFilter: null
+			};
+			for (var buf = [], i = 0; i < this.length; i++) serializeToString(this[i], buf, null, opts);
+			return buf.join("");
+		},
+		/**
+		* Filters the NodeList based on a predicate.
+		*
+		* @param {function(Node): boolean} predicate
+		* - A predicate function to filter the NodeList.
+		* @returns {Node[]}
+		* An array of nodes that satisfy the predicate.
+		* @private
+		*/
+		filter: function(predicate) {
+			return Array.prototype.filter.call(this, predicate);
+		},
+		/**
+		* Returns the first index at which a given node can be found in the NodeList, or -1 if it is
+		* not present.
+		*
+		* @param {Node} item
+		* - The Node item to locate in the NodeList.
+		* @returns {number}
+		* The first index of the node in the NodeList; -1 if not found.
+		* @private
+		*/
+		indexOf: function(item) {
+			return Array.prototype.indexOf.call(this, item);
+		}
+	};
+	NodeList.prototype[Symbol.iterator] = function() {
+		var me = this;
+		var index = 0;
+		return {
+			next: function() {
+				if (index < me.length) return {
+					value: me[index++],
+					done: false
+				};
+				else return { done: true };
+			},
+			return: function() {
+				return { done: true };
+			}
+		};
+	};
+	/**
+	* Represents a live collection of nodes that is automatically updated when its associated
+	* document changes.
+	*
+	* @class LiveNodeList
+	* @param {Node} node
+	* The associated node.
+	* @param {function} refresh
+	* The function to refresh the live node list.
+	* @augments NodeList
+	* @constructs LiveNodeList
+	*/
+	function LiveNodeList(node, refresh) {
+		this._node = node;
+		this._refresh = refresh;
+		_updateLiveList(this);
+	}
+	/**
+	* Updates the live node list.
+	*
+	* @param {LiveNodeList} list
+	* The live node list to update.
+	* @private
+	*/
+	function _updateLiveList(list) {
+		var inc = list._node._inc || list._node.ownerDocument._inc;
+		if (list._inc !== inc) {
+			var ls = list._refresh(list._node);
+			__set__(list, "length", ls.length);
+			if (!list.$$length || ls.length < list.$$length) {
+				for (var i = ls.length; i in list; i++) if (hasOwn(list, i)) delete list[i];
+			}
+			copy(ls, list);
+			list._inc = inc;
+		}
+	}
+	/**
+	* Returns the node at position `index` in the LiveNodeList, or null if that is not a valid
+	* index.
+	*
+	* @param {number} i
+	* Index into the collection.
+	* @returns {Node | null}
+	* The node at position `index` in the LiveNodeList, or null if that is not a valid index.
+	*/
+	LiveNodeList.prototype.item = function(i) {
+		_updateLiveList(this);
+		return this[i] || null;
+	};
+	_extends(LiveNodeList, NodeList);
+	/**
+	* Objects implementing the NamedNodeMap interface are used to represent collections of nodes
+	* that can be accessed by name.
+	* Note that NamedNodeMap does not inherit from NodeList;
+	* NamedNodeMaps are not maintained in any particular order.
+	* Objects contained in an object implementing NamedNodeMap may also be accessed by an ordinal
+	* index,
+	* but this is simply to allow convenient enumeration of the contents of a NamedNodeMap,
+	* and does not imply that the DOM specifies an order to these Nodes.
+	* NamedNodeMap objects in the DOM are live.
+	* used for attributes or DocumentType entities
+	*
+	* This implementation only supports property indices, but does not support named properties,
+	* as specified in the living standard.
+	*
+	* @class NamedNodeMap
+	* @see https://dom.spec.whatwg.org/#interface-namednodemap
+	* @see https://webidl.spec.whatwg.org/#dfn-supported-property-names
+	* @constructs NamedNodeMap
+	*/
+	function NamedNodeMap() {}
+	/**
+	* Returns the index of a node within the list.
+	*
+	* @param {Array} list
+	* The list of nodes.
+	* @param {Node} node
+	* The node to find.
+	* @returns {number}
+	* The index of the node within the list, or -1 if not found.
+	* @private
+	*/
+	function _findNodeIndex(list, node) {
+		var i = 0;
+		while (i < list.length) {
+			if (list[i] === node) return i;
+			i++;
+		}
+	}
+	/**
+	* Adds a new attribute to the list and updates the owner element of the attribute.
+	*
+	* @param {Element} el
+	* The element which will become the owner of the new attribute.
+	* @param {NamedNodeMap} list
+	* The list to which the new attribute will be added.
+	* @param {Attr} newAttr
+	* The new attribute to be added.
+	* @param {Attr} oldAttr
+	* The old attribute to be replaced, or null if no attribute is to be replaced.
+	* @returns {void}
+	* @private
+	*/
+	function _addNamedNode(el, list, newAttr, oldAttr) {
+		if (oldAttr) list[_findNodeIndex(list, oldAttr)] = newAttr;
+		else {
+			list[list.length] = newAttr;
+			list.length++;
+		}
+		if (el) {
+			newAttr.ownerElement = el;
+			var doc = el.ownerDocument;
+			if (doc) {
+				oldAttr && _onRemoveAttribute(doc, el, oldAttr);
+				_onAddAttribute(doc, el, newAttr);
+			}
+		}
+	}
+	/**
+	* Removes an attribute from the list and updates the owner element of the attribute.
+	*
+	* @param {Element} el
+	* The element which is the current owner of the attribute.
+	* @param {NamedNodeMap} list
+	* The list from which the attribute will be removed.
+	* @param {Attr} attr
+	* The attribute to be removed.
+	* @returns {void}
+	* @private
+	*/
+	function _removeNamedNode(el, list, attr) {
+		var i = _findNodeIndex(list, attr);
+		if (i >= 0) {
+			var lastIndex = list.length - 1;
+			while (i <= lastIndex) list[i] = list[++i];
+			list.length = lastIndex;
+			if (el) {
+				var doc = el.ownerDocument;
+				if (doc) _onRemoveAttribute(doc, el, attr);
+				attr.ownerElement = null;
+			}
+		}
+	}
+	NamedNodeMap.prototype = {
+		length: 0,
+		item: NodeList.prototype.item,
+		/**
+		* Get an attribute by name. Note: Name is in lower case in case of HTML namespace and
+		* document.
+		*
+		* @param {string} localName
+		* The local name of the attribute.
+		* @returns {Attr | null}
+		* The attribute with the given local name, or null if no such attribute exists.
+		* @see https://dom.spec.whatwg.org/#concept-element-attributes-get-by-name
+		*/
+		getNamedItem: function(localName) {
+			if (this._ownerElement && this._ownerElement._isInHTMLDocumentAndNamespace()) localName = localName.toLowerCase();
+			var i = 0;
+			while (i < this.length) {
+				var attr = this[i];
+				if (attr.nodeName === localName) return attr;
+				i++;
+			}
+			return null;
+		},
+		/**
+		* Set an attribute.
+		*
+		* @param {Attr} attr
+		* The attribute to set.
+		* @returns {Attr | null}
+		* The old attribute with the same local name and namespace URI as the new one, or null if no
+		* such attribute exists.
+		* @throws {DOMException}
+		* With code:
+		* - {@link INUSE_ATTRIBUTE_ERR} - If the attribute is already an attribute of another
+		* element.
+		* @see https://dom.spec.whatwg.org/#concept-element-attributes-set
+		*/
+		setNamedItem: function(attr) {
+			var el = attr.ownerElement;
+			if (el && el !== this._ownerElement) throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR);
+			var oldAttr = this.getNamedItemNS(attr.namespaceURI, attr.localName);
+			if (oldAttr === attr) return attr;
+			_addNamedNode(this._ownerElement, this, attr, oldAttr);
+			return oldAttr;
+		},
+		/**
+		* Set an attribute, replacing an existing attribute with the same local name and namespace
+		* URI if one exists.
+		*
+		* @param {Attr} attr
+		* The attribute to set.
+		* @returns {Attr | null}
+		* The old attribute with the same local name and namespace URI as the new one, or null if no
+		* such attribute exists.
+		* @throws {DOMException}
+		* Throws a DOMException with the name "InUseAttributeError" if the attribute is already an
+		* attribute of another element.
+		* @see https://dom.spec.whatwg.org/#concept-element-attributes-set
+		*/
+		setNamedItemNS: function(attr) {
+			return this.setNamedItem(attr);
+		},
+		/**
+		* Removes an attribute specified by the local name.
+		*
+		* @param {string} localName
+		* The local name of the attribute to be removed.
+		* @returns {Attr}
+		* The attribute node that was removed.
+		* @throws {DOMException}
+		* With code:
+		* - {@link DOMException.NOT_FOUND_ERR} if no attribute with the given name is found.
+		* @see https://dom.spec.whatwg.org/#dom-namednodemap-removenameditem
+		* @see https://dom.spec.whatwg.org/#concept-element-attributes-remove-by-name
+		*/
+		removeNamedItem: function(localName) {
+			var attr = this.getNamedItem(localName);
+			if (!attr) throw new DOMException(DOMException.NOT_FOUND_ERR, localName);
+			_removeNamedNode(this._ownerElement, this, attr);
+			return attr;
+		},
+		/**
+		* Removes an attribute specified by the namespace and local name.
+		*
+		* @param {string | null} namespaceURI
+		* The namespace URI of the attribute to be removed.
+		* @param {string} localName
+		* The local name of the attribute to be removed.
+		* @returns {Attr}
+		* The attribute node that was removed.
+		* @throws {DOMException}
+		* With code:
+		* - {@link DOMException.NOT_FOUND_ERR} if no attribute with the given namespace URI and local
+		* name is found.
+		* @see https://dom.spec.whatwg.org/#dom-namednodemap-removenameditemns
+		* @see https://dom.spec.whatwg.org/#concept-element-attributes-remove-by-namespace
+		*/
+		removeNamedItemNS: function(namespaceURI, localName) {
+			var attr = this.getNamedItemNS(namespaceURI, localName);
+			if (!attr) throw new DOMException(DOMException.NOT_FOUND_ERR, namespaceURI ? namespaceURI + " : " + localName : localName);
+			_removeNamedNode(this._ownerElement, this, attr);
+			return attr;
+		},
+		/**
+		* Get an attribute by namespace and local name.
+		*
+		* @param {string | null} namespaceURI
+		* The namespace URI of the attribute.
+		* @param {string} localName
+		* The local name of the attribute.
+		* @returns {Attr | null}
+		* The attribute with the given namespace URI and local name, or null if no such attribute
+		* exists.
+		* @see https://dom.spec.whatwg.org/#concept-element-attributes-get-by-namespace
+		*/
+		getNamedItemNS: function(namespaceURI, localName) {
+			if (!namespaceURI) namespaceURI = null;
+			var i = 0;
+			while (i < this.length) {
+				var node = this[i];
+				if (node.localName === localName && node.namespaceURI === namespaceURI) return node;
+				i++;
+			}
+			return null;
+		}
+	};
+	NamedNodeMap.prototype[Symbol.iterator] = function() {
+		var me = this;
+		var index = 0;
+		return {
+			next: function() {
+				if (index < me.length) return {
+					value: me[index++],
+					done: false
+				};
+				else return { done: true };
+			},
+			return: function() {
+				return { done: true };
+			}
+		};
+	};
+	/**
+	* The DOMImplementation interface provides a number of methods for performing operations that
+	* are independent of any particular instance of the document object model.
+	*
+	* The DOMImplementation interface represents an object providing methods which are not
+	* dependent on any particular document.
+	* Such an object is returned by the `Document.implementation` property.
+	*
+	* **The individual methods describe the differences compared to the specs**.
+	*
+	* @class DOMImplementation
+	* @see https://developer.mozilla.org/en-US/docs/Web/API/DOMImplementation MDN
+	* @see https://www.w3.org/TR/REC-DOM-Level-1/level-one-core.html#ID-102161490 DOM Level 1 Core
+	*      (Initial)
+	* @see https://www.w3.org/TR/DOM-Level-2-Core/core.html#ID-102161490 DOM Level 2 Core
+	* @see https://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-102161490 DOM Level 3 Core
+	* @see https://dom.spec.whatwg.org/#domimplementation DOM Living Standard
+	* @constructs DOMImplementation
+	*/
+	function DOMImplementation() {}
+	DOMImplementation.prototype = {
+		/**
+		* Test if the DOM implementation implements a specific feature and version, as specified in
+		* {@link https://www.w3.org/TR/DOM-Level-3-Core/core.html#DOMFeatures DOM Features}.
+		*
+		* The DOMImplementation.hasFeature() method returns a Boolean flag indicating if a given
+		* feature is supported. The different implementations fairly diverged in what kind of
+		* features were reported. The latest version of the spec settled to force this method to
+		* always return true, where the functionality was accurate and in use.
+		*
+		* @deprecated
+		* It is deprecated and modern browsers return true in all cases.
+		* @function DOMImplementation#hasFeature
+		* @param {string} feature
+		* The name of the feature to test.
+		* @param {string} [version]
+		* This is the version number of the feature to test.
+		* @returns {boolean}
+		* Always returns true.
+		* @see https://developer.mozilla.org/en-US/docs/Web/API/DOMImplementation/hasFeature MDN
+		* @see https://www.w3.org/TR/REC-DOM-Level-1/level-one-core.html#ID-5CED94D7 DOM Level 1 Core
+		* @see https://dom.spec.whatwg.org/#dom-domimplementation-hasfeature DOM Living Standard
+		* @see https://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-5CED94D7 DOM Level 3 Core
+		*/
+		hasFeature: function(feature, version) {
+			return true;
+		},
+		/**
+		* Creates a DOM Document object of the specified type with its document element. Note that
+		* based on the {@link DocumentType}
+		* given to create the document, the implementation may instantiate specialized
+		* {@link Document} objects that support additional features than the "Core", such as "HTML"
+		* {@link https://www.w3.org/TR/DOM-Level-3-Core/references.html#DOM2HTML DOM Level 2 HTML}.
+		* On the other hand, setting the {@link DocumentType} after the document was created makes
+		* this very unlikely to happen. Alternatively, specialized {@link Document} creation methods,
+		* such as createHTMLDocument
+		* {@link https://www.w3.org/TR/DOM-Level-3-Core/references.html#DOM2HTML DOM Level 2 HTML},
+		* can be used to obtain specific types of {@link Document} objects.
+		*
+		* __It behaves slightly different from the description in the living standard__:
+		* - There is no interface/class `XMLDocument`, it returns a `Document`
+		* instance (with it's `type` set to `'xml'`).
+		* - `encoding`, `mode`, `origin`, `url` fields are currently not declared.
+		*
+		* @function DOMImplementation.createDocument
+		* @param {string | null} namespaceURI
+		* The
+		* {@link https://www.w3.org/TR/DOM-Level-3-Core/glossary.html#dt-namespaceURI namespace URI}
+		* of the document element to create or null.
+		* @param {string | null} qualifiedName
+		* The
+		* {@link https://www.w3.org/TR/DOM-Level-3-Core/glossary.html#dt-qualifiedname qualified name}
+		* of the document element to be created or null.
+		* @param {DocumentType | null} [doctype=null]
+		* The type of document to be created or null. When doctype is not null, its
+		* {@link Node#ownerDocument} attribute is set to the document being created. Default is
+		* `null`
+		* @returns {Document}
+		* A new {@link Document} object with its document element. If the NamespaceURI,
+		* qualifiedName, and doctype are null, the returned {@link Document} is empty with no
+		* document element.
+		* @throws {DOMException}
+		* With code:
+		*
+		* - `INVALID_CHARACTER_ERR`: Raised if the specified qualified name is not an XML name
+		* according to {@link https://www.w3.org/TR/DOM-Level-3-Core/references.html#XML XML 1.0}.
+		* - `NAMESPACE_ERR`: Raised if the qualifiedName is malformed, if the qualifiedName has a
+		* prefix and the namespaceURI is null, or if the qualifiedName is null and the namespaceURI
+		* is different from null, or if the qualifiedName has a prefix that is "xml" and the
+		* namespaceURI is different from "{@link http://www.w3.org/XML/1998/namespace}"
+		* {@link https://www.w3.org/TR/DOM-Level-3-Core/references.html#Namespaces XML Namespaces},
+		* or if the DOM implementation does not support the "XML" feature but a non-null namespace
+		* URI was provided, since namespaces were defined by XML.
+		* - `WRONG_DOCUMENT_ERR`: Raised if doctype has already been used with a different document
+		* or was created from a different implementation.
+		* - `NOT_SUPPORTED_ERR`: May be raised if the implementation does not support the feature
+		* "XML" and the language exposed through the Document does not support XML Namespaces (such
+		* as {@link https://www.w3.org/TR/DOM-Level-3-Core/references.html#HTML40 HTML 4.01}).
+		* @since DOM Level 2.
+		* @see {@link #createHTMLDocument}
+		* @see https://developer.mozilla.org/en-US/docs/Web/API/DOMImplementation/createDocument MDN
+		* @see https://dom.spec.whatwg.org/#dom-domimplementation-createdocument DOM Living Standard
+		* @see https://www.w3.org/TR/DOM-Level-3-Core/core.html#Level-2-Core-DOM-createDocument DOM
+		*      Level 3 Core
+		* @see https://www.w3.org/TR/DOM-Level-2-Core/core.html#Level-2-Core-DOM-createDocument DOM
+		*      Level 2 Core (initial)
+		*/
+		createDocument: function(namespaceURI, qualifiedName, doctype) {
+			var contentType = MIME_TYPE.XML_APPLICATION;
+			if (namespaceURI === NAMESPACE.HTML) contentType = MIME_TYPE.XML_XHTML_APPLICATION;
+			else if (namespaceURI === NAMESPACE.SVG) contentType = MIME_TYPE.XML_SVG_IMAGE;
+			var doc = new Document(PDC, { contentType });
+			doc.implementation = this;
+			doc.childNodes = new NodeList();
+			doc.doctype = doctype || null;
+			if (doctype) doc.appendChild(doctype);
+			if (qualifiedName) {
+				var root = doc.createElementNS(namespaceURI, qualifiedName);
+				doc.appendChild(root);
+			}
+			return doc;
+		},
+		/**
+		* Creates an empty DocumentType node. Entity declarations and notations are not made
+		* available. Entity reference expansions and default attribute additions do not occur.
+		*
+		* **This behavior is slightly different from the one in the specs**:
+		* - `encoding`, `mode`, `origin`, `url` fields are currently not declared.
+		* - `publicId` and `systemId` contain the raw data including any possible quotes,
+		*   so they can always be serialized back to the original value
+		* - `internalSubset` contains the raw string between `[` and `]` if present,
+		*   but is not parsed or validated in any form.
+		*
+		* @function DOMImplementation#createDocumentType
+		* @param {string} qualifiedName
+		* The {@link https://www.w3.org/TR/DOM-Level-3-Core/glossary.html#dt-qualifiedname qualified
+		* name} of the document type to be created.
+		* @param {string} [publicId]
+		* The external subset public identifier. Stored verbatim including surrounding quotes.
+		* When serialized with `requireWellFormed: true`, the serializer throws `InvalidStateError`
+		* if the value is non-empty and does not match the XML `PubidLiteral` production
+		* (W3C DOM Parsing §3.2.1.3; XML 1.0 production [12]). Creation-time validation is not
+		* enforced — deferred to a future breaking release.
+		* @param {string} [systemId]
+		* The external subset system identifier. Stored verbatim including surrounding quotes.
+		* When serialized with `requireWellFormed: true`, the serializer throws `InvalidStateError`
+		* if the value is non-empty and does not match the XML `SystemLiteral` production
+		* (W3C DOM Parsing §3.2.1.3; XML 1.0 production [11]). Creation-time validation is not
+		* enforced — deferred to a future breaking release.
+		* @param {string} [internalSubset]
+		* The internal subset or an empty string if it is not present. Stored verbatim.
+		* When serialized with `requireWellFormed: true`, the serializer throws `InvalidStateError`
+		* if the value contains `"]>"`. Creation-time validation is not enforced.
+		* @returns {DocumentType}
+		* A new {@link DocumentType} node with {@link Node#ownerDocument} set to null.
+		* @throws {DOMException}
+		* With code:
+		*
+		* - `INVALID_CHARACTER_ERR`: Raised if the specified qualified name is not an XML name
+		* according to {@link https://www.w3.org/TR/DOM-Level-3-Core/references.html#XML XML 1.0}.
+		* - `NAMESPACE_ERR`: Raised if the qualifiedName is malformed.
+		* - `NOT_SUPPORTED_ERR`: May be raised if the implementation does not support the feature
+		* "XML" and the language exposed through the Document does not support XML Namespaces (such
+		* as {@link https://www.w3.org/TR/DOM-Level-3-Core/references.html#HTML40 HTML 4.01}).
+		* @since DOM Level 2.
+		* @see https://developer.mozilla.org/en-US/docs/Web/API/DOMImplementation/createDocumentType
+		*      MDN
+		* @see https://dom.spec.whatwg.org/#dom-domimplementation-createdocumenttype DOM Living
+		*      Standard
+		* @see https://www.w3.org/TR/DOM-Level-3-Core/core.html#Level-3-Core-DOM-createDocType DOM
+		*      Level 3 Core
+		* @see https://www.w3.org/TR/DOM-Level-2-Core/core.html#Level-2-Core-DOM-createDocType DOM
+		*      Level 2 Core
+		* @see https://github.com/xmldom/xmldom/blob/master/CHANGELOG.md#050
+		* @see https://www.w3.org/TR/DOM-Level-2-Core/#core-ID-Core-DocType-internalSubset
+		* @prettierignore
+		*/
+		createDocumentType: function(qualifiedName, publicId, systemId, internalSubset) {
+			validateQualifiedName(qualifiedName);
+			var node = new DocumentType(PDC);
+			node.name = qualifiedName;
+			node.nodeName = qualifiedName;
+			node.publicId = publicId || "";
+			node.systemId = systemId || "";
+			node.internalSubset = internalSubset || "";
+			node.childNodes = new NodeList();
+			return node;
+		},
+		/**
+		* Returns an HTML document, that might already have a basic DOM structure.
+		*
+		* __It behaves slightly different from the description in the living standard__:
+		* - If the first argument is `false` no initial nodes are added (steps 3-7 in the specs are
+		* omitted)
+		* - `encoding`, `mode`, `origin`, `url` fields are currently not declared.
+		*
+		* @param {string | false} [title]
+		* A string containing the title to give the new HTML document.
+		* @returns {Document}
+		* The HTML document.
+		* @since WHATWG Living Standard.
+		* @see {@link #createDocument}
+		* @see https://dom.spec.whatwg.org/#dom-domimplementation-createhtmldocument
+		* @see https://dom.spec.whatwg.org/#html-document
+		*/
+		createHTMLDocument: function(title) {
+			var doc = new Document(PDC, { contentType: MIME_TYPE.HTML });
+			doc.implementation = this;
+			doc.childNodes = new NodeList();
+			if (title !== false) {
+				doc.doctype = this.createDocumentType("html");
+				doc.doctype.ownerDocument = doc;
+				doc.appendChild(doc.doctype);
+				var htmlNode = doc.createElement("html");
+				doc.appendChild(htmlNode);
+				var headNode = doc.createElement("head");
+				htmlNode.appendChild(headNode);
+				if (typeof title === "string") {
+					var titleNode = doc.createElement("title");
+					titleNode.appendChild(doc.createTextNode(title));
+					headNode.appendChild(titleNode);
+				}
+				htmlNode.appendChild(doc.createElement("body"));
+			}
+			return doc;
+		}
+	};
+	/**
+	* The DOM Node interface is an abstract base class upon which many other DOM API objects are
+	* based, thus letting those object types to be used similarly and often interchangeably. As an
+	* abstract class, there is no such thing as a plain Node object. All objects that implement
+	* Node functionality are based on one of its subclasses. Most notable are Document, Element,
+	* and DocumentFragment.
+	*
+	* In addition, every kind of DOM node is represented by an interface based on Node. These
+	* include Attr, CharacterData (which Text, Comment, CDATASection and ProcessingInstruction are
+	* all based on), and DocumentType.
+	*
+	* In some cases, a particular feature of the base Node interface may not apply to one of its
+	* child interfaces; in that case, the inheriting node may return null or throw an exception,
+	* depending on circumstances. For example, attempting to add children to a node type that
+	* cannot have children will throw an exception.
+	*
+	* **This behavior is slightly different from the in the specs**:
+	* - unimplemented interfaces: `EventTarget`
+	*
+	* @class
+	* @abstract
+	* @param {Symbol} symbol
+	* @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-1950641247
+	* @see https://dom.spec.whatwg.org/#node
+	* @prettierignore
+	*/
+	function Node(symbol) {
+		checkSymbol(symbol);
+	}
+	Node.prototype = {
+		/**
+		* The first child of this node.
+		*
+		* @type {Node | null}
+		*/
+		firstChild: null,
+		/**
+		* The last child of this node.
+		*
+		* @type {Node | null}
+		*/
+		lastChild: null,
+		/**
+		* The previous sibling of this node.
+		*
+		* @type {Node | null}
+		*/
+		previousSibling: null,
+		/**
+		* The next sibling of this node.
+		*
+		* @type {Node | null}
+		*/
+		nextSibling: null,
+		/**
+		* The parent node of this node.
+		*
+		* @type {Node | null}
+		*/
+		parentNode: null,
+		/**
+		* The parent element of this node.
+		*
+		* @type {Element | null}
+		*/
+		get parentElement() {
+			return this.parentNode && this.parentNode.nodeType === this.ELEMENT_NODE ? this.parentNode : null;
+		},
+		/**
+		* The child nodes of this node.
+		*
+		* @type {NodeList}
+		*/
+		childNodes: null,
+		/**
+		* The document object associated with this node.
+		*
+		* @type {Document | null}
+		*/
+		ownerDocument: null,
+		/**
+		* The value of this node.
+		*
+		* @type {string | null}
+		*/
+		nodeValue: null,
+		/**
+		* The namespace URI of this node.
+		*
+		* @type {string | null}
+		*/
+		namespaceURI: null,
+		/**
+		* The prefix of the namespace for this node.
+		*
+		* @type {string | null}
+		*/
+		prefix: null,
+		/**
+		* The local part of the qualified name of this node.
+		*
+		* @type {string | null}
+		*/
+		localName: null,
+		/**
+		* The baseURI is currently always `about:blank`,
+		* since that's what happens when you create a document from scratch.
+		*
+		* @type {'about:blank'}
+		*/
+		baseURI: "about:blank",
+		/**
+		* Is true if this node is part of a document.
+		*
+		* @type {boolean}
+		*/
+		get isConnected() {
+			var rootNode = this.getRootNode();
+			return rootNode && rootNode.nodeType === rootNode.DOCUMENT_NODE;
+		},
+		/**
+		* Checks whether `other` is an inclusive descendant of this node.
+		*
+		* @param {Node | null | undefined} other
+		* The node to check.
+		* @returns {boolean}
+		* True if `other` is an inclusive descendant of this node; false otherwise.
+		* @see https://dom.spec.whatwg.org/#dom-node-contains
+		*/
+		contains: function(other) {
+			if (!other) return false;
+			var parent = other;
+			do {
+				if (this === parent) return true;
+				parent = parent.parentNode;
+			} while (parent);
+			return false;
+		},
+		/**
+		* @typedef GetRootNodeOptions
+		* @property {boolean} [composed=false]
+		*/
+		/**
+		* Searches for the root node of this node.
+		*
+		* **This behavior is slightly different from the in the specs**:
+		* - ignores `options.composed`, since `ShadowRoot`s are unsupported, always returns root.
+		*
+		* @param {GetRootNodeOptions} [options]
+		* @returns {Node}
+		* Root node.
+		* @see https://dom.spec.whatwg.org/#dom-node-getrootnode
+		* @see https://dom.spec.whatwg.org/#concept-shadow-including-root
+		*/
+		getRootNode: function(options) {
+			var parent = this;
+			do {
+				if (!parent.parentNode) return parent;
+				parent = parent.parentNode;
+			} while (parent);
+		},
+		/**
+		* Checks whether the given node is equal to this node.
+		*
+		* Two nodes are equal when they have the same type, defining characteristics (for the type),
+		* and the same childNodes. The comparison is iterative to avoid stack overflows on
+		* deeply-nested trees. Attribute nodes of each Element pair are also pushed onto the stack
+		* and compared the same way.
+		*
+		* @param {Node} [otherNode]
+		* @returns {boolean}
+		* @see https://dom.spec.whatwg.org/#concept-node-equals
+		* @see ../docs/walk-dom.md.
+		*/
+		isEqualNode: function(otherNode) {
+			if (!otherNode) return false;
+			var stack = [{
+				node: this,
+				other: otherNode
+			}];
+			while (stack.length > 0) {
+				var pair = stack.pop();
+				var node = pair.node;
+				var other = pair.other;
+				if (node.nodeType !== other.nodeType) return false;
+				switch (node.nodeType) {
+					case node.DOCUMENT_TYPE_NODE:
+						if (node.name !== other.name) return false;
+						if (node.publicId !== other.publicId) return false;
+						if (node.systemId !== other.systemId) return false;
+						break;
+					case node.ELEMENT_NODE:
+						if (node.namespaceURI !== other.namespaceURI) return false;
+						if (node.prefix !== other.prefix) return false;
+						if (node.localName !== other.localName) return false;
+						if (node.attributes.length !== other.attributes.length) return false;
+						for (var i = 0; i < node.attributes.length; i++) {
+							var attr = node.attributes.item(i);
+							var otherAttr = other.getAttributeNodeNS(attr.namespaceURI, attr.localName);
+							if (!otherAttr) return false;
+							stack.push({
+								node: attr,
+								other: otherAttr
+							});
+						}
+						break;
+					case node.ATTRIBUTE_NODE:
+						if (node.namespaceURI !== other.namespaceURI) return false;
+						if (node.localName !== other.localName) return false;
+						if (node.value !== other.value) return false;
+						break;
+					case node.PROCESSING_INSTRUCTION_NODE:
+						if (node.target !== other.target || node.data !== other.data) return false;
+						break;
+					case node.TEXT_NODE:
+					case node.CDATA_SECTION_NODE:
+					case node.COMMENT_NODE:
+						if (node.data !== other.data) return false;
+						break;
+				}
+				if (node.childNodes.length !== other.childNodes.length) return false;
+				for (var i = node.childNodes.length - 1; i >= 0; i--) stack.push({
+					node: node.childNodes[i],
+					other: other.childNodes[i]
+				});
+			}
+			return true;
+		},
+		/**
+		* Checks whether or not the given node is this node.
+		*
+		* @param {Node} [otherNode]
+		*/
+		isSameNode: function(otherNode) {
+			return this === otherNode;
+		},
+		/**
+		* Inserts a node before a reference node as a child of this node.
+		*
+		* @param {Node} newChild
+		* The new child node to be inserted.
+		* @param {Node | null} refChild
+		* The reference node before which newChild will be inserted.
+		* @returns {Node}
+		* The new child node successfully inserted.
+		* @throws {DOMException}
+		* Throws a DOMException if inserting the node would result in a DOM tree that is not
+		* well-formed, or if `child` is provided but is not a child of `parent`.
+		* See {@link _insertBefore} for more details.
+		* @since Modified in DOM L2
+		*/
+		insertBefore: function(newChild, refChild) {
+			return _insertBefore(this, newChild, refChild);
+		},
+		/**
+		* Replaces an old child node with a new child node within this node.
+		*
+		* @param {Node} newChild
+		* The new node that is to replace the old node.
+		* If it already exists in the DOM, it is removed from its original position.
+		* @param {Node} oldChild
+		* The existing child node to be replaced.
+		* @returns {Node}
+		* Returns the replaced child node.
+		* @throws {DOMException}
+		* Throws a DOMException if replacing the node would result in a DOM tree that is not
+		* well-formed, or if `oldChild` is not a child of `this`.
+		* This can also occur if the pre-replacement validity assertion fails.
+		* See {@link _insertBefore}, {@link Node.removeChild}, and
+		* {@link assertPreReplacementValidityInDocument} for more details.
+		* @see https://dom.spec.whatwg.org/#concept-node-replace
+		*/
+		replaceChild: function(newChild, oldChild) {
+			_insertBefore(this, newChild, oldChild, assertPreReplacementValidityInDocument);
+			if (oldChild) this.removeChild(oldChild);
+		},
+		/**
+		* Removes an existing child node from this node.
+		*
+		* @param {Node} oldChild
+		* The child node to be removed.
+		* @returns {Node}
+		* Returns the removed child node.
+		* @throws {DOMException}
+		* Throws a DOMException if `oldChild` is not a child of `this`.
+		* See {@link _removeChild} for more details.
+		*/
+		removeChild: function(oldChild) {
+			return _removeChild(this, oldChild);
+		},
+		/**
+		* Appends a child node to this node.
+		*
+		* @param {Node} newChild
+		* The child node to be appended to this node.
+		* If it already exists in the DOM, it is removed from its original position.
+		* @returns {Node}
+		* Returns the appended child node.
+		* @throws {DOMException}
+		* Throws a DOMException if appending the node would result in a DOM tree that is not
+		* well-formed, or if `newChild` is not a valid Node.
+		* See {@link insertBefore} for more details.
+		*/
+		appendChild: function(newChild) {
+			return this.insertBefore(newChild, null);
+		},
+		/**
+		* Determines whether this node has any child nodes.
+		*
+		* @returns {boolean}
+		* Returns true if this node has any child nodes, and false otherwise.
+		*/
+		hasChildNodes: function() {
+			return this.firstChild != null;
+		},
+		/**
+		* Creates a copy of the calling node.
+		*
+		* @param {boolean} deep
+		* If true, the contents of the node are recursively copied.
+		* If false, only the node itself (and its attributes, if it is an element) are copied.
+		* @returns {Node}
+		* Returns the newly created copy of the node.
+		* @throws {DOMException}
+		* May throw a DOMException if operations within {@link Element#setAttributeNode} or
+		* {@link Node#appendChild} (which are potentially invoked in this method) do not meet their
+		* specific constraints.
+		* @see {@link cloneNode}
+		*/
+		cloneNode: function(deep) {
+			return cloneNode(this.ownerDocument || this, this, deep);
+		},
+		/**
+		* Puts the specified node and all of its subtree into a "normalized" form. In a normalized
+		* subtree, no text nodes in the subtree are empty and there are no adjacent text nodes.
+		*
+		* Specifically, this method merges any adjacent text nodes (i.e., nodes for which `nodeType`
+		* is `TEXT_NODE`) into a single node with the combined data. It also removes any empty text
+		* nodes.
+		*
+		* This method iterativly traverses all child nodes to normalize all descendent nodes within
+		* the subtree.
+		*
+		* @throws {DOMException}
+		* May throw a DOMException if operations within removeChild or appendData (which are
+		* potentially invoked in this method) do not meet their specific constraints.
+		* @since Modified in DOM Level 2
+		* @see {@link Node.removeChild}
+		* @see {@link CharacterData.appendData}
+		* @see ../docs/walk-dom.md.
+		*/
+		normalize: function() {
+			walkDOM(this, null, { enter: function(node) {
+				var child = node.firstChild;
+				while (child) {
+					var next = child.nextSibling;
+					if (next !== null && next.nodeType === TEXT_NODE && child.nodeType === TEXT_NODE) {
+						node.removeChild(next);
+						child.appendData(next.data);
+					} else child = next;
+				}
+				return true;
+			} });
+		},
+		/**
+		* Checks whether the DOM implementation implements a specific feature and its version.
+		*
+		* @deprecated
+		* Since `DOMImplementation.hasFeature` is deprecated and always returns true.
+		* @param {string} feature
+		* The package name of the feature to test. This is the same name that can be passed to the
+		* method `hasFeature` on `DOMImplementation`.
+		* @param {string} version
+		* This is the version number of the package name to test.
+		* @returns {boolean}
+		* Returns true in all cases in the current implementation.
+		* @since Introduced in DOM Level 2
+		* @see {@link DOMImplementation.hasFeature}
+		*/
+		isSupported: function(feature, version) {
+			return this.ownerDocument.implementation.hasFeature(feature, version);
+		},
+		/**
+		* Look up the prefix associated to the given namespace URI, starting from this node.
+		* **The default namespace declarations are ignored by this method.**
+		* See Namespace Prefix Lookup for details on the algorithm used by this method.
+		*
+		* **This behavior is different from the in the specs**:
+		* - no node type specific handling
+		* - uses the internal attribute _nsMap for resolving namespaces that is updated when changing attributes
+		*
+		* @param {string | null} namespaceURI
+		* The namespace URI for which to find the associated prefix.
+		* @returns {string | null}
+		* The associated prefix, if found; otherwise, null.
+		* @see https://www.w3.org/TR/DOM-Level-3-Core/core.html#Node3-lookupNamespacePrefix
+		* @see https://www.w3.org/TR/DOM-Level-3-Core/namespaces-algorithms.html#lookupNamespacePrefixAlgo
+		* @see https://dom.spec.whatwg.org/#dom-node-lookupprefix
+		* @see https://github.com/xmldom/xmldom/issues/322
+		* @prettierignore
+		*/
+		lookupPrefix: function(namespaceURI) {
+			var el = this;
+			while (el) {
+				var map = el._nsMap;
+				if (map) {
+					for (var n in map) if (hasOwn(map, n) && map[n] === namespaceURI) return n;
+				}
+				el = el.nodeType == ATTRIBUTE_NODE ? el.ownerDocument : el.parentNode;
+			}
+			return null;
+		},
+		/**
+		* This function is used to look up the namespace URI associated with the given prefix,
+		* starting from this node.
+		*
+		* **This behavior is different from the in the specs**:
+		* - no node type specific handling
+		* - uses the internal attribute _nsMap for resolving namespaces that is updated when changing attributes
+		*
+		* @param {string | null} prefix
+		* The prefix for which to find the associated namespace URI.
+		* @returns {string | null}
+		* The associated namespace URI, if found; otherwise, null.
+		* @since DOM Level 3
+		* @see https://dom.spec.whatwg.org/#dom-node-lookupnamespaceuri
+		* @see https://www.w3.org/TR/DOM-Level-3-Core/core.html#Node3-lookupNamespaceURI
+		* @prettierignore
+		*/
+		lookupNamespaceURI: function(prefix) {
+			var el = this;
+			while (el) {
+				var map = el._nsMap;
+				if (map) {
+					if (hasOwn(map, prefix)) return map[prefix];
+				}
+				el = el.nodeType == ATTRIBUTE_NODE ? el.ownerDocument : el.parentNode;
+			}
+			return null;
+		},
+		/**
+		* Determines whether the given namespace URI is the default namespace.
+		*
+		* The function works by looking up the prefix associated with the given namespace URI. If no
+		* prefix is found (i.e., the namespace URI is not registered in the namespace map of this
+		* node or any of its ancestors), it returns `true`, implying the namespace URI is considered
+		* the default.
+		*
+		* **This behavior is different from the in the specs**:
+		* - no node type specific handling
+		* - uses the internal attribute _nsMap for resolving namespaces that is updated when changing attributes
+		*
+		* @param {string | null} namespaceURI
+		* The namespace URI to be checked.
+		* @returns {boolean}
+		* Returns true if the given namespace URI is the default namespace, false otherwise.
+		* @since DOM Level 3
+		* @see https://www.w3.org/TR/DOM-Level-3-Core/core.html#Node3-isDefaultNamespace
+		* @see https://dom.spec.whatwg.org/#dom-node-isdefaultnamespace
+		* @prettierignore
+		*/
+		isDefaultNamespace: function(namespaceURI) {
+			return this.lookupPrefix(namespaceURI) == null;
+		},
+		/**
+		* Compares the reference node with a node with regard to their position in the document and
+		* according to the document order.
+		*
+		* @param {Node} other
+		* The node to compare the reference node to.
+		* @returns {number}
+		* Returns how the node is positioned relatively to the reference node according to the
+		* bitmask. 0 if reference node and given node are the same.
+		* @since DOM Level 3
+		* @see https://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/core.html#Node3-compare
+		* @see https://dom.spec.whatwg.org/#dom-node-comparedocumentposition
+		*/
+		compareDocumentPosition: function(other) {
+			if (this === other) return 0;
+			var node1 = other;
+			var node2 = this;
+			var attr1 = null;
+			var attr2 = null;
+			if (node1 instanceof Attr) {
+				attr1 = node1;
+				node1 = attr1.ownerElement;
+			}
+			if (node2 instanceof Attr) {
+				attr2 = node2;
+				node2 = attr2.ownerElement;
+				if (attr1 && node1 && node2 === node1) for (var i = 0, attr; attr = node2.attributes[i]; i++) {
+					if (attr === attr1) return DocumentPosition.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC + DocumentPosition.DOCUMENT_POSITION_PRECEDING;
+					if (attr === attr2) return DocumentPosition.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC + DocumentPosition.DOCUMENT_POSITION_FOLLOWING;
+				}
+			}
+			if (!node1 || !node2 || node2.ownerDocument !== node1.ownerDocument) return DocumentPosition.DOCUMENT_POSITION_DISCONNECTED + DocumentPosition.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC + (docGUID(node2.ownerDocument) > docGUID(node1.ownerDocument) ? DocumentPosition.DOCUMENT_POSITION_FOLLOWING : DocumentPosition.DOCUMENT_POSITION_PRECEDING);
+			if (attr2 && node1 === node2) return DocumentPosition.DOCUMENT_POSITION_CONTAINS + DocumentPosition.DOCUMENT_POSITION_PRECEDING;
+			if (attr1 && node1 === node2) return DocumentPosition.DOCUMENT_POSITION_CONTAINED_BY + DocumentPosition.DOCUMENT_POSITION_FOLLOWING;
+			var chain1 = [];
+			var ancestor1 = node1.parentNode;
+			while (ancestor1) {
+				if (!attr2 && ancestor1 === node2) return DocumentPosition.DOCUMENT_POSITION_CONTAINED_BY + DocumentPosition.DOCUMENT_POSITION_FOLLOWING;
+				chain1.push(ancestor1);
+				ancestor1 = ancestor1.parentNode;
+			}
+			chain1.reverse();
+			var chain2 = [];
+			var ancestor2 = node2.parentNode;
+			while (ancestor2) {
+				if (!attr1 && ancestor2 === node1) return DocumentPosition.DOCUMENT_POSITION_CONTAINS + DocumentPosition.DOCUMENT_POSITION_PRECEDING;
+				chain2.push(ancestor2);
+				ancestor2 = ancestor2.parentNode;
+			}
+			chain2.reverse();
+			var ca = commonAncestor(chain1, chain2);
+			for (var n in ca.childNodes) {
+				var child = ca.childNodes[n];
+				if (child === node2) return DocumentPosition.DOCUMENT_POSITION_FOLLOWING;
+				if (child === node1) return DocumentPosition.DOCUMENT_POSITION_PRECEDING;
+				if (chain2.indexOf(child) >= 0) return DocumentPosition.DOCUMENT_POSITION_FOLLOWING;
+				if (chain1.indexOf(child) >= 0) return DocumentPosition.DOCUMENT_POSITION_PRECEDING;
+			}
+			return 0;
+		}
+	};
+	/**
+	* Encodes special XML characters to their corresponding entities.
+	*
+	* @param {string} c
+	* The character to be encoded.
+	* @returns {string}
+	* The encoded character.
+	* @private
+	*/
+	function _xmlEncoder(c) {
+		return c == "<" && "&lt;" || c == ">" && "&gt;" || c == "&" && "&amp;" || c == "\"" && "&quot;" || "&#" + c.charCodeAt() + ";";
+	}
+	copy(NodeType, Node);
+	copy(NodeType, Node.prototype);
+	copy(DocumentPosition, Node);
+	copy(DocumentPosition, Node.prototype);
+	/**
+	* Visits every node in the subtree rooted at `node` in depth-first pre-order.
+	*
+	* Delegates to {@link walkDOM} for traversal. The `callback` is called on each node;
+	* if it returns a truthy value, traversal stops immediately.
+	*
+	* @param {Node} node
+	* Root of the subtree to visit.
+	* @param {function(Node): *} callback
+	* Called for each node. A truthy return value stops traversal early.
+	*/
+	function _visitNode(node, callback) {
+		walkDOM(node, null, { enter: function(n) {
+			return callback(n) ? walkDOM.STOP : true;
+		} });
+	}
+	/**
+	* Depth-first pre/post-order DOM tree walker.
+	*
+	* Visits every node in the subtree rooted at `node`. For each node:
+	*
+	* 1. Calls `callbacks.enter(node, context)` before descending into the node's children. The
+	* return value becomes the `context` passed to each child's `enter` call and to the matching
+	* `exit` call.
+	* 2. If `enter` returns `null` or `undefined`, the node's children are skipped;
+	* sibling traversal continues normally.
+	* 3. If `enter` returns `walkDOM.STOP`, the entire traversal is aborted immediately — no
+	* further `enter` or `exit` calls are made.
+	* 4. `lastChild` and `previousSibling` are read **after** `enter` returns, so `enter` may
+	* safely modify the node's own child list before the walker descends. Modifying siblings of
+	* the current node or any other part of the tree produces unpredictable results: nodes already
+	* queued on the stack are visited regardless of DOM changes, and newly inserted nodes outside
+	* the current child list are never visited.
+	* 5. Calls `callbacks.exit(node, context)` (if provided) after all of a node's children have
+	* been visited, passing the same `context` that `enter`
+	* returned for that node.
+	*
+	* This implementation uses an explicit stack and does not recurse — it is safe on arbitrarily
+	* deep trees.
+	*
+	* @param {Node} node
+	* Root of the subtree to walk.
+	* @param {*} context
+	* Initial context value passed to the root node's `enter`.
+	* @param {{ enter: function(Node, *): *, exit?: function(Node, *): void }} callbacks
+	* @returns {void | walkDOM.STOP}
+	* @see ../docs/walk-dom.md.
+	*/
+	function walkDOM(node, context, callbacks) {
+		var stack = [{
+			node,
+			context,
+			phase: walkDOM.ENTER
+		}];
+		while (stack.length > 0) {
+			var frame = stack.pop();
+			if (frame.phase === walkDOM.ENTER) {
+				var childContext = callbacks.enter(frame.node, frame.context);
+				if (childContext === walkDOM.STOP) return walkDOM.STOP;
+				stack.push({
+					node: frame.node,
+					context: childContext,
+					phase: walkDOM.EXIT
+				});
+				if (childContext === null || childContext === void 0) continue;
+				var child = frame.node.lastChild;
+				while (child) {
+					stack.push({
+						node: child,
+						context: childContext,
+						phase: walkDOM.ENTER
+					});
+					child = child.previousSibling;
+				}
+			} else if (callbacks.exit) callbacks.exit(frame.node, frame.context);
+		}
+	}
+	/**
+	* Sentinel value returned from a `walkDOM` `enter` callback to abort the entire traversal
+	* immediately.
+	*
+	* @type {symbol}
+	*/
+	walkDOM.STOP = Symbol("walkDOM.STOP");
+	/**
+	* Phase constant for a stack frame that has not yet been visited.
+	* The `enter` callback is called and children are scheduled.
+	*
+	* @type {number}
+	*/
+	walkDOM.ENTER = 0;
+	/**
+	* Phase constant for a stack frame whose subtree has been fully visited.
+	* The `exit` callback is called.
+	*
+	* @type {number}
+	*/
+	walkDOM.EXIT = 1;
+	/**
+	* @typedef DocumentOptions
+	* @property {string} [contentType=MIME_TYPE.XML_APPLICATION]
+	*/
+	/**
+	* The Document interface describes the common properties and methods for any kind of document.
+	*
+	* It should usually be created using `new DOMImplementation().createDocument(...)`
+	* or `new DOMImplementation().createHTMLDocument(...)`.
+	*
+	* The constructor is considered a private API and offers to initially set the `contentType`
+	* property via it's options parameter.
+	*
+	* @class
+	* @param {Symbol} symbol
+	* @param {DocumentOptions} [options]
+	* @augments Node
+	* @private
+	* @see https://developer.mozilla.org/en-US/docs/Web/API/Document
+	* @see https://dom.spec.whatwg.org/#interface-document
+	*/
+	function Document(symbol, options) {
+		checkSymbol(symbol);
+		var opt = options || {};
+		this.ownerDocument = this;
+		/**
+		* The mime type of the document is determined at creation time and can not be modified.
+		*
+		* @type {string}
+		* @see https://dom.spec.whatwg.org/#concept-document-content-type
+		* @see {@link DOMImplementation}
+		* @see {@link MIME_TYPE}
+		* @readonly
+		*/
+		this.contentType = opt.contentType || MIME_TYPE.XML_APPLICATION;
+		/**
+		* @type {'html' | 'xml'}
+		* @see https://dom.spec.whatwg.org/#concept-document-type
+		* @see {@link DOMImplementation}
+		* @readonly
+		*/
+		this.type = isHTMLMimeType(this.contentType) ? "html" : "xml";
+	}
+	/**
+	* Updates the namespace mapping of an element when a new attribute is added.
+	*
+	* @param {Document} doc
+	* The document that the element belongs to.
+	* @param {Element} el
+	* The element to which the attribute is being added.
+	* @param {Attr} newAttr
+	* The new attribute being added.
+	* @private
+	*/
+	function _onAddAttribute(doc, el, newAttr) {
+		doc && doc._inc++;
+		if (newAttr.namespaceURI === NAMESPACE.XMLNS) el._nsMap[newAttr.prefix ? newAttr.localName : ""] = newAttr.value;
+	}
+	/**
+	* Updates the namespace mapping of an element when an attribute is removed.
+	*
+	* @param {Document} doc
+	* The document that the element belongs to.
+	* @param {Element} el
+	* The element from which the attribute is being removed.
+	* @param {Attr} newAttr
+	* The attribute being removed.
+	* @param {boolean} remove
+	* Indicates whether the attribute is to be removed.
+	* @private
+	*/
+	function _onRemoveAttribute(doc, el, newAttr, remove) {
+		doc && doc._inc++;
+		if (newAttr.namespaceURI === NAMESPACE.XMLNS) delete el._nsMap[newAttr.prefix ? newAttr.localName : ""];
+	}
+	/**
+	* Updates `parent.childNodes`, adjusting the indexed items and its `length`.
+	* If `newChild` is provided and has no nextSibling, it will be appended.
+	* Otherwise, it's assumed that an item has been removed or inserted,
+	* and `parent.firstNode` and its `.nextSibling` to re-indexing all child nodes of `parent`.
+	*
+	* @param {Document} doc
+	* The parent document of `el`.
+	* @param {Node} parent
+	* The parent node whose childNodes list needs to be updated.
+	* @param {Node} [newChild]
+	* The new child node to be appended. If not provided, the function assumes a node has been
+	* removed.
+	* @private
+	*/
+	function _onUpdateChild(doc, parent, newChild) {
+		if (doc && doc._inc) {
+			doc._inc++;
+			var childNodes = parent.childNodes;
+			if (newChild && !newChild.nextSibling) childNodes[childNodes.length++] = newChild;
+			else {
+				var child = parent.firstChild;
+				var i = 0;
+				while (child) {
+					childNodes[i++] = child;
+					child = child.nextSibling;
+				}
+				childNodes.length = i;
+				delete childNodes[childNodes.length];
+			}
+		}
+	}
+	/**
+	* Removes the connections between `parentNode` and `child`
+	* and any existing `child.previousSibling` or `child.nextSibling`.
+	*
+	* @param {Node} parentNode
+	* The parent node from which the child node is to be removed.
+	* @param {Node} child
+	* The child node to be removed from the parentNode.
+	* @returns {Node}
+	* Returns the child node that was removed.
+	* @throws {DOMException}
+	* With code:
+	* - {@link DOMException.NOT_FOUND_ERR} If the parentNode is not the parent of the child node.
+	* @private
+	* @see https://github.com/xmldom/xmldom/issues/135
+	* @see https://github.com/xmldom/xmldom/issues/145
+	*/
+	function _removeChild(parentNode, child) {
+		if (parentNode !== child.parentNode) throw new DOMException(DOMException.NOT_FOUND_ERR, "child's parent is not parent");
+		var oldPreviousSibling = child.previousSibling;
+		var oldNextSibling = child.nextSibling;
+		if (oldPreviousSibling) oldPreviousSibling.nextSibling = oldNextSibling;
+		else parentNode.firstChild = oldNextSibling;
+		if (oldNextSibling) oldNextSibling.previousSibling = oldPreviousSibling;
+		else parentNode.lastChild = oldPreviousSibling;
+		_onUpdateChild(parentNode.ownerDocument, parentNode);
+		child.parentNode = null;
+		child.previousSibling = null;
+		child.nextSibling = null;
+		return child;
+	}
+	/**
+	* Returns `true` if `node` can be a parent for insertion.
+	*
+	* @param {Node} node
+	* @returns {boolean}
+	*/
+	function hasValidParentNodeType(node) {
+		return node && (node.nodeType === Node.DOCUMENT_NODE || node.nodeType === Node.DOCUMENT_FRAGMENT_NODE || node.nodeType === Node.ELEMENT_NODE);
+	}
+	/**
+	* Returns `true` if `node` can be inserted according to it's `nodeType`.
+	*
+	* @param {Node} node
+	* @returns {boolean}
+	*/
+	function hasInsertableNodeType(node) {
+		return node && (node.nodeType === Node.CDATA_SECTION_NODE || node.nodeType === Node.COMMENT_NODE || node.nodeType === Node.DOCUMENT_FRAGMENT_NODE || node.nodeType === Node.DOCUMENT_TYPE_NODE || node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.PROCESSING_INSTRUCTION_NODE || node.nodeType === Node.TEXT_NODE);
+	}
+	/**
+	* Returns true if `node` is a DOCTYPE node.
+	*
+	* @param {Node} node
+	* @returns {boolean}
+	*/
+	function isDocTypeNode(node) {
+		return node && node.nodeType === Node.DOCUMENT_TYPE_NODE;
+	}
+	/**
+	* Returns true if the node is an element.
+	*
+	* @param {Node} node
+	* @returns {boolean}
+	*/
+	function isElementNode(node) {
+		return node && node.nodeType === Node.ELEMENT_NODE;
+	}
+	/**
+	* Returns true if `node` is a text node.
+	*
+	* @param {Node} node
+	* @returns {boolean}
+	*/
+	function isTextNode(node) {
+		return node && node.nodeType === Node.TEXT_NODE;
+	}
+	/**
+	* Check if en element node can be inserted before `child`, or at the end if child is falsy,
+	* according to the presence and position of a doctype node on the same level.
+	*
+	* @param {Document} doc
+	* The document node.
+	* @param {Node} child
+	* The node that would become the nextSibling if the element would be inserted.
+	* @returns {boolean}
+	* `true` if an element can be inserted before child.
+	* @private
+	*/
+	function isElementInsertionPossible(doc, child) {
+		var parentChildNodes = doc.childNodes || [];
+		if (find(parentChildNodes, isElementNode) || isDocTypeNode(child)) return false;
+		var docTypeNode = find(parentChildNodes, isDocTypeNode);
+		return !(child && docTypeNode && parentChildNodes.indexOf(docTypeNode) > parentChildNodes.indexOf(child));
+	}
+	/**
+	* Check if en element node can be inserted before `child`, or at the end if child is falsy,
+	* according to the presence and position of a doctype node on the same level.
+	*
+	* @param {Node} doc
+	* The document node.
+	* @param {Node} child
+	* The node that would become the nextSibling if the element would be inserted.
+	* @returns {boolean}
+	* `true` if an element can be inserted before child.
+	* @private
+	*/
+	function isElementReplacementPossible(doc, child) {
+		var parentChildNodes = doc.childNodes || [];
+		function hasElementChildThatIsNotChild(node) {
+			return isElementNode(node) && node !== child;
+		}
+		if (find(parentChildNodes, hasElementChildThatIsNotChild)) return false;
+		var docTypeNode = find(parentChildNodes, isDocTypeNode);
+		return !(child && docTypeNode && parentChildNodes.indexOf(docTypeNode) > parentChildNodes.indexOf(child));
+	}
+	/**
+	* Asserts pre-insertion validity of a node into a parent before a child.
+	* Throws errors for invalid node combinations that would result in an ill-formed DOM.
+	*
+	* @param {Node} parent
+	* The parent node to insert `node` into.
+	* @param {Node} node
+	* The node to insert.
+	* @param {Node | null} child
+	* The node that should become the `nextSibling` of `node`. If null, no sibling is considered.
+	* @throws {DOMException}
+	* With code:
+	* - {@link DOMException.HIERARCHY_REQUEST_ERR} If `parent` is not a Document,
+	* DocumentFragment, or Element node.
+	* - {@link DOMException.HIERARCHY_REQUEST_ERR} If `node` is a host-including inclusive
+	* ancestor of `parent`. (Currently not implemented)
+	* - {@link DOMException.NOT_FOUND_ERR} If `child` is non-null and its `parent` is not
+	* `parent`.
+	* - {@link DOMException.HIERARCHY_REQUEST_ERR} If `node` is not a DocumentFragment,
+	* DocumentType, Element, or CharacterData node.
+	* - {@link DOMException.HIERARCHY_REQUEST_ERR} If either `node` is a Text node and `parent` is
+	* a document, or if `node` is a doctype and `parent` is not a document.
+	* @private
+	* @see https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity
+	* @see https://dom.spec.whatwg.org/#concept-node-replace
+	*/
+	function assertPreInsertionValidity1to5(parent, node, child) {
+		if (!hasValidParentNodeType(parent)) throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "Unexpected parent node type " + parent.nodeType);
+		if (child && child.parentNode !== parent) throw new DOMException(DOMException.NOT_FOUND_ERR, "child not in parent");
+		if (!hasInsertableNodeType(node) || isDocTypeNode(node) && parent.nodeType !== Node.DOCUMENT_NODE) throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "Unexpected node type " + node.nodeType + " for parent node type " + parent.nodeType);
+	}
+	/**
+	* Asserts pre-insertion validity of a node into a document before a child.
+	* Throws errors for invalid node combinations that would result in an ill-formed DOM.
+	*
+	* @param {Document} parent
+	* The parent node to insert `node` into.
+	* @param {Node} node
+	* The node to insert.
+	* @param {Node | undefined} child
+	* The node that should become the `nextSibling` of `node`. If undefined, no sibling is
+	* considered.
+	* @returns {Node}
+	* @throws {DOMException}
+	* With code:
+	* - {@link DOMException.HIERARCHY_REQUEST_ERR} If `node` is a DocumentFragment with more than
+	* one element child or has a Text node child.
+	* - {@link DOMException.HIERARCHY_REQUEST_ERR} If `node` is a DocumentFragment with one
+	* element child and either `parent` has an element child, `child` is a doctype, or `child` is
+	* non-null and a doctype is following `child`.
+	* - {@link DOMException.HIERARCHY_REQUEST_ERR} If `node` is an Element and `parent` has an
+	* element child, `child` is a doctype, or `child` is non-null and a doctype is following
+	* `child`.
+	* - {@link DOMException.HIERARCHY_REQUEST_ERR} If `node` is a DocumentType and `parent` has a
+	* doctype child, `child` is non-null and an element is preceding `child`, or `child` is null
+	* and `parent` has an element child.
+	* @private
+	* @see https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity
+	* @see https://dom.spec.whatwg.org/#concept-node-replace
+	*/
+	function assertPreInsertionValidityInDocument(parent, node, child) {
+		var parentChildNodes = parent.childNodes || [];
+		var nodeChildNodes = node.childNodes || [];
+		if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+			var nodeChildElements = nodeChildNodes.filter(isElementNode);
+			if (nodeChildElements.length > 1 || find(nodeChildNodes, isTextNode)) throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "More than one element or text in fragment");
+			if (nodeChildElements.length === 1 && !isElementInsertionPossible(parent, child)) throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "Element in fragment can not be inserted before doctype");
+		}
+		if (isElementNode(node)) {
+			if (!isElementInsertionPossible(parent, child)) throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "Only one element can be added and only after doctype");
+		}
+		if (isDocTypeNode(node)) {
+			if (find(parentChildNodes, isDocTypeNode)) throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "Only one doctype is allowed");
+			var parentElementChild = find(parentChildNodes, isElementNode);
+			if (child && parentChildNodes.indexOf(parentElementChild) < parentChildNodes.indexOf(child)) throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "Doctype can only be inserted before an element");
+			if (!child && parentElementChild) throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "Doctype can not be appended since element is present");
+		}
+	}
+	/**
+	* @param {Document} parent
+	* The parent node to insert `node` into.
+	* @param {Node} node
+	* The node to insert.
+	* @param {Node | undefined} child
+	* the node that should become the `nextSibling` of `node`
+	* @returns {Node}
+	* @throws {DOMException}
+	* For several node combinations that would create a DOM that is not well-formed.
+	* @throws {DOMException}
+	* If `child` is provided but is not a child of `parent`.
+	* @private
+	* @see https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity
+	* @see https://dom.spec.whatwg.org/#concept-node-replace
+	*/
+	function assertPreReplacementValidityInDocument(parent, node, child) {
+		var parentChildNodes = parent.childNodes || [];
+		var nodeChildNodes = node.childNodes || [];
+		if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+			var nodeChildElements = nodeChildNodes.filter(isElementNode);
+			if (nodeChildElements.length > 1 || find(nodeChildNodes, isTextNode)) throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "More than one element or text in fragment");
+			if (nodeChildElements.length === 1 && !isElementReplacementPossible(parent, child)) throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "Element in fragment can not be inserted before doctype");
+		}
+		if (isElementNode(node)) {
+			if (!isElementReplacementPossible(parent, child)) throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "Only one element can be added and only after doctype");
+		}
+		if (isDocTypeNode(node)) {
+			function hasDoctypeChildThatIsNotChild(node) {
+				return isDocTypeNode(node) && node !== child;
+			}
+			if (find(parentChildNodes, hasDoctypeChildThatIsNotChild)) throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "Only one doctype is allowed");
+			var parentElementChild = find(parentChildNodes, isElementNode);
+			if (child && parentChildNodes.indexOf(parentElementChild) < parentChildNodes.indexOf(child)) throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "Doctype can only be inserted before an element");
+		}
+	}
+	/**
+	* Inserts a node into a parent node before a child node.
+	*
+	* @param {Node} parent
+	* The parent node to insert the node into.
+	* @param {Node} node
+	* The node to insert into the parent.
+	* @param {Node | null} child
+	* The node that should become the next sibling of the node.
+	* If null, the function inserts the node at the end of the children of the parent node.
+	* @param {Function} [_inDocumentAssertion]
+	* An optional function to check pre-insertion validity if parent is a document node.
+	* Defaults to {@link assertPreInsertionValidityInDocument}
+	* @returns {Node}
+	* Returns the inserted node.
+	* @throws {DOMException}
+	* Throws a DOMException if inserting the node would result in a DOM tree that is not
+	* well-formed. See {@link assertPreInsertionValidity1to5},
+	* {@link assertPreInsertionValidityInDocument}.
+	* @throws {DOMException}
+	* Throws a DOMException if child is provided but is not a child of the parent. See
+	* {@link Node.removeChild}
+	* @private
+	* @see https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity
+	*/
+	function _insertBefore(parent, node, child, _inDocumentAssertion) {
+		assertPreInsertionValidity1to5(parent, node, child);
+		if (parent.nodeType === Node.DOCUMENT_NODE) (_inDocumentAssertion || assertPreInsertionValidityInDocument)(parent, node, child);
+		var cp = node.parentNode;
+		if (cp) cp.removeChild(node);
+		if (node.nodeType === DOCUMENT_FRAGMENT_NODE) {
+			var newFirst = node.firstChild;
+			if (newFirst == null) return node;
+			var newLast = node.lastChild;
+		} else newFirst = newLast = node;
+		var pre = child ? child.previousSibling : parent.lastChild;
+		newFirst.previousSibling = pre;
+		newLast.nextSibling = child;
+		if (pre) pre.nextSibling = newFirst;
+		else parent.firstChild = newFirst;
+		if (child == null) parent.lastChild = newLast;
+		else child.previousSibling = newLast;
+		do
+			newFirst.parentNode = parent;
+		while (newFirst !== newLast && (newFirst = newFirst.nextSibling));
+		_onUpdateChild(parent.ownerDocument || parent, parent, node);
+		if (node.nodeType == DOCUMENT_FRAGMENT_NODE) node.firstChild = node.lastChild = null;
+		return node;
+	}
+	Document.prototype = {
+		/**
+		* The implementation that created this document.
+		*
+		* @type DOMImplementation
+		* @readonly
+		*/
+		implementation: null,
+		nodeName: "#document",
+		nodeType: DOCUMENT_NODE,
+		/**
+		* The DocumentType node of the document.
+		*
+		* @type DocumentType
+		* @readonly
+		*/
+		doctype: null,
+		documentElement: null,
+		_inc: 1,
+		insertBefore: function(newChild, refChild) {
+			if (newChild.nodeType === DOCUMENT_FRAGMENT_NODE) {
+				var child = newChild.firstChild;
+				while (child) {
+					var next = child.nextSibling;
+					this.insertBefore(child, refChild);
+					child = next;
+				}
+				return newChild;
+			}
+			_insertBefore(this, newChild, refChild);
+			newChild.ownerDocument = this;
+			if (this.documentElement === null && newChild.nodeType === ELEMENT_NODE) this.documentElement = newChild;
+			return newChild;
+		},
+		removeChild: function(oldChild) {
+			var removed = _removeChild(this, oldChild);
+			if (removed === this.documentElement) this.documentElement = null;
+			return removed;
+		},
+		replaceChild: function(newChild, oldChild) {
+			_insertBefore(this, newChild, oldChild, assertPreReplacementValidityInDocument);
+			newChild.ownerDocument = this;
+			if (oldChild) this.removeChild(oldChild);
+			if (isElementNode(newChild)) this.documentElement = newChild;
+		},
+		/**
+		* Imports a node from another document into this document, creating a new copy owned by this
+		* document. The source node and its subtree are not modified.
+		*
+		* @param {Node} importedNode
+		* The node to import.
+		* @param {boolean} deep
+		* If true, the contents of the node are recursively imported.
+		* If false, only the node itself (and its attributes, if it is an element) are imported.
+		* @returns {Node}
+		* Returns the newly created import of the node.
+		* @see {@link importNode}
+		* @see {@link https://dom.spec.whatwg.org/#dom-document-importnode}
+		*/
+		importNode: function(importedNode, deep) {
+			return importNode(this, importedNode, deep);
+		},
+		getElementById: function(id) {
+			var rtv = null;
+			_visitNode(this.documentElement, function(node) {
+				if (node.nodeType == ELEMENT_NODE) {
+					if (node.getAttribute("id") == id) {
+						rtv = node;
+						return true;
+					}
+				}
+			});
+			return rtv;
+		},
+		/**
+		* Creates a new `Element` that is owned by this `Document`.
+		* In HTML Documents `localName` is the lower cased `tagName`,
+		* otherwise no transformation is being applied.
+		* When `contentType` implies the HTML namespace, it will be set as `namespaceURI`.
+		*
+		* __This implementation differs from the specification:__ - The provided name is not checked
+		* against the `Name` production,
+		* so no related error will be thrown.
+		* - There is no interface `HTMLElement`, it is always an `Element`.
+		* - There is no support for a second argument to indicate using custom elements.
+		*
+		* @param {string} tagName
+		* @returns {Element}
+		* @see https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement
+		* @see https://dom.spec.whatwg.org/#dom-document-createelement
+		* @see https://dom.spec.whatwg.org/#concept-create-element
+		*/
+		createElement: function(tagName) {
+			var node = new Element(PDC);
+			node.ownerDocument = this;
+			if (this.type === "html") tagName = tagName.toLowerCase();
+			if (hasDefaultHTMLNamespace(this.contentType)) node.namespaceURI = NAMESPACE.HTML;
+			node.nodeName = tagName;
+			node.tagName = tagName;
+			node.localName = tagName;
+			node.childNodes = new NodeList();
+			var attrs = node.attributes = new NamedNodeMap();
+			attrs._ownerElement = node;
+			return node;
+		},
+		/**
+		* @returns {DocumentFragment}
+		*/
+		createDocumentFragment: function() {
+			var node = new DocumentFragment(PDC);
+			node.ownerDocument = this;
+			node.childNodes = new NodeList();
+			return node;
+		},
+		/**
+		* @param {string} data
+		* @returns {Text}
+		*/
+		createTextNode: function(data) {
+			var node = new Text(PDC);
+			node.ownerDocument = this;
+			node.childNodes = new NodeList();
+			node.appendData(data);
+			return node;
+		},
+		/**
+		* @param {string} data
+		* @returns {Comment}
+		* @see https://dom.spec.whatwg.org/#dom-document-createcomment
+		* @see https://www.w3.org/TR/xml/#NT-Comment XML 1.0 production [15]
+		* @see https://www.w3.org/TR/DOM-Parsing/#dfn-concept-serialize-xml §3.2.1.3
+		*
+		*      Note: no validation is performed at creation time. When the resulting document is
+		*      serialized with `requireWellFormed: true`, the serializer throws `InvalidStateError`
+		*      if the comment data contains `--` anywhere, ends with `-`, or contains characters
+		*      outside the XML Char production (W3C DOM Parsing §3.2.1.3). Without that option the
+		*      data is emitted verbatim.
+		*/
+		createComment: function(data) {
+			var node = new Comment(PDC);
+			node.ownerDocument = this;
+			node.childNodes = new NodeList();
+			node.appendData(data);
+			return node;
+		},
+		/**
+		* Returns a new CDATASection node whose data is `data`.
+		*
+		* __This implementation differs from the specification:__ - calling this method on an HTML
+		* document does not throw `NotSupportedError`.
+		*
+		* @param {string} data
+		* @returns {CDATASection}
+		* @throws {DOMException}
+		* With code `INVALID_CHARACTER_ERR` if `data` contains `"]]>"`.
+		* @see https://developer.mozilla.org/en-US/docs/Web/API/Document/createCDATASection
+		* @see https://dom.spec.whatwg.org/#dom-document-createcdatasection
+		*/
+		createCDATASection: function(data) {
+			if (data.indexOf("]]>") !== -1) throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "data contains \"]]>\"");
+			var node = new CDATASection(PDC);
+			node.ownerDocument = this;
+			node.childNodes = new NodeList();
+			node.appendData(data);
+			return node;
+		},
+		/**
+		* Returns a ProcessingInstruction node whose target is target and data is data.
+		*
+		* __This behavior is slightly different from the in the specs__:
+		* - it does not do any input validation on the arguments and doesn't throw
+		* "InvalidCharacterError".
+		*
+		* Note: When the resulting document is serialized with `requireWellFormed: true`, the
+		* serializer throws `InvalidStateError` if `.target` contains `:` or is an ASCII
+		* case-insensitive match for `"xml"`, or if `.data` contains `?>` or characters outside the
+		* XML Char production (W3C DOM Parsing §3.2.1.7). Without that option the data is emitted
+		* verbatim.
+		*
+		* @param {string} target
+		* @param {string} data
+		* @returns {ProcessingInstruction}
+		* @see https://developer.mozilla.org/docs/Web/API/Document/createProcessingInstruction
+		* @see https://dom.spec.whatwg.org/#dom-document-createprocessinginstruction
+		* @see https://www.w3.org/TR/DOM-Parsing/#dfn-concept-serialize-xml §3.2.1.7
+		*/
+		createProcessingInstruction: function(target, data) {
+			var node = new ProcessingInstruction(PDC);
+			node.ownerDocument = this;
+			node.childNodes = new NodeList();
+			node.nodeName = node.target = target;
+			node.nodeValue = node.data = data;
+			return node;
+		},
+		/**
+		* Creates an `Attr` node that is owned by this document.
+		* In HTML Documents `localName` is the lower cased `name`,
+		* otherwise no transformation is being applied.
+		*
+		* __This implementation differs from the specification:__ - The provided name is not checked
+		* against the `Name` production,
+		* so no related error will be thrown.
+		*
+		* @param {string} name
+		* @returns {Attr}
+		* @see https://developer.mozilla.org/en-US/docs/Web/API/Document/createAttribute
+		* @see https://dom.spec.whatwg.org/#dom-document-createattribute
+		*/
+		createAttribute: function(name) {
+			if (!g.QName_exact.test(name)) throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "invalid character in name \"" + name + "\"");
+			if (this.type === "html") name = name.toLowerCase();
+			return this._createAttribute(name);
+		},
+		_createAttribute: function(name) {
+			var node = new Attr(PDC);
+			node.ownerDocument = this;
+			node.childNodes = new NodeList();
+			node.name = name;
+			node.nodeName = name;
+			node.localName = name;
+			node.specified = true;
+			return node;
+		},
+		/**
+		* Creates an EntityReference object.
+		* The current implementation does not fill the `childNodes` with those of the corresponding
+		* `Entity`
+		*
+		* @deprecated
+		* In DOM Level 4.
+		* @param {string} name
+		* The name of the entity to reference. No namespace well-formedness checks are performed.
+		* @returns {EntityReference}
+		* @throws {DOMException}
+		* With code `INVALID_CHARACTER_ERR` when `name` is not valid.
+		* @throws {DOMException}
+		* with code `NOT_SUPPORTED_ERR` when the document is of type `html`
+		* @see https://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-392B75AE
+		*/
+		createEntityReference: function(name) {
+			if (!g.Name.test(name)) throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "not a valid xml name \"" + name + "\"");
+			if (this.type === "html") throw new DOMException("document is an html document", DOMExceptionName.NotSupportedError);
+			var node = new EntityReference(PDC);
+			node.ownerDocument = this;
+			node.childNodes = new NodeList();
+			node.nodeName = name;
+			return node;
+		},
+		/**
+		* @param {string} namespaceURI
+		* @param {string} qualifiedName
+		* @returns {Element}
+		*/
+		createElementNS: function(namespaceURI, qualifiedName) {
+			var validated = validateAndExtract(namespaceURI, qualifiedName);
+			var node = new Element(PDC);
+			var attrs = node.attributes = new NamedNodeMap();
+			node.childNodes = new NodeList();
+			node.ownerDocument = this;
+			node.nodeName = qualifiedName;
+			node.tagName = qualifiedName;
+			node.namespaceURI = validated[0];
+			node.prefix = validated[1];
+			node.localName = validated[2];
+			attrs._ownerElement = node;
+			return node;
+		},
+		/**
+		* @param {string} namespaceURI
+		* @param {string} qualifiedName
+		* @returns {Attr}
+		*/
+		createAttributeNS: function(namespaceURI, qualifiedName) {
+			var validated = validateAndExtract(namespaceURI, qualifiedName);
+			var node = new Attr(PDC);
+			node.ownerDocument = this;
+			node.childNodes = new NodeList();
+			node.nodeName = qualifiedName;
+			node.name = qualifiedName;
+			node.specified = true;
+			node.namespaceURI = validated[0];
+			node.prefix = validated[1];
+			node.localName = validated[2];
+			return node;
+		}
+	};
+	_extends(Document, Node);
+	function Element(symbol) {
+		checkSymbol(symbol);
+		this._nsMap = Object.create(null);
+	}
+	Element.prototype = {
+		nodeType: ELEMENT_NODE,
+		/**
+		* The attributes of this element.
+		*
+		* @type {NamedNodeMap | null}
+		*/
+		attributes: null,
+		getQualifiedName: function() {
+			return this.prefix ? this.prefix + ":" + this.localName : this.localName;
+		},
+		_isInHTMLDocumentAndNamespace: function() {
+			return this.ownerDocument.type === "html" && this.namespaceURI === NAMESPACE.HTML;
+		},
+		/**
+		* Implementaton of Level2 Core function hasAttributes.
+		*
+		* @returns {boolean}
+		* True if attribute list is not empty.
+		* @see https://www.w3.org/TR/DOM-Level-2-Core/#core-ID-NodeHasAttrs
+		*/
+		hasAttributes: function() {
+			return !!(this.attributes && this.attributes.length);
+		},
+		hasAttribute: function(name) {
+			return !!this.getAttributeNode(name);
+		},
+		/**
+		* Returns element’s first attribute whose qualified name is `name`, and `null`
+		* if there is no such attribute.
+		*
+		* @param {string} name
+		* @returns {string | null}
+		*/
+		getAttribute: function(name) {
+			var attr = this.getAttributeNode(name);
+			return attr ? attr.value : null;
+		},
+		getAttributeNode: function(name) {
+			if (this._isInHTMLDocumentAndNamespace()) name = name.toLowerCase();
+			return this.attributes.getNamedItem(name);
+		},
+		/**
+		* Sets the value of element’s first attribute whose qualified name is qualifiedName to value.
+		*
+		* @param {string} name
+		* @param {string} value
+		*/
+		setAttribute: function(name, value) {
+			if (this._isInHTMLDocumentAndNamespace()) name = name.toLowerCase();
+			var attr = this.getAttributeNode(name);
+			if (attr) attr.value = attr.nodeValue = "" + value;
+			else {
+				attr = this.ownerDocument._createAttribute(name);
+				attr.value = attr.nodeValue = "" + value;
+				this.setAttributeNode(attr);
+			}
+		},
+		removeAttribute: function(name) {
+			var attr = this.getAttributeNode(name);
+			attr && this.removeAttributeNode(attr);
+		},
+		setAttributeNode: function(newAttr) {
+			return this.attributes.setNamedItem(newAttr);
+		},
+		setAttributeNodeNS: function(newAttr) {
+			return this.attributes.setNamedItemNS(newAttr);
+		},
+		removeAttributeNode: function(oldAttr) {
+			return this.attributes.removeNamedItem(oldAttr.nodeName);
+		},
+		removeAttributeNS: function(namespaceURI, localName) {
+			var old = this.getAttributeNodeNS(namespaceURI, localName);
+			old && this.removeAttributeNode(old);
+		},
+		hasAttributeNS: function(namespaceURI, localName) {
+			return this.getAttributeNodeNS(namespaceURI, localName) != null;
+		},
+		/**
+		* Returns element’s attribute whose namespace is `namespaceURI` and local name is
+		* `localName`,
+		* or `null` if there is no such attribute.
+		*
+		* @param {string} namespaceURI
+		* @param {string} localName
+		* @returns {string | null}
+		*/
+		getAttributeNS: function(namespaceURI, localName) {
+			var attr = this.getAttributeNodeNS(namespaceURI, localName);
+			return attr ? attr.value : null;
+		},
+		/**
+		* Sets the value of element’s attribute whose namespace is `namespaceURI` and local name is
+		* `localName` to value.
+		*
+		* @param {string} namespaceURI
+		* @param {string} qualifiedName
+		* @param {string} value
+		* @see https://dom.spec.whatwg.org/#dom-element-setattributens
+		*/
+		setAttributeNS: function(namespaceURI, qualifiedName, value) {
+			var localName = validateAndExtract(namespaceURI, qualifiedName)[2];
+			var attr = this.getAttributeNodeNS(namespaceURI, localName);
+			if (attr) attr.value = attr.nodeValue = "" + value;
+			else {
+				attr = this.ownerDocument.createAttributeNS(namespaceURI, qualifiedName);
+				attr.value = attr.nodeValue = "" + value;
+				this.setAttributeNode(attr);
+			}
+		},
+		getAttributeNodeNS: function(namespaceURI, localName) {
+			return this.attributes.getNamedItemNS(namespaceURI, localName);
+		},
+		/**
+		* Returns a LiveNodeList of all child elements which have **all** of the given class name(s).
+		*
+		* Returns an empty list if `classNames` is an empty string or only contains HTML white space
+		* characters.
+		*
+		* Warning: This returns a live LiveNodeList.
+		* Changes in the DOM will reflect in the array as the changes occur.
+		* If an element selected by this array no longer qualifies for the selector,
+		* it will automatically be removed. Be aware of this for iteration purposes.
+		*
+		* @param {string} classNames
+		* Is a string representing the class name(s) to match; multiple class names are separated by
+		* (ASCII-)whitespace.
+		* @see https://developer.mozilla.org/en-US/docs/Web/API/Element/getElementsByClassName
+		* @see https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementsByClassName
+		* @see https://dom.spec.whatwg.org/#concept-getelementsbyclassname
+		*/
+		getElementsByClassName: function(classNames) {
+			var classNamesSet = toOrderedSet(classNames);
+			return new LiveNodeList(this, function(base) {
+				var ls = [];
+				if (classNamesSet.length > 0) _visitNode(base, function(node) {
+					if (node !== base && node.nodeType === ELEMENT_NODE) {
+						var nodeClassNames = node.getAttribute("class");
+						if (nodeClassNames) {
+							var matches = classNames === nodeClassNames;
+							if (!matches) {
+								var nodeClassNamesSet = toOrderedSet(nodeClassNames);
+								matches = classNamesSet.every(arrayIncludes(nodeClassNamesSet));
+							}
+							if (matches) ls.push(node);
+						}
+					}
+				});
+				return ls;
+			});
+		},
+		/**
+		* Returns a LiveNodeList of elements with the given qualifiedName.
+		* Searching for all descendants can be done by passing `*` as `qualifiedName`.
+		*
+		* All descendants of the specified element are searched, but not the element itself.
+		* The returned list is live, which means it updates itself with the DOM tree automatically.
+		* Therefore, there is no need to call `Element.getElementsByTagName()`
+		* with the same element and arguments repeatedly if the DOM changes in between calls.
+		*
+		* When called on an HTML element in an HTML document,
+		* `getElementsByTagName` lower-cases the argument before searching for it.
+		* This is undesirable when trying to match camel-cased SVG elements (such as
+		* `<linearGradient>`) in an HTML document.
+		* Instead, use `Element.getElementsByTagNameNS()`,
+		* which preserves the capitalization of the tag name.
+		*
+		* `Element.getElementsByTagName` is similar to `Document.getElementsByTagName()`,
+		* except that it only searches for elements that are descendants of the specified element.
+		*
+		* @param {string} qualifiedName
+		* @returns {LiveNodeList}
+		* @see https://developer.mozilla.org/en-US/docs/Web/API/Element/getElementsByTagName
+		* @see https://dom.spec.whatwg.org/#concept-getelementsbytagname
+		*/
+		getElementsByTagName: function(qualifiedName) {
+			var isHTMLDocument = (this.nodeType === DOCUMENT_NODE ? this : this.ownerDocument).type === "html";
+			var lowerQualifiedName = qualifiedName.toLowerCase();
+			return new LiveNodeList(this, function(base) {
+				var ls = [];
+				_visitNode(base, function(node) {
+					if (node === base || node.nodeType !== ELEMENT_NODE) return;
+					if (qualifiedName === "*") ls.push(node);
+					else if (node.getQualifiedName() === (isHTMLDocument && node.namespaceURI === NAMESPACE.HTML ? lowerQualifiedName : qualifiedName)) ls.push(node);
+				});
+				return ls;
+			});
+		},
+		getElementsByTagNameNS: function(namespaceURI, localName) {
+			return new LiveNodeList(this, function(base) {
+				var ls = [];
+				_visitNode(base, function(node) {
+					if (node !== base && node.nodeType === ELEMENT_NODE && (namespaceURI === "*" || node.namespaceURI === namespaceURI) && (localName === "*" || node.localName == localName)) ls.push(node);
+				});
+				return ls;
+			});
+		}
+	};
+	Document.prototype.getElementsByClassName = Element.prototype.getElementsByClassName;
+	Document.prototype.getElementsByTagName = Element.prototype.getElementsByTagName;
+	Document.prototype.getElementsByTagNameNS = Element.prototype.getElementsByTagNameNS;
+	_extends(Element, Node);
+	function Attr(symbol) {
+		checkSymbol(symbol);
+		this.namespaceURI = null;
+		this.prefix = null;
+		this.ownerElement = null;
+	}
+	Attr.prototype.nodeType = ATTRIBUTE_NODE;
+	_extends(Attr, Node);
+	function CharacterData(symbol) {
+		checkSymbol(symbol);
+	}
+	CharacterData.prototype = {
+		data: "",
+		substringData: function(offset, count) {
+			return this.data.substring(offset, offset + count);
+		},
+		appendData: function(text) {
+			text = this.data + text;
+			this.nodeValue = this.data = text;
+			this.length = text.length;
+		},
+		insertData: function(offset, text) {
+			this.replaceData(offset, 0, text);
+		},
+		deleteData: function(offset, count) {
+			this.replaceData(offset, count, "");
+		},
+		replaceData: function(offset, count, text) {
+			var start = this.data.substring(0, offset);
+			var end = this.data.substring(offset + count);
+			text = start + text + end;
+			this.nodeValue = this.data = text;
+			this.length = text.length;
+		}
+	};
+	_extends(CharacterData, Node);
+	function Text(symbol) {
+		checkSymbol(symbol);
+	}
+	Text.prototype = {
+		nodeName: "#text",
+		nodeType: TEXT_NODE,
+		splitText: function(offset) {
+			var text = this.data;
+			var newText = text.substring(offset);
+			text = text.substring(0, offset);
+			this.data = this.nodeValue = text;
+			this.length = text.length;
+			var newNode = this.ownerDocument.createTextNode(newText);
+			if (this.parentNode) this.parentNode.insertBefore(newNode, this.nextSibling);
+			return newNode;
+		}
+	};
+	_extends(Text, CharacterData);
+	function Comment(symbol) {
+		checkSymbol(symbol);
+	}
+	Comment.prototype = {
+		nodeName: "#comment",
+		nodeType: COMMENT_NODE
+	};
+	_extends(Comment, CharacterData);
+	function CDATASection(symbol) {
+		checkSymbol(symbol);
+	}
+	CDATASection.prototype = {
+		nodeName: "#cdata-section",
+		nodeType: CDATA_SECTION_NODE
+	};
+	_extends(CDATASection, Text);
+	/**
+	* @class DocumentType
+	* @augments Node
+	* @property {string} publicId
+	* The external subset public identifier, stored verbatim (including surrounding quotes).
+	* Declared `readonly` by the WHATWG DOM spec; xmldom does not enforce this constraint —
+	* direct property writes succeed and the written value is serialized verbatim.
+	* When serialized with `requireWellFormed: true`, the serializer validates the value against
+	* the XML `PubidLiteral` production and throws `InvalidStateError` if it does not match.
+	* @property {string} systemId
+	* The external subset system identifier, stored verbatim (including surrounding quotes).
+	* Declared `readonly` by the WHATWG DOM spec; xmldom does not enforce this constraint —
+	* direct property writes succeed and the written value is serialized verbatim.
+	* When serialized with `requireWellFormed: true`, the serializer validates the value against
+	* the XML `SystemLiteral` production and throws `InvalidStateError` if it does not match.
+	* @property {string} internalSubset
+	* The internal subset string (the raw content between `[` and `]`), or an empty string.
+	* Declared `readonly` by the WHATWG DOM spec; xmldom does not enforce this constraint —
+	* direct property writes succeed and the written value is serialized verbatim.
+	* When serialized with `requireWellFormed: true`, the serializer throws `InvalidStateError`
+	* if the value contains `"]>"`.
+	* @see https://developer.mozilla.org/en-US/docs/Web/API/DocumentType MDN
+	* @see https://dom.spec.whatwg.org/#interface-documenttype WHATWG DOM
+	* @prettierignore
+	*/
+	function DocumentType(symbol) {
+		checkSymbol(symbol);
+	}
+	DocumentType.prototype.nodeType = DOCUMENT_TYPE_NODE;
+	_extends(DocumentType, Node);
+	function Notation(symbol) {
+		checkSymbol(symbol);
+	}
+	Notation.prototype.nodeType = NOTATION_NODE;
+	_extends(Notation, Node);
+	function Entity(symbol) {
+		checkSymbol(symbol);
+	}
+	Entity.prototype.nodeType = ENTITY_NODE;
+	_extends(Entity, Node);
+	function EntityReference(symbol) {
+		checkSymbol(symbol);
+	}
+	EntityReference.prototype.nodeType = ENTITY_REFERENCE_NODE;
+	_extends(EntityReference, Node);
+	function DocumentFragment(symbol) {
+		checkSymbol(symbol);
+	}
+	DocumentFragment.prototype.nodeName = "#document-fragment";
+	DocumentFragment.prototype.nodeType = DOCUMENT_FRAGMENT_NODE;
+	_extends(DocumentFragment, Node);
+	function ProcessingInstruction(symbol) {
+		checkSymbol(symbol);
+	}
+	ProcessingInstruction.prototype.nodeType = PROCESSING_INSTRUCTION_NODE;
+	_extends(ProcessingInstruction, CharacterData);
+	function XMLSerializer() {}
+	/**
+	* Returns the result of serializing `node` to XML.
+	*
+	* When `options.requireWellFormed` is `true`, the serializer throws `InvalidStateError` for
+	* content that would produce ill-formed XML (e.g. CDATASection data containing `"]]>"`, Text
+	* data containing characters outside the XML Char production, or a Document with no
+	* `documentElement`).
+	*
+	* When `options.splitCDATASections` is `false`, CDATASection data is emitted verbatim even
+	* when it contains `"]]>"`. When `true` (the default), `"]]>"` sequences are split across
+	* concatenated CDATA sections — this behavior is **deprecated** and will be removed in the
+	* next breaking release. Callers should migrate to `{ requireWellFormed: true }`, which throws
+	* `InvalidStateError` instead of transforming.
+	*
+	* __This implementation differs from the specification:__ - CDATASection serialization is not
+	* specified by W3C DOM Parsing or WHATWG DOM Parsing (see
+	* {@link https://github.com/w3c/DOM-Parsing/issues/38 w3c/DOM-Parsing#38}).
+	* When `splitCDATASections` is `true` (the default), `"]]>"` sequences in CDATASection data
+	* are split across concatenated CDATA sections — this mechanism is derived from DOM Level 3
+	* Core and is **deprecated**. The split mechanics will be removed in the next breaking
+	* release. Callers that rely on this behavior should migrate to `{ requireWellFormed: true }`.
+	* - W3C DOM Parsing §3.2.1.1 requires well-formedness checks on Element `localName`s,
+	* prefixes,
+	* and attribute serialization (duplicate attributes, namespace declarations, attribute value
+	* characters) when `requireWellFormed` is `true`. These checks are **not implemented** in this
+	* release — see the tracking issue filed against the next breaking milestone.
+	*
+	* @param {Node} node
+	* @param {Object | function} [options]
+	* Options object, or a legacy nodeFilter function (backward compatible).
+	* @param {boolean} [options.requireWellFormed=false]
+	* When `true`, throws `InvalidStateError` for content that would produce ill-formed XML.
+	* @param {boolean} [options.splitCDATASections=true]
+	* When `true` (default), splits `"]]>"` sequences in CDATASection data across concatenated
+	* CDATA sections. **Deprecated** — will be removed in the next breaking release.
+	* @param {function} [options.nodeFilter]
+	* A filter function applied to each node before serialization.
+	* @returns {string}
+	* @throws {DOMException}
+	* With name `InvalidStateError` when `requireWellFormed` is `true` and any of the following
+	* conditions hold:
+	* - CDATASection data contains `"]]>"`
+	* - Text data contains characters outside the XML Char production
+	* - a Comment node's data contains `--` anywhere or ends with `-`
+	* - a ProcessingInstruction's target contains `:` or is an ASCII case-insensitive match for
+	* `"xml"`, or its data contains `?>` or characters outside the XML Char production
+	* - a DocumentType's `publicId` is non-empty and does not match the XML `PubidLiteral`
+	* production (W3C DOM Parsing §3.2.1.3; XML 1.0 production [12])
+	* - a DocumentType's `systemId` is non-empty and does not match the XML `SystemLiteral`
+	* production (W3C DOM Parsing §3.2.1.3; XML 1.0 production [11])
+	* - a DocumentType's `internalSubset` contains `"]>"`
+	* - the Document has no `documentElement`
+	* @see https://developer.mozilla.org/docs/Web/API/XMLSerializer/serializeToString
+	* @see https://html.spec.whatwg.org/#dom-xmlserializer-serializetostring
+	* @see https://github.com/w3c/DOM-Parsing/issues/84
+	* @prettierignore
+	*/
+	XMLSerializer.prototype.serializeToString = function(node, options) {
+		return nodeSerializeToString.call(node, options);
+	};
+	Node.prototype.toString = nodeSerializeToString;
+	function nodeSerializeToString(options) {
+		var opts;
+		if (typeof options === "function") opts = {
+			requireWellFormed: false,
+			splitCDATASections: true,
+			nodeFilter: options
+		};
+		else if (options != null) opts = {
+			requireWellFormed: !!options.requireWellFormed,
+			splitCDATASections: options.splitCDATASections !== false,
+			nodeFilter: options.nodeFilter || null
+		};
+		else opts = {
+			requireWellFormed: false,
+			splitCDATASections: true,
+			nodeFilter: null
+		};
+		var buf = [];
+		var refNode = this.nodeType === DOCUMENT_NODE && this.documentElement || this;
+		var prefix = refNode.prefix;
+		var uri = refNode.namespaceURI;
+		if (uri && prefix == null) {
+			var prefix = refNode.lookupPrefix(uri);
+			if (prefix == null) var visibleNamespaces = [{
+				namespace: uri,
+				prefix: null
+			}];
+		}
+		serializeToString(this, buf, visibleNamespaces, opts);
+		return buf.join("");
+	}
+	function needNamespaceDefine(node, isHTML, visibleNamespaces) {
+		var prefix = node.prefix || "";
+		var uri = node.namespaceURI;
+		if (!uri) return false;
+		if (prefix === "xml" && uri === NAMESPACE.XML || uri === NAMESPACE.XMLNS) return false;
+		var i = visibleNamespaces.length;
+		while (i--) {
+			var ns = visibleNamespaces[i];
+			if (ns.prefix === prefix) return ns.namespace !== uri;
+		}
+		return true;
+	}
+	/**
+	* Literal whitespace other than space that appear in attribute values are serialized as
+	* their entity references, so they will be preserved.
+	* (In contrast to whitespace literals in the input which are normalized to spaces).
+	*
+	* Well-formed constraint: No < in Attribute Values:
+	* > The replacement text of any entity referred to directly or indirectly
+	* > in an attribute value must not contain a <.
+	*
+	* @see https://www.w3.org/TR/xml11/#CleanAttrVals
+	* @see https://www.w3.org/TR/xml11/#NT-AttValue
+	* @see https://www.w3.org/TR/xml11/#AVNormalize
+	* @see https://w3c.github.io/DOM-Parsing/#serializing-an-element-s-attributes
+	* @prettierignore
+	*/
+	function addSerializedAttribute(buf, qualifiedName, value) {
+		buf.push(" ", qualifiedName, "=\"", value.replace(/[<>&"\t\n\r]/g, _xmlEncoder), "\"");
+	}
+	function serializeToString(node, buf, visibleNamespaces, opts) {
+		if (!visibleNamespaces) visibleNamespaces = [];
+		var nodeFilter = opts.nodeFilter;
+		var requireWellFormed = opts.requireWellFormed;
+		var splitCDATASections = opts.splitCDATASections;
+		var isHTML = (node.nodeType === DOCUMENT_NODE ? node : node.ownerDocument).type === "html";
+		walkDOM(node, { ns: visibleNamespaces }, {
+			enter: function(n, ctx) {
+				var namespaces = ctx.ns;
+				if (nodeFilter) {
+					n = nodeFilter(n);
+					if (n) {
+						if (typeof n == "string") {
+							buf.push(n);
+							return null;
+						}
+					} else return null;
+				}
+				switch (n.nodeType) {
+					case ELEMENT_NODE:
+						var attrs = n.attributes;
+						var len = attrs.length;
+						var nodeName = n.tagName;
+						var prefixedNodeName = nodeName;
+						if (!isHTML && !n.prefix && n.namespaceURI) {
+							var defaultNS;
+							for (var ai = 0; ai < attrs.length; ai++) if (attrs.item(ai).name === "xmlns") {
+								defaultNS = attrs.item(ai).value;
+								break;
+							}
+							if (!defaultNS) for (var nsi = namespaces.length - 1; nsi >= 0; nsi--) {
+								var nsEntry = namespaces[nsi];
+								if (nsEntry.prefix === "" && nsEntry.namespace === n.namespaceURI) {
+									defaultNS = nsEntry.namespace;
+									break;
+								}
+							}
+							if (defaultNS !== n.namespaceURI) for (var nsi = namespaces.length - 1; nsi >= 0; nsi--) {
+								var nsEntry = namespaces[nsi];
+								if (nsEntry.namespace === n.namespaceURI) {
+									if (nsEntry.prefix) prefixedNodeName = nsEntry.prefix + ":" + nodeName;
+									break;
+								}
+							}
+						}
+						buf.push("<", prefixedNodeName);
+						var childNamespaces = namespaces.slice();
+						for (var i = 0; i < len; i++) {
+							var attr = attrs.item(i);
+							if (attr.prefix == "xmlns") childNamespaces.push({
+								prefix: attr.localName,
+								namespace: attr.value
+							});
+							else if (attr.nodeName == "xmlns") childNamespaces.push({
+								prefix: "",
+								namespace: attr.value
+							});
+						}
+						for (var i = 0; i < len; i++) {
+							var attr = attrs.item(i);
+							if (needNamespaceDefine(attr, isHTML, childNamespaces)) {
+								var attrPrefix = attr.prefix || "";
+								var uri = attr.namespaceURI;
+								addSerializedAttribute(buf, attrPrefix ? "xmlns:" + attrPrefix : "xmlns", uri);
+								childNamespaces.push({
+									prefix: attrPrefix,
+									namespace: uri
+								});
+							}
+							var filteredAttr = nodeFilter ? nodeFilter(attr) : attr;
+							if (filteredAttr) if (typeof filteredAttr === "string") buf.push(filteredAttr);
+							else addSerializedAttribute(buf, filteredAttr.name, filteredAttr.value);
+						}
+						if (nodeName === prefixedNodeName && needNamespaceDefine(n, isHTML, childNamespaces)) {
+							var nodePrefix = n.prefix || "";
+							var uri = n.namespaceURI;
+							addSerializedAttribute(buf, nodePrefix ? "xmlns:" + nodePrefix : "xmlns", uri);
+							childNamespaces.push({
+								prefix: nodePrefix,
+								namespace: uri
+							});
+						}
+						var canCloseTag = !n.firstChild;
+						if (canCloseTag && (isHTML || n.namespaceURI === NAMESPACE.HTML)) canCloseTag = isHTMLVoidElement(nodeName);
+						if (canCloseTag) {
+							buf.push("/>");
+							return null;
+						}
+						buf.push(">");
+						if (isHTML && isHTMLRawTextElement(nodeName)) {
+							var child = n.firstChild;
+							while (child) {
+								if (child.data) buf.push(child.data);
+								else serializeToString(child, buf, childNamespaces.slice(), opts);
+								child = child.nextSibling;
+							}
+							buf.push("</", prefixedNodeName, ">");
+							return null;
+						}
+						return {
+							ns: childNamespaces,
+							tag: prefixedNodeName
+						};
+					case DOCUMENT_NODE:
+					case DOCUMENT_FRAGMENT_NODE:
+						if (requireWellFormed && n.nodeType === DOCUMENT_NODE && n.documentElement == null) throw new DOMException("The Document has no documentElement", DOMExceptionName.InvalidStateError);
+						return { ns: namespaces };
+					case ATTRIBUTE_NODE:
+						addSerializedAttribute(buf, n.name, n.value);
+						return null;
+					case TEXT_NODE:
+						if (requireWellFormed && g.InvalidChar.test(n.data)) throw new DOMException("The Text node data contains characters outside the XML Char production", DOMExceptionName.InvalidStateError);
+						buf.push(n.data.replace(/[<&>]/g, _xmlEncoder));
+						return null;
+					case CDATA_SECTION_NODE:
+						if (requireWellFormed && n.data.indexOf("]]>") !== -1) throw new DOMException("The CDATASection data contains \"]]>\"", DOMExceptionName.InvalidStateError);
+						if (splitCDATASections) buf.push(g.CDATA_START, n.data.replace(/]]>/g, "]]]]><![CDATA[>"), g.CDATA_END);
+						else buf.push(g.CDATA_START, n.data, g.CDATA_END);
+						return null;
+					case COMMENT_NODE:
+						if (requireWellFormed) {
+							if (g.InvalidChar.test(n.data)) throw new DOMException("The comment node data contains characters outside the XML Char production", DOMExceptionName.InvalidStateError);
+							if (n.data.indexOf("--") !== -1 || n.data[n.data.length - 1] === "-") throw new DOMException("The comment node data contains \"--\" or ends with \"-\"", DOMExceptionName.InvalidStateError);
+						}
+						buf.push(g.COMMENT_START, n.data, g.COMMENT_END);
+						return null;
+					case DOCUMENT_TYPE_NODE:
+						var pubid = n.publicId;
+						var sysid = n.systemId;
+						if (requireWellFormed) {
+							if (pubid && !g.PubidLiteral_match.test(pubid)) throw new DOMException("DocumentType publicId is not a valid PubidLiteral", DOMExceptionName.InvalidStateError);
+							if (sysid && sysid !== "." && !g.SystemLiteral_match.test(sysid)) throw new DOMException("DocumentType systemId is not a valid SystemLiteral", DOMExceptionName.InvalidStateError);
+							if (n.internalSubset && n.internalSubset.indexOf("]>") !== -1) throw new DOMException("DocumentType internalSubset contains \"]>\"", DOMExceptionName.InvalidStateError);
+						}
+						buf.push(g.DOCTYPE_DECL_START, " ", n.name);
+						if (pubid) {
+							buf.push(" ", g.PUBLIC, " ", pubid);
+							if (sysid && sysid !== ".") buf.push(" ", sysid);
+						} else if (sysid && sysid !== ".") buf.push(" ", g.SYSTEM, " ", sysid);
+						if (n.internalSubset) buf.push(" [", n.internalSubset, "]");
+						buf.push(">");
+						return null;
+					case PROCESSING_INSTRUCTION_NODE:
+						if (requireWellFormed) {
+							if (n.target.indexOf(":") !== -1 || n.target.toLowerCase() === "xml") throw new DOMException("The ProcessingInstruction target is not well-formed", DOMExceptionName.InvalidStateError);
+							if (g.InvalidChar.test(n.data)) throw new DOMException("The ProcessingInstruction data contains characters outside the XML Char production", DOMExceptionName.InvalidStateError);
+							if (n.data.indexOf("?>") !== -1) throw new DOMException("The ProcessingInstruction data contains \"?>\"", DOMExceptionName.InvalidStateError);
+						}
+						buf.push("<?", n.target, " ", n.data, "?>");
+						return null;
+					case ENTITY_REFERENCE_NODE:
+						buf.push("&", n.nodeName, ";");
+						return null;
+					default:
+						buf.push("??", n.nodeName);
+						return null;
+				}
+			},
+			exit: function(n, childCtx) {
+				if (childCtx && childCtx.tag) buf.push("</", childCtx.tag, ">");
+			}
+		});
+	}
+	/**
+	* Imports a node from a different document into `doc`, creating a new copy.
+	* Delegates to {@link walkDOM} for traversal. Each node in the subtree is shallow-cloned,
+	* stamped with `doc` as its `ownerDocument`, and detached (`parentNode` set to `null`).
+	* Children are imported recursively when `deep` is `true`; for {@link Attr} nodes `deep` is
+	* always forced to `true`
+	* because an attribute's value lives in a child text node.
+	*
+	* @param {Document} doc
+	* The document that will own the imported node.
+	* @param {Node} node
+	* The node to import.
+	* @param {boolean} deep
+	* If `true`, descendants are imported recursively.
+	* @returns {Node}
+	* The newly imported node, now owned by `doc`.
+	*/
+	function importNode(doc, node, deep) {
+		var destRoot;
+		walkDOM(node, null, { enter: function(srcNode, destParent) {
+			var destNode = srcNode.cloneNode(false);
+			destNode.ownerDocument = doc;
+			destNode.parentNode = null;
+			if (destParent === null) destRoot = destNode;
+			else destParent.appendChild(destNode);
+			return srcNode.nodeType === ATTRIBUTE_NODE || deep ? destNode : null;
+		} });
+		return destRoot;
+	}
+	/**
+	* Creates a copy of a node from an existing one.
+	*
+	* @param {Document} doc
+	* The Document object representing the document that the new node will belong to.
+	* @param {Node} node
+	* The node to clone.
+	* @param {boolean} deep
+	* If true, the contents of the node are recursively copied.
+	* If false, only the node itself (and its attributes, if it is an element) are copied.
+	* @returns {Node}
+	* Returns the newly created copy of the node.
+	* @throws {DOMException}
+	* May throw a DOMException if operations within setAttributeNode or appendChild (which are
+	* potentially invoked in this function) do not meet their specific constraints.
+	*/
+	function cloneNode(doc, node, deep) {
+		var destRoot;
+		walkDOM(node, null, { enter: function(srcNode, destParent) {
+			var destNode = new srcNode.constructor(PDC);
+			for (var n in srcNode) if (hasOwn(srcNode, n)) {
+				var v = srcNode[n];
+				if (typeof v != "object") {
+					if (v != destNode[n]) destNode[n] = v;
+				}
+			}
+			if (srcNode.childNodes) destNode.childNodes = new NodeList();
+			destNode.ownerDocument = doc;
+			var shouldDeep = deep;
+			switch (destNode.nodeType) {
+				case ELEMENT_NODE:
+					var attrs = srcNode.attributes;
+					var attrs2 = destNode.attributes = new NamedNodeMap();
+					var len = attrs.length;
+					attrs2._ownerElement = destNode;
+					for (var i = 0; i < len; i++) destNode.setAttributeNode(cloneNode(doc, attrs.item(i), true));
+					break;
+				case ATTRIBUTE_NODE: shouldDeep = true;
+			}
+			if (destParent !== null) destParent.appendChild(destNode);
+			else destRoot = destNode;
+			return shouldDeep ? destNode : null;
+		} });
+		return destRoot;
+	}
+	function __set__(object, key, value) {
+		object[key] = value;
+	}
+	function childrenRefresh(node) {
+		var ls = [];
+		var child = node.firstChild;
+		while (child) {
+			if (child.nodeType === ELEMENT_NODE) ls.push(child);
+			child = child.nextSibling;
+		}
+		return ls;
+	}
+	try {
+		if (Object.defineProperty) {
+			Object.defineProperty(LiveNodeList.prototype, "length", { get: function() {
+				_updateLiveList(this);
+				return this.$$length;
+			} });
+			/**
+			* The text content of this node and its descendants.
+			*
+			* For {@link Element} and {@link DocumentFragment} nodes, returns the concatenation of the
+			* `nodeValue` of every descendant text node, excluding processing instruction and comment
+			* nodes. For all other node types, returns `nodeValue`.
+			*
+			* Setting `textContent` on an element or document fragment replaces all child nodes with a
+			* single text node; on other nodes it sets `data`, `value`, and `nodeValue` directly.
+			*
+			* @type {string | null}
+			* @see {@link https://dom.spec.whatwg.org/#dom-node-textcontent}
+			*/
+			Object.defineProperty(Node.prototype, "textContent", {
+				get: function() {
+					if (this.nodeType === ELEMENT_NODE || this.nodeType === DOCUMENT_FRAGMENT_NODE) {
+						var buf = [];
+						walkDOM(this, null, { enter: function(n) {
+							if (n.nodeType === ELEMENT_NODE || n.nodeType === DOCUMENT_FRAGMENT_NODE) return true;
+							if (n.nodeType === PROCESSING_INSTRUCTION_NODE || n.nodeType === COMMENT_NODE) return null;
+							buf.push(n.nodeValue);
+						} });
+						return buf.join("");
+					}
+					return this.nodeValue;
+				},
+				set: function(data) {
+					switch (this.nodeType) {
+						case ELEMENT_NODE:
+						case DOCUMENT_FRAGMENT_NODE:
+							while (this.firstChild) this.removeChild(this.firstChild);
+							if (data || String(data)) this.appendChild(this.ownerDocument.createTextNode(data));
+							break;
+						default:
+							this.data = data;
+							this.value = data;
+							this.nodeValue = data;
+					}
+				}
+			});
+			Object.defineProperty(Element.prototype, "children", { get: function() {
+				return new LiveNodeList(this, childrenRefresh);
+			} });
+			Object.defineProperty(Document.prototype, "children", { get: function() {
+				return new LiveNodeList(this, childrenRefresh);
+			} });
+			Object.defineProperty(DocumentFragment.prototype, "children", { get: function() {
+				return new LiveNodeList(this, childrenRefresh);
+			} });
+			__set__ = function(object, key, value) {
+				object["$$" + key] = value;
+			};
+		}
+	} catch (e) {}
+	exports._updateLiveList = _updateLiveList;
+	exports.Attr = Attr;
+	exports.CDATASection = CDATASection;
+	exports.CharacterData = CharacterData;
+	exports.Comment = Comment;
+	exports.Document = Document;
+	exports.DocumentFragment = DocumentFragment;
+	exports.DocumentType = DocumentType;
+	exports.DOMImplementation = DOMImplementation;
+	exports.Element = Element;
+	exports.Entity = Entity;
+	exports.EntityReference = EntityReference;
+	exports.LiveNodeList = LiveNodeList;
+	exports.NamedNodeMap = NamedNodeMap;
+	exports.Node = Node;
+	exports.NodeList = NodeList;
+	exports.Notation = Notation;
+	exports.Text = Text;
+	exports.ProcessingInstruction = ProcessingInstruction;
+	exports.walkDOM = walkDOM;
+	exports.XMLSerializer = XMLSerializer;
+}));
+//#endregion
+//#region node_modules/docxtemplater/node_modules/@xmldom/xmldom/lib/entities.js
+var require_entities = /* @__PURE__ */ __commonJSMin(((exports) => {
+	var freeze = require_conventions().freeze;
+	/**
+	* The entities that are predefined in every XML document.
+	*
+	* @see https://www.w3.org/TR/2006/REC-xml11-20060816/#sec-predefined-ent W3C XML 1.1
+	* @see https://www.w3.org/TR/2008/REC-xml-20081126/#sec-predefined-ent W3C XML 1.0
+	* @see https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references#Predefined_entities_in_XML
+	*      Wikipedia
+	*/
+	exports.XML_ENTITIES = freeze({
+		amp: "&",
+		apos: "'",
+		gt: ">",
+		lt: "<",
+		quot: "\""
+	});
+	/**
+	* A map of all entities that are detected in an HTML document.
+	* They contain all entries from `XML_ENTITIES`.
+	*
+	* @see {@link XML_ENTITIES}
+	* @see {@link DOMParser.parseFromString}
+	* @see {@link DOMImplementation.prototype.createHTMLDocument}
+	* @see https://html.spec.whatwg.org/#named-character-references WHATWG HTML(5)
+	*      Spec
+	* @see https://html.spec.whatwg.org/entities.json JSON
+	* @see https://www.w3.org/TR/xml-entity-names/ W3C XML Entity Names
+	* @see https://www.w3.org/TR/html4/sgml/entities.html W3C HTML4/SGML
+	* @see https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references#Character_entity_references_in_HTML
+	*      Wikipedia (HTML)
+	* @see https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references#Entities_representing_special_characters_in_XHTML
+	*      Wikpedia (XHTML)
+	*/
+	exports.HTML_ENTITIES = freeze({
+		Aacute: "Á",
+		aacute: "á",
+		Abreve: "Ă",
+		abreve: "ă",
+		ac: "∾",
+		acd: "∿",
+		acE: "∾̳",
+		Acirc: "Â",
+		acirc: "â",
+		acute: "´",
+		Acy: "А",
+		acy: "а",
+		AElig: "Æ",
+		aelig: "æ",
+		af: "⁡",
+		Afr: "𝔄",
+		afr: "𝔞",
+		Agrave: "À",
+		agrave: "à",
+		alefsym: "ℵ",
+		aleph: "ℵ",
+		Alpha: "Α",
+		alpha: "α",
+		Amacr: "Ā",
+		amacr: "ā",
+		amalg: "⨿",
+		AMP: "&",
+		amp: "&",
+		And: "⩓",
+		and: "∧",
+		andand: "⩕",
+		andd: "⩜",
+		andslope: "⩘",
+		andv: "⩚",
+		ang: "∠",
+		ange: "⦤",
+		angle: "∠",
+		angmsd: "∡",
+		angmsdaa: "⦨",
+		angmsdab: "⦩",
+		angmsdac: "⦪",
+		angmsdad: "⦫",
+		angmsdae: "⦬",
+		angmsdaf: "⦭",
+		angmsdag: "⦮",
+		angmsdah: "⦯",
+		angrt: "∟",
+		angrtvb: "⊾",
+		angrtvbd: "⦝",
+		angsph: "∢",
+		angst: "Å",
+		angzarr: "⍼",
+		Aogon: "Ą",
+		aogon: "ą",
+		Aopf: "𝔸",
+		aopf: "𝕒",
+		ap: "≈",
+		apacir: "⩯",
+		apE: "⩰",
+		ape: "≊",
+		apid: "≋",
+		apos: "'",
+		ApplyFunction: "⁡",
+		approx: "≈",
+		approxeq: "≊",
+		Aring: "Å",
+		aring: "å",
+		Ascr: "𝒜",
+		ascr: "𝒶",
+		Assign: "≔",
+		ast: "*",
+		asymp: "≈",
+		asympeq: "≍",
+		Atilde: "Ã",
+		atilde: "ã",
+		Auml: "Ä",
+		auml: "ä",
+		awconint: "∳",
+		awint: "⨑",
+		backcong: "≌",
+		backepsilon: "϶",
+		backprime: "‵",
+		backsim: "∽",
+		backsimeq: "⋍",
+		Backslash: "∖",
+		Barv: "⫧",
+		barvee: "⊽",
+		Barwed: "⌆",
+		barwed: "⌅",
+		barwedge: "⌅",
+		bbrk: "⎵",
+		bbrktbrk: "⎶",
+		bcong: "≌",
+		Bcy: "Б",
+		bcy: "б",
+		bdquo: "„",
+		becaus: "∵",
+		Because: "∵",
+		because: "∵",
+		bemptyv: "⦰",
+		bepsi: "϶",
+		bernou: "ℬ",
+		Bernoullis: "ℬ",
+		Beta: "Β",
+		beta: "β",
+		beth: "ℶ",
+		between: "≬",
+		Bfr: "𝔅",
+		bfr: "𝔟",
+		bigcap: "⋂",
+		bigcirc: "◯",
+		bigcup: "⋃",
+		bigodot: "⨀",
+		bigoplus: "⨁",
+		bigotimes: "⨂",
+		bigsqcup: "⨆",
+		bigstar: "★",
+		bigtriangledown: "▽",
+		bigtriangleup: "△",
+		biguplus: "⨄",
+		bigvee: "⋁",
+		bigwedge: "⋀",
+		bkarow: "⤍",
+		blacklozenge: "⧫",
+		blacksquare: "▪",
+		blacktriangle: "▴",
+		blacktriangledown: "▾",
+		blacktriangleleft: "◂",
+		blacktriangleright: "▸",
+		blank: "␣",
+		blk12: "▒",
+		blk14: "░",
+		blk34: "▓",
+		block: "█",
+		bne: "=⃥",
+		bnequiv: "≡⃥",
+		bNot: "⫭",
+		bnot: "⌐",
+		Bopf: "𝔹",
+		bopf: "𝕓",
+		bot: "⊥",
+		bottom: "⊥",
+		bowtie: "⋈",
+		boxbox: "⧉",
+		boxDL: "╗",
+		boxDl: "╖",
+		boxdL: "╕",
+		boxdl: "┐",
+		boxDR: "╔",
+		boxDr: "╓",
+		boxdR: "╒",
+		boxdr: "┌",
+		boxH: "═",
+		boxh: "─",
+		boxHD: "╦",
+		boxHd: "╤",
+		boxhD: "╥",
+		boxhd: "┬",
+		boxHU: "╩",
+		boxHu: "╧",
+		boxhU: "╨",
+		boxhu: "┴",
+		boxminus: "⊟",
+		boxplus: "⊞",
+		boxtimes: "⊠",
+		boxUL: "╝",
+		boxUl: "╜",
+		boxuL: "╛",
+		boxul: "┘",
+		boxUR: "╚",
+		boxUr: "╙",
+		boxuR: "╘",
+		boxur: "└",
+		boxV: "║",
+		boxv: "│",
+		boxVH: "╬",
+		boxVh: "╫",
+		boxvH: "╪",
+		boxvh: "┼",
+		boxVL: "╣",
+		boxVl: "╢",
+		boxvL: "╡",
+		boxvl: "┤",
+		boxVR: "╠",
+		boxVr: "╟",
+		boxvR: "╞",
+		boxvr: "├",
+		bprime: "‵",
+		Breve: "˘",
+		breve: "˘",
+		brvbar: "¦",
+		Bscr: "ℬ",
+		bscr: "𝒷",
+		bsemi: "⁏",
+		bsim: "∽",
+		bsime: "⋍",
+		bsol: "\\",
+		bsolb: "⧅",
+		bsolhsub: "⟈",
+		bull: "•",
+		bullet: "•",
+		bump: "≎",
+		bumpE: "⪮",
+		bumpe: "≏",
+		Bumpeq: "≎",
+		bumpeq: "≏",
+		Cacute: "Ć",
+		cacute: "ć",
+		Cap: "⋒",
+		cap: "∩",
+		capand: "⩄",
+		capbrcup: "⩉",
+		capcap: "⩋",
+		capcup: "⩇",
+		capdot: "⩀",
+		CapitalDifferentialD: "ⅅ",
+		caps: "∩︀",
+		caret: "⁁",
+		caron: "ˇ",
+		Cayleys: "ℭ",
+		ccaps: "⩍",
+		Ccaron: "Č",
+		ccaron: "č",
+		Ccedil: "Ç",
+		ccedil: "ç",
+		Ccirc: "Ĉ",
+		ccirc: "ĉ",
+		Cconint: "∰",
+		ccups: "⩌",
+		ccupssm: "⩐",
+		Cdot: "Ċ",
+		cdot: "ċ",
+		cedil: "¸",
+		Cedilla: "¸",
+		cemptyv: "⦲",
+		cent: "¢",
+		CenterDot: "·",
+		centerdot: "·",
+		Cfr: "ℭ",
+		cfr: "𝔠",
+		CHcy: "Ч",
+		chcy: "ч",
+		check: "✓",
+		checkmark: "✓",
+		Chi: "Χ",
+		chi: "χ",
+		cir: "○",
+		circ: "ˆ",
+		circeq: "≗",
+		circlearrowleft: "↺",
+		circlearrowright: "↻",
+		circledast: "⊛",
+		circledcirc: "⊚",
+		circleddash: "⊝",
+		CircleDot: "⊙",
+		circledR: "®",
+		circledS: "Ⓢ",
+		CircleMinus: "⊖",
+		CirclePlus: "⊕",
+		CircleTimes: "⊗",
+		cirE: "⧃",
+		cire: "≗",
+		cirfnint: "⨐",
+		cirmid: "⫯",
+		cirscir: "⧂",
+		ClockwiseContourIntegral: "∲",
+		CloseCurlyDoubleQuote: "”",
+		CloseCurlyQuote: "’",
+		clubs: "♣",
+		clubsuit: "♣",
+		Colon: "∷",
+		colon: ":",
+		Colone: "⩴",
+		colone: "≔",
+		coloneq: "≔",
+		comma: ",",
+		commat: "@",
+		comp: "∁",
+		compfn: "∘",
+		complement: "∁",
+		complexes: "ℂ",
+		cong: "≅",
+		congdot: "⩭",
+		Congruent: "≡",
+		Conint: "∯",
+		conint: "∮",
+		ContourIntegral: "∮",
+		Copf: "ℂ",
+		copf: "𝕔",
+		coprod: "∐",
+		Coproduct: "∐",
+		COPY: "©",
+		copy: "©",
+		copysr: "℗",
+		CounterClockwiseContourIntegral: "∳",
+		crarr: "↵",
+		Cross: "⨯",
+		cross: "✗",
+		Cscr: "𝒞",
+		cscr: "𝒸",
+		csub: "⫏",
+		csube: "⫑",
+		csup: "⫐",
+		csupe: "⫒",
+		ctdot: "⋯",
+		cudarrl: "⤸",
+		cudarrr: "⤵",
+		cuepr: "⋞",
+		cuesc: "⋟",
+		cularr: "↶",
+		cularrp: "⤽",
+		Cup: "⋓",
+		cup: "∪",
+		cupbrcap: "⩈",
+		CupCap: "≍",
+		cupcap: "⩆",
+		cupcup: "⩊",
+		cupdot: "⊍",
+		cupor: "⩅",
+		cups: "∪︀",
+		curarr: "↷",
+		curarrm: "⤼",
+		curlyeqprec: "⋞",
+		curlyeqsucc: "⋟",
+		curlyvee: "⋎",
+		curlywedge: "⋏",
+		curren: "¤",
+		curvearrowleft: "↶",
+		curvearrowright: "↷",
+		cuvee: "⋎",
+		cuwed: "⋏",
+		cwconint: "∲",
+		cwint: "∱",
+		cylcty: "⌭",
+		Dagger: "‡",
+		dagger: "†",
+		daleth: "ℸ",
+		Darr: "↡",
+		dArr: "⇓",
+		darr: "↓",
+		dash: "‐",
+		Dashv: "⫤",
+		dashv: "⊣",
+		dbkarow: "⤏",
+		dblac: "˝",
+		Dcaron: "Ď",
+		dcaron: "ď",
+		Dcy: "Д",
+		dcy: "д",
+		DD: "ⅅ",
+		dd: "ⅆ",
+		ddagger: "‡",
+		ddarr: "⇊",
+		DDotrahd: "⤑",
+		ddotseq: "⩷",
+		deg: "°",
+		Del: "∇",
+		Delta: "Δ",
+		delta: "δ",
+		demptyv: "⦱",
+		dfisht: "⥿",
+		Dfr: "𝔇",
+		dfr: "𝔡",
+		dHar: "⥥",
+		dharl: "⇃",
+		dharr: "⇂",
+		DiacriticalAcute: "´",
+		DiacriticalDot: "˙",
+		DiacriticalDoubleAcute: "˝",
+		DiacriticalGrave: "`",
+		DiacriticalTilde: "˜",
+		diam: "⋄",
+		Diamond: "⋄",
+		diamond: "⋄",
+		diamondsuit: "♦",
+		diams: "♦",
+		die: "¨",
+		DifferentialD: "ⅆ",
+		digamma: "ϝ",
+		disin: "⋲",
+		div: "÷",
+		divide: "÷",
+		divideontimes: "⋇",
+		divonx: "⋇",
+		DJcy: "Ђ",
+		djcy: "ђ",
+		dlcorn: "⌞",
+		dlcrop: "⌍",
+		dollar: "$",
+		Dopf: "𝔻",
+		dopf: "𝕕",
+		Dot: "¨",
+		dot: "˙",
+		DotDot: "⃜",
+		doteq: "≐",
+		doteqdot: "≑",
+		DotEqual: "≐",
+		dotminus: "∸",
+		dotplus: "∔",
+		dotsquare: "⊡",
+		doublebarwedge: "⌆",
+		DoubleContourIntegral: "∯",
+		DoubleDot: "¨",
+		DoubleDownArrow: "⇓",
+		DoubleLeftArrow: "⇐",
+		DoubleLeftRightArrow: "⇔",
+		DoubleLeftTee: "⫤",
+		DoubleLongLeftArrow: "⟸",
+		DoubleLongLeftRightArrow: "⟺",
+		DoubleLongRightArrow: "⟹",
+		DoubleRightArrow: "⇒",
+		DoubleRightTee: "⊨",
+		DoubleUpArrow: "⇑",
+		DoubleUpDownArrow: "⇕",
+		DoubleVerticalBar: "∥",
+		DownArrow: "↓",
+		Downarrow: "⇓",
+		downarrow: "↓",
+		DownArrowBar: "⤓",
+		DownArrowUpArrow: "⇵",
+		DownBreve: "̑",
+		downdownarrows: "⇊",
+		downharpoonleft: "⇃",
+		downharpoonright: "⇂",
+		DownLeftRightVector: "⥐",
+		DownLeftTeeVector: "⥞",
+		DownLeftVector: "↽",
+		DownLeftVectorBar: "⥖",
+		DownRightTeeVector: "⥟",
+		DownRightVector: "⇁",
+		DownRightVectorBar: "⥗",
+		DownTee: "⊤",
+		DownTeeArrow: "↧",
+		drbkarow: "⤐",
+		drcorn: "⌟",
+		drcrop: "⌌",
+		Dscr: "𝒟",
+		dscr: "𝒹",
+		DScy: "Ѕ",
+		dscy: "ѕ",
+		dsol: "⧶",
+		Dstrok: "Đ",
+		dstrok: "đ",
+		dtdot: "⋱",
+		dtri: "▿",
+		dtrif: "▾",
+		duarr: "⇵",
+		duhar: "⥯",
+		dwangle: "⦦",
+		DZcy: "Џ",
+		dzcy: "џ",
+		dzigrarr: "⟿",
+		Eacute: "É",
+		eacute: "é",
+		easter: "⩮",
+		Ecaron: "Ě",
+		ecaron: "ě",
+		ecir: "≖",
+		Ecirc: "Ê",
+		ecirc: "ê",
+		ecolon: "≕",
+		Ecy: "Э",
+		ecy: "э",
+		eDDot: "⩷",
+		Edot: "Ė",
+		eDot: "≑",
+		edot: "ė",
+		ee: "ⅇ",
+		efDot: "≒",
+		Efr: "𝔈",
+		efr: "𝔢",
+		eg: "⪚",
+		Egrave: "È",
+		egrave: "è",
+		egs: "⪖",
+		egsdot: "⪘",
+		el: "⪙",
+		Element: "∈",
+		elinters: "⏧",
+		ell: "ℓ",
+		els: "⪕",
+		elsdot: "⪗",
+		Emacr: "Ē",
+		emacr: "ē",
+		empty: "∅",
+		emptyset: "∅",
+		EmptySmallSquare: "◻",
+		emptyv: "∅",
+		EmptyVerySmallSquare: "▫",
+		emsp: " ",
+		emsp13: " ",
+		emsp14: " ",
+		ENG: "Ŋ",
+		eng: "ŋ",
+		ensp: " ",
+		Eogon: "Ę",
+		eogon: "ę",
+		Eopf: "𝔼",
+		eopf: "𝕖",
+		epar: "⋕",
+		eparsl: "⧣",
+		eplus: "⩱",
+		epsi: "ε",
+		Epsilon: "Ε",
+		epsilon: "ε",
+		epsiv: "ϵ",
+		eqcirc: "≖",
+		eqcolon: "≕",
+		eqsim: "≂",
+		eqslantgtr: "⪖",
+		eqslantless: "⪕",
+		Equal: "⩵",
+		equals: "=",
+		EqualTilde: "≂",
+		equest: "≟",
+		Equilibrium: "⇌",
+		equiv: "≡",
+		equivDD: "⩸",
+		eqvparsl: "⧥",
+		erarr: "⥱",
+		erDot: "≓",
+		Escr: "ℰ",
+		escr: "ℯ",
+		esdot: "≐",
+		Esim: "⩳",
+		esim: "≂",
+		Eta: "Η",
+		eta: "η",
+		ETH: "Ð",
+		eth: "ð",
+		Euml: "Ë",
+		euml: "ë",
+		euro: "€",
+		excl: "!",
+		exist: "∃",
+		Exists: "∃",
+		expectation: "ℰ",
+		ExponentialE: "ⅇ",
+		exponentiale: "ⅇ",
+		fallingdotseq: "≒",
+		Fcy: "Ф",
+		fcy: "ф",
+		female: "♀",
+		ffilig: "ﬃ",
+		fflig: "ﬀ",
+		ffllig: "ﬄ",
+		Ffr: "𝔉",
+		ffr: "𝔣",
+		filig: "ﬁ",
+		FilledSmallSquare: "◼",
+		FilledVerySmallSquare: "▪",
+		fjlig: "fj",
+		flat: "♭",
+		fllig: "ﬂ",
+		fltns: "▱",
+		fnof: "ƒ",
+		Fopf: "𝔽",
+		fopf: "𝕗",
+		ForAll: "∀",
+		forall: "∀",
+		fork: "⋔",
+		forkv: "⫙",
+		Fouriertrf: "ℱ",
+		fpartint: "⨍",
+		frac12: "½",
+		frac13: "⅓",
+		frac14: "¼",
+		frac15: "⅕",
+		frac16: "⅙",
+		frac18: "⅛",
+		frac23: "⅔",
+		frac25: "⅖",
+		frac34: "¾",
+		frac35: "⅗",
+		frac38: "⅜",
+		frac45: "⅘",
+		frac56: "⅚",
+		frac58: "⅝",
+		frac78: "⅞",
+		frasl: "⁄",
+		frown: "⌢",
+		Fscr: "ℱ",
+		fscr: "𝒻",
+		gacute: "ǵ",
+		Gamma: "Γ",
+		gamma: "γ",
+		Gammad: "Ϝ",
+		gammad: "ϝ",
+		gap: "⪆",
+		Gbreve: "Ğ",
+		gbreve: "ğ",
+		Gcedil: "Ģ",
+		Gcirc: "Ĝ",
+		gcirc: "ĝ",
+		Gcy: "Г",
+		gcy: "г",
+		Gdot: "Ġ",
+		gdot: "ġ",
+		gE: "≧",
+		ge: "≥",
+		gEl: "⪌",
+		gel: "⋛",
+		geq: "≥",
+		geqq: "≧",
+		geqslant: "⩾",
+		ges: "⩾",
+		gescc: "⪩",
+		gesdot: "⪀",
+		gesdoto: "⪂",
+		gesdotol: "⪄",
+		gesl: "⋛︀",
+		gesles: "⪔",
+		Gfr: "𝔊",
+		gfr: "𝔤",
+		Gg: "⋙",
+		gg: "≫",
+		ggg: "⋙",
+		gimel: "ℷ",
+		GJcy: "Ѓ",
+		gjcy: "ѓ",
+		gl: "≷",
+		gla: "⪥",
+		glE: "⪒",
+		glj: "⪤",
+		gnap: "⪊",
+		gnapprox: "⪊",
+		gnE: "≩",
+		gne: "⪈",
+		gneq: "⪈",
+		gneqq: "≩",
+		gnsim: "⋧",
+		Gopf: "𝔾",
+		gopf: "𝕘",
+		grave: "`",
+		GreaterEqual: "≥",
+		GreaterEqualLess: "⋛",
+		GreaterFullEqual: "≧",
+		GreaterGreater: "⪢",
+		GreaterLess: "≷",
+		GreaterSlantEqual: "⩾",
+		GreaterTilde: "≳",
+		Gscr: "𝒢",
+		gscr: "ℊ",
+		gsim: "≳",
+		gsime: "⪎",
+		gsiml: "⪐",
+		Gt: "≫",
+		GT: ">",
+		gt: ">",
+		gtcc: "⪧",
+		gtcir: "⩺",
+		gtdot: "⋗",
+		gtlPar: "⦕",
+		gtquest: "⩼",
+		gtrapprox: "⪆",
+		gtrarr: "⥸",
+		gtrdot: "⋗",
+		gtreqless: "⋛",
+		gtreqqless: "⪌",
+		gtrless: "≷",
+		gtrsim: "≳",
+		gvertneqq: "≩︀",
+		gvnE: "≩︀",
+		Hacek: "ˇ",
+		hairsp: " ",
+		half: "½",
+		hamilt: "ℋ",
+		HARDcy: "Ъ",
+		hardcy: "ъ",
+		hArr: "⇔",
+		harr: "↔",
+		harrcir: "⥈",
+		harrw: "↭",
+		Hat: "^",
+		hbar: "ℏ",
+		Hcirc: "Ĥ",
+		hcirc: "ĥ",
+		hearts: "♥",
+		heartsuit: "♥",
+		hellip: "…",
+		hercon: "⊹",
+		Hfr: "ℌ",
+		hfr: "𝔥",
+		HilbertSpace: "ℋ",
+		hksearow: "⤥",
+		hkswarow: "⤦",
+		hoarr: "⇿",
+		homtht: "∻",
+		hookleftarrow: "↩",
+		hookrightarrow: "↪",
+		Hopf: "ℍ",
+		hopf: "𝕙",
+		horbar: "―",
+		HorizontalLine: "─",
+		Hscr: "ℋ",
+		hscr: "𝒽",
+		hslash: "ℏ",
+		Hstrok: "Ħ",
+		hstrok: "ħ",
+		HumpDownHump: "≎",
+		HumpEqual: "≏",
+		hybull: "⁃",
+		hyphen: "‐",
+		Iacute: "Í",
+		iacute: "í",
+		ic: "⁣",
+		Icirc: "Î",
+		icirc: "î",
+		Icy: "И",
+		icy: "и",
+		Idot: "İ",
+		IEcy: "Е",
+		iecy: "е",
+		iexcl: "¡",
+		iff: "⇔",
+		Ifr: "ℑ",
+		ifr: "𝔦",
+		Igrave: "Ì",
+		igrave: "ì",
+		ii: "ⅈ",
+		iiiint: "⨌",
+		iiint: "∭",
+		iinfin: "⧜",
+		iiota: "℩",
+		IJlig: "Ĳ",
+		ijlig: "ĳ",
+		Im: "ℑ",
+		Imacr: "Ī",
+		imacr: "ī",
+		image: "ℑ",
+		ImaginaryI: "ⅈ",
+		imagline: "ℐ",
+		imagpart: "ℑ",
+		imath: "ı",
+		imof: "⊷",
+		imped: "Ƶ",
+		Implies: "⇒",
+		in: "∈",
+		incare: "℅",
+		infin: "∞",
+		infintie: "⧝",
+		inodot: "ı",
+		Int: "∬",
+		int: "∫",
+		intcal: "⊺",
+		integers: "ℤ",
+		Integral: "∫",
+		intercal: "⊺",
+		Intersection: "⋂",
+		intlarhk: "⨗",
+		intprod: "⨼",
+		InvisibleComma: "⁣",
+		InvisibleTimes: "⁢",
+		IOcy: "Ё",
+		iocy: "ё",
+		Iogon: "Į",
+		iogon: "į",
+		Iopf: "𝕀",
+		iopf: "𝕚",
+		Iota: "Ι",
+		iota: "ι",
+		iprod: "⨼",
+		iquest: "¿",
+		Iscr: "ℐ",
+		iscr: "𝒾",
+		isin: "∈",
+		isindot: "⋵",
+		isinE: "⋹",
+		isins: "⋴",
+		isinsv: "⋳",
+		isinv: "∈",
+		it: "⁢",
+		Itilde: "Ĩ",
+		itilde: "ĩ",
+		Iukcy: "І",
+		iukcy: "і",
+		Iuml: "Ï",
+		iuml: "ï",
+		Jcirc: "Ĵ",
+		jcirc: "ĵ",
+		Jcy: "Й",
+		jcy: "й",
+		Jfr: "𝔍",
+		jfr: "𝔧",
+		jmath: "ȷ",
+		Jopf: "𝕁",
+		jopf: "𝕛",
+		Jscr: "𝒥",
+		jscr: "𝒿",
+		Jsercy: "Ј",
+		jsercy: "ј",
+		Jukcy: "Є",
+		jukcy: "є",
+		Kappa: "Κ",
+		kappa: "κ",
+		kappav: "ϰ",
+		Kcedil: "Ķ",
+		kcedil: "ķ",
+		Kcy: "К",
+		kcy: "к",
+		Kfr: "𝔎",
+		kfr: "𝔨",
+		kgreen: "ĸ",
+		KHcy: "Х",
+		khcy: "х",
+		KJcy: "Ќ",
+		kjcy: "ќ",
+		Kopf: "𝕂",
+		kopf: "𝕜",
+		Kscr: "𝒦",
+		kscr: "𝓀",
+		lAarr: "⇚",
+		Lacute: "Ĺ",
+		lacute: "ĺ",
+		laemptyv: "⦴",
+		lagran: "ℒ",
+		Lambda: "Λ",
+		lambda: "λ",
+		Lang: "⟪",
+		lang: "⟨",
+		langd: "⦑",
+		langle: "⟨",
+		lap: "⪅",
+		Laplacetrf: "ℒ",
+		laquo: "«",
+		Larr: "↞",
+		lArr: "⇐",
+		larr: "←",
+		larrb: "⇤",
+		larrbfs: "⤟",
+		larrfs: "⤝",
+		larrhk: "↩",
+		larrlp: "↫",
+		larrpl: "⤹",
+		larrsim: "⥳",
+		larrtl: "↢",
+		lat: "⪫",
+		lAtail: "⤛",
+		latail: "⤙",
+		late: "⪭",
+		lates: "⪭︀",
+		lBarr: "⤎",
+		lbarr: "⤌",
+		lbbrk: "❲",
+		lbrace: "{",
+		lbrack: "[",
+		lbrke: "⦋",
+		lbrksld: "⦏",
+		lbrkslu: "⦍",
+		Lcaron: "Ľ",
+		lcaron: "ľ",
+		Lcedil: "Ļ",
+		lcedil: "ļ",
+		lceil: "⌈",
+		lcub: "{",
+		Lcy: "Л",
+		lcy: "л",
+		ldca: "⤶",
+		ldquo: "“",
+		ldquor: "„",
+		ldrdhar: "⥧",
+		ldrushar: "⥋",
+		ldsh: "↲",
+		lE: "≦",
+		le: "≤",
+		LeftAngleBracket: "⟨",
+		LeftArrow: "←",
+		Leftarrow: "⇐",
+		leftarrow: "←",
+		LeftArrowBar: "⇤",
+		LeftArrowRightArrow: "⇆",
+		leftarrowtail: "↢",
+		LeftCeiling: "⌈",
+		LeftDoubleBracket: "⟦",
+		LeftDownTeeVector: "⥡",
+		LeftDownVector: "⇃",
+		LeftDownVectorBar: "⥙",
+		LeftFloor: "⌊",
+		leftharpoondown: "↽",
+		leftharpoonup: "↼",
+		leftleftarrows: "⇇",
+		LeftRightArrow: "↔",
+		Leftrightarrow: "⇔",
+		leftrightarrow: "↔",
+		leftrightarrows: "⇆",
+		leftrightharpoons: "⇋",
+		leftrightsquigarrow: "↭",
+		LeftRightVector: "⥎",
+		LeftTee: "⊣",
+		LeftTeeArrow: "↤",
+		LeftTeeVector: "⥚",
+		leftthreetimes: "⋋",
+		LeftTriangle: "⊲",
+		LeftTriangleBar: "⧏",
+		LeftTriangleEqual: "⊴",
+		LeftUpDownVector: "⥑",
+		LeftUpTeeVector: "⥠",
+		LeftUpVector: "↿",
+		LeftUpVectorBar: "⥘",
+		LeftVector: "↼",
+		LeftVectorBar: "⥒",
+		lEg: "⪋",
+		leg: "⋚",
+		leq: "≤",
+		leqq: "≦",
+		leqslant: "⩽",
+		les: "⩽",
+		lescc: "⪨",
+		lesdot: "⩿",
+		lesdoto: "⪁",
+		lesdotor: "⪃",
+		lesg: "⋚︀",
+		lesges: "⪓",
+		lessapprox: "⪅",
+		lessdot: "⋖",
+		lesseqgtr: "⋚",
+		lesseqqgtr: "⪋",
+		LessEqualGreater: "⋚",
+		LessFullEqual: "≦",
+		LessGreater: "≶",
+		lessgtr: "≶",
+		LessLess: "⪡",
+		lesssim: "≲",
+		LessSlantEqual: "⩽",
+		LessTilde: "≲",
+		lfisht: "⥼",
+		lfloor: "⌊",
+		Lfr: "𝔏",
+		lfr: "𝔩",
+		lg: "≶",
+		lgE: "⪑",
+		lHar: "⥢",
+		lhard: "↽",
+		lharu: "↼",
+		lharul: "⥪",
+		lhblk: "▄",
+		LJcy: "Љ",
+		ljcy: "љ",
+		Ll: "⋘",
+		ll: "≪",
+		llarr: "⇇",
+		llcorner: "⌞",
+		Lleftarrow: "⇚",
+		llhard: "⥫",
+		lltri: "◺",
+		Lmidot: "Ŀ",
+		lmidot: "ŀ",
+		lmoust: "⎰",
+		lmoustache: "⎰",
+		lnap: "⪉",
+		lnapprox: "⪉",
+		lnE: "≨",
+		lne: "⪇",
+		lneq: "⪇",
+		lneqq: "≨",
+		lnsim: "⋦",
+		loang: "⟬",
+		loarr: "⇽",
+		lobrk: "⟦",
+		LongLeftArrow: "⟵",
+		Longleftarrow: "⟸",
+		longleftarrow: "⟵",
+		LongLeftRightArrow: "⟷",
+		Longleftrightarrow: "⟺",
+		longleftrightarrow: "⟷",
+		longmapsto: "⟼",
+		LongRightArrow: "⟶",
+		Longrightarrow: "⟹",
+		longrightarrow: "⟶",
+		looparrowleft: "↫",
+		looparrowright: "↬",
+		lopar: "⦅",
+		Lopf: "𝕃",
+		lopf: "𝕝",
+		loplus: "⨭",
+		lotimes: "⨴",
+		lowast: "∗",
+		lowbar: "_",
+		LowerLeftArrow: "↙",
+		LowerRightArrow: "↘",
+		loz: "◊",
+		lozenge: "◊",
+		lozf: "⧫",
+		lpar: "(",
+		lparlt: "⦓",
+		lrarr: "⇆",
+		lrcorner: "⌟",
+		lrhar: "⇋",
+		lrhard: "⥭",
+		lrm: "‎",
+		lrtri: "⊿",
+		lsaquo: "‹",
+		Lscr: "ℒ",
+		lscr: "𝓁",
+		Lsh: "↰",
+		lsh: "↰",
+		lsim: "≲",
+		lsime: "⪍",
+		lsimg: "⪏",
+		lsqb: "[",
+		lsquo: "‘",
+		lsquor: "‚",
+		Lstrok: "Ł",
+		lstrok: "ł",
+		Lt: "≪",
+		LT: "<",
+		lt: "<",
+		ltcc: "⪦",
+		ltcir: "⩹",
+		ltdot: "⋖",
+		lthree: "⋋",
+		ltimes: "⋉",
+		ltlarr: "⥶",
+		ltquest: "⩻",
+		ltri: "◃",
+		ltrie: "⊴",
+		ltrif: "◂",
+		ltrPar: "⦖",
+		lurdshar: "⥊",
+		luruhar: "⥦",
+		lvertneqq: "≨︀",
+		lvnE: "≨︀",
+		macr: "¯",
+		male: "♂",
+		malt: "✠",
+		maltese: "✠",
+		Map: "⤅",
+		map: "↦",
+		mapsto: "↦",
+		mapstodown: "↧",
+		mapstoleft: "↤",
+		mapstoup: "↥",
+		marker: "▮",
+		mcomma: "⨩",
+		Mcy: "М",
+		mcy: "м",
+		mdash: "—",
+		mDDot: "∺",
+		measuredangle: "∡",
+		MediumSpace: " ",
+		Mellintrf: "ℳ",
+		Mfr: "𝔐",
+		mfr: "𝔪",
+		mho: "℧",
+		micro: "µ",
+		mid: "∣",
+		midast: "*",
+		midcir: "⫰",
+		middot: "·",
+		minus: "−",
+		minusb: "⊟",
+		minusd: "∸",
+		minusdu: "⨪",
+		MinusPlus: "∓",
+		mlcp: "⫛",
+		mldr: "…",
+		mnplus: "∓",
+		models: "⊧",
+		Mopf: "𝕄",
+		mopf: "𝕞",
+		mp: "∓",
+		Mscr: "ℳ",
+		mscr: "𝓂",
+		mstpos: "∾",
+		Mu: "Μ",
+		mu: "μ",
+		multimap: "⊸",
+		mumap: "⊸",
+		nabla: "∇",
+		Nacute: "Ń",
+		nacute: "ń",
+		nang: "∠⃒",
+		nap: "≉",
+		napE: "⩰̸",
+		napid: "≋̸",
+		napos: "ŉ",
+		napprox: "≉",
+		natur: "♮",
+		natural: "♮",
+		naturals: "ℕ",
+		nbsp: "\xA0",
+		nbump: "≎̸",
+		nbumpe: "≏̸",
+		ncap: "⩃",
+		Ncaron: "Ň",
+		ncaron: "ň",
+		Ncedil: "Ņ",
+		ncedil: "ņ",
+		ncong: "≇",
+		ncongdot: "⩭̸",
+		ncup: "⩂",
+		Ncy: "Н",
+		ncy: "н",
+		ndash: "–",
+		ne: "≠",
+		nearhk: "⤤",
+		neArr: "⇗",
+		nearr: "↗",
+		nearrow: "↗",
+		nedot: "≐̸",
+		NegativeMediumSpace: "​",
+		NegativeThickSpace: "​",
+		NegativeThinSpace: "​",
+		NegativeVeryThinSpace: "​",
+		nequiv: "≢",
+		nesear: "⤨",
+		nesim: "≂̸",
+		NestedGreaterGreater: "≫",
+		NestedLessLess: "≪",
+		NewLine: "\n",
+		nexist: "∄",
+		nexists: "∄",
+		Nfr: "𝔑",
+		nfr: "𝔫",
+		ngE: "≧̸",
+		nge: "≱",
+		ngeq: "≱",
+		ngeqq: "≧̸",
+		ngeqslant: "⩾̸",
+		nges: "⩾̸",
+		nGg: "⋙̸",
+		ngsim: "≵",
+		nGt: "≫⃒",
+		ngt: "≯",
+		ngtr: "≯",
+		nGtv: "≫̸",
+		nhArr: "⇎",
+		nharr: "↮",
+		nhpar: "⫲",
+		ni: "∋",
+		nis: "⋼",
+		nisd: "⋺",
+		niv: "∋",
+		NJcy: "Њ",
+		njcy: "њ",
+		nlArr: "⇍",
+		nlarr: "↚",
+		nldr: "‥",
+		nlE: "≦̸",
+		nle: "≰",
+		nLeftarrow: "⇍",
+		nleftarrow: "↚",
+		nLeftrightarrow: "⇎",
+		nleftrightarrow: "↮",
+		nleq: "≰",
+		nleqq: "≦̸",
+		nleqslant: "⩽̸",
+		nles: "⩽̸",
+		nless: "≮",
+		nLl: "⋘̸",
+		nlsim: "≴",
+		nLt: "≪⃒",
+		nlt: "≮",
+		nltri: "⋪",
+		nltrie: "⋬",
+		nLtv: "≪̸",
+		nmid: "∤",
+		NoBreak: "⁠",
+		NonBreakingSpace: "\xA0",
+		Nopf: "ℕ",
+		nopf: "𝕟",
+		Not: "⫬",
+		not: "¬",
+		NotCongruent: "≢",
+		NotCupCap: "≭",
+		NotDoubleVerticalBar: "∦",
+		NotElement: "∉",
+		NotEqual: "≠",
+		NotEqualTilde: "≂̸",
+		NotExists: "∄",
+		NotGreater: "≯",
+		NotGreaterEqual: "≱",
+		NotGreaterFullEqual: "≧̸",
+		NotGreaterGreater: "≫̸",
+		NotGreaterLess: "≹",
+		NotGreaterSlantEqual: "⩾̸",
+		NotGreaterTilde: "≵",
+		NotHumpDownHump: "≎̸",
+		NotHumpEqual: "≏̸",
+		notin: "∉",
+		notindot: "⋵̸",
+		notinE: "⋹̸",
+		notinva: "∉",
+		notinvb: "⋷",
+		notinvc: "⋶",
+		NotLeftTriangle: "⋪",
+		NotLeftTriangleBar: "⧏̸",
+		NotLeftTriangleEqual: "⋬",
+		NotLess: "≮",
+		NotLessEqual: "≰",
+		NotLessGreater: "≸",
+		NotLessLess: "≪̸",
+		NotLessSlantEqual: "⩽̸",
+		NotLessTilde: "≴",
+		NotNestedGreaterGreater: "⪢̸",
+		NotNestedLessLess: "⪡̸",
+		notni: "∌",
+		notniva: "∌",
+		notnivb: "⋾",
+		notnivc: "⋽",
+		NotPrecedes: "⊀",
+		NotPrecedesEqual: "⪯̸",
+		NotPrecedesSlantEqual: "⋠",
+		NotReverseElement: "∌",
+		NotRightTriangle: "⋫",
+		NotRightTriangleBar: "⧐̸",
+		NotRightTriangleEqual: "⋭",
+		NotSquareSubset: "⊏̸",
+		NotSquareSubsetEqual: "⋢",
+		NotSquareSuperset: "⊐̸",
+		NotSquareSupersetEqual: "⋣",
+		NotSubset: "⊂⃒",
+		NotSubsetEqual: "⊈",
+		NotSucceeds: "⊁",
+		NotSucceedsEqual: "⪰̸",
+		NotSucceedsSlantEqual: "⋡",
+		NotSucceedsTilde: "≿̸",
+		NotSuperset: "⊃⃒",
+		NotSupersetEqual: "⊉",
+		NotTilde: "≁",
+		NotTildeEqual: "≄",
+		NotTildeFullEqual: "≇",
+		NotTildeTilde: "≉",
+		NotVerticalBar: "∤",
+		npar: "∦",
+		nparallel: "∦",
+		nparsl: "⫽⃥",
+		npart: "∂̸",
+		npolint: "⨔",
+		npr: "⊀",
+		nprcue: "⋠",
+		npre: "⪯̸",
+		nprec: "⊀",
+		npreceq: "⪯̸",
+		nrArr: "⇏",
+		nrarr: "↛",
+		nrarrc: "⤳̸",
+		nrarrw: "↝̸",
+		nRightarrow: "⇏",
+		nrightarrow: "↛",
+		nrtri: "⋫",
+		nrtrie: "⋭",
+		nsc: "⊁",
+		nsccue: "⋡",
+		nsce: "⪰̸",
+		Nscr: "𝒩",
+		nscr: "𝓃",
+		nshortmid: "∤",
+		nshortparallel: "∦",
+		nsim: "≁",
+		nsime: "≄",
+		nsimeq: "≄",
+		nsmid: "∤",
+		nspar: "∦",
+		nsqsube: "⋢",
+		nsqsupe: "⋣",
+		nsub: "⊄",
+		nsubE: "⫅̸",
+		nsube: "⊈",
+		nsubset: "⊂⃒",
+		nsubseteq: "⊈",
+		nsubseteqq: "⫅̸",
+		nsucc: "⊁",
+		nsucceq: "⪰̸",
+		nsup: "⊅",
+		nsupE: "⫆̸",
+		nsupe: "⊉",
+		nsupset: "⊃⃒",
+		nsupseteq: "⊉",
+		nsupseteqq: "⫆̸",
+		ntgl: "≹",
+		Ntilde: "Ñ",
+		ntilde: "ñ",
+		ntlg: "≸",
+		ntriangleleft: "⋪",
+		ntrianglelefteq: "⋬",
+		ntriangleright: "⋫",
+		ntrianglerighteq: "⋭",
+		Nu: "Ν",
+		nu: "ν",
+		num: "#",
+		numero: "№",
+		numsp: " ",
+		nvap: "≍⃒",
+		nVDash: "⊯",
+		nVdash: "⊮",
+		nvDash: "⊭",
+		nvdash: "⊬",
+		nvge: "≥⃒",
+		nvgt: ">⃒",
+		nvHarr: "⤄",
+		nvinfin: "⧞",
+		nvlArr: "⤂",
+		nvle: "≤⃒",
+		nvlt: "<⃒",
+		nvltrie: "⊴⃒",
+		nvrArr: "⤃",
+		nvrtrie: "⊵⃒",
+		nvsim: "∼⃒",
+		nwarhk: "⤣",
+		nwArr: "⇖",
+		nwarr: "↖",
+		nwarrow: "↖",
+		nwnear: "⤧",
+		Oacute: "Ó",
+		oacute: "ó",
+		oast: "⊛",
+		ocir: "⊚",
+		Ocirc: "Ô",
+		ocirc: "ô",
+		Ocy: "О",
+		ocy: "о",
+		odash: "⊝",
+		Odblac: "Ő",
+		odblac: "ő",
+		odiv: "⨸",
+		odot: "⊙",
+		odsold: "⦼",
+		OElig: "Œ",
+		oelig: "œ",
+		ofcir: "⦿",
+		Ofr: "𝔒",
+		ofr: "𝔬",
+		ogon: "˛",
+		Ograve: "Ò",
+		ograve: "ò",
+		ogt: "⧁",
+		ohbar: "⦵",
+		ohm: "Ω",
+		oint: "∮",
+		olarr: "↺",
+		olcir: "⦾",
+		olcross: "⦻",
+		oline: "‾",
+		olt: "⧀",
+		Omacr: "Ō",
+		omacr: "ō",
+		Omega: "Ω",
+		omega: "ω",
+		Omicron: "Ο",
+		omicron: "ο",
+		omid: "⦶",
+		ominus: "⊖",
+		Oopf: "𝕆",
+		oopf: "𝕠",
+		opar: "⦷",
+		OpenCurlyDoubleQuote: "“",
+		OpenCurlyQuote: "‘",
+		operp: "⦹",
+		oplus: "⊕",
+		Or: "⩔",
+		or: "∨",
+		orarr: "↻",
+		ord: "⩝",
+		order: "ℴ",
+		orderof: "ℴ",
+		ordf: "ª",
+		ordm: "º",
+		origof: "⊶",
+		oror: "⩖",
+		orslope: "⩗",
+		orv: "⩛",
+		oS: "Ⓢ",
+		Oscr: "𝒪",
+		oscr: "ℴ",
+		Oslash: "Ø",
+		oslash: "ø",
+		osol: "⊘",
+		Otilde: "Õ",
+		otilde: "õ",
+		Otimes: "⨷",
+		otimes: "⊗",
+		otimesas: "⨶",
+		Ouml: "Ö",
+		ouml: "ö",
+		ovbar: "⌽",
+		OverBar: "‾",
+		OverBrace: "⏞",
+		OverBracket: "⎴",
+		OverParenthesis: "⏜",
+		par: "∥",
+		para: "¶",
+		parallel: "∥",
+		parsim: "⫳",
+		parsl: "⫽",
+		part: "∂",
+		PartialD: "∂",
+		Pcy: "П",
+		pcy: "п",
+		percnt: "%",
+		period: ".",
+		permil: "‰",
+		perp: "⊥",
+		pertenk: "‱",
+		Pfr: "𝔓",
+		pfr: "𝔭",
+		Phi: "Φ",
+		phi: "φ",
+		phiv: "ϕ",
+		phmmat: "ℳ",
+		phone: "☎",
+		Pi: "Π",
+		pi: "π",
+		pitchfork: "⋔",
+		piv: "ϖ",
+		planck: "ℏ",
+		planckh: "ℎ",
+		plankv: "ℏ",
+		plus: "+",
+		plusacir: "⨣",
+		plusb: "⊞",
+		pluscir: "⨢",
+		plusdo: "∔",
+		plusdu: "⨥",
+		pluse: "⩲",
+		PlusMinus: "±",
+		plusmn: "±",
+		plussim: "⨦",
+		plustwo: "⨧",
+		pm: "±",
+		Poincareplane: "ℌ",
+		pointint: "⨕",
+		Popf: "ℙ",
+		popf: "𝕡",
+		pound: "£",
+		Pr: "⪻",
+		pr: "≺",
+		prap: "⪷",
+		prcue: "≼",
+		prE: "⪳",
+		pre: "⪯",
+		prec: "≺",
+		precapprox: "⪷",
+		preccurlyeq: "≼",
+		Precedes: "≺",
+		PrecedesEqual: "⪯",
+		PrecedesSlantEqual: "≼",
+		PrecedesTilde: "≾",
+		preceq: "⪯",
+		precnapprox: "⪹",
+		precneqq: "⪵",
+		precnsim: "⋨",
+		precsim: "≾",
+		Prime: "″",
+		prime: "′",
+		primes: "ℙ",
+		prnap: "⪹",
+		prnE: "⪵",
+		prnsim: "⋨",
+		prod: "∏",
+		Product: "∏",
+		profalar: "⌮",
+		profline: "⌒",
+		profsurf: "⌓",
+		prop: "∝",
+		Proportion: "∷",
+		Proportional: "∝",
+		propto: "∝",
+		prsim: "≾",
+		prurel: "⊰",
+		Pscr: "𝒫",
+		pscr: "𝓅",
+		Psi: "Ψ",
+		psi: "ψ",
+		puncsp: " ",
+		Qfr: "𝔔",
+		qfr: "𝔮",
+		qint: "⨌",
+		Qopf: "ℚ",
+		qopf: "𝕢",
+		qprime: "⁗",
+		Qscr: "𝒬",
+		qscr: "𝓆",
+		quaternions: "ℍ",
+		quatint: "⨖",
+		quest: "?",
+		questeq: "≟",
+		QUOT: "\"",
+		quot: "\"",
+		rAarr: "⇛",
+		race: "∽̱",
+		Racute: "Ŕ",
+		racute: "ŕ",
+		radic: "√",
+		raemptyv: "⦳",
+		Rang: "⟫",
+		rang: "⟩",
+		rangd: "⦒",
+		range: "⦥",
+		rangle: "⟩",
+		raquo: "»",
+		Rarr: "↠",
+		rArr: "⇒",
+		rarr: "→",
+		rarrap: "⥵",
+		rarrb: "⇥",
+		rarrbfs: "⤠",
+		rarrc: "⤳",
+		rarrfs: "⤞",
+		rarrhk: "↪",
+		rarrlp: "↬",
+		rarrpl: "⥅",
+		rarrsim: "⥴",
+		Rarrtl: "⤖",
+		rarrtl: "↣",
+		rarrw: "↝",
+		rAtail: "⤜",
+		ratail: "⤚",
+		ratio: "∶",
+		rationals: "ℚ",
+		RBarr: "⤐",
+		rBarr: "⤏",
+		rbarr: "⤍",
+		rbbrk: "❳",
+		rbrace: "}",
+		rbrack: "]",
+		rbrke: "⦌",
+		rbrksld: "⦎",
+		rbrkslu: "⦐",
+		Rcaron: "Ř",
+		rcaron: "ř",
+		Rcedil: "Ŗ",
+		rcedil: "ŗ",
+		rceil: "⌉",
+		rcub: "}",
+		Rcy: "Р",
+		rcy: "р",
+		rdca: "⤷",
+		rdldhar: "⥩",
+		rdquo: "”",
+		rdquor: "”",
+		rdsh: "↳",
+		Re: "ℜ",
+		real: "ℜ",
+		realine: "ℛ",
+		realpart: "ℜ",
+		reals: "ℝ",
+		rect: "▭",
+		REG: "®",
+		reg: "®",
+		ReverseElement: "∋",
+		ReverseEquilibrium: "⇋",
+		ReverseUpEquilibrium: "⥯",
+		rfisht: "⥽",
+		rfloor: "⌋",
+		Rfr: "ℜ",
+		rfr: "𝔯",
+		rHar: "⥤",
+		rhard: "⇁",
+		rharu: "⇀",
+		rharul: "⥬",
+		Rho: "Ρ",
+		rho: "ρ",
+		rhov: "ϱ",
+		RightAngleBracket: "⟩",
+		RightArrow: "→",
+		Rightarrow: "⇒",
+		rightarrow: "→",
+		RightArrowBar: "⇥",
+		RightArrowLeftArrow: "⇄",
+		rightarrowtail: "↣",
+		RightCeiling: "⌉",
+		RightDoubleBracket: "⟧",
+		RightDownTeeVector: "⥝",
+		RightDownVector: "⇂",
+		RightDownVectorBar: "⥕",
+		RightFloor: "⌋",
+		rightharpoondown: "⇁",
+		rightharpoonup: "⇀",
+		rightleftarrows: "⇄",
+		rightleftharpoons: "⇌",
+		rightrightarrows: "⇉",
+		rightsquigarrow: "↝",
+		RightTee: "⊢",
+		RightTeeArrow: "↦",
+		RightTeeVector: "⥛",
+		rightthreetimes: "⋌",
+		RightTriangle: "⊳",
+		RightTriangleBar: "⧐",
+		RightTriangleEqual: "⊵",
+		RightUpDownVector: "⥏",
+		RightUpTeeVector: "⥜",
+		RightUpVector: "↾",
+		RightUpVectorBar: "⥔",
+		RightVector: "⇀",
+		RightVectorBar: "⥓",
+		ring: "˚",
+		risingdotseq: "≓",
+		rlarr: "⇄",
+		rlhar: "⇌",
+		rlm: "‏",
+		rmoust: "⎱",
+		rmoustache: "⎱",
+		rnmid: "⫮",
+		roang: "⟭",
+		roarr: "⇾",
+		robrk: "⟧",
+		ropar: "⦆",
+		Ropf: "ℝ",
+		ropf: "𝕣",
+		roplus: "⨮",
+		rotimes: "⨵",
+		RoundImplies: "⥰",
+		rpar: ")",
+		rpargt: "⦔",
+		rppolint: "⨒",
+		rrarr: "⇉",
+		Rrightarrow: "⇛",
+		rsaquo: "›",
+		Rscr: "ℛ",
+		rscr: "𝓇",
+		Rsh: "↱",
+		rsh: "↱",
+		rsqb: "]",
+		rsquo: "’",
+		rsquor: "’",
+		rthree: "⋌",
+		rtimes: "⋊",
+		rtri: "▹",
+		rtrie: "⊵",
+		rtrif: "▸",
+		rtriltri: "⧎",
+		RuleDelayed: "⧴",
+		ruluhar: "⥨",
+		rx: "℞",
+		Sacute: "Ś",
+		sacute: "ś",
+		sbquo: "‚",
+		Sc: "⪼",
+		sc: "≻",
+		scap: "⪸",
+		Scaron: "Š",
+		scaron: "š",
+		sccue: "≽",
+		scE: "⪴",
+		sce: "⪰",
+		Scedil: "Ş",
+		scedil: "ş",
+		Scirc: "Ŝ",
+		scirc: "ŝ",
+		scnap: "⪺",
+		scnE: "⪶",
+		scnsim: "⋩",
+		scpolint: "⨓",
+		scsim: "≿",
+		Scy: "С",
+		scy: "с",
+		sdot: "⋅",
+		sdotb: "⊡",
+		sdote: "⩦",
+		searhk: "⤥",
+		seArr: "⇘",
+		searr: "↘",
+		searrow: "↘",
+		sect: "§",
+		semi: ";",
+		seswar: "⤩",
+		setminus: "∖",
+		setmn: "∖",
+		sext: "✶",
+		Sfr: "𝔖",
+		sfr: "𝔰",
+		sfrown: "⌢",
+		sharp: "♯",
+		SHCHcy: "Щ",
+		shchcy: "щ",
+		SHcy: "Ш",
+		shcy: "ш",
+		ShortDownArrow: "↓",
+		ShortLeftArrow: "←",
+		shortmid: "∣",
+		shortparallel: "∥",
+		ShortRightArrow: "→",
+		ShortUpArrow: "↑",
+		shy: "­",
+		Sigma: "Σ",
+		sigma: "σ",
+		sigmaf: "ς",
+		sigmav: "ς",
+		sim: "∼",
+		simdot: "⩪",
+		sime: "≃",
+		simeq: "≃",
+		simg: "⪞",
+		simgE: "⪠",
+		siml: "⪝",
+		simlE: "⪟",
+		simne: "≆",
+		simplus: "⨤",
+		simrarr: "⥲",
+		slarr: "←",
+		SmallCircle: "∘",
+		smallsetminus: "∖",
+		smashp: "⨳",
+		smeparsl: "⧤",
+		smid: "∣",
+		smile: "⌣",
+		smt: "⪪",
+		smte: "⪬",
+		smtes: "⪬︀",
+		SOFTcy: "Ь",
+		softcy: "ь",
+		sol: "/",
+		solb: "⧄",
+		solbar: "⌿",
+		Sopf: "𝕊",
+		sopf: "𝕤",
+		spades: "♠",
+		spadesuit: "♠",
+		spar: "∥",
+		sqcap: "⊓",
+		sqcaps: "⊓︀",
+		sqcup: "⊔",
+		sqcups: "⊔︀",
+		Sqrt: "√",
+		sqsub: "⊏",
+		sqsube: "⊑",
+		sqsubset: "⊏",
+		sqsubseteq: "⊑",
+		sqsup: "⊐",
+		sqsupe: "⊒",
+		sqsupset: "⊐",
+		sqsupseteq: "⊒",
+		squ: "□",
+		Square: "□",
+		square: "□",
+		SquareIntersection: "⊓",
+		SquareSubset: "⊏",
+		SquareSubsetEqual: "⊑",
+		SquareSuperset: "⊐",
+		SquareSupersetEqual: "⊒",
+		SquareUnion: "⊔",
+		squarf: "▪",
+		squf: "▪",
+		srarr: "→",
+		Sscr: "𝒮",
+		sscr: "𝓈",
+		ssetmn: "∖",
+		ssmile: "⌣",
+		sstarf: "⋆",
+		Star: "⋆",
+		star: "☆",
+		starf: "★",
+		straightepsilon: "ϵ",
+		straightphi: "ϕ",
+		strns: "¯",
+		Sub: "⋐",
+		sub: "⊂",
+		subdot: "⪽",
+		subE: "⫅",
+		sube: "⊆",
+		subedot: "⫃",
+		submult: "⫁",
+		subnE: "⫋",
+		subne: "⊊",
+		subplus: "⪿",
+		subrarr: "⥹",
+		Subset: "⋐",
+		subset: "⊂",
+		subseteq: "⊆",
+		subseteqq: "⫅",
+		SubsetEqual: "⊆",
+		subsetneq: "⊊",
+		subsetneqq: "⫋",
+		subsim: "⫇",
+		subsub: "⫕",
+		subsup: "⫓",
+		succ: "≻",
+		succapprox: "⪸",
+		succcurlyeq: "≽",
+		Succeeds: "≻",
+		SucceedsEqual: "⪰",
+		SucceedsSlantEqual: "≽",
+		SucceedsTilde: "≿",
+		succeq: "⪰",
+		succnapprox: "⪺",
+		succneqq: "⪶",
+		succnsim: "⋩",
+		succsim: "≿",
+		SuchThat: "∋",
+		Sum: "∑",
+		sum: "∑",
+		sung: "♪",
+		Sup: "⋑",
+		sup: "⊃",
+		sup1: "¹",
+		sup2: "²",
+		sup3: "³",
+		supdot: "⪾",
+		supdsub: "⫘",
+		supE: "⫆",
+		supe: "⊇",
+		supedot: "⫄",
+		Superset: "⊃",
+		SupersetEqual: "⊇",
+		suphsol: "⟉",
+		suphsub: "⫗",
+		suplarr: "⥻",
+		supmult: "⫂",
+		supnE: "⫌",
+		supne: "⊋",
+		supplus: "⫀",
+		Supset: "⋑",
+		supset: "⊃",
+		supseteq: "⊇",
+		supseteqq: "⫆",
+		supsetneq: "⊋",
+		supsetneqq: "⫌",
+		supsim: "⫈",
+		supsub: "⫔",
+		supsup: "⫖",
+		swarhk: "⤦",
+		swArr: "⇙",
+		swarr: "↙",
+		swarrow: "↙",
+		swnwar: "⤪",
+		szlig: "ß",
+		Tab: "	",
+		target: "⌖",
+		Tau: "Τ",
+		tau: "τ",
+		tbrk: "⎴",
+		Tcaron: "Ť",
+		tcaron: "ť",
+		Tcedil: "Ţ",
+		tcedil: "ţ",
+		Tcy: "Т",
+		tcy: "т",
+		tdot: "⃛",
+		telrec: "⌕",
+		Tfr: "𝔗",
+		tfr: "𝔱",
+		there4: "∴",
+		Therefore: "∴",
+		therefore: "∴",
+		Theta: "Θ",
+		theta: "θ",
+		thetasym: "ϑ",
+		thetav: "ϑ",
+		thickapprox: "≈",
+		thicksim: "∼",
+		ThickSpace: "  ",
+		thinsp: " ",
+		ThinSpace: " ",
+		thkap: "≈",
+		thksim: "∼",
+		THORN: "Þ",
+		thorn: "þ",
+		Tilde: "∼",
+		tilde: "˜",
+		TildeEqual: "≃",
+		TildeFullEqual: "≅",
+		TildeTilde: "≈",
+		times: "×",
+		timesb: "⊠",
+		timesbar: "⨱",
+		timesd: "⨰",
+		tint: "∭",
+		toea: "⤨",
+		top: "⊤",
+		topbot: "⌶",
+		topcir: "⫱",
+		Topf: "𝕋",
+		topf: "𝕥",
+		topfork: "⫚",
+		tosa: "⤩",
+		tprime: "‴",
+		TRADE: "™",
+		trade: "™",
+		triangle: "▵",
+		triangledown: "▿",
+		triangleleft: "◃",
+		trianglelefteq: "⊴",
+		triangleq: "≜",
+		triangleright: "▹",
+		trianglerighteq: "⊵",
+		tridot: "◬",
+		trie: "≜",
+		triminus: "⨺",
+		TripleDot: "⃛",
+		triplus: "⨹",
+		trisb: "⧍",
+		tritime: "⨻",
+		trpezium: "⏢",
+		Tscr: "𝒯",
+		tscr: "𝓉",
+		TScy: "Ц",
+		tscy: "ц",
+		TSHcy: "Ћ",
+		tshcy: "ћ",
+		Tstrok: "Ŧ",
+		tstrok: "ŧ",
+		twixt: "≬",
+		twoheadleftarrow: "↞",
+		twoheadrightarrow: "↠",
+		Uacute: "Ú",
+		uacute: "ú",
+		Uarr: "↟",
+		uArr: "⇑",
+		uarr: "↑",
+		Uarrocir: "⥉",
+		Ubrcy: "Ў",
+		ubrcy: "ў",
+		Ubreve: "Ŭ",
+		ubreve: "ŭ",
+		Ucirc: "Û",
+		ucirc: "û",
+		Ucy: "У",
+		ucy: "у",
+		udarr: "⇅",
+		Udblac: "Ű",
+		udblac: "ű",
+		udhar: "⥮",
+		ufisht: "⥾",
+		Ufr: "𝔘",
+		ufr: "𝔲",
+		Ugrave: "Ù",
+		ugrave: "ù",
+		uHar: "⥣",
+		uharl: "↿",
+		uharr: "↾",
+		uhblk: "▀",
+		ulcorn: "⌜",
+		ulcorner: "⌜",
+		ulcrop: "⌏",
+		ultri: "◸",
+		Umacr: "Ū",
+		umacr: "ū",
+		uml: "¨",
+		UnderBar: "_",
+		UnderBrace: "⏟",
+		UnderBracket: "⎵",
+		UnderParenthesis: "⏝",
+		Union: "⋃",
+		UnionPlus: "⊎",
+		Uogon: "Ų",
+		uogon: "ų",
+		Uopf: "𝕌",
+		uopf: "𝕦",
+		UpArrow: "↑",
+		Uparrow: "⇑",
+		uparrow: "↑",
+		UpArrowBar: "⤒",
+		UpArrowDownArrow: "⇅",
+		UpDownArrow: "↕",
+		Updownarrow: "⇕",
+		updownarrow: "↕",
+		UpEquilibrium: "⥮",
+		upharpoonleft: "↿",
+		upharpoonright: "↾",
+		uplus: "⊎",
+		UpperLeftArrow: "↖",
+		UpperRightArrow: "↗",
+		Upsi: "ϒ",
+		upsi: "υ",
+		upsih: "ϒ",
+		Upsilon: "Υ",
+		upsilon: "υ",
+		UpTee: "⊥",
+		UpTeeArrow: "↥",
+		upuparrows: "⇈",
+		urcorn: "⌝",
+		urcorner: "⌝",
+		urcrop: "⌎",
+		Uring: "Ů",
+		uring: "ů",
+		urtri: "◹",
+		Uscr: "𝒰",
+		uscr: "𝓊",
+		utdot: "⋰",
+		Utilde: "Ũ",
+		utilde: "ũ",
+		utri: "▵",
+		utrif: "▴",
+		uuarr: "⇈",
+		Uuml: "Ü",
+		uuml: "ü",
+		uwangle: "⦧",
+		vangrt: "⦜",
+		varepsilon: "ϵ",
+		varkappa: "ϰ",
+		varnothing: "∅",
+		varphi: "ϕ",
+		varpi: "ϖ",
+		varpropto: "∝",
+		vArr: "⇕",
+		varr: "↕",
+		varrho: "ϱ",
+		varsigma: "ς",
+		varsubsetneq: "⊊︀",
+		varsubsetneqq: "⫋︀",
+		varsupsetneq: "⊋︀",
+		varsupsetneqq: "⫌︀",
+		vartheta: "ϑ",
+		vartriangleleft: "⊲",
+		vartriangleright: "⊳",
+		Vbar: "⫫",
+		vBar: "⫨",
+		vBarv: "⫩",
+		Vcy: "В",
+		vcy: "в",
+		VDash: "⊫",
+		Vdash: "⊩",
+		vDash: "⊨",
+		vdash: "⊢",
+		Vdashl: "⫦",
+		Vee: "⋁",
+		vee: "∨",
+		veebar: "⊻",
+		veeeq: "≚",
+		vellip: "⋮",
+		Verbar: "‖",
+		verbar: "|",
+		Vert: "‖",
+		vert: "|",
+		VerticalBar: "∣",
+		VerticalLine: "|",
+		VerticalSeparator: "❘",
+		VerticalTilde: "≀",
+		VeryThinSpace: " ",
+		Vfr: "𝔙",
+		vfr: "𝔳",
+		vltri: "⊲",
+		vnsub: "⊂⃒",
+		vnsup: "⊃⃒",
+		Vopf: "𝕍",
+		vopf: "𝕧",
+		vprop: "∝",
+		vrtri: "⊳",
+		Vscr: "𝒱",
+		vscr: "𝓋",
+		vsubnE: "⫋︀",
+		vsubne: "⊊︀",
+		vsupnE: "⫌︀",
+		vsupne: "⊋︀",
+		Vvdash: "⊪",
+		vzigzag: "⦚",
+		Wcirc: "Ŵ",
+		wcirc: "ŵ",
+		wedbar: "⩟",
+		Wedge: "⋀",
+		wedge: "∧",
+		wedgeq: "≙",
+		weierp: "℘",
+		Wfr: "𝔚",
+		wfr: "𝔴",
+		Wopf: "𝕎",
+		wopf: "𝕨",
+		wp: "℘",
+		wr: "≀",
+		wreath: "≀",
+		Wscr: "𝒲",
+		wscr: "𝓌",
+		xcap: "⋂",
+		xcirc: "◯",
+		xcup: "⋃",
+		xdtri: "▽",
+		Xfr: "𝔛",
+		xfr: "𝔵",
+		xhArr: "⟺",
+		xharr: "⟷",
+		Xi: "Ξ",
+		xi: "ξ",
+		xlArr: "⟸",
+		xlarr: "⟵",
+		xmap: "⟼",
+		xnis: "⋻",
+		xodot: "⨀",
+		Xopf: "𝕏",
+		xopf: "𝕩",
+		xoplus: "⨁",
+		xotime: "⨂",
+		xrArr: "⟹",
+		xrarr: "⟶",
+		Xscr: "𝒳",
+		xscr: "𝓍",
+		xsqcup: "⨆",
+		xuplus: "⨄",
+		xutri: "△",
+		xvee: "⋁",
+		xwedge: "⋀",
+		Yacute: "Ý",
+		yacute: "ý",
+		YAcy: "Я",
+		yacy: "я",
+		Ycirc: "Ŷ",
+		ycirc: "ŷ",
+		Ycy: "Ы",
+		ycy: "ы",
+		yen: "¥",
+		Yfr: "𝔜",
+		yfr: "𝔶",
+		YIcy: "Ї",
+		yicy: "ї",
+		Yopf: "𝕐",
+		yopf: "𝕪",
+		Yscr: "𝒴",
+		yscr: "𝓎",
+		YUcy: "Ю",
+		yucy: "ю",
+		Yuml: "Ÿ",
+		yuml: "ÿ",
+		Zacute: "Ź",
+		zacute: "ź",
+		Zcaron: "Ž",
+		zcaron: "ž",
+		Zcy: "З",
+		zcy: "з",
+		Zdot: "Ż",
+		zdot: "ż",
+		zeetrf: "ℨ",
+		ZeroWidthSpace: "​",
+		Zeta: "Ζ",
+		zeta: "ζ",
+		Zfr: "ℨ",
+		zfr: "𝔷",
+		ZHcy: "Ж",
+		zhcy: "ж",
+		zigrarr: "⇝",
+		Zopf: "ℤ",
+		zopf: "𝕫",
+		Zscr: "𝒵",
+		zscr: "𝓏",
+		zwj: "‍",
+		zwnj: "‌"
+	});
+	/**
+	* @deprecated
+	* Use `HTML_ENTITIES` instead.
+	* @see {@link HTML_ENTITIES}
+	*/
+	exports.entityMap = exports.HTML_ENTITIES;
+}));
+//#endregion
+//#region node_modules/docxtemplater/node_modules/@xmldom/xmldom/lib/sax.js
+var require_sax = /* @__PURE__ */ __commonJSMin(((exports) => {
+	var conventions = require_conventions();
+	var g = require_grammar();
+	var errors = require_errors$1();
+	var isHTMLEscapableRawTextElement = conventions.isHTMLEscapableRawTextElement;
+	var isHTMLMimeType = conventions.isHTMLMimeType;
+	var isHTMLRawTextElement = conventions.isHTMLRawTextElement;
+	var hasOwn = conventions.hasOwn;
+	var NAMESPACE = conventions.NAMESPACE;
+	var ParseError = errors.ParseError;
+	var DOMException = errors.DOMException;
+	var S_TAG = 0;
+	var S_ATTR = 1;
+	var S_ATTR_SPACE = 2;
+	var S_EQ = 3;
+	var S_ATTR_NOQUOT_VALUE = 4;
+	var S_ATTR_END = 5;
+	var S_TAG_SPACE = 6;
+	var S_TAG_CLOSE = 7;
+	function XMLReader() {}
+	XMLReader.prototype = { parse: function(source, defaultNSMap, entityMap) {
+		var domBuilder = this.domBuilder;
+		domBuilder.startDocument();
+		_copy(defaultNSMap, defaultNSMap = Object.create(null));
+		parse(source, defaultNSMap, entityMap, domBuilder, this.errorHandler);
+		domBuilder.endDocument();
+	} };
+	/**
+	* Detecting everything that might be a reference,
+	* including those without ending `;`, since those are allowed in HTML.
+	* The entityReplacer takes care of verifying and transforming each occurrence,
+	* and reports to the errorHandler on those that are not OK,
+	* depending on the context.
+	*/
+	var ENTITY_REG = /&#?\w+;?/g;
+	function parse(source, defaultNSMapCopy, entityMap, domBuilder, errorHandler) {
+		var isHTML = isHTMLMimeType(domBuilder.mimeType);
+		if (source.indexOf(g.UNICODE_REPLACEMENT_CHARACTER) >= 0) errorHandler.warning("Unicode replacement character detected, source encoding issues?");
+		function fixedFromCharCode(code) {
+			if (code > 65535) {
+				code -= 65536;
+				var surrogate1 = 55296 + (code >> 10), surrogate2 = 56320 + (code & 1023);
+				return String.fromCharCode(surrogate1, surrogate2);
+			} else return String.fromCharCode(code);
+		}
+		function entityReplacer(a) {
+			var complete = a[a.length - 1] === ";" ? a : a + ";";
+			if (!isHTML && complete !== a) {
+				errorHandler.error("EntityRef: expecting ;");
+				return a;
+			}
+			var match = g.Reference.exec(complete);
+			if (!match || match[0].length !== complete.length) {
+				errorHandler.error("entity not matching Reference production: " + a);
+				return a;
+			}
+			var k = complete.slice(1, -1);
+			if (hasOwn(entityMap, k)) return entityMap[k];
+			else if (k.charAt(0) === "#") return fixedFromCharCode(parseInt(k.substring(1).replace("x", "0x")));
+			else {
+				errorHandler.error("entity not found:" + a);
+				return a;
+			}
+		}
+		function appendText(end) {
+			if (end > start) {
+				var xt = source.substring(start, end).replace(ENTITY_REG, entityReplacer);
+				locator && position(start);
+				domBuilder.characters(xt, 0, end - start);
+				start = end;
+			}
+		}
+		var lineStart = 0;
+		var lineEnd = 0;
+		var linePattern = /\r\n?|\n|$/g;
+		var locator = domBuilder.locator;
+		function position(p, m) {
+			while (p >= lineEnd && (m = linePattern.exec(source))) {
+				lineStart = lineEnd;
+				lineEnd = m.index + m[0].length;
+				locator.lineNumber++;
+			}
+			locator.columnNumber = p - lineStart + 1;
+		}
+		var parseStack = [{ currentNSMap: defaultNSMapCopy }];
+		var unclosedTags = [];
+		var start = 0;
+		while (true) {
+			try {
+				var tagStart = source.indexOf("<", start);
+				if (tagStart < 0) {
+					if (!isHTML && unclosedTags.length > 0) return errorHandler.fatalError("unclosed xml tag(s): " + unclosedTags.join(", "));
+					if (!source.substring(start).match(/^\s*$/)) {
+						var doc = domBuilder.doc;
+						var text = doc.createTextNode(source.substring(start));
+						if (doc.documentElement) return errorHandler.error("Extra content at the end of the document");
+						doc.appendChild(text);
+						domBuilder.currentElement = text;
+					}
+					return;
+				}
+				if (tagStart > start) {
+					var fromSource = source.substring(start, tagStart);
+					if (!isHTML && unclosedTags.length === 0) {
+						fromSource = fromSource.replace(new RegExp(g.S_OPT.source, "g"), "");
+						fromSource && errorHandler.error("Unexpected content outside root element: '" + fromSource + "'");
+					}
+					appendText(tagStart);
+				}
+				switch (source.charAt(tagStart + 1)) {
+					case "/":
+						var end = source.indexOf(">", tagStart + 2);
+						var tagNameRaw = source.substring(tagStart + 2, end > 0 ? end : void 0);
+						if (!tagNameRaw) return errorHandler.fatalError("end tag name missing");
+						var tagNameMatch = end > 0 && g.reg("^", g.QName_group, g.S_OPT, "$").exec(tagNameRaw);
+						if (!tagNameMatch) return errorHandler.fatalError("end tag name contains invalid characters: \"" + tagNameRaw + "\"");
+						if (!domBuilder.currentElement && !domBuilder.doc.documentElement) return;
+						var currentTagName = unclosedTags[unclosedTags.length - 1] || domBuilder.currentElement.tagName || domBuilder.doc.documentElement.tagName || "";
+						if (currentTagName !== tagNameMatch[1]) {
+							var tagNameLower = tagNameMatch[1].toLowerCase();
+							if (!isHTML || currentTagName.toLowerCase() !== tagNameLower) return errorHandler.fatalError("Opening and ending tag mismatch: \"" + currentTagName + "\" != \"" + tagNameRaw + "\"");
+						}
+						var config = parseStack.pop();
+						unclosedTags.pop();
+						var localNSMap = config.localNSMap;
+						domBuilder.endElement(config.uri, config.localName, currentTagName);
+						if (localNSMap) {
+							for (var prefix in localNSMap) if (hasOwn(localNSMap, prefix)) domBuilder.endPrefixMapping(prefix);
+						}
+						end++;
+						break;
+					case "?":
+						locator && position(tagStart);
+						end = parseProcessingInstruction(source, tagStart, domBuilder, errorHandler);
+						break;
+					case "!":
+						locator && position(tagStart);
+						end = parseDoctypeCommentOrCData(source, tagStart, domBuilder, errorHandler, isHTML);
+						break;
+					default:
+						locator && position(tagStart);
+						var el = new ElementAttributes();
+						var currentNSMap = parseStack[parseStack.length - 1].currentNSMap;
+						var end = parseElementStartPart(source, tagStart, el, currentNSMap, entityReplacer, errorHandler, isHTML);
+						var len = el.length;
+						if (!el.closed) if (isHTML && conventions.isHTMLVoidElement(el.tagName)) el.closed = true;
+						else unclosedTags.push(el.tagName);
+						if (locator && len) {
+							var locator2 = copyLocator(locator, {});
+							for (var i = 0; i < len; i++) {
+								var a = el[i];
+								position(a.offset);
+								a.locator = copyLocator(locator, {});
+							}
+							domBuilder.locator = locator2;
+							if (appendElement(el, domBuilder, currentNSMap)) parseStack.push(el);
+							domBuilder.locator = locator;
+						} else if (appendElement(el, domBuilder, currentNSMap)) parseStack.push(el);
+						if (isHTML && !el.closed) end = parseHtmlSpecialContent(source, end, el.tagName, entityReplacer, domBuilder);
+						else end++;
+				}
+			} catch (e) {
+				if (e instanceof ParseError) throw e;
+				else if (e instanceof DOMException) throw new ParseError(e.name + ": " + e.message, domBuilder.locator, e);
+				errorHandler.error("element parse error: " + e);
+				end = -1;
+			}
+			if (end > start) start = end;
+			else appendText(Math.max(tagStart, start) + 1);
+		}
+	}
+	function copyLocator(f, t) {
+		t.lineNumber = f.lineNumber;
+		t.columnNumber = f.columnNumber;
+		return t;
+	}
+	/**
+	* @returns
+	* end of the elementStartPart(end of elementEndPart for selfClosed el)
+	* @see {@link #appendElement}
+	*/
+	function parseElementStartPart(source, start, el, currentNSMap, entityReplacer, errorHandler, isHTML) {
+		/**
+		* @param {string} qname
+		* @param {string} value
+		* @param {number} startIndex
+		*/
+		function addAttribute(qname, value, startIndex) {
+			if (hasOwn(el.attributeNames, qname)) return errorHandler.fatalError("Attribute " + qname + " redefined");
+			if (!isHTML && value.indexOf("<") >= 0) return errorHandler.fatalError("Unescaped '<' not allowed in attributes values");
+			el.addValue(qname, value.replace(/[\t\n\r]/g, " ").replace(ENTITY_REG, entityReplacer), startIndex);
+		}
+		var attrName;
+		var value;
+		var p = ++start;
+		var s = S_TAG;
+		while (true) {
+			var c = source.charAt(p);
+			switch (c) {
+				case "=":
+					if (s === S_ATTR) {
+						attrName = source.slice(start, p);
+						s = S_EQ;
+					} else if (s === S_ATTR_SPACE) s = S_EQ;
+					else throw new Error("attribute equal must after attrName");
+					break;
+				case "'":
+				case "\"":
+					if (s === S_EQ || s === S_ATTR) {
+						if (s === S_ATTR) {
+							errorHandler.warning("attribute value must after \"=\"");
+							attrName = source.slice(start, p);
+						}
+						start = p + 1;
+						p = source.indexOf(c, start);
+						if (p > 0) {
+							value = source.slice(start, p);
+							addAttribute(attrName, value, start - 1);
+							s = S_ATTR_END;
+						} else throw new Error("attribute value no end '" + c + "' match");
+					} else if (s == S_ATTR_NOQUOT_VALUE) {
+						value = source.slice(start, p);
+						addAttribute(attrName, value, start);
+						errorHandler.warning("attribute \"" + attrName + "\" missed start quot(" + c + ")!!");
+						start = p + 1;
+						s = S_ATTR_END;
+					} else throw new Error("attribute value must after \"=\"");
+					break;
+				case "/":
+					switch (s) {
+						case S_TAG: el.setTagName(source.slice(start, p));
+						case S_ATTR_END:
+						case S_TAG_SPACE:
+						case S_TAG_CLOSE:
+							s = S_TAG_CLOSE;
+							el.closed = true;
+						case S_ATTR_NOQUOT_VALUE:
+						case S_ATTR: break;
+						case S_ATTR_SPACE:
+							el.closed = true;
+							break;
+						default: throw new Error("attribute invalid close char('/')");
+					}
+					break;
+				case "":
+					errorHandler.error("unexpected end of input");
+					if (s == S_TAG) el.setTagName(source.slice(start, p));
+					return p;
+				case ">":
+					switch (s) {
+						case S_TAG: el.setTagName(source.slice(start, p));
+						case S_ATTR_END:
+						case S_TAG_SPACE:
+						case S_TAG_CLOSE: break;
+						case S_ATTR_NOQUOT_VALUE:
+						case S_ATTR:
+							value = source.slice(start, p);
+							if (value.slice(-1) === "/") {
+								el.closed = true;
+								value = value.slice(0, -1);
+							}
+						case S_ATTR_SPACE:
+							if (s === S_ATTR_SPACE) value = attrName;
+							if (s == S_ATTR_NOQUOT_VALUE) {
+								errorHandler.warning("attribute \"" + value + "\" missed quot(\")!");
+								addAttribute(attrName, value, start);
+							} else {
+								if (!isHTML) errorHandler.warning("attribute \"" + value + "\" missed value!! \"" + value + "\" instead!!");
+								addAttribute(value, value, start);
+							}
+							break;
+						case S_EQ: if (!isHTML) return errorHandler.fatalError("AttValue: ' or \" expected");
+					}
+					return p;
+				case "": c = " ";
+				default: if (c <= " ") switch (s) {
+					case S_TAG:
+						el.setTagName(source.slice(start, p));
+						s = S_TAG_SPACE;
+						break;
+					case S_ATTR:
+						attrName = source.slice(start, p);
+						s = S_ATTR_SPACE;
+						break;
+					case S_ATTR_NOQUOT_VALUE:
+						var value = source.slice(start, p);
+						errorHandler.warning("attribute \"" + value + "\" missed quot(\")!!");
+						addAttribute(attrName, value, start);
+					case S_ATTR_END:
+						s = S_TAG_SPACE;
+						break;
+				}
+				else switch (s) {
+					case S_ATTR_SPACE:
+						if (!isHTML) errorHandler.warning("attribute \"" + attrName + "\" missed value!! \"" + attrName + "\" instead2!!");
+						addAttribute(attrName, attrName, start);
+						start = p;
+						s = S_ATTR;
+						break;
+					case S_ATTR_END: errorHandler.warning("attribute space is required\"" + attrName + "\"!!");
+					case S_TAG_SPACE:
+						s = S_ATTR;
+						start = p;
+						break;
+					case S_EQ:
+						s = S_ATTR_NOQUOT_VALUE;
+						start = p;
+						break;
+					case S_TAG_CLOSE: throw new Error("elements closed character '/' and '>' must be connected to");
+				}
+			}
+			p++;
+		}
+	}
+	/**
+	* @returns
+	* `true` if a new namespace has been defined.
+	*/
+	function appendElement(el, domBuilder, currentNSMap) {
+		var tagName = el.tagName;
+		var localNSMap = null;
+		var i = el.length;
+		while (i--) {
+			var a = el[i];
+			var qName = a.qName;
+			var value = a.value;
+			var nsp = qName.indexOf(":");
+			if (nsp > 0) {
+				var prefix = a.prefix = qName.slice(0, nsp);
+				var localName = qName.slice(nsp + 1);
+				var nsPrefix = prefix === "xmlns" && localName;
+			} else {
+				localName = qName;
+				prefix = null;
+				nsPrefix = qName === "xmlns" && "";
+			}
+			a.localName = localName;
+			if (nsPrefix !== false) {
+				if (localNSMap == null) {
+					localNSMap = Object.create(null);
+					_copy(currentNSMap, currentNSMap = Object.create(null));
+				}
+				currentNSMap[nsPrefix] = localNSMap[nsPrefix] = value;
+				a.uri = NAMESPACE.XMLNS;
+				domBuilder.startPrefixMapping(nsPrefix, value);
+			}
+		}
+		var i = el.length;
+		while (i--) {
+			a = el[i];
+			if (a.prefix) {
+				if (a.prefix === "xml") a.uri = NAMESPACE.XML;
+				if (a.prefix !== "xmlns") a.uri = currentNSMap[a.prefix];
+			}
+		}
+		var nsp = tagName.indexOf(":");
+		if (nsp > 0) {
+			prefix = el.prefix = tagName.slice(0, nsp);
+			localName = el.localName = tagName.slice(nsp + 1);
+		} else {
+			prefix = null;
+			localName = el.localName = tagName;
+		}
+		var ns = el.uri = currentNSMap[prefix || ""];
+		domBuilder.startElement(ns, localName, tagName, el);
+		if (el.closed) {
+			domBuilder.endElement(ns, localName, tagName);
+			if (localNSMap) {
+				for (prefix in localNSMap) if (hasOwn(localNSMap, prefix)) domBuilder.endPrefixMapping(prefix);
+			}
+		} else {
+			el.currentNSMap = currentNSMap;
+			el.localNSMap = localNSMap;
+			return true;
+		}
+	}
+	function parseHtmlSpecialContent(source, elStartEnd, tagName, entityReplacer, domBuilder) {
+		var isEscapableRaw = isHTMLEscapableRawTextElement(tagName);
+		if (isEscapableRaw || isHTMLRawTextElement(tagName)) {
+			var elEndStart = source.indexOf("</" + tagName + ">", elStartEnd);
+			var text = source.substring(elStartEnd + 1, elEndStart);
+			if (isEscapableRaw) text = text.replace(ENTITY_REG, entityReplacer);
+			domBuilder.characters(text, 0, text.length);
+			return elEndStart;
+		}
+		return elStartEnd + 1;
+	}
+	function _copy(source, target) {
+		for (var n in source) if (hasOwn(source, n)) target[n] = source[n];
+	}
+	/**
+	* @typedef ParseUtils
+	* @property {function(relativeIndex: number?): string | undefined} char
+	* Provides look ahead access to a singe character relative to the current index.
+	* @property {function(): number} getIndex
+	* Provides read-only access to the current index.
+	* @property {function(reg: RegExp): string | null} getMatch
+	* Applies the provided regular expression enforcing that it starts at the current index and
+	* returns the complete matching string,
+	* and moves the current index by the length of the matching string.
+	* @property {function(): string} getSource
+	* Provides read-only access to the complete source.
+	* @property {function(places: number?): void} skip
+	* moves the current index by places (defaults to 1)
+	* @property {function(): number} skipBlanks
+	* Moves the current index by the amount of white space that directly follows the current index
+	* and returns the amount of whitespace chars skipped (0..n),
+	* or -1 if the end of the source was reached.
+	* @property {function(): string} substringFromIndex
+	* creates a substring from the current index to the end of `source`
+	* @property {function(compareWith: string): boolean} substringStartsWith
+	* Checks if `source` contains `compareWith`, starting from the current index.
+	* @property {function(compareWith: string): boolean} substringStartsWithCaseInsensitive
+	* Checks if `source` contains `compareWith`, starting from the current index,
+	* comparing the upper case of both sides.
+	* @see {@link parseUtils}
+	*/
+	/**
+	* A temporary scope for parsing and look ahead operations in `source`,
+	* starting from index `start`.
+	*
+	* Some operations move the current index by a number of positions,
+	* after which `getIndex` returns the new index.
+	*
+	* @param {string} source
+	* @param {number} start
+	* @returns {ParseUtils}
+	*/
+	function parseUtils(source, start) {
+		var index = start;
+		function char(n) {
+			n = n || 0;
+			return source.charAt(index + n);
+		}
+		function skip(n) {
+			n = n || 1;
+			index += n;
+		}
+		function skipBlanks() {
+			var blanks = 0;
+			while (index < source.length) {
+				var c = char();
+				if (c !== " " && c !== "\n" && c !== "	" && c !== "\r") return blanks;
+				blanks++;
+				skip();
+			}
+			return -1;
+		}
+		function substringFromIndex() {
+			return source.substring(index);
+		}
+		function substringStartsWith(text) {
+			return source.substring(index, index + text.length) === text;
+		}
+		function substringStartsWithCaseInsensitive(text) {
+			return source.substring(index, index + text.length).toUpperCase() === text.toUpperCase();
+		}
+		function getMatch(args) {
+			var match = g.reg("^", args).exec(substringFromIndex());
+			if (match) {
+				skip(match[0].length);
+				return match[0];
+			}
+			return null;
+		}
+		return {
+			char,
+			getIndex: function() {
+				return index;
+			},
+			getMatch,
+			getSource: function() {
+				return source;
+			},
+			skip,
+			skipBlanks,
+			substringFromIndex,
+			substringStartsWith,
+			substringStartsWithCaseInsensitive
+		};
+	}
+	/**
+	* @param {ParseUtils} p
+	* @param {DOMHandler} errorHandler
+	* @returns {string}
+	*/
+	function parseDoctypeInternalSubset(p, errorHandler) {
+		/**
+		* @param {ParseUtils} p
+		* @param {DOMHandler} errorHandler
+		* @returns {string}
+		*/
+		function parsePI(p, errorHandler) {
+			var match = g.PI.exec(p.substringFromIndex());
+			if (!match) return errorHandler.fatalError("processing instruction is not well-formed at position " + p.getIndex());
+			if (match[1].toLowerCase() === "xml") return errorHandler.fatalError("xml declaration is only allowed at the start of the document, but found at position " + p.getIndex());
+			p.skip(match[0].length);
+			return match[0];
+		}
+		var source = p.getSource();
+		if (p.char() === "[") {
+			p.skip(1);
+			var intSubsetStart = p.getIndex();
+			while (p.getIndex() < source.length) {
+				p.skipBlanks();
+				if (p.char() === "]") {
+					var internalSubset = source.substring(intSubsetStart, p.getIndex());
+					p.skip(1);
+					return internalSubset;
+				}
+				var current = null;
+				if (p.char() === "<" && p.char(1) === "!") switch (p.char(2)) {
+					case "E":
+						if (p.char(3) === "L") current = p.getMatch(g.elementdecl);
+						else if (p.char(3) === "N") current = p.getMatch(g.EntityDecl);
+						break;
+					case "A":
+						current = p.getMatch(g.AttlistDecl);
+						break;
+					case "N":
+						current = p.getMatch(g.NotationDecl);
+						break;
+					case "-":
+						current = p.getMatch(g.Comment);
+						break;
+				}
+				else if (p.char() === "<" && p.char(1) === "?") current = parsePI(p, errorHandler);
+				else if (p.char() === "%") current = p.getMatch(g.PEReference);
+				else return errorHandler.fatalError("Error detected in Markup declaration");
+				if (!current) return errorHandler.fatalError("Error in internal subset at position " + p.getIndex());
+			}
+			return errorHandler.fatalError("doctype internal subset is not well-formed, missing ]");
+		}
+	}
+	/**
+	* Called when the parser encounters an element starting with '<!'.
+	*
+	* @param {string} source
+	* The xml.
+	* @param {number} start
+	* the start index of the '<!'
+	* @param {DOMHandler} domBuilder
+	* @param {DOMHandler} errorHandler
+	* @param {boolean} isHTML
+	* @returns {number | never}
+	* The end index of the element.
+	* @throws {ParseError}
+	* In case the element is not well-formed.
+	*/
+	function parseDoctypeCommentOrCData(source, start, domBuilder, errorHandler, isHTML) {
+		var p = parseUtils(source, start);
+		switch (isHTML ? p.char(2).toUpperCase() : p.char(2)) {
+			case "-":
+				var comment = p.getMatch(g.Comment);
+				if (comment) {
+					domBuilder.comment(comment, g.COMMENT_START.length, comment.length - g.COMMENT_START.length - g.COMMENT_END.length);
+					return p.getIndex();
+				} else return errorHandler.fatalError("comment is not well-formed at position " + p.getIndex());
+			case "[":
+				var cdata = p.getMatch(g.CDSect);
+				if (cdata) {
+					if (!isHTML && !domBuilder.currentElement) return errorHandler.fatalError("CDATA outside of element");
+					domBuilder.startCDATA();
+					domBuilder.characters(cdata, g.CDATA_START.length, cdata.length - g.CDATA_START.length - g.CDATA_END.length);
+					domBuilder.endCDATA();
+					return p.getIndex();
+				} else return errorHandler.fatalError("Invalid CDATA starting at position " + start);
+			case "D":
+				if (domBuilder.doc && domBuilder.doc.documentElement) return errorHandler.fatalError("Doctype not allowed inside or after documentElement at position " + p.getIndex());
+				if (isHTML ? !p.substringStartsWithCaseInsensitive(g.DOCTYPE_DECL_START) : !p.substringStartsWith(g.DOCTYPE_DECL_START)) return errorHandler.fatalError("Expected " + g.DOCTYPE_DECL_START + " at position " + p.getIndex());
+				p.skip(g.DOCTYPE_DECL_START.length);
+				if (p.skipBlanks() < 1) return errorHandler.fatalError("Expected whitespace after " + g.DOCTYPE_DECL_START + " at position " + p.getIndex());
+				var doctype = {
+					name: void 0,
+					publicId: void 0,
+					systemId: void 0,
+					internalSubset: void 0
+				};
+				doctype.name = p.getMatch(g.Name);
+				if (!doctype.name) return errorHandler.fatalError("doctype name missing or contains unexpected characters at position " + p.getIndex());
+				if (isHTML && doctype.name.toLowerCase() !== "html") errorHandler.warning("Unexpected DOCTYPE in HTML document at position " + p.getIndex());
+				p.skipBlanks();
+				if (p.substringStartsWith(g.PUBLIC) || p.substringStartsWith(g.SYSTEM)) {
+					var match = g.ExternalID_match.exec(p.substringFromIndex());
+					if (!match) return errorHandler.fatalError("doctype external id is not well-formed at position " + p.getIndex());
+					if (match.groups.SystemLiteralOnly !== void 0) doctype.systemId = match.groups.SystemLiteralOnly;
+					else {
+						doctype.systemId = match.groups.SystemLiteral;
+						doctype.publicId = match.groups.PubidLiteral;
+					}
+					p.skip(match[0].length);
+				} else if (isHTML && p.substringStartsWithCaseInsensitive(g.SYSTEM)) {
+					p.skip(g.SYSTEM.length);
+					if (p.skipBlanks() < 1) return errorHandler.fatalError("Expected whitespace after " + g.SYSTEM + " at position " + p.getIndex());
+					doctype.systemId = p.getMatch(g.ABOUT_LEGACY_COMPAT_SystemLiteral);
+					if (!doctype.systemId) return errorHandler.fatalError("Expected " + g.ABOUT_LEGACY_COMPAT + " in single or double quotes after " + g.SYSTEM + " at position " + p.getIndex());
+				}
+				if (isHTML && doctype.systemId && !g.ABOUT_LEGACY_COMPAT_SystemLiteral.test(doctype.systemId)) errorHandler.warning("Unexpected doctype.systemId in HTML document at position " + p.getIndex());
+				if (!isHTML) {
+					p.skipBlanks();
+					doctype.internalSubset = parseDoctypeInternalSubset(p, errorHandler);
+				}
+				p.skipBlanks();
+				if (p.char() !== ">") return errorHandler.fatalError("doctype not terminated with > at position " + p.getIndex());
+				p.skip(1);
+				domBuilder.startDTD(doctype.name, doctype.publicId, doctype.systemId, doctype.internalSubset);
+				domBuilder.endDTD();
+				return p.getIndex();
+			default: return errorHandler.fatalError("Not well-formed XML starting with \"<!\" at position " + start);
+		}
+	}
+	function parseProcessingInstruction(source, start, domBuilder, errorHandler) {
+		var match = source.substring(start).match(g.PI);
+		if (!match) return errorHandler.fatalError("Invalid processing instruction starting at position " + start);
+		if (match[1].toLowerCase() === "xml") {
+			if (start > 0) return errorHandler.fatalError("processing instruction at position " + start + " is an xml declaration which is only at the start of the document");
+			if (!g.XMLDecl.test(source.substring(start))) return errorHandler.fatalError("xml declaration is not well-formed");
+		}
+		domBuilder.processingInstruction(match[1], match[2]);
+		return start + match[0].length;
+	}
+	function ElementAttributes() {
+		this.attributeNames = Object.create(null);
+	}
+	ElementAttributes.prototype = {
+		setTagName: function(tagName) {
+			if (!g.QName_exact.test(tagName)) throw new Error("invalid tagName:" + tagName);
+			this.tagName = tagName;
+		},
+		addValue: function(qName, value, offset) {
+			if (!g.QName_exact.test(qName)) throw new Error("invalid attribute:" + qName);
+			this.attributeNames[qName] = this.length;
+			this[this.length++] = {
+				qName,
+				value,
+				offset
+			};
+		},
+		length: 0,
+		getLocalName: function(i) {
+			return this[i].localName;
+		},
+		getLocator: function(i) {
+			return this[i].locator;
+		},
+		getQName: function(i) {
+			return this[i].qName;
+		},
+		getURI: function(i) {
+			return this[i].uri;
+		},
+		getValue: function(i) {
+			return this[i].value;
+		}
+	};
+	exports.XMLReader = XMLReader;
+	exports.parseUtils = parseUtils;
+	exports.parseDoctypeCommentOrCData = parseDoctypeCommentOrCData;
+}));
+//#endregion
+//#region node_modules/docxtemplater/node_modules/@xmldom/xmldom/lib/dom-parser.js
+var require_dom_parser = /* @__PURE__ */ __commonJSMin(((exports) => {
+	var conventions = require_conventions();
+	var dom = require_dom();
+	var errors = require_errors$1();
+	var entities = require_entities();
+	var sax = require_sax();
+	var DOMImplementation = dom.DOMImplementation;
+	var hasDefaultHTMLNamespace = conventions.hasDefaultHTMLNamespace;
+	var isHTMLMimeType = conventions.isHTMLMimeType;
+	var isValidMimeType = conventions.isValidMimeType;
+	var MIME_TYPE = conventions.MIME_TYPE;
+	var NAMESPACE = conventions.NAMESPACE;
+	var ParseError = errors.ParseError;
+	var XMLReader = sax.XMLReader;
+	/**
+	* Normalizes line ending according to <https://www.w3.org/TR/xml11/#sec-line-ends>,
+	* including some Unicode "newline" characters:
+	*
+	* > XML parsed entities are often stored in computer files which,
+	* > for editing convenience, are organized into lines.
+	* > These lines are typically separated by some combination
+	* > of the characters CARRIAGE RETURN (#xD) and LINE FEED (#xA).
+	* >
+	* > To simplify the tasks of applications, the XML processor must behave
+	* > as if it normalized all line breaks in external parsed entities (including the document entity)
+	* > on input, before parsing, by translating the following to a single #xA character:
+	* >
+	* > 1. the two-character sequence #xD #xA,
+	* > 2. the two-character sequence #xD #x85,
+	* > 3. the single character #x85,
+	* > 4. the single character #x2028,
+	* > 5. the single character #x2029,
+	* > 6. any #xD character that is not immediately followed by #xA or #x85.
+	*
+	* @param {string} input
+	* @returns {string}
+	* @prettierignore
+	*/
+	function normalizeLineEndings(input) {
+		return input.replace(/\r[\n\u0085]/g, "\n").replace(/[\r\u0085\u2028\u2029]/g, "\n");
+	}
+	/**
+	* @typedef Locator
+	* @property {number} [columnNumber]
+	* @property {number} [lineNumber]
+	*/
+	/**
+	* @typedef DOMParserOptions
+	* @property {typeof assign} [assign]
+	* The method to use instead of `conventions.assign`, which is used to copy values from
+	* `options` before they are used for parsing.
+	* @property {typeof DOMHandler} [domHandler]
+	* For internal testing: The class for creating an instance for handling events from the SAX
+	* parser.
+	* *****Warning: By configuring a faulty implementation, the specified behavior can completely
+	* be broken.*****.
+	* @property {Function} [errorHandler]
+	* DEPRECATED! use `onError` instead.
+	* @property {function(level:ErrorLevel, message:string, context: DOMHandler):void}
+	* [onError]
+	* A function invoked for every error that occurs during parsing.
+	*
+	* If it is not provided, all errors are reported to `console.error`
+	* and only `fatalError`s are thrown as a `ParseError`,
+	* which prevents any further processing.
+	* If the provided method throws, a `ParserError` is thrown,
+	* which prevents any further processing.
+	*
+	* Be aware that many `warning`s are considered an error that prevents further processing in
+	* most implementations.
+	* @property {boolean} [locator=true]
+	* Configures if the nodes created during parsing will have a `lineNumber` and a `columnNumber`
+	* attribute describing their location in the XML string.
+	* Default is true.
+	* @property {(string) => string} [normalizeLineEndings]
+	* used to replace line endings before parsing, defaults to exported `normalizeLineEndings`,
+	* which normalizes line endings according to <https://www.w3.org/TR/xml11/#sec-line-ends>,
+	* including some Unicode "newline" characters.
+	* @property {Object} [xmlns]
+	* The XML namespaces that should be assumed when parsing.
+	* The default namespace can be provided by the key that is the empty string.
+	* When the `mimeType` for HTML, XHTML or SVG are passed to `parseFromString`,
+	* the default namespace that will be used,
+	* will be overridden according to the specification.
+	* @see {@link normalizeLineEndings}
+	*/
+	/**
+	* The DOMParser interface provides the ability to parse XML or HTML source code from a string
+	* into a DOM `Document`.
+	*
+	* ***xmldom is different from the spec in that it allows an `options` parameter,
+	* to control the behavior***.
+	*
+	* @class
+	* @param {DOMParserOptions} [options]
+	* @see https://developer.mozilla.org/en-US/docs/Web/API/DOMParser
+	* @see https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-parsing-and-serialization
+	*/
+	function DOMParser(options) {
+		options = options || {};
+		if (options.locator === void 0) options.locator = true;
+		/**
+		* The method to use instead of `conventions.assign`, which is used to copy values from
+		* `options`
+		* before they are used for parsing.
+		*
+		* @type {conventions.assign}
+		* @private
+		* @see {@link conventions.assign}
+		* @readonly
+		*/
+		this.assign = options.assign || conventions.assign;
+		/**
+		* For internal testing: The class for creating an instance for handling events from the SAX
+		* parser.
+		* *****Warning: By configuring a faulty implementation, the specified behavior can completely
+		* be broken*****.
+		*
+		* @type {typeof DOMHandler}
+		* @private
+		* @readonly
+		*/
+		this.domHandler = options.domHandler || DOMHandler;
+		/**
+		* A function that is invoked for every error that occurs during parsing.
+		*
+		* If it is not provided, all errors are reported to `console.error`
+		* and only `fatalError`s are thrown as a `ParseError`,
+		* which prevents any further processing.
+		* If the provided method throws, a `ParserError` is thrown,
+		* which prevents any further processing.
+		*
+		* Be aware that many `warning`s are considered an error that prevents further processing in
+		* most implementations.
+		*
+		* @type {function(level:ErrorLevel, message:string, context: DOMHandler):void}
+		* @see {@link onErrorStopParsing}
+		* @see {@link onWarningStopParsing}
+		*/
+		this.onError = options.onError || options.errorHandler;
+		if (options.errorHandler && typeof options.errorHandler !== "function") throw new TypeError("errorHandler object is no longer supported, switch to onError!");
+		else if (options.errorHandler) options.errorHandler("warning", "The `errorHandler` option has been deprecated, use `onError` instead!", this);
+		/**
+		* used to replace line endings before parsing, defaults to `normalizeLineEndings`
+		*
+		* @type {(string) => string}
+		* @readonly
+		*/
+		this.normalizeLineEndings = options.normalizeLineEndings || normalizeLineEndings;
+		/**
+		* Configures if the nodes created during parsing will have a `lineNumber` and a
+		* `columnNumber`
+		* attribute describing their location in the XML string.
+		* Default is true.
+		*
+		* @type {boolean}
+		* @readonly
+		*/
+		this.locator = !!options.locator;
+		/**
+		* The default namespace can be provided by the key that is the empty string.
+		* When the `mimeType` for HTML, XHTML or SVG are passed to `parseFromString`,
+		* the default namespace that will be used,
+		* will be overridden according to the specification.
+		*
+		* @type {Readonly<Object>}
+		* @readonly
+		*/
+		this.xmlns = this.assign(Object.create(null), options.xmlns);
+	}
+	/**
+	* Parses `source` using the options in the way configured by the `DOMParserOptions` of `this`
+	* `DOMParser`. If `mimeType` is `text/html` an HTML `Document` is created,
+	* otherwise an XML `Document` is created.
+	*
+	* __It behaves different from the description in the living standard__:
+	* - Uses the `options` passed to the `DOMParser` constructor to modify the behavior.
+	* - Any unexpected input is reported to `onError` with either a `warning`,
+	* `error` or `fatalError` level.
+	* - Any `fatalError` throws a `ParseError` which prevents further processing.
+	* - Any error thrown by `onError` is converted to a `ParseError` which prevents further
+	* processing - If no `Document` was created during parsing it is reported as a `fatalError`.
+	* *****Warning: By configuring a faulty DOMHandler implementation,
+	* the specified behavior can completely be broken*****.
+	*
+	* @param {string} source
+	* The XML mime type only allows string input!
+	* @param {string} [mimeType='application/xml']
+	* the mimeType or contentType of the document to be created determines the `type` of document
+	* created (XML or HTML)
+	* @returns {Document}
+	* The `Document` node.
+	* @throws {ParseError}
+	* for any `fatalError` or anything that is thrown by `onError`
+	* @throws {TypeError}
+	* for any invalid `mimeType`
+	* @see https://developer.mozilla.org/en-US/docs/Web/API/DOMParser/parseFromString
+	* @see https://html.spec.whatwg.org/#dom-domparser-parsefromstring-dev
+	*/
+	DOMParser.prototype.parseFromString = function(source, mimeType) {
+		if (!isValidMimeType(mimeType)) throw new TypeError("DOMParser.parseFromString: the provided mimeType \"" + mimeType + "\" is not valid.");
+		var defaultNSMap = this.assign(Object.create(null), this.xmlns);
+		var entityMap = entities.XML_ENTITIES;
+		var defaultNamespace = defaultNSMap[""] || null;
+		if (hasDefaultHTMLNamespace(mimeType)) {
+			entityMap = entities.HTML_ENTITIES;
+			defaultNamespace = NAMESPACE.HTML;
+		} else if (mimeType === MIME_TYPE.XML_SVG_IMAGE) defaultNamespace = NAMESPACE.SVG;
+		defaultNSMap[""] = defaultNamespace;
+		defaultNSMap.xml = defaultNSMap.xml || NAMESPACE.XML;
+		var domBuilder = new this.domHandler({
+			mimeType,
+			defaultNamespace,
+			onError: this.onError
+		});
+		var locator = this.locator ? {} : void 0;
+		if (this.locator) domBuilder.setDocumentLocator(locator);
+		var sax = new XMLReader();
+		sax.errorHandler = domBuilder;
+		sax.domBuilder = domBuilder;
+		if (!conventions.isHTMLMimeType(mimeType) && typeof source !== "string") sax.errorHandler.fatalError("source is not a string");
+		sax.parse(this.normalizeLineEndings(String(source)), defaultNSMap, entityMap);
+		if (!domBuilder.doc.documentElement) sax.errorHandler.fatalError("missing root element");
+		return domBuilder.doc;
+	};
+	/**
+	* @typedef DOMHandlerOptions
+	* @property {string} [mimeType=MIME_TYPE.XML_APPLICATION]
+	* @property {string | null} [defaultNamespace=null]
+	*/
+	/**
+	* The class that is used to handle events from the SAX parser to create the related DOM
+	* elements.
+	*
+	* Some methods are only implemented as an empty function,
+	* since they are (at least currently) not relevant for xmldom.
+	*
+	* @class
+	* @param {DOMHandlerOptions} [options]
+	* @see http://www.saxproject.org/apidoc/org/xml/sax/ext/DefaultHandler2.html
+	*/
+	function DOMHandler(options) {
+		var opt = options || {};
+		/**
+		* The mime type is used to determine if the DOM handler will create an XML or HTML document.
+		* Only if it is set to `text/html` it will create an HTML document.
+		* It defaults to MIME_TYPE.XML_APPLICATION.
+		*
+		* @type {string}
+		* @see {@link MIME_TYPE}
+		* @readonly
+		*/
+		this.mimeType = opt.mimeType || MIME_TYPE.XML_APPLICATION;
+		/**
+		* The namespace to use to create an XML document.
+		* For the following reasons this is required:
+		* - The SAX API for `startDocument` doesn't offer any way to pass a namespace,
+		* since at that point there is no way for the parser to know what the default namespace from
+		* the document will be.
+		* - When creating using `DOMImplementation.createDocument` it is required to pass a
+		* namespace,
+		* to determine the correct `Document.contentType`, which should match `this.mimeType`.
+		* - When parsing an XML document with the `application/xhtml+xml` mimeType,
+		* the HTML namespace needs to be the default namespace.
+		*
+		* @type {string | null}
+		* @private
+		* @readonly
+		*/
+		this.defaultNamespace = opt.defaultNamespace || null;
+		/**
+		* @type {boolean}
+		* @private
+		*/
+		this.cdata = false;
+		/**
+		* The last `Element` that was created by `startElement`.
+		* `endElement` sets it to the `currentElement.parentNode`.
+		*
+		* Note: The sax parser currently sets it to white space text nodes between tags.
+		*
+		* @type {Element | Node | undefined}
+		* @private
+		*/
+		this.currentElement = void 0;
+		/**
+		* The Document that is created as part of `startDocument`,
+		* and returned by `DOMParser.parseFromString`.
+		*
+		* @type {Document | undefined}
+		* @readonly
+		*/
+		this.doc = void 0;
+		/**
+		* The locator is stored as part of setDocumentLocator.
+		* It is controlled and mutated by the SAX parser to store the current parsing position.
+		* It is used by DOMHandler to set `columnNumber` and `lineNumber`
+		* on the DOM nodes.
+		*
+		* @type {Readonly<Locator> | undefined}
+		* @private
+		* @readonly (the
+		* sax parser currently sometimes set's it)
+		*/
+		this.locator = void 0;
+		/**
+		* @type {function (level:ErrorLevel ,message:string, context:DOMHandler):void}
+		* @readonly
+		*/
+		this.onError = opt.onError;
+	}
+	function position(locator, node) {
+		node.lineNumber = locator.lineNumber;
+		node.columnNumber = locator.columnNumber;
+	}
+	DOMHandler.prototype = {
+		/**
+		* Either creates an XML or an HTML document and stores it under `this.doc`.
+		* If it is an XML document, `this.defaultNamespace` is used to create it,
+		* and it will not contain any `childNodes`.
+		* If it is an HTML document, it will be created without any `childNodes`.
+		*
+		* @see http://www.saxproject.org/apidoc/org/xml/sax/ContentHandler.html
+		*/
+		startDocument: function() {
+			var impl = new DOMImplementation();
+			this.doc = isHTMLMimeType(this.mimeType) ? impl.createHTMLDocument(false) : impl.createDocument(this.defaultNamespace, "");
+		},
+		startElement: function(namespaceURI, localName, qName, attrs) {
+			var doc = this.doc;
+			var el = doc.createElementNS(namespaceURI, qName || localName);
+			var len = attrs.length;
+			appendElement(this, el);
+			this.currentElement = el;
+			this.locator && position(this.locator, el);
+			for (var i = 0; i < len; i++) {
+				var namespaceURI = attrs.getURI(i);
+				var value = attrs.getValue(i);
+				var qName = attrs.getQName(i);
+				var attr = doc.createAttributeNS(namespaceURI, qName);
+				this.locator && position(attrs.getLocator(i), attr);
+				attr.value = attr.nodeValue = value;
+				el.setAttributeNode(attr);
+			}
+		},
+		endElement: function(namespaceURI, localName, qName) {
+			this.currentElement = this.currentElement.parentNode;
+		},
+		startPrefixMapping: function(prefix, uri) {},
+		endPrefixMapping: function(prefix) {},
+		processingInstruction: function(target, data) {
+			var ins = this.doc.createProcessingInstruction(target, data);
+			this.locator && position(this.locator, ins);
+			appendElement(this, ins);
+		},
+		ignorableWhitespace: function(ch, start, length) {},
+		characters: function(chars, start, length) {
+			chars = _toString.apply(this, arguments);
+			if (chars) {
+				if (this.cdata) var charNode = this.doc.createCDATASection(chars);
+				else var charNode = this.doc.createTextNode(chars);
+				if (this.currentElement) this.currentElement.appendChild(charNode);
+				else if (/^\s*$/.test(chars)) this.doc.appendChild(charNode);
+				this.locator && position(this.locator, charNode);
+			}
+		},
+		skippedEntity: function(name) {},
+		endDocument: function() {
+			this.doc.normalize();
+		},
+		/**
+		* Stores the locator to be able to set the `columnNumber` and `lineNumber`
+		* on the created DOM nodes.
+		*
+		* @param {Locator} locator
+		*/
+		setDocumentLocator: function(locator) {
+			if (locator) locator.lineNumber = 0;
+			this.locator = locator;
+		},
+		comment: function(chars, start, length) {
+			chars = _toString.apply(this, arguments);
+			var comm = this.doc.createComment(chars);
+			this.locator && position(this.locator, comm);
+			appendElement(this, comm);
+		},
+		startCDATA: function() {
+			this.cdata = true;
+		},
+		endCDATA: function() {
+			this.cdata = false;
+		},
+		startDTD: function(name, publicId, systemId, internalSubset) {
+			var impl = this.doc.implementation;
+			if (impl && impl.createDocumentType) {
+				var dt = impl.createDocumentType(name, publicId, systemId, internalSubset);
+				this.locator && position(this.locator, dt);
+				appendElement(this, dt);
+				this.doc.doctype = dt;
+			}
+		},
+		reportError: function(level, message) {
+			if (typeof this.onError === "function") try {
+				this.onError(level, message, this);
+			} catch (e) {
+				throw new ParseError("Reporting " + level + " \"" + message + "\" caused " + e, this.locator);
+			}
+			else console.error("[xmldom " + level + "]	" + message, _locator(this.locator));
+		},
+		/**
+		* @see http://www.saxproject.org/apidoc/org/xml/sax/ErrorHandler.html
+		*/
+		warning: function(message) {
+			this.reportError("warning", message);
+		},
+		error: function(message) {
+			this.reportError("error", message);
+		},
+		/**
+		* This function reports a fatal error and throws a ParseError.
+		*
+		* @param {string} message
+		* - The message to be used for reporting and throwing the error.
+		* @returns {never}
+		* This function always throws an error and never returns a value.
+		* @throws {ParseError}
+		* Always throws a ParseError with the provided message.
+		*/
+		fatalError: function(message) {
+			this.reportError("fatalError", message);
+			throw new ParseError(message, this.locator);
+		}
+	};
+	function _locator(l) {
+		if (l) return "\n@#[line:" + l.lineNumber + ",col:" + l.columnNumber + "]";
+	}
+	function _toString(chars, start, length) {
+		if (typeof chars == "string") return chars.substr(start, length);
+		else {
+			if (chars.length >= start + length || start) return new java.lang.String(chars, start, length) + "";
+			return chars;
+		}
+	}
+	"endDTD,startEntity,endEntity,attributeDecl,elementDecl,externalEntityDecl,internalEntityDecl,resolveEntity,getExternalSubset,notationDecl,unparsedEntityDecl".replace(/\w+/g, function(key) {
+		DOMHandler.prototype[key] = function() {
+			return null;
+		};
+	});
+	function appendElement(handler, node) {
+		if (!handler.currentElement) handler.doc.appendChild(node);
+		else handler.currentElement.appendChild(node);
+	}
+	/**
+	* A method that prevents any further parsing when an `error`
+	* with level `error` is reported during parsing.
+	*
+	* @see {@link DOMParserOptions.onError}
+	* @see {@link onWarningStopParsing}
+	*/
+	function onErrorStopParsing(level) {
+		if (level === "error") throw "onErrorStopParsing";
+	}
+	/**
+	* A method that prevents any further parsing when any `error` is reported during parsing.
+	*
+	* @see {@link DOMParserOptions.onError}
+	* @see {@link onErrorStopParsing}
+	*/
+	function onWarningStopParsing() {
+		throw "onWarningStopParsing";
+	}
+	exports.__DOMHandler = DOMHandler;
+	exports.DOMParser = DOMParser;
+	exports.normalizeLineEndings = normalizeLineEndings;
+	exports.onErrorStopParsing = onErrorStopParsing;
+	exports.onWarningStopParsing = onWarningStopParsing;
+}));
+//#endregion
+//#region node_modules/docxtemplater/node_modules/@xmldom/xmldom/lib/index.js
+var require_lib = /* @__PURE__ */ __commonJSMin(((exports) => {
+	var conventions = require_conventions();
+	exports.assign = conventions.assign;
+	exports.hasDefaultHTMLNamespace = conventions.hasDefaultHTMLNamespace;
+	exports.isHTMLMimeType = conventions.isHTMLMimeType;
+	exports.isValidMimeType = conventions.isValidMimeType;
+	exports.MIME_TYPE = conventions.MIME_TYPE;
+	exports.NAMESPACE = conventions.NAMESPACE;
+	var errors = require_errors$1();
+	exports.DOMException = errors.DOMException;
+	exports.DOMExceptionName = errors.DOMExceptionName;
+	exports.ExceptionCode = errors.ExceptionCode;
+	exports.ParseError = errors.ParseError;
+	var dom = require_dom();
+	exports.Attr = dom.Attr;
+	exports.CDATASection = dom.CDATASection;
+	exports.CharacterData = dom.CharacterData;
+	exports.Comment = dom.Comment;
+	exports.Document = dom.Document;
+	exports.DocumentFragment = dom.DocumentFragment;
+	exports.DocumentType = dom.DocumentType;
+	exports.DOMImplementation = dom.DOMImplementation;
+	exports.Element = dom.Element;
+	exports.Entity = dom.Entity;
+	exports.EntityReference = dom.EntityReference;
+	exports.LiveNodeList = dom.LiveNodeList;
+	exports.NamedNodeMap = dom.NamedNodeMap;
+	exports.Node = dom.Node;
+	exports.NodeList = dom.NodeList;
+	exports.Notation = dom.Notation;
+	exports.ProcessingInstruction = dom.ProcessingInstruction;
+	exports.Text = dom.Text;
+	exports.XMLSerializer = dom.XMLSerializer;
+	var domParser = require_dom_parser();
+	exports.DOMParser = domParser.DOMParser;
+	exports.normalizeLineEndings = domParser.normalizeLineEndings;
+	exports.onErrorStopParsing = domParser.onErrorStopParsing;
+	exports.onWarningStopParsing = domParser.onWarningStopParsing;
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/utils.js
+var require_utils$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function last(a) {
+		return a[a.length - 1];
+	}
+	function first(a) {
+		return a[0];
+	}
+	module.exports = {
+		last,
+		first
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/errors.js
+var require_errors = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _typeof(o) {
+		"@babel/helpers - typeof";
+		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+			return typeof o;
+		} : function(o) {
+			return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+		}, _typeof(o);
+	}
+	function ownKeys(e, r) {
+		var t = Object.keys(e);
+		if (Object.getOwnPropertySymbols) {
+			var o = Object.getOwnPropertySymbols(e);
+			r && (o = o.filter(function(r) {
+				return Object.getOwnPropertyDescriptor(e, r).enumerable;
+			})), t.push.apply(t, o);
+		}
+		return t;
+	}
+	function _objectSpread(e) {
+		for (var r = 1; r < arguments.length; r++) {
+			var t = null != arguments[r] ? arguments[r] : {};
+			r % 2 ? ownKeys(Object(t), !0).forEach(function(r) {
+				_defineProperty(e, r, t[r]);
+			}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function(r) {
+				Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
+			});
+		}
+		return e;
+	}
+	function _defineProperty(e, r, t) {
+		return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+			value: t,
+			enumerable: !0,
+			configurable: !0,
+			writable: !0
+		}) : e[r] = t, e;
+	}
+	function _toPropertyKey(t) {
+		var i = _toPrimitive(t, "string");
+		return "symbol" == _typeof(i) ? i : i + "";
+	}
+	function _toPrimitive(t, r) {
+		if ("object" != _typeof(t) || !t) return t;
+		var e = t[Symbol.toPrimitive];
+		if (void 0 !== e) {
+			var i = e.call(t, r || "default");
+			if ("object" != _typeof(i)) return i;
+			throw new TypeError("@@toPrimitive must return a primitive value.");
+		}
+		return ("string" === r ? String : Number)(t);
+	}
+	var _require = require_utils$1();
+	var last = _require.last;
+	var first = _require.first;
+	function XTError(message) {
+		this.name = "GenericError";
+		this.message = message;
+		this.stack = new Error(message).stack;
+	}
+	XTError.prototype = Error.prototype;
+	function XTTemplateError(message) {
+		this.name = "TemplateError";
+		this.message = message;
+		this.stack = new Error(message).stack;
+	}
+	XTTemplateError.prototype = new XTError();
+	function XTRenderingError(message) {
+		this.name = "RenderingError";
+		this.message = message;
+		this.stack = new Error(message).stack;
+	}
+	XTRenderingError.prototype = new XTError();
+	function XTScopeParserError(message) {
+		this.name = "ScopeParserError";
+		this.message = message;
+		this.stack = new Error(message).stack;
+	}
+	XTScopeParserError.prototype = new XTError();
+	function XTInternalError(message) {
+		this.name = "InternalError";
+		this.properties = { explanation: "InternalError" };
+		this.message = message;
+		this.stack = new Error(message).stack;
+	}
+	XTInternalError.prototype = new XTError();
+	function XTAPIVersionError(message) {
+		this.name = "APIVersionError";
+		this.properties = { explanation: "APIVersionError" };
+		this.message = message;
+		this.stack = new Error(message).stack;
+	}
+	XTAPIVersionError.prototype = new XTError();
+	function throwApiVersionError(msg, properties) {
+		var err = new XTAPIVersionError(msg);
+		err.properties = _objectSpread({ id: "api_version_error" }, properties);
+		throw err;
+	}
+	function throwFileTypeNotIdentified(zip) {
+		var files = Object.keys(zip.files).slice(0, 10);
+		var msg = "";
+		if (files.length === 0) msg = "Empty zip file";
+		else msg = "Zip file contains : ".concat(files.join(","));
+		var err = new XTInternalError("The filetype for this file could not be identified, is this file corrupted ? ".concat(msg));
+		err.properties = {
+			id: "filetype_not_identified",
+			explanation: "The filetype for this file could not be identified, is this file corrupted ? ".concat(msg)
+		};
+		throw err;
+	}
+	function throwFileTypeNotHandled(fileType) {
+		var err = new XTInternalError("The filetype \"".concat(fileType, "\" is not handled by Docxtemplater"));
+		err.properties = {
+			id: "filetype_not_handled",
+			explanation: "The file you are trying to generate is of type \"".concat(fileType, "\", but only docx and pptx formats are handled"),
+			fileType
+		};
+		throw err;
+	}
+	function throwMultiError(errors) {
+		var err = new XTTemplateError("Multi error");
+		err.properties = {
+			errors,
+			id: "multi_error",
+			explanation: "The template has multiple errors"
+		};
+		throw err;
+	}
+	function getUnopenedTagException(options) {
+		var err = new XTTemplateError("Unopened tag");
+		err.properties = {
+			xtag: last(options.xtag.split(" ")),
+			id: "unopened_tag",
+			context: options.xtag,
+			offset: options.offset,
+			lIndex: options.lIndex,
+			explanation: "The tag beginning with \"".concat(options.xtag.substr(0, 30), "\" is unopened")
+		};
+		return err;
+	}
+	function getDuplicateOpenTagException(options) {
+		var err = new XTTemplateError("Duplicate open tag, expected one open tag");
+		err.properties = {
+			xtag: first(options.xtag.split(" ")),
+			id: "duplicate_open_tag",
+			context: options.xtag,
+			offset: options.offset,
+			lIndex: options.lIndex,
+			explanation: "The tag beginning with \"".concat(options.xtag.substr(0, 30), "\" has duplicate open tags")
+		};
+		return err;
+	}
+	function getDuplicateCloseTagException(options) {
+		var err = new XTTemplateError("Duplicate close tag, expected one close tag");
+		err.properties = {
+			xtag: first(options.xtag.split(" ")),
+			id: "duplicate_close_tag",
+			context: options.xtag,
+			offset: options.offset,
+			lIndex: options.lIndex,
+			explanation: "The tag ending with \"".concat(options.xtag.substr(0, 30), "\" has duplicate close tags")
+		};
+		return err;
+	}
+	function getUnclosedTagException(options) {
+		var err = new XTTemplateError("Unclosed tag");
+		err.properties = {
+			xtag: first(options.xtag.split(" ")).substr(1),
+			id: "unclosed_tag",
+			context: options.xtag,
+			offset: options.offset,
+			lIndex: options.lIndex,
+			explanation: "The tag beginning with \"".concat(options.xtag.substr(0, 30), "\" is unclosed")
+		};
+		return err;
+	}
+	function throwXmlTagNotFound(options) {
+		if (options.position === "left") throwXmlTagNotFoundLeft(options);
+		else throwXmlTagNotFoundRight(options);
+	}
+	function throwXmlTagNotFoundLeft(options) {
+		var err = new XTTemplateError("No tag \"".concat(options.element, "\" was found at the ").concat(options.position));
+		var part = options.parsed[options.index];
+		err.properties = {
+			id: "no_xml_tag_found_at_left",
+			explanation: "No tag \"".concat(options.element, "\" was found at the left"),
+			offset: part.offset,
+			part,
+			parsed: options.parsed,
+			index: options.index,
+			element: options.element
+		};
+		throw err;
+	}
+	function throwXmlTagNotFoundRight(options) {
+		var err = new XTTemplateError("No tag \"".concat(options.element, "\" was found at the ").concat(options.position));
+		var part = options.parsed[options.index];
+		err.properties = {
+			id: "no_xml_tag_found_at_right",
+			explanation: "No tag \"".concat(options.element, "\" was found at the right"),
+			offset: part.offset,
+			part,
+			parsed: options.parsed,
+			index: options.index,
+			element: options.element
+		};
+		throw err;
+	}
+	function getCorruptCharactersException(_ref) {
+		var tag = _ref.tag, value = _ref.value, offset = _ref.offset;
+		var err = new XTRenderingError("There are some XML corrupt characters");
+		err.properties = {
+			id: "invalid_xml_characters",
+			xtag: tag,
+			value,
+			offset,
+			explanation: "There are some corrupt characters for the field \"".concat(tag, "\"")
+		};
+		return err;
+	}
+	function getInvalidRawXMLValueException(_ref2) {
+		var tag = _ref2.tag, value = _ref2.value, offset = _ref2.offset, partDelims = _ref2.partDelims;
+		var err = new XTRenderingError("Non string values are not allowed for rawXML tags");
+		err.properties = {
+			id: "invalid_raw_xml_value",
+			xtag: tag,
+			value,
+			offset,
+			explanation: "The value of the raw tag : \"".concat(partDelims, "\" is not a string")
+		};
+		return err;
+	}
+	function throwExpandNotFound(options) {
+		var _options$part = options.part, value = _options$part.value, offset = _options$part.offset, _options$id = options.id, id = _options$id === void 0 ? "raw_tag_outerxml_invalid" : _options$id, _options$message = options.message, message = _options$message === void 0 ? "Raw tag not in paragraph" : _options$message;
+		var part = options.part;
+		var _options$explanation = options.explanation, explanation = _options$explanation === void 0 ? "The tag \"".concat(value, "\" is not inside a paragraph") : _options$explanation;
+		if (typeof explanation === "function") explanation = explanation(part);
+		var err = new XTTemplateError(message);
+		err.properties = {
+			id,
+			explanation,
+			rootError: options.rootError,
+			xtag: value,
+			offset,
+			postparsed: options.postparsed,
+			expandTo: options.expandTo,
+			index: options.index
+		};
+		throw err;
+	}
+	function throwRawTagShouldBeOnlyTextInParagraph(options) {
+		var err = new XTTemplateError("Raw tag should be the only text in paragraph");
+		var tag = options.part.value;
+		err.properties = {
+			id: "raw_xml_tag_should_be_only_text_in_paragraph",
+			explanation: "The raw tag \"".concat(tag, "\" should be the only text in this paragraph. This means that this tag should not be surrounded by any text or spaces."),
+			xtag: tag,
+			offset: options.part.offset,
+			paragraphParts: options.paragraphParts
+		};
+		throw err;
+	}
+	function getUnmatchedLoopException(part) {
+		var location = part.location, offset = part.offset, square = part.square;
+		var t = location === "start" ? "unclosed" : "unopened";
+		var T = location === "start" ? "Unclosed" : "Unopened";
+		var err = new XTTemplateError("".concat(T, " loop"));
+		var tag = part.value;
+		err.properties = {
+			id: "".concat(t, "_loop"),
+			explanation: "The loop with tag \"".concat(tag, "\" is ").concat(t),
+			xtag: tag,
+			offset
+		};
+		if (square) err.properties.square = square;
+		return err;
+	}
+	function getUnbalancedLoopException(pair, lastPair) {
+		var err = new XTTemplateError("Unbalanced loop tag");
+		var lastL = lastPair[0].part.value;
+		var lastR = lastPair[1].part.value;
+		var l = pair[0].part.value;
+		var r = pair[1].part.value;
+		err.properties = {
+			id: "unbalanced_loop_tags",
+			explanation: "Unbalanced loop tags {#".concat(lastL, "}{/").concat(lastR, "}{#").concat(l, "}{/").concat(r, "}"),
+			offset: [lastPair[0].part.offset, pair[1].part.offset],
+			lastPair: {
+				left: lastPair[0].part.value,
+				right: lastPair[1].part.value
+			},
+			pair: {
+				left: pair[0].part.value,
+				right: pair[1].part.value
+			}
+		};
+		return err;
+	}
+	function getClosingTagNotMatchOpeningTag(_ref3) {
+		var tags = _ref3.tags;
+		var err = new XTTemplateError("Closing tag does not match opening tag");
+		err.properties = {
+			id: "closing_tag_does_not_match_opening_tag",
+			explanation: "The tag \"".concat(tags[0].value, "\" is closed by the tag \"").concat(tags[1].value, "\""),
+			openingtag: first(tags).value,
+			offset: [first(tags).offset, last(tags).offset],
+			closingtag: last(tags).value
+		};
+		if (first(tags).square) err.properties.square = [first(tags).square, last(tags).square];
+		return err;
+	}
+	function getLoopPositionProducesInvalidXMLError(_ref4) {
+		var tag = _ref4.tag, offset = _ref4.offset;
+		var err = new XTTemplateError("The position of the loop tags \"".concat(tag, "\" would produce invalid XML"));
+		err.properties = {
+			xtag: tag,
+			id: "loop_position_invalid",
+			explanation: "The tags \"".concat(tag, "\" are misplaced in the document, for example one of them is in a table and the other one outside the table"),
+			offset
+		};
+		return err;
+	}
+	function getScopeCompilationError(_ref5) {
+		var tag = _ref5.tag, rootError = _ref5.rootError, offset = _ref5.offset;
+		var err = new XTScopeParserError("Scope parser compilation failed");
+		err.properties = {
+			id: "scopeparser_compilation_failed",
+			offset,
+			xtag: tag,
+			explanation: "The scope parser for the tag \"".concat(tag, "\" failed to compile"),
+			rootError
+		};
+		return err;
+	}
+	function getScopeParserExecutionError(_ref6) {
+		var tag = _ref6.tag, scope = _ref6.scope, error = _ref6.error, offset = _ref6.offset;
+		var err = new XTScopeParserError("Scope parser execution failed");
+		err.properties = {
+			id: "scopeparser_execution_failed",
+			explanation: "The scope parser for the tag \"".concat(tag, "\" failed to execute"),
+			scope,
+			offset,
+			xtag: tag,
+			rootError: error
+		};
+		return err;
+	}
+	function throwUnimplementedTagType(part, index) {
+		var errorMsg = "Unimplemented tag type \"".concat(part.type, "\"");
+		if (part.module) errorMsg += " \"".concat(part.module, "\"");
+		var err = new XTTemplateError(errorMsg);
+		err.properties = {
+			part,
+			index,
+			id: "unimplemented_tag_type"
+		};
+		throw err;
+	}
+	function throwMalformedXml() {
+		var err = new XTInternalError("Malformed xml");
+		err.properties = {
+			explanation: "The template contains malformed xml",
+			id: "malformed_xml"
+		};
+		throw err;
+	}
+	function throwResolveBeforeCompile() {
+		var err = new XTInternalError("You must run `.compile()` before running `.resolveData()`");
+		err.properties = {
+			id: "resolve_before_compile",
+			explanation: "You must run `.compile()` before running `.resolveData()`"
+		};
+		throw err;
+	}
+	function throwRenderInvalidTemplate() {
+		var err = new XTInternalError("You should not call .render on a document that had compilation errors");
+		err.properties = {
+			id: "render_on_invalid_template",
+			explanation: "You should not call .render on a document that had compilation errors"
+		};
+		throw err;
+	}
+	function throwRenderTwice() {
+		var err = new XTInternalError("You should not call .render twice on the same Docxtemplater instance");
+		err.properties = {
+			id: "render_twice",
+			explanation: "You should not call .render twice on the same Docxtemplater instance"
+		};
+		throw err;
+	}
+	function throwXmlInvalid(content, offset) {
+		var err = new XTTemplateError("An XML file has invalid xml");
+		err.properties = {
+			id: "file_has_invalid_xml",
+			content,
+			offset,
+			explanation: "The docx contains invalid XML, it is most likely corrupt"
+		};
+		throw err;
+	}
+	module.exports = {
+		XTError,
+		XTTemplateError,
+		XTInternalError,
+		XTScopeParserError,
+		XTAPIVersionError,
+		RenderingError: XTRenderingError,
+		XTRenderingError,
+		getClosingTagNotMatchOpeningTag,
+		getLoopPositionProducesInvalidXMLError,
+		getScopeCompilationError,
+		getScopeParserExecutionError,
+		getUnclosedTagException,
+		getUnopenedTagException,
+		getUnmatchedLoopException,
+		getDuplicateCloseTagException,
+		getDuplicateOpenTagException,
+		getCorruptCharactersException,
+		getInvalidRawXMLValueException,
+		getUnbalancedLoopException,
+		throwApiVersionError,
+		throwFileTypeNotHandled,
+		throwFileTypeNotIdentified,
+		throwMalformedXml,
+		throwMultiError,
+		throwExpandNotFound,
+		throwRawTagShouldBeOnlyTextInParagraph,
+		throwUnimplementedTagType,
+		throwXmlTagNotFound,
+		throwXmlInvalid,
+		throwResolveBeforeCompile,
+		throwRenderInvalidTemplate,
+		throwRenderTwice
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/doc-utils.js
+var require_doc_utils = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _slicedToArray(r, e) {
+		return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest();
+	}
+	function _nonIterableRest() {
+		throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+	}
+	function _unsupportedIterableToArray(r, a) {
+		if (r) {
+			if ("string" == typeof r) return _arrayLikeToArray(r, a);
+			var t = {}.toString.call(r).slice(8, -1);
+			return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0;
+		}
+	}
+	function _arrayLikeToArray(r, a) {
+		(null == a || a > r.length) && (a = r.length);
+		for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
+		return n;
+	}
+	function _iterableToArrayLimit(r, l) {
+		var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
+		if (null != t) {
+			var e, n, i, u, a = [], f = !0, o = !1;
+			try {
+				if (i = (t = t.call(r)).next, 0 === l) {
+					if (Object(t) !== t) return;
+					f = !1;
+				} else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0);
+			} catch (r) {
+				o = !0, n = r;
+			} finally {
+				try {
+					if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return;
+				} finally {
+					if (o) throw n;
+				}
+			}
+			return a;
+		}
+	}
+	function _arrayWithHoles(r) {
+		if (Array.isArray(r)) return r;
+	}
+	var _require = require_lib();
+	var DOMParser = _require.DOMParser;
+	var XMLSerializer = _require.XMLSerializer;
+	var throwXmlTagNotFound = require_errors().throwXmlTagNotFound;
+	var _require3 = require_utils$1();
+	var last = _require3.last;
+	var first = _require3.first;
+	var nativeHasOwn = Object.prototype.hasOwnProperty;
+	var nativeBind = Function.prototype.bind;
+	var nativeCall = Function.prototype.call;
+	var hasOwn = nativeCall.bind(nativeCall, nativeBind)(nativeCall, nativeCall, nativeHasOwn);
+	function isWhiteSpace(value) {
+		return /^[ \n\r\t]+$/.test(value);
+	}
+	function parser(tag) {
+		return { get: function get(scope) {
+			if (tag === ".") return scope;
+			if (scope) {
+				if (hasOwn(scope, tag)) return scope[tag];
+				return;
+			}
+			return scope;
+		} };
+	}
+	function defaultWarnFn(errors) {
+		for (var _i2 = 0; _i2 < errors.length; _i2++) {
+			var error = errors[_i2];
+			if (error.message) console.warn("Warning : " + error.message);
+		}
+	}
+	var attrToRegex = {};
+	function setSingleAttribute(partValue, attr, attrValue) {
+		var regex;
+		if (attrToRegex[attr]) regex = attrToRegex[attr];
+		else {
+			regex = new RegExp("(<.* ".concat(attr, "=\")([^\"]*)(\".*)$"));
+			attrToRegex[attr] = regex;
+		}
+		if (regex.test(partValue)) return partValue.replace(regex, "$1".concat(attrValue, "$3"));
+		var end = partValue.lastIndexOf("/>");
+		if (end === -1) end = partValue.lastIndexOf(">");
+		return partValue.substr(0, end) + " ".concat(attr, "=\"").concat(attrValue, "\"") + partValue.substr(end);
+	}
+	function getSingleAttribute(value, attributeName) {
+		var index = value.indexOf(" ".concat(attributeName, "=\""));
+		if (index === -1) return null;
+		var startIndex = value.substr(index).search(/["']/) + index;
+		var endIndex = value.substr(startIndex + 1).search(/["']/) + startIndex;
+		return value.substr(startIndex + 1, endIndex - startIndex);
+	}
+	function endsWith(str, suffix) {
+		return str.indexOf(suffix, str.length - suffix.length) !== -1;
+	}
+	function startsWith(str, prefix) {
+		return str.substring(0, prefix.length) === prefix;
+	}
+	function getDuplicates(arr) {
+		var duplicates = [];
+		var hash = {}, result = [];
+		for (var i = 0, l = arr.length; i < l; ++i) if (!hash[arr[i]]) {
+			hash[arr[i]] = true;
+			result.push(arr[i]);
+		} else duplicates.push(arr[i]);
+		return duplicates;
+	}
+	function uniq(arr) {
+		var hash = {}, result = [];
+		for (var i = 0, l = arr.length; i < l; ++i) if (!hash[arr[i]]) {
+			hash[arr[i]] = true;
+			result.push(arr[i]);
+		}
+		return result;
+	}
+	function chunkBy(parsed, f) {
+		var chunks = [[]];
+		for (var _i4 = 0; _i4 < parsed.length; _i4++) {
+			var p = parsed[_i4];
+			var currentChunk = chunks[chunks.length - 1];
+			var res = f(p);
+			if (res === "start") chunks.push([p]);
+			else if (res === "end") {
+				currentChunk.push(p);
+				chunks.push([]);
+			} else currentChunk.push(p);
+		}
+		var result = [];
+		for (var _i6 = 0; _i6 < chunks.length; _i6++) {
+			var chunk = chunks[_i6];
+			if (chunk.length > 0) result.push(chunk);
+		}
+		return result;
+	}
+	function getDefaults() {
+		return {
+			errorLogging: "json",
+			stripInvalidXMLChars: false,
+			paragraphLoop: false,
+			nullGetter: function nullGetter(part) {
+				return part.module ? "" : "undefined";
+			},
+			xmlFileNames: ["[Content_Types].xml"],
+			parser,
+			warnFn: defaultWarnFn,
+			linebreaks: false,
+			fileTypeConfig: null,
+			delimiters: {
+				start: "{",
+				end: "}"
+			},
+			syntax: {
+				changeDelimiterPrefix: "=",
+				preserveNewlinesInTags: false,
+				allowUnopenedTag: false,
+				allowUnclosedTag: false,
+				allowUnbalancedLoops: false
+			}
+		};
+	}
+	function xml2str(xmlNode) {
+		return new XMLSerializer().serializeToString(xmlNode).replace(/xmlns(:[a-z0-9]+)?="" ?/g, "");
+	}
+	function str2xml(str) {
+		if (str.charCodeAt(0) === 65279) str = str.substr(1);
+		return new DOMParser().parseFromString(str, "text/xml");
+	}
+	var charMap = [
+		["&", "&amp;"],
+		["<", "&lt;"],
+		[">", "&gt;"],
+		["\"", "&quot;"],
+		["'", "&apos;"]
+	];
+	var charMapRegexes = charMap.map(function(_ref) {
+		var _ref2 = _slicedToArray(_ref, 2), endChar = _ref2[0], startChar = _ref2[1];
+		return {
+			rstart: new RegExp(startChar, "g"),
+			rend: new RegExp(endChar, "g"),
+			start: startChar,
+			end: endChar
+		};
+	});
+	function wordToUtf8(string) {
+		for (var i = charMapRegexes.length - 1; i >= 0; i--) {
+			var r = charMapRegexes[i];
+			string = string.replace(r.rstart, r.end);
+		}
+		return string;
+	}
+	function utf8ToWord(string) {
+		var _string;
+		if ((_string = string) !== null && _string !== void 0 && _string.toString) string = string.toString();
+		else string = "";
+		var r;
+		for (var i = 0, l = charMapRegexes.length; i < l; i++) {
+			r = charMapRegexes[i];
+			string = string.replace(r.rend, r.start);
+		}
+		return string;
+	}
+	function concatArrays(arrays) {
+		var result = [];
+		for (var _i8 = 0; _i8 < arrays.length; _i8++) {
+			var array = arrays[_i8];
+			for (var _i0 = 0; _i0 < array.length; _i0++) {
+				var el = array[_i0];
+				result.push(el);
+			}
+		}
+		return result;
+	}
+	function pushArray(array1, array2) {
+		if (!array2) return array1;
+		for (var i = 0, len = array2.length; i < len; i++) array1.push(array2[i]);
+		return array1;
+	}
+	var spaceRegexp = new RegExp(String.fromCharCode(160), "g");
+	function convertSpaces(s) {
+		return s.replace(spaceRegexp, " ");
+	}
+	function pregMatchAll(regex, content) {
+		var matchArray = [];
+		var match;
+		while ((match = regex.exec(content)) != null) matchArray.push({
+			array: match,
+			offset: match.index
+		});
+		return matchArray;
+	}
+	function isEnding(value, element) {
+		return value === "</" + element + ">";
+	}
+	function isStarting(value, element) {
+		return value.indexOf("<" + element) === 0 && [
+			">",
+			" ",
+			"/"
+		].indexOf(value[element.length + 1]) !== -1;
+	}
+	function getRight(parsed, element, index) {
+		var val = getRightOrNull(parsed, element, index);
+		if (val !== null) return val;
+		throwXmlTagNotFound({
+			position: "right",
+			element,
+			parsed,
+			index
+		});
+	}
+	function getRightOrNull(parsed, elements, index) {
+		if (typeof elements === "string") elements = [elements];
+		var level = 1;
+		for (var i = index, l = parsed.length; i < l; i++) {
+			var part = parsed[i];
+			for (var _i10 = 0, _elements2 = elements; _i10 < _elements2.length; _i10++) {
+				var element = _elements2[_i10];
+				if (isEnding(part.value, element)) level--;
+				if (isStarting(part.value, element)) level++;
+				if (level === 0) return i;
+			}
+		}
+		return null;
+	}
+	function getLeft(parsed, element, index) {
+		var val = getLeftOrNull(parsed, element, index);
+		if (val !== null) return val;
+		throwXmlTagNotFound({
+			position: "left",
+			element,
+			parsed,
+			index
+		});
+	}
+	function getLeftOrNull(parsed, elements, index) {
+		if (typeof elements === "string") elements = [elements];
+		var level = 1;
+		for (var i = index; i >= 0; i--) {
+			var part = parsed[i];
+			for (var _i12 = 0, _elements4 = elements; _i12 < _elements4.length; _i12++) {
+				var element = _elements4[_i12];
+				if (isStarting(part.value, element)) level--;
+				if (isEnding(part.value, element)) level++;
+				if (level === 0) return i;
+			}
+		}
+		return null;
+	}
+	function isTagStart(tagType, _ref3) {
+		var type = _ref3.type, tag = _ref3.tag, position = _ref3.position;
+		return type === "tag" && tag === tagType && (position === "start" || position === "selfclosing");
+	}
+	function isTagEnd(tagType, _ref4) {
+		var type = _ref4.type, tag = _ref4.tag, position = _ref4.position;
+		return type === "tag" && tag === tagType && position === "end";
+	}
+	function isParagraphStart(_ref5) {
+		var type = _ref5.type, tag = _ref5.tag, position = _ref5.position;
+		return [
+			"w:p",
+			"a:p",
+			"text:p"
+		].indexOf(tag) !== -1 && type === "tag" && position === "start";
+	}
+	function isParagraphEnd(_ref6) {
+		var type = _ref6.type, tag = _ref6.tag, position = _ref6.position;
+		return [
+			"w:p",
+			"a:p",
+			"text:p"
+		].indexOf(tag) !== -1 && type === "tag" && position === "end";
+	}
+	function isBreakTag(_ref7) {
+		var type = _ref7.type, tag = _ref7.tag, position = _ref7.position;
+		return ["w:br", "a:br"].indexOf(tag) !== -1 && type === "tag" && (position === "start" || position === "selfclosing");
+	}
+	function isTextStart(_ref8) {
+		var type = _ref8.type, position = _ref8.position;
+		return _ref8.text && type === "tag" && position === "start";
+	}
+	function isTextEnd(_ref9) {
+		var type = _ref9.type, position = _ref9.position;
+		return _ref9.text && type === "tag" && position === "end";
+	}
+	function isContent(_ref0) {
+		var type = _ref0.type, position = _ref0.position;
+		return type === "placeholder" || type === "content" && position === "insidetag";
+	}
+	function isModule(_ref1, modules) {
+		var module$7 = _ref1.module, type = _ref1.type;
+		if (!(modules instanceof Array)) modules = [modules];
+		return type === "placeholder" && modules.indexOf(module$7) !== -1;
+	}
+	var corruptCharacters = /[\x00-\x08\x0B\x0C\x0E-\x1F]/g;
+	function hasCorruptCharacters(string) {
+		corruptCharacters.lastIndex = 0;
+		return corruptCharacters.test(string);
+	}
+	function removeCorruptCharacters(string) {
+		if (typeof string !== "string") string = String(string);
+		return string.replace(corruptCharacters, "");
+	}
+	function invertMap(map) {
+		var invertedMap = {};
+		for (var key in map) {
+			var value = map[key];
+			invertedMap[value] || (invertedMap[value] = []);
+			invertedMap[value].push(key);
+		}
+		return invertedMap;
+	}
+	function stableSort(arr, compare) {
+		var withIndex = [];
+		for (var i = 0; i < arr.length; i++) withIndex.push({
+			item: arr[i],
+			index: i
+		});
+		withIndex.sort(function(a, b) {
+			return compare(a.item, b.item) || a.index - b.index;
+		});
+		var result = [];
+		for (var _i13 = 0; _i13 < withIndex.length; _i13++) result.push(withIndex[_i13].item);
+		return result;
+	}
+	function getPartWithDelimiters(part, options) {
+		return options.delimiters.start + part.raw + options.delimiters.end;
+	}
+	module.exports = {
+		getPartWithDelimiters,
+		endsWith,
+		startsWith,
+		isContent,
+		isParagraphStart,
+		isParagraphEnd,
+		isBreakTag,
+		isTagStart,
+		isTagEnd,
+		isTextStart,
+		isTextEnd,
+		isStarting,
+		isEnding,
+		isModule,
+		uniq,
+		getDuplicates,
+		chunkBy,
+		last,
+		first,
+		xml2str,
+		str2xml,
+		getRightOrNull,
+		getRight,
+		getLeftOrNull,
+		getLeft,
+		pregMatchAll,
+		convertSpaces,
+		charMapRegexes,
+		hasCorruptCharacters,
+		removeCorruptCharacters,
+		getDefaults,
+		wordToUtf8,
+		utf8ToWord,
+		concatArrays,
+		pushArray,
+		invertMap,
+		charMap,
+		getSingleAttribute,
+		setSingleAttribute,
+		isWhiteSpace,
+		stableSort
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/minizod.js
+var require_minizod = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _slicedToArray(r, e) {
+		return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest();
+	}
+	function _nonIterableRest() {
+		throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+	}
+	function _unsupportedIterableToArray(r, a) {
+		if (r) {
+			if ("string" == typeof r) return _arrayLikeToArray(r, a);
+			var t = {}.toString.call(r).slice(8, -1);
+			return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0;
+		}
+	}
+	function _arrayLikeToArray(r, a) {
+		(null == a || a > r.length) && (a = r.length);
+		for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
+		return n;
+	}
+	function _iterableToArrayLimit(r, l) {
+		var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
+		if (null != t) {
+			var e, n, i, u, a = [], f = !0, o = !1;
+			try {
+				if (i = (t = t.call(r)).next, 0 === l) {
+					if (Object(t) !== t) return;
+					f = !1;
+				} else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0);
+			} catch (r) {
+				o = !0, n = r;
+			} finally {
+				try {
+					if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return;
+				} finally {
+					if (o) throw n;
+				}
+			}
+			return a;
+		}
+	}
+	function _arrayWithHoles(r) {
+		if (Array.isArray(r)) return r;
+	}
+	function _typeof(o) {
+		"@babel/helpers - typeof";
+		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+			return typeof o;
+		} : function(o) {
+			return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+		}, _typeof(o);
+	}
+	function _classCallCheck(a, n) {
+		if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function");
+	}
+	function _defineProperties(e, r) {
+		for (var t = 0; t < r.length; t++) {
+			var o = r[t];
+			o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o);
+		}
+	}
+	function _createClass(e, r, t) {
+		return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e;
+	}
+	function _toPropertyKey(t) {
+		var i = _toPrimitive(t, "string");
+		return "symbol" == _typeof(i) ? i : i + "";
+	}
+	function _toPrimitive(t, r) {
+		if ("object" != _typeof(t) || !t) return t;
+		var e = t[Symbol.toPrimitive];
+		if (void 0 !== e) {
+			var i = e.call(t, r || "default");
+			if ("object" != _typeof(i)) return i;
+			throw new TypeError("@@toPrimitive must return a primitive value.");
+		}
+		return ("string" === r ? String : Number)(t);
+	}
+	module.exports = /* @__PURE__ */ function() {
+		function MiniZod() {
+			_classCallCheck(this, MiniZod);
+		}
+		return _createClass(MiniZod, null, [
+			{
+				key: "createSchema",
+				value: function createSchema(validateFn) {
+					return {
+						validate: validateFn,
+						optional: function optional() {
+							return MiniZod.createSchema(function(value) {
+								return value === void 0 ? {
+									success: true,
+									value
+								} : validateFn(value);
+							});
+						},
+						nullable: function nullable() {
+							return MiniZod.createSchema(function(value) {
+								return value == null ? {
+									success: true,
+									value
+								} : validateFn(value);
+							});
+						}
+					};
+				}
+			},
+			{
+				key: "string",
+				value: function string() {
+					return MiniZod.createSchema(function(value) {
+						if (typeof value !== "string") return {
+							success: false,
+							error: "Expected string, received ".concat(_typeof(value))
+						};
+						return {
+							success: true,
+							value
+						};
+					});
+				}
+			},
+			{
+				key: "date",
+				value: function date() {
+					return MiniZod.createSchema(function(value) {
+						if (!(value instanceof Date)) return {
+							success: false,
+							error: "Expected date, received ".concat(_typeof(value))
+						};
+						return {
+							success: true,
+							value
+						};
+					});
+				}
+			},
+			{
+				key: "boolean",
+				value: function _boolean() {
+					return MiniZod.createSchema(function(value) {
+						if (typeof value !== "boolean") return {
+							success: false,
+							error: "Expected boolean, received ".concat(_typeof(value))
+						};
+						return {
+							success: true,
+							value
+						};
+					});
+				}
+			},
+			{
+				key: "number",
+				value: function number() {
+					return MiniZod.createSchema(function(value) {
+						if (typeof value !== "number") return {
+							success: false,
+							error: "Expected number, received ".concat(_typeof(value))
+						};
+						return {
+							success: true,
+							value
+						};
+					});
+				}
+			},
+			{
+				key: "function",
+				value: function _function() {
+					return MiniZod.createSchema(function(value) {
+						if (typeof value !== "function") return {
+							success: false,
+							error: "Expected function, received ".concat(_typeof(value))
+						};
+						return {
+							success: true,
+							value
+						};
+					});
+				}
+			},
+			{
+				key: "array",
+				value: function array(itemSchema) {
+					return MiniZod.createSchema(function(value) {
+						if (!Array.isArray(value)) return {
+							success: false,
+							error: "Expected array, received ".concat(_typeof(value))
+						};
+						for (var i = 0; i < value.length; i++) {
+							var result = itemSchema.validate(value[i]);
+							if (!result.success) return {
+								success: false,
+								error: "".concat(result.error, " at index ").concat(i)
+							};
+						}
+						return {
+							success: true,
+							value
+						};
+					});
+				}
+			},
+			{
+				key: "any",
+				value: function any() {
+					return MiniZod.createSchema(function(value) {
+						return {
+							success: true,
+							value
+						};
+					});
+				}
+			},
+			{
+				key: "isRegex",
+				value: function isRegex() {
+					return MiniZod.createSchema(function(value) {
+						if (!(value instanceof RegExp)) return {
+							success: false,
+							error: "Expected RegExp, received ".concat(_typeof(value))
+						};
+						return {
+							success: true,
+							value
+						};
+					});
+				}
+			},
+			{
+				key: "union",
+				value: function union(schemas) {
+					return MiniZod.createSchema(function(value) {
+						for (var _i2 = 0; _i2 < schemas.length; _i2++) {
+							var result = schemas[_i2].validate(value);
+							if (result.success) return result;
+						}
+						return {
+							success: false,
+							error: "Value ".concat(value, " does not match any schema in union")
+						};
+					});
+				}
+			},
+			{
+				key: "object",
+				value: function object(shape) {
+					var schema = MiniZod.createSchema(function(value) {
+						if (value == null) return {
+							success: false,
+							error: "Expected object, received ".concat(value)
+						};
+						if (_typeof(value) !== "object") return {
+							success: false,
+							error: "Expected object, received ".concat(_typeof(value))
+						};
+						for (var _i4 = 0, _Object$entries2 = Object.entries(shape); _i4 < _Object$entries2.length; _i4++) {
+							var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i4], 2), key = _Object$entries2$_i[0];
+							var result = _Object$entries2$_i[1].validate(value[key]);
+							if (!result.success) return {
+								success: false,
+								error: "".concat(result.error, " at ").concat(key)
+							};
+						}
+						return {
+							success: true,
+							value
+						};
+					});
+					schema.strict = function() {
+						return MiniZod.createSchema(function(value) {
+							var baseResult = schema.validate(value);
+							if (!baseResult.success) return baseResult;
+							var extraKeys = Object.keys(value).filter(function(key) {
+								return !(key in shape);
+							});
+							if (extraKeys.length > 0) return {
+								success: false,
+								error: "Unexpected properties: ".concat(extraKeys.join(", "))
+							};
+							return baseResult;
+						});
+					};
+					return schema;
+				}
+			},
+			{
+				key: "record",
+				value: function record(valueSchema) {
+					return MiniZod.createSchema(function(value) {
+						if (value === null) return {
+							success: false,
+							error: "Expected object, received null"
+						};
+						if (_typeof(value) !== "object") return {
+							success: false,
+							error: "Expected object, received ".concat(_typeof(value))
+						};
+						for (var _i6 = 0, _Object$keys2 = Object.keys(value); _i6 < _Object$keys2.length; _i6++) {
+							var key = _Object$keys2[_i6];
+							if (typeof key !== "string") return {
+								success: false,
+								error: "Expected string key, received ".concat(_typeof(key), " at ").concat(key)
+							};
+							var result = valueSchema.validate(value[key]);
+							if (!result.success) return {
+								success: false,
+								error: "".concat(result.error, " at key ").concat(key)
+							};
+						}
+						return {
+							success: true,
+							value
+						};
+					});
+				}
+			}
+		]);
+	}();
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/get-relation-types.js
+var require_get_relation_types = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var str2xml = require_doc_utils().str2xml;
+	var relsFile = "_rels/.rels";
+	function getRelsTypes(zip) {
+		var rootRels = zip.files[relsFile];
+		var rootRelsXml = rootRels ? str2xml(rootRels.asText()) : null;
+		var rootRelationships = rootRelsXml ? rootRelsXml.getElementsByTagName("Relationship") : [];
+		var relsTypes = {};
+		for (var _i2 = 0; _i2 < rootRelationships.length; _i2++) {
+			var relation = rootRelationships[_i2];
+			relsTypes[relation.getAttribute("Target")] = relation.getAttribute("Type");
+		}
+		return relsTypes;
+	}
+	module.exports = { getRelsTypes };
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/get-content-types.js
+var require_get_content_types = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var str2xml = require_doc_utils().str2xml;
+	var ctXML = "[Content_Types].xml";
+	function collectContentTypes(overrides, defaults, zip) {
+		var partNames = {};
+		for (var _i2 = 0; _i2 < overrides.length; _i2++) {
+			var override = overrides[_i2];
+			var contentType = override.getAttribute("ContentType");
+			var partName = override.getAttribute("PartName").substr(1);
+			partNames[partName] = contentType;
+		}
+		zip.file(/./).map(function(_ref) {
+			var name = _ref.name;
+			for (var _i4 = 0; _i4 < defaults.length; _i4++) {
+				var def = defaults[_i4];
+				var _contentType = def.getAttribute("ContentType");
+				var extension = def.getAttribute("Extension");
+				if (name.slice(name.length - extension.length) === extension && !partNames[name] && name !== ctXML) partNames[name] = _contentType;
+			}
+			partNames[name] || (partNames[name] = "");
+		});
+		return partNames;
+	}
+	function getContentTypes(zip) {
+		var contentTypes = zip.files[ctXML];
+		var contentTypeXml = contentTypes ? str2xml(contentTypes.asText()) : null;
+		return {
+			overrides: contentTypeXml ? contentTypeXml.getElementsByTagName("Override") : null,
+			defaults: contentTypeXml ? contentTypeXml.getElementsByTagName("Default") : null,
+			contentTypes,
+			contentTypeXml
+		};
+	}
+	module.exports = {
+		collectContentTypes,
+		getContentTypes
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/module-wrapper.js
+var require_module_wrapper = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var XTInternalError = require_errors().XTInternalError;
+	function emptyFun() {}
+	function identity(i) {
+		return i;
+	}
+	module.exports = function(module$6) {
+		var defaults = {
+			on: emptyFun,
+			set: emptyFun,
+			getFileType: emptyFun,
+			optionsTransformer: identity,
+			preparse: identity,
+			matchers: function matchers() {
+				return [];
+			},
+			parse: emptyFun,
+			getTraits: emptyFun,
+			postparse: identity,
+			errorsTransformer: identity,
+			preResolve: emptyFun,
+			resolve: emptyFun,
+			getRenderedMap: identity,
+			render: emptyFun,
+			nullGetter: emptyFun,
+			postrender: identity
+		};
+		if (Object.keys(defaults).every(function(key) {
+			return !module$6[key];
+		})) {
+			var err = new XTInternalError("This module cannot be wrapped, because it doesn't define any of the necessary functions");
+			err.properties = {
+				id: "module_cannot_be_wrapped",
+				explanation: "This module cannot be wrapped, because it doesn't define any of the necessary functions"
+			};
+			throw err;
+		}
+		for (var key in defaults) module$6[key] || (module$6[key] = defaults[key]);
+		return module$6;
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/traits.js
+var require_traits = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _typeof(o) {
+		"@babel/helpers - typeof";
+		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+			return typeof o;
+		} : function(o) {
+			return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+		}, _typeof(o);
+	}
+	function _toConsumableArray(r) {
+		return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread();
+	}
+	function _nonIterableSpread() {
+		throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+	}
+	function _iterableToArray(r) {
+		if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r);
+	}
+	function _arrayWithoutHoles(r) {
+		if (Array.isArray(r)) return _arrayLikeToArray(r);
+	}
+	function _slicedToArray(r, e) {
+		return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest();
+	}
+	function _nonIterableRest() {
+		throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+	}
+	function _unsupportedIterableToArray(r, a) {
+		if (r) {
+			if ("string" == typeof r) return _arrayLikeToArray(r, a);
+			var t = {}.toString.call(r).slice(8, -1);
+			return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0;
+		}
+	}
+	function _arrayLikeToArray(r, a) {
+		(null == a || a > r.length) && (a = r.length);
+		for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
+		return n;
+	}
+	function _iterableToArrayLimit(r, l) {
+		var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
+		if (null != t) {
+			var e, n, i, u, a = [], f = !0, o = !1;
+			try {
+				if (i = (t = t.call(r)).next, 0 === l) {
+					if (Object(t) !== t) return;
+					f = !1;
+				} else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0);
+			} catch (r) {
+				o = !0, n = r;
+			} finally {
+				try {
+					if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return;
+				} finally {
+					if (o) throw n;
+				}
+			}
+			return a;
+		}
+	}
+	function _arrayWithHoles(r) {
+		if (Array.isArray(r)) return r;
+	}
+	function ownKeys(e, r) {
+		var t = Object.keys(e);
+		if (Object.getOwnPropertySymbols) {
+			var o = Object.getOwnPropertySymbols(e);
+			r && (o = o.filter(function(r) {
+				return Object.getOwnPropertyDescriptor(e, r).enumerable;
+			})), t.push.apply(t, o);
+		}
+		return t;
+	}
+	function _objectSpread(e) {
+		for (var r = 1; r < arguments.length; r++) {
+			var t = null != arguments[r] ? arguments[r] : {};
+			r % 2 ? ownKeys(Object(t), !0).forEach(function(r) {
+				_defineProperty(e, r, t[r]);
+			}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function(r) {
+				Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
+			});
+		}
+		return e;
+	}
+	function _defineProperty(e, r, t) {
+		return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+			value: t,
+			enumerable: !0,
+			configurable: !0,
+			writable: !0
+		}) : e[r] = t, e;
+	}
+	function _toPropertyKey(t) {
+		var i = _toPrimitive(t, "string");
+		return "symbol" == _typeof(i) ? i : i + "";
+	}
+	function _toPrimitive(t, r) {
+		if ("object" != _typeof(t) || !t) return t;
+		var e = t[Symbol.toPrimitive];
+		if (void 0 !== e) {
+			var i = e.call(t, r || "default");
+			if ("object" != _typeof(i)) return i;
+			throw new TypeError("@@toPrimitive must return a primitive value.");
+		}
+		return ("string" === r ? String : Number)(t);
+	}
+	var _require = require_doc_utils();
+	var getRightOrNull = _require.getRightOrNull;
+	var getRight = _require.getRight;
+	var getLeft = _require.getLeft;
+	var getLeftOrNull = _require.getLeftOrNull;
+	var chunkBy = _require.chunkBy;
+	var isTagStart = _require.isTagStart;
+	var isTagEnd = _require.isTagEnd;
+	var isContent = _require.isContent;
+	var last = _require.last;
+	var first = _require.first;
+	var _require2 = require_errors();
+	var XTTemplateError = _require2.XTTemplateError;
+	var throwExpandNotFound = _require2.throwExpandNotFound;
+	var getLoopPositionProducesInvalidXMLError = _require2.getLoopPositionProducesInvalidXMLError;
+	function lastTagIsOpenTag(tags, tag) {
+		if (tags.length === 0) return false;
+		return last(tags).substr(1).indexOf(tag) === 0;
+	}
+	function getListXmlElements(parts) {
+		var result = [];
+		for (var _i2 = 0; _i2 < parts.length; _i2++) {
+			var _parts$_i = parts[_i2], position = _parts$_i.position, value = _parts$_i.value, tag = _parts$_i.tag;
+			if (!tag) continue;
+			if (position === "end") if (lastTagIsOpenTag(result, tag)) result.pop();
+			else result.push(value);
+			else if (position === "start") result.push(value);
+		}
+		return result;
+	}
+	function has(name, xmlElements) {
+		for (var _i4 = 0; _i4 < xmlElements.length; _i4++) if (xmlElements[_i4].indexOf("<".concat(name)) === 0) return true;
+		return false;
+	}
+	function getExpandToDefault(postparsed, pair, expandTags) {
+		var xmlElements = getListXmlElements(postparsed.slice(pair[0].offset, pair[1].offset));
+		var _loop = function _loop() {
+			var _expandTags$_i = expandTags[_i6], contains = _expandTags$_i.contains, expand = _expandTags$_i.expand, onlyTextInTag = _expandTags$_i.onlyTextInTag;
+			if (has(contains, xmlElements)) {
+				if (onlyTextInTag) {
+					var left = getLeftOrNull(postparsed, contains, pair[0].offset);
+					var right = getRightOrNull(postparsed, contains, pair[1].offset);
+					if (left === null || right === null) return 0;
+					var chunks = chunkBy(postparsed.slice(left, right), function(p) {
+						return isTagStart(contains, p) ? "start" : isTagEnd(contains, p) ? "end" : null;
+					});
+					var firstChunk = first(chunks);
+					var lastChunk = last(chunks);
+					var firstContent = firstChunk.filter(isContent);
+					var lastContent = lastChunk.filter(isContent);
+					if (firstContent.length !== 1 || lastContent.length !== 1) return 0;
+				}
+				var structured = getStructuredTagPositions(xmlElements);
+				var openCount = 0;
+				for (var _i8 = 0; _i8 < structured.length; _i8++) {
+					var _structured$_i = structured[_i8], tag = _structured$_i.tag, position = _structured$_i.position;
+					if (tag === expand) {
+						if (position === "start") openCount++;
+						if (position === "end") openCount--;
+					}
+				}
+				if (openCount !== 0) return { v: { error: getLoopPositionProducesInvalidXMLError({
+					tag: first(pair).part.value,
+					offset: [first(pair).part.offset, last(pair).part.offset]
+				}) } };
+				return { v: { value: expand } };
+			}
+		}, _ret;
+		for (var _i6 = 0; _i6 < expandTags.length; _i6++) {
+			_ret = _loop();
+			if (_ret === 0) continue;
+			if (_ret) return _ret.v;
+		}
+		if (!checkStartEnd(xmlElements)) return { error: getLoopPositionProducesInvalidXMLError({
+			tag: first(pair).part.value,
+			offset: [first(pair).part.offset, last(pair).part.offset]
+		}) };
+		return {};
+	}
+	function getStructuredTagPositions(xmlElements) {
+		var result = [];
+		for (var _i0 = 0; _i0 < xmlElements.length; _i0++) {
+			var el = xmlElements[_i0];
+			var tag = getTagName(el);
+			var position = /^\s*<\//.test(el) ? "end" : "start";
+			result.push({
+				tag,
+				position
+			});
+		}
+		return result;
+	}
+	function getTagName(tag) {
+		return tag.replace(/^\s*<\/?([a-zA-Z:]+).*/, "$1");
+	}
+	function checkStartEnd(xmlElements) {
+		if (xmlElements.length % 2 === 1) return false;
+		for (var i = 0, len = xmlElements.length / 2; i < len; i++) {
+			var start = xmlElements[i];
+			var end = xmlElements[xmlElements.length - i - 1];
+			if (getTagName(start) !== getTagName(end)) return false;
+		}
+		return true;
+	}
+	function getExpandLimit(part, index, postparsed, options) {
+		var expandTo = part.expandTo || options.expandTo;
+		if (!expandTo) return;
+		var right, left;
+		try {
+			left = getLeft(postparsed, expandTo, index);
+			right = getRight(postparsed, expandTo, index);
+		} catch (rootError) {
+			var errProps = _objectSpread({
+				part,
+				rootError,
+				postparsed,
+				expandTo,
+				index
+			}, options.error);
+			if (options.onError) {
+				if (options.onError(errProps) === "ignore") return;
+			}
+			throwExpandNotFound(errProps);
+		}
+		return [left, right];
+	}
+	function expandOne(_ref, part, postparsed, options) {
+		var _ref2 = _slicedToArray(_ref, 2), left = _ref2[0], right = _ref2[1];
+		var index = postparsed.indexOf(part);
+		var leftParts = postparsed.slice(left, index);
+		var rightParts = postparsed.slice(index + 1, right + 1);
+		var inner = options.getInner({
+			postparse: options.postparse,
+			index,
+			part,
+			leftParts,
+			rightParts,
+			left,
+			right,
+			postparsed
+		});
+		if (!inner.length) {
+			inner.expanded = [leftParts, rightParts];
+			inner = [inner];
+		}
+		return {
+			left,
+			right,
+			inner
+		};
+	}
+	function expandToOne(postparsed, options) {
+		var errors = [];
+		if (postparsed.errors) {
+			errors = postparsed.errors;
+			postparsed = postparsed.postparsed;
+		}
+		var limits = [];
+		for (var i = 0, len = postparsed.length; i < len; i++) {
+			var part = postparsed[i];
+			if (part.type === "placeholder" && part.module === options.moduleName && !part.subparsed && !part.expanded) try {
+				var limit = getExpandLimit(part, i, postparsed, options);
+				if (!limit) continue;
+				var _limit = _slicedToArray(limit, 2), left = _limit[0], right = _limit[1];
+				limits.push({
+					left,
+					right,
+					part,
+					i,
+					leftPart: postparsed[left],
+					rightPart: postparsed[right]
+				});
+			} catch (error) {
+				errors.push(error);
+			}
+		}
+		limits.sort(function(l1, l2) {
+			if (l1.left === l2.left) return l2.part.lIndex < l1.part.lIndex ? 1 : -1;
+			return l2.left < l1.left ? 1 : -1;
+		});
+		var maxRight = -1;
+		var offset = 0;
+		for (var _i1 = 0, _len = limits.length; _i1 < _len; _i1++) {
+			var _postparsed;
+			var _limit2 = limits[_i1];
+			maxRight = Math.max(maxRight, _i1 > 0 ? limits[_i1 - 1].right : 0);
+			if (_limit2.left < maxRight) continue;
+			var result = void 0;
+			try {
+				result = expandOne([_limit2.left + offset, _limit2.right + offset], _limit2.part, postparsed, options);
+			} catch (error) {
+				if (options.onError) {
+					if (options.onError(_objectSpread({
+						part: _limit2.part,
+						rootError: error,
+						postparsed,
+						expandOne
+					}, options.errors)) === "ignore") continue;
+				}
+				if (error instanceof XTTemplateError) errors.push(error);
+				else throw error;
+			}
+			if (!result) continue;
+			offset += result.inner.length - (result.right + 1 - result.left);
+			(_postparsed = postparsed).splice.apply(_postparsed, [result.left, result.right + 1 - result.left].concat(_toConsumableArray(result.inner)));
+		}
+		return {
+			postparsed,
+			errors
+		};
+	}
+	module.exports = {
+		expandToOne,
+		getExpandToDefault
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/filetypes.js
+var require_filetypes = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var docxContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
+	var docxmContentType = "application/vnd.ms-word.document.macroEnabled.main+xml";
+	var dotxContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml";
+	var dotmContentType = "application/vnd.ms-word.template.macroEnabledTemplate.main+xml";
+	var headerContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml";
+	var footnotesContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml";
+	var commentsContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml";
+	var footerContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml";
+	var pptxContentType = "application/vnd.openxmlformats-officedocument.presentationml.slide+xml";
+	var pptxSlideMaster = "application/vnd.openxmlformats-officedocument.presentationml.slideMaster+xml";
+	var pptxSlideLayout = "application/vnd.openxmlformats-officedocument.presentationml.slideLayout+xml";
+	var pptxPresentationContentType = "application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml";
+	var xlsxContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
+	var xlsmContentType = "application/vnd.ms-excel.sheet.macroEnabled.main+xml";
+	var xlsxWorksheetContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml";
+	var main = [
+		docxContentType,
+		docxmContentType,
+		dotxContentType,
+		dotmContentType
+	];
+	module.exports = {
+		main,
+		docx: [headerContentType].concat(main, [
+			footerContentType,
+			footnotesContentType,
+			commentsContentType
+		]),
+		pptx: [
+			pptxContentType,
+			pptxSlideMaster,
+			pptxSlideLayout,
+			pptxPresentationContentType
+		],
+		xlsx: [
+			xlsxContentType,
+			xlsmContentType,
+			xlsxWorksheetContentType
+		]
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/content-types.js
+var require_content_types = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	module.exports = {
+		settingsContentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml",
+		coreContentType: "application/vnd.openxmlformats-package.core-properties+xml",
+		appContentType: "application/vnd.openxmlformats-officedocument.extended-properties+xml",
+		customContentType: "application/vnd.openxmlformats-officedocument.custom-properties+xml",
+		diagramDataContentType: "application/vnd.openxmlformats-officedocument.drawingml.diagramData+xml",
+		diagramDrawingContentType: "application/vnd.ms-office.drawingml.diagramDrawing+xml"
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/modules/common.js
+var require_common = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _typeof(o) {
+		"@babel/helpers - typeof";
+		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+			return typeof o;
+		} : function(o) {
+			return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+		}, _typeof(o);
+	}
+	function _classCallCheck(a, n) {
+		if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function");
+	}
+	function _defineProperties(e, r) {
+		for (var t = 0; t < r.length; t++) {
+			var o = r[t];
+			o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o);
+		}
+	}
+	function _createClass(e, r, t) {
+		return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e;
+	}
+	function _toPropertyKey(t) {
+		var i = _toPrimitive(t, "string");
+		return "symbol" == _typeof(i) ? i : i + "";
+	}
+	function _toPrimitive(t, r) {
+		if ("object" != _typeof(t) || !t) return t;
+		var e = t[Symbol.toPrimitive];
+		if (void 0 !== e) {
+			var i = e.call(t, r || "default");
+			if ("object" != _typeof(i)) return i;
+			throw new TypeError("@@toPrimitive must return a primitive value.");
+		}
+		return ("string" === r ? String : Number)(t);
+	}
+	var pushArray = require_doc_utils().pushArray;
+	var wrapper = require_module_wrapper();
+	var filetypes = require_filetypes();
+	var _require2 = require_content_types();
+	var commonContentTypes = [
+		_require2.settingsContentType,
+		_require2.coreContentType,
+		_require2.appContentType,
+		_require2.customContentType,
+		_require2.diagramDataContentType,
+		_require2.diagramDrawingContentType
+	];
+	var Common = /*#__PURE__*/ function() {
+		function Common() {
+			_classCallCheck(this, Common);
+			this.name = "Common";
+		}
+		return _createClass(Common, [{
+			key: "getFileType",
+			value: function getFileType(_ref) {
+				var doc = _ref.doc;
+				var invertedContentTypes = doc.invertedContentTypes;
+				if (!invertedContentTypes) return;
+				for (var _i2 = 0; _i2 < commonContentTypes.length; _i2++) {
+					var ct = commonContentTypes[_i2];
+					if (invertedContentTypes[ct]) pushArray(doc.targets, invertedContentTypes[ct]);
+				}
+				var keys = [
+					"docx",
+					"pptx",
+					"xlsx"
+				];
+				var ftCandidate;
+				for (var _i4 = 0; _i4 < keys.length; _i4++) {
+					var key = keys[_i4];
+					var contentTypes = filetypes[key];
+					for (var _i6 = 0; _i6 < contentTypes.length; _i6++) {
+						var _ct = contentTypes[_i6];
+						if (invertedContentTypes[_ct]) for (var _i8 = 0, _invertedContentTypes2 = invertedContentTypes[_ct]; _i8 < _invertedContentTypes2.length; _i8++) {
+							var target = _invertedContentTypes2[_i8];
+							if (doc.relsTypes[target] && ["http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"].indexOf(doc.relsTypes[target]) === -1) continue;
+							ftCandidate = key;
+							if (filetypes.main.indexOf(_ct) !== -1 || _ct === filetypes.pptx[0]) doc.textTarget || (doc.textTarget = target);
+							if (ftCandidate === "xlsx") continue;
+							doc.targets.push(target);
+						}
+					}
+					if (ftCandidate) continue;
+				}
+				return ftCandidate;
+			}
+		}]);
+	}();
+	module.exports = function() {
+		return wrapper(new Common());
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/scope-manager.js
+var require_scope_manager = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _typeof(o) {
+		"@babel/helpers - typeof";
+		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+			return typeof o;
+		} : function(o) {
+			return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+		}, _typeof(o);
+	}
+	function _classCallCheck(a, n) {
+		if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function");
+	}
+	function _defineProperties(e, r) {
+		for (var t = 0; t < r.length; t++) {
+			var o = r[t];
+			o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o);
+		}
+	}
+	function _createClass(e, r, t) {
+		return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e;
+	}
+	function _toPropertyKey(t) {
+		var i = _toPrimitive(t, "string");
+		return "symbol" == _typeof(i) ? i : i + "";
+	}
+	function _toPrimitive(t, r) {
+		if ("object" != _typeof(t) || !t) return t;
+		var e = t[Symbol.toPrimitive];
+		if (void 0 !== e) {
+			var i = e.call(t, r || "default");
+			if ("object" != _typeof(i)) return i;
+			throw new TypeError("@@toPrimitive must return a primitive value.");
+		}
+		return ("string" === r ? String : Number)(t);
+	}
+	var getScopeParserExecutionError = require_errors().getScopeParserExecutionError;
+	var last = require_utils$1().last;
+	var concatArrays = require_doc_utils().concatArrays;
+	function find(list, fn) {
+		var length = list.length >>> 0;
+		var value;
+		for (var i = 0; i < length; i++) {
+			value = list[i];
+			if (fn.call(this, value, i, list)) return value;
+		}
+	}
+	function _getValue(tag, meta, num) {
+		var _this = this;
+		var scope = this.scopeList[num];
+		var lastScope = this.scopeList[this.scopeList.length - 1];
+		if (this.root.finishedResolving) {
+			var w = this.resolved;
+			var _loop = function _loop() {
+				var lIndex = _this.scopeLindex[i];
+				w = find(w, function(r) {
+					return r.lIndex === lIndex;
+				});
+				w = w.value[_this.scopePathItem[i]];
+			};
+			for (var i = this.resolveOffset, len = this.scopePath.length; i < len; i++) _loop();
+			return find(w, function(r) {
+				return meta.part.lIndex === r.lIndex;
+			}).value;
+		}
+		var result;
+		var parser;
+		if (!this.cachedParsers || !meta.part) parser = this.parser(tag, {
+			tag: meta.part,
+			scopePath: this.scopePath
+		});
+		else if (this.cachedParsers[meta.part.lIndex]) parser = this.cachedParsers[meta.part.lIndex];
+		else parser = this.cachedParsers[meta.part.lIndex] = this.parser(tag, {
+			tag: meta.part,
+			scopePath: this.scopePath
+		});
+		try {
+			result = parser.get(scope, this.getContext(meta, num));
+		} catch (error) {
+			throw getScopeParserExecutionError({
+				tag,
+				scope,
+				error,
+				offset: meta.part.offset
+			});
+		}
+		if (result == null && num > 0) return _getValue.call(this, tag, meta, num - 1);
+		if (typeof result === "function") try {
+			result = result(lastScope, this);
+		} catch (error) {
+			throw getScopeParserExecutionError({
+				tag,
+				scope,
+				error,
+				offset: meta.part.offset
+			});
+		}
+		return result;
+	}
+	function _getValueAsync(tag, meta, num) {
+		var _this2 = this;
+		var scope = this.scopeList[num];
+		var lastScope = this.scopeList[this.scopeList.length - 1];
+		var parser;
+		if (!this.cachedParsers || !meta.part) parser = this.parser(tag, {
+			tag: meta.part,
+			scopePath: this.scopePath
+		});
+		else if (this.cachedParsers[meta.part.lIndex]) parser = this.cachedParsers[meta.part.lIndex];
+		else parser = this.cachedParsers[meta.part.lIndex] = this.parser(tag, {
+			tag: meta.part,
+			scopePath: this.scopePath
+		});
+		return Promise.resolve().then(function() {
+			return parser.get(scope, _this2.getContext(meta, num));
+		})["catch"](function(error) {
+			throw getScopeParserExecutionError({
+				tag,
+				scope,
+				error,
+				offset: meta.part.offset
+			});
+		}).then(function(result) {
+			if (result == null && num > 0) return _getValueAsync.call(_this2, tag, meta, num - 1);
+			return result;
+		}).then(function(result) {
+			if (typeof result === "function") try {
+				result = result(lastScope, _this2);
+			} catch (error) {
+				throw getScopeParserExecutionError({
+					tag,
+					scope,
+					error,
+					offset: meta.part.offset
+				});
+			}
+			return result;
+		});
+	}
+	var ScopeManager = /*#__PURE__*/ function() {
+		function ScopeManager(options) {
+			_classCallCheck(this, ScopeManager);
+			this.root = options.root || this;
+			this.resolveOffset = options.resolveOffset || 0;
+			this.scopePath = options.scopePath;
+			this.scopePathItem = options.scopePathItem;
+			this.scopePathLength = options.scopePathLength;
+			this.scopeList = options.scopeList;
+			this.scopeType = "";
+			this.scopeTypes = options.scopeTypes;
+			this.scopeLindex = options.scopeLindex;
+			this.parser = options.parser;
+			this.resolved = options.resolved;
+			this.cachedParsers = options.cachedParsers;
+		}
+		return _createClass(ScopeManager, [
+			{
+				key: "loopOver",
+				value: function loopOver(tag, functor, inverted, meta) {
+					return this.loopOverValue(this.getValue(tag, meta), functor, inverted);
+				}
+			},
+			{
+				key: "functorIfInverted",
+				value: function functorIfInverted(inverted, functor, value, i, length) {
+					if (inverted) functor(value, i, length);
+					return inverted;
+				}
+			},
+			{
+				key: "isValueFalsy",
+				value: function isValueFalsy(value, type) {
+					return value == null || !value || type === "[object Array]" && value.length === 0;
+				}
+			},
+			{
+				key: "loopOverValue",
+				value: function loopOverValue(value, functor, inverted) {
+					if (this.root.finishedResolving) inverted = false;
+					var type = Object.prototype.toString.call(value);
+					if (this.isValueFalsy(value, type)) {
+						this.scopeType = false;
+						return this.functorIfInverted(inverted, functor, last(this.scopeList), 0, 1);
+					}
+					if (type === "[object Array]") {
+						this.scopeType = "array";
+						for (var i = 0; i < value.length; i++) this.functorIfInverted(!inverted, functor, value[i], i, value.length);
+						return true;
+					}
+					if (type === "[object Object]") {
+						this.scopeType = "object";
+						return this.functorIfInverted(!inverted, functor, value, 0, 1);
+					}
+					return this.functorIfInverted(!inverted, functor, last(this.scopeList), 0, 1);
+				}
+			},
+			{
+				key: "getValue",
+				value: function getValue(tag, meta) {
+					return _getValue.call(this, tag, meta, this.scopeList.length - 1);
+				}
+			},
+			{
+				key: "getValueAsync",
+				value: function getValueAsync(tag, meta) {
+					return _getValueAsync.call(this, tag, meta, this.scopeList.length - 1);
+				}
+			},
+			{
+				key: "getContext",
+				value: function getContext(meta, num) {
+					return {
+						num,
+						meta,
+						scopeList: this.scopeList,
+						resolved: this.resolved,
+						scopePath: this.scopePath,
+						scopeTypes: this.scopeTypes,
+						scopePathItem: this.scopePathItem,
+						scopePathLength: this.scopePathLength
+					};
+				}
+			},
+			{
+				key: "createSubScopeManager",
+				value: function createSubScopeManager(scope, tag, i, part, length) {
+					return new ScopeManager({
+						root: this.root,
+						resolveOffset: this.resolveOffset,
+						resolved: this.resolved,
+						parser: this.parser,
+						cachedParsers: this.cachedParsers,
+						scopeTypes: concatArrays([this.scopeTypes, [this.scopeType]]),
+						scopeList: concatArrays([this.scopeList, [scope]]),
+						scopePath: concatArrays([this.scopePath, [tag]]),
+						scopePathItem: concatArrays([this.scopePathItem, [i]]),
+						scopePathLength: concatArrays([this.scopePathLength, [length]]),
+						scopeLindex: concatArrays([this.scopeLindex, [part.lIndex]])
+					});
+				}
+			}
+		]);
+	}();
+	module.exports = function(options) {
+		options.scopePath = [];
+		options.scopePathItem = [];
+		options.scopePathLength = [];
+		options.scopeTypes = [];
+		options.scopeLindex = [];
+		options.scopeList = [options.tags];
+		return new ScopeManager(options);
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/lexer.js
+var require_lexer = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _typeof(o) {
+		"@babel/helpers - typeof";
+		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+			return typeof o;
+		} : function(o) {
+			return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+		}, _typeof(o);
+	}
+	function _slicedToArray(r, e) {
+		return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest();
+	}
+	function _nonIterableRest() {
+		throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+	}
+	function _unsupportedIterableToArray(r, a) {
+		if (r) {
+			if ("string" == typeof r) return _arrayLikeToArray(r, a);
+			var t = {}.toString.call(r).slice(8, -1);
+			return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0;
+		}
+	}
+	function _arrayLikeToArray(r, a) {
+		(null == a || a > r.length) && (a = r.length);
+		for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
+		return n;
+	}
+	function _iterableToArrayLimit(r, l) {
+		var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
+		if (null != t) {
+			var e, n, i, u, a = [], f = !0, o = !1;
+			try {
+				if (i = (t = t.call(r)).next, 0 === l) {
+					if (Object(t) !== t) return;
+					f = !1;
+				} else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0);
+			} catch (r) {
+				o = !0, n = r;
+			} finally {
+				try {
+					if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return;
+				} finally {
+					if (o) throw n;
+				}
+			}
+			return a;
+		}
+	}
+	function _arrayWithHoles(r) {
+		if (Array.isArray(r)) return r;
+	}
+	function ownKeys(e, r) {
+		var t = Object.keys(e);
+		if (Object.getOwnPropertySymbols) {
+			var o = Object.getOwnPropertySymbols(e);
+			r && (o = o.filter(function(r) {
+				return Object.getOwnPropertyDescriptor(e, r).enumerable;
+			})), t.push.apply(t, o);
+		}
+		return t;
+	}
+	function _objectSpread(e) {
+		for (var r = 1; r < arguments.length; r++) {
+			var t = null != arguments[r] ? arguments[r] : {};
+			r % 2 ? ownKeys(Object(t), !0).forEach(function(r) {
+				_defineProperty(e, r, t[r]);
+			}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function(r) {
+				Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
+			});
+		}
+		return e;
+	}
+	function _defineProperty(e, r, t) {
+		return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+			value: t,
+			enumerable: !0,
+			configurable: !0,
+			writable: !0
+		}) : e[r] = t, e;
+	}
+	function _toPropertyKey(t) {
+		var i = _toPrimitive(t, "string");
+		return "symbol" == _typeof(i) ? i : i + "";
+	}
+	function _toPrimitive(t, r) {
+		if ("object" != _typeof(t) || !t) return t;
+		var e = t[Symbol.toPrimitive];
+		if (void 0 !== e) {
+			var i = e.call(t, r || "default");
+			if ("object" != _typeof(i)) return i;
+			throw new TypeError("@@toPrimitive must return a primitive value.");
+		}
+		return ("string" === r ? String : Number)(t);
+	}
+	var _require = require_errors();
+	var getUnclosedTagException = _require.getUnclosedTagException;
+	var getUnopenedTagException = _require.getUnopenedTagException;
+	var getDuplicateOpenTagException = _require.getDuplicateOpenTagException;
+	var getDuplicateCloseTagException = _require.getDuplicateCloseTagException;
+	var throwMalformedXml = _require.throwMalformedXml;
+	var throwXmlInvalid = _require.throwXmlInvalid;
+	var XTTemplateError = _require.XTTemplateError;
+	var _require2 = require_doc_utils();
+	var isTextStart = _require2.isTextStart;
+	var isTextEnd = _require2.isTextEnd;
+	var wordToUtf8 = _require2.wordToUtf8;
+	var pushArray = _require2.pushArray;
+	var DELIMITER_NONE = 0;
+	var DELIMITER_EQUAL = 1;
+	var DELIMITER_START = 2;
+	var DELIMITER_END = 3;
+	function inRange(range, match) {
+		return range[0] <= match.offset && match.offset < range[1];
+	}
+	function updateInTextTag(part, inTextTag) {
+		if (isTextStart(part)) {
+			if (inTextTag) throwMalformedXml();
+			return true;
+		}
+		if (isTextEnd(part)) {
+			if (!inTextTag) throwMalformedXml();
+			return false;
+		}
+		return inTextTag;
+	}
+	function getTag(tag) {
+		var position = "";
+		var start = 1;
+		var end = tag.indexOf(" ");
+		if (tag[tag.length - 2] === "/") {
+			position = "selfclosing";
+			if (end === -1) end = tag.length - 2;
+		} else if (tag[1] === "/") {
+			start = 2;
+			position = "end";
+			if (end === -1) end = tag.length - 1;
+		} else {
+			position = "start";
+			if (end === -1) end = tag.length - 1;
+		}
+		return {
+			tag: tag.slice(start, end),
+			position
+		};
+	}
+	function tagMatcher(content, textMatchArray, othersMatchArray) {
+		var cursor = 0;
+		var contentLength = content.length;
+		var allMatches = {};
+		for (var _i2 = 0; _i2 < textMatchArray.length; _i2++) {
+			var m = textMatchArray[_i2];
+			allMatches[m] = true;
+		}
+		for (var _i4 = 0; _i4 < othersMatchArray.length; _i4++) {
+			var _m = othersMatchArray[_i4];
+			allMatches[_m] = false;
+		}
+		var totalMatches = [];
+		while (cursor < contentLength) {
+			cursor = content.indexOf("<", cursor);
+			if (cursor === -1) break;
+			var offset = cursor;
+			var nextOpening = content.indexOf("<", cursor + 1);
+			cursor = content.indexOf(">", cursor);
+			if (cursor === -1 || nextOpening !== -1 && cursor > nextOpening) throwXmlInvalid(content, offset);
+			var tagText = content.slice(offset, cursor + 1);
+			var _getTag = getTag(tagText), tag = _getTag.tag, position = _getTag.position;
+			var text = allMatches[tag];
+			if (text == null) continue;
+			totalMatches.push({
+				type: "tag",
+				position,
+				text,
+				offset,
+				value: tagText,
+				tag
+			});
+		}
+		return totalMatches;
+	}
+	function getDelimiterErrors(delimiterMatches, fullText, syntaxOptions) {
+		var errors = [];
+		var inDelimiter = false;
+		var lastDelimiterMatch = { offset: 0 };
+		var xtag;
+		var delimiterWithErrors = delimiterMatches.reduce(function(delimiterAcc, currDelimiterMatch) {
+			var position = currDelimiterMatch.position;
+			var delimiterOffset = currDelimiterMatch.offset;
+			var lastDelimiterOffset = lastDelimiterMatch.offset;
+			var lastDelimiterLength = lastDelimiterMatch.length;
+			xtag = fullText.substr(lastDelimiterOffset, delimiterOffset - lastDelimiterOffset);
+			if (inDelimiter && position === "start") {
+				if (lastDelimiterOffset + lastDelimiterLength === delimiterOffset) {
+					xtag = fullText.substr(lastDelimiterOffset, delimiterOffset - lastDelimiterOffset + lastDelimiterLength + 4);
+					if (!syntaxOptions.allowUnclosedTag) {
+						errors.push(getDuplicateOpenTagException({
+							xtag,
+							offset: lastDelimiterOffset
+						}));
+						lastDelimiterMatch = currDelimiterMatch;
+						delimiterAcc.push(_objectSpread(_objectSpread({}, currDelimiterMatch), {}, { error: true }));
+						return delimiterAcc;
+					}
+				}
+				if (!syntaxOptions.allowUnclosedTag) errors.push(getUnclosedTagException({
+					xtag: wordToUtf8(xtag),
+					offset: lastDelimiterOffset
+				}));
+				delimiterAcc.pop();
+			}
+			if (!inDelimiter && position === "end") {
+				if (syntaxOptions.allowUnopenedTag) return delimiterAcc;
+				if (lastDelimiterOffset + lastDelimiterLength === delimiterOffset) {
+					xtag = fullText.substr(lastDelimiterOffset - 4, delimiterOffset - lastDelimiterOffset + lastDelimiterLength + 4);
+					errors.push(getDuplicateCloseTagException({
+						xtag,
+						offset: lastDelimiterOffset
+					}));
+					lastDelimiterMatch = currDelimiterMatch;
+					delimiterAcc.push(_objectSpread(_objectSpread({}, currDelimiterMatch), {}, { error: true }));
+					return delimiterAcc;
+				}
+				errors.push(getUnopenedTagException({
+					xtag,
+					offset: delimiterOffset
+				}));
+				lastDelimiterMatch = currDelimiterMatch;
+				delimiterAcc.push(_objectSpread(_objectSpread({}, currDelimiterMatch), {}, { error: true }));
+				return delimiterAcc;
+			}
+			inDelimiter = position === "start";
+			lastDelimiterMatch = currDelimiterMatch;
+			delimiterAcc.push(currDelimiterMatch);
+			return delimiterAcc;
+		}, []);
+		if (inDelimiter) {
+			var lastDelimiterOffset = lastDelimiterMatch.offset;
+			xtag = fullText.substr(lastDelimiterOffset, fullText.length - lastDelimiterOffset);
+			if (!syntaxOptions.allowUnclosedTag) errors.push(getUnclosedTagException({
+				xtag: wordToUtf8(xtag),
+				offset: lastDelimiterOffset
+			}));
+			delimiterWithErrors.pop();
+		}
+		return {
+			delimiterWithErrors,
+			errors
+		};
+	}
+	function compareOffsets(startOffset, endOffset) {
+		if (startOffset === -1 && endOffset === -1) return DELIMITER_NONE;
+		if (startOffset === endOffset) return DELIMITER_EQUAL;
+		if (startOffset === -1 || endOffset === -1) return endOffset < startOffset ? DELIMITER_START : DELIMITER_END;
+		return startOffset < endOffset ? DELIMITER_START : DELIMITER_END;
+	}
+	function splitDelimiters(inside) {
+		var newDelimiters = inside.split(" ");
+		if (newDelimiters.length !== 2) {
+			var err = new XTTemplateError("New Delimiters cannot be parsed");
+			err.properties = {
+				id: "change_delimiters_invalid",
+				explanation: "Cannot parser delimiters"
+			};
+			throw err;
+		}
+		var _newDelimiters = _slicedToArray(newDelimiters, 2), start = _newDelimiters[0], end = _newDelimiters[1];
+		if (start.length === 0 || end.length === 0) {
+			var _err = new XTTemplateError("New Delimiters cannot be parsed");
+			_err.properties = {
+				id: "change_delimiters_invalid",
+				explanation: "Cannot parser delimiters"
+			};
+			throw _err;
+		}
+		return [start, end];
+	}
+	function getAllDelimiterIndexes(fullText, delimiters, syntaxOptions) {
+		var indexes = [];
+		var start = delimiters.start, end = delimiters.end;
+		var offset = -1;
+		var insideTag = false;
+		if (start == null && end == null) return [];
+		while (true) {
+			var startOffset = fullText.indexOf(start, offset + 1);
+			var endOffset = fullText.indexOf(end, offset + 1);
+			var position = null;
+			var len = void 0;
+			var compareResult = compareOffsets(startOffset, endOffset);
+			if (compareResult === DELIMITER_EQUAL) compareResult = insideTag ? DELIMITER_END : DELIMITER_START;
+			switch (compareResult) {
+				case DELIMITER_NONE: return indexes;
+				case DELIMITER_END:
+					insideTag = false;
+					offset = endOffset;
+					position = "end";
+					len = end.length;
+					break;
+				case DELIMITER_START:
+					insideTag = true;
+					offset = startOffset;
+					position = "start";
+					len = start.length;
+					break;
+			}
+			if (syntaxOptions.changeDelimiterPrefix && compareResult === DELIMITER_START && fullText[offset + start.length] === syntaxOptions.changeDelimiterPrefix) {
+				indexes.push({
+					offset: startOffset,
+					position: "start",
+					length: start.length,
+					changedelimiter: true
+				});
+				var nextEqual = fullText.indexOf(syntaxOptions.changeDelimiterPrefix, offset + start.length + 1);
+				var nextEndOffset = fullText.indexOf(end, nextEqual + 1);
+				indexes.push({
+					offset: nextEndOffset,
+					position: "end",
+					length: end.length,
+					changedelimiter: true
+				});
+				var _splitDelimiters2 = _slicedToArray(splitDelimiters(fullText.substr(offset + start.length + 1, nextEqual - offset - start.length - 1)), 2);
+				start = _splitDelimiters2[0];
+				end = _splitDelimiters2[1];
+				offset = nextEndOffset;
+				continue;
+			}
+			indexes.push({
+				offset,
+				position,
+				length: len
+			});
+		}
+	}
+	function parseDelimiters(innerContentParts, delimiters, syntaxOptions) {
+		var full = "";
+		for (var _i6 = 0; _i6 < innerContentParts.length; _i6++) {
+			var p = innerContentParts[_i6];
+			full += p.value;
+		}
+		var delimiterMatches = getAllDelimiterIndexes(full, delimiters, syntaxOptions);
+		var offset = 0;
+		var ranges = [];
+		for (var _i8 = 0; _i8 < innerContentParts.length; _i8++) {
+			var part = innerContentParts[_i8];
+			offset += part.value.length;
+			ranges.push({
+				offset: offset - part.value.length,
+				lIndex: part.lIndex
+			});
+		}
+		var _getDelimiterErrors = getDelimiterErrors(delimiterMatches, full, syntaxOptions), delimiterWithErrors = _getDelimiterErrors.delimiterWithErrors, errors = _getDelimiterErrors.errors;
+		var cutNext = 0;
+		var delimiterIndex = 0;
+		var parsed = [];
+		for (var i = 0; i < ranges.length; i++) {
+			var _p = ranges[i];
+			var innerContentPart = innerContentParts[i];
+			var _offset = _p.offset;
+			var range = [_offset, _offset + innerContentPart.value.length];
+			var partContent = innerContentPart.value;
+			var delimitersInOffset = [];
+			while (delimiterIndex < delimiterWithErrors.length && inRange(range, delimiterWithErrors[delimiterIndex])) {
+				delimitersInOffset.push(delimiterWithErrors[delimiterIndex]);
+				delimiterIndex++;
+			}
+			var parts = [];
+			var cursor = 0;
+			if (cutNext > 0) {
+				cursor = cutNext;
+				cutNext = 0;
+			}
+			for (var _i0 = 0; _i0 < delimitersInOffset.length; _i0++) {
+				var delimiterInOffset = delimitersInOffset[_i0];
+				var _value = partContent.substr(cursor, delimiterInOffset.offset - _offset - cursor);
+				if (delimiterInOffset.changedelimiter) {
+					if (delimiterInOffset.position === "start") {
+						if (_value.length > 0) parts.push({
+							type: "content",
+							value: _value
+						});
+					} else cursor = delimiterInOffset.offset - _offset + delimiterInOffset.length;
+					continue;
+				}
+				if (_value.length > 0) {
+					parts.push({
+						type: "content",
+						value: _value
+					});
+					cursor += _value.length;
+				}
+				var delimiterPart = {
+					type: "delimiter",
+					position: delimiterInOffset.position,
+					offset: cursor + _offset
+				};
+				parts.push(delimiterPart);
+				cursor = delimiterInOffset.offset - _offset + delimiterInOffset.length;
+			}
+			cutNext = cursor - partContent.length;
+			var value = partContent.substr(cursor);
+			if (value.length > 0) parts.push({
+				type: "content",
+				value
+			});
+			parsed.push(parts);
+		}
+		return {
+			parsed,
+			errors
+		};
+	}
+	function isInsideContent(part) {
+		return part.type === "content" && part.position === "insidetag";
+	}
+	function getContentParts(xmlparsed) {
+		return xmlparsed.filter(isInsideContent);
+	}
+	function decodeContentParts(xmlparsed, fileType) {
+		var inTextTag = false;
+		for (var _i10 = 0; _i10 < xmlparsed.length; _i10++) {
+			var part = xmlparsed[_i10];
+			inTextTag = updateInTextTag(part, inTextTag);
+			if (part.type === "content") part.position = inTextTag ? "insidetag" : "outsidetag";
+			if (fileType !== "text" && isInsideContent(part)) part.value = part.value.replace(/>/g, "&gt;");
+		}
+	}
+	module.exports = {
+		parseDelimiters,
+		parse: function parse(xmllexed, delimiters, syntax, fileType) {
+			decodeContentParts(xmllexed, fileType);
+			var _parseDelimiters = parseDelimiters(getContentParts(xmllexed), delimiters, syntax), delimiterParsed = _parseDelimiters.parsed, errors = _parseDelimiters.errors;
+			var lexed = [];
+			var index = 0;
+			var lIndex = 0;
+			for (var _i12 = 0; _i12 < xmllexed.length; _i12++) {
+				var part = xmllexed[_i12];
+				if (isInsideContent(part)) {
+					for (var _i14 = 0, _delimiterParsed$inde2 = delimiterParsed[index]; _i14 < _delimiterParsed$inde2.length; _i14++) {
+						var p = _delimiterParsed$inde2[_i14];
+						if (p.type === "content") p.position = "insidetag";
+						p.lIndex = lIndex++;
+					}
+					pushArray(lexed, delimiterParsed[index]);
+					index++;
+				} else {
+					part.lIndex = lIndex++;
+					lexed.push(part);
+				}
+			}
+			return {
+				errors,
+				lexed
+			};
+		},
+		xmlparse: function xmlparse(content, xmltags) {
+			var matches = tagMatcher(content, xmltags.text, xmltags.other);
+			var cursor = 0;
+			var parsed = [];
+			for (var _i16 = 0; _i16 < matches.length; _i16++) {
+				var match = matches[_i16];
+				if (content.length > cursor && match.offset - cursor > 0) parsed.push({
+					type: "content",
+					value: content.substr(cursor, match.offset - cursor)
+				});
+				cursor = match.offset + match.value.length;
+				delete match.offset;
+				parsed.push(match);
+			}
+			if (content.length > cursor) parsed.push({
+				type: "content",
+				value: content.substr(cursor)
+			});
+			return parsed;
+		}
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/get-tags.js
+var require_get_tags = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _toConsumableArray(r) {
+		return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread();
+	}
+	function _nonIterableSpread() {
+		throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+	}
+	function _unsupportedIterableToArray(r, a) {
+		if (r) {
+			if ("string" == typeof r) return _arrayLikeToArray(r, a);
+			var t = {}.toString.call(r).slice(8, -1);
+			return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0;
+		}
+	}
+	function _iterableToArray(r) {
+		if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r);
+	}
+	function _arrayWithoutHoles(r) {
+		if (Array.isArray(r)) return _arrayLikeToArray(r);
+	}
+	function _arrayLikeToArray(r, a) {
+		(null == a || a > r.length) && (a = r.length);
+		for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
+		return n;
+	}
+	function isPlaceholder(part) {
+		return part.type === "placeholder";
+	}
+	function getTags(postParsed) {
+		var tags = {};
+		var stack = [{
+			items: postParsed.filter(isPlaceholder),
+			parents: [],
+			path: []
+		}];
+		function processFiltered(part, current, filtered) {
+			if (filtered.length) stack.push({
+				items: filtered,
+				parents: [].concat(_toConsumableArray(current.parents), [part]),
+				path: part.dataBound !== false && !part.attrParsed && part.value && !part.attrParsed ? [].concat(_toConsumableArray(current.path), [part.value]) : _toConsumableArray(current.path)
+			});
+		}
+		function getLocalTags(tags, path) {
+			var sizeScope = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : path.length;
+			var localTags = tags;
+			for (var i = 0; i < sizeScope; i++) localTags = localTags[path[i]];
+			return localTags;
+		}
+		function getScopeSize(part, parents) {
+			var size = parents.length;
+			for (var _i2 = 0; _i2 < parents.length; _i2++) {
+				var parent = parents[_i2];
+				if ((typeof parent.lIndex === "number" ? parent.lIndex : parseInt(parent.lIndex.split("-")[0], 10)) > part.lIndex) size--;
+			}
+			return size;
+		}
+		while (stack.length > 0) {
+			var current = stack.pop();
+			var localTags = getLocalTags(tags, current.path);
+			for (var _i4 = 0, _current$items2 = current.items; _i4 < _current$items2.length; _i4++) {
+				var _localTags4, _part$value2;
+				var part = _current$items2[_i4];
+				if (part.attrParsed) {
+					for (var key in part.attrParsed) processFiltered(part, current, part.attrParsed[key].filter(isPlaceholder));
+					continue;
+				}
+				if (part.subparsed) {
+					if (part.dataBound !== false) {
+						var _localTags, _part$value;
+						(_localTags = localTags)[_part$value = part.value] || (_localTags[_part$value] = {});
+					}
+					processFiltered(part, current, part.subparsed.filter(isPlaceholder));
+					continue;
+				}
+				if (part.cellParsed) {
+					for (var _i6 = 0, _part$cellPostParsed2 = part.cellPostParsed; _i6 < _part$cellPostParsed2.length; _i6++) {
+						var cp = _part$cellPostParsed2[_i6];
+						if (cp.type === "placeholder") if (cp.module === "pro-xml-templating/xls-module-loop") continue;
+						else if (cp.subparsed) {
+							var _localTags2, _cp$value;
+							(_localTags2 = localTags)[_cp$value = cp.value] || (_localTags2[_cp$value] = {});
+							processFiltered(cp, current, cp.subparsed.filter(isPlaceholder));
+						} else {
+							var _localTags3, _cp$value2;
+							var sizeScope = getScopeSize(part, current.parents);
+							localTags = getLocalTags(tags, current.path, sizeScope);
+							(_localTags3 = localTags)[_cp$value2 = cp.value] || (_localTags3[_cp$value2] = {});
+						}
+					}
+					continue;
+				}
+				if (part.dataBound === false) continue;
+				(_localTags4 = localTags)[_part$value2 = part.value] || (_localTags4[_part$value2] = {});
+			}
+		}
+		return tags;
+	}
+	module.exports = {
+		getTags,
+		isPlaceholder
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/error-logger.js
+var require_error_logger = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var pushArray = require_doc_utils().pushArray;
+	function replaceErrors(key, value) {
+		if (value instanceof Error) return pushArray(Object.getOwnPropertyNames(value), ["stack"]).reduce(function(error, key) {
+			error[key] = value[key];
+			if (key === "stack") error[key] = value[key].toString();
+			return error;
+		}, {});
+		return value;
+	}
+	function logger(error, logging) {
+		console.log(JSON.stringify({ error }, replaceErrors, logging === "json" ? 2 : null));
+		if (error.properties && error.properties.errors instanceof Array) {
+			var errorMessages = error.properties.errors.map(function(error) {
+				return error.properties.explanation;
+			}).join("\n");
+			console.log("errorMessages", errorMessages);
+		}
+	}
+	module.exports = logger;
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/xml-matcher.js
+var require_xml_matcher = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var pregMatchAll = require_doc_utils().pregMatchAll;
+	module.exports = function xmlMatcher(content, tagsXmlArray) {
+		var res = { content };
+		var taj = tagsXmlArray.join("|");
+		res.matches = pregMatchAll(new RegExp("(?:(<(?:".concat(taj, ")[^>]*>)([^<>]*)</(?:").concat(taj, ")>)|(<(?:").concat(taj, ")[^>]*/>)"), "g"), res.content);
+		return res;
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/prefix-matcher.js
+var require_prefix_matcher = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _typeof(o) {
+		"@babel/helpers - typeof";
+		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+			return typeof o;
+		} : function(o) {
+			return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+		}, _typeof(o);
+	}
+	var nbspRegex = new RegExp(String.fromCharCode(160), "g");
+	function replaceNbsps(str) {
+		return str.replace(nbspRegex, " ");
+	}
+	function match(condition, placeHolderContent) {
+		var type = _typeof(condition);
+		if (type === "string") return replaceNbsps(placeHolderContent.substr(0, condition.length)) === condition;
+		if (condition instanceof RegExp) return condition.test(replaceNbsps(placeHolderContent));
+		if (type === "function") return !!condition(placeHolderContent);
+	}
+	function getValue(condition, placeHolderContent) {
+		var type = _typeof(condition);
+		if (type === "string") return replaceNbsps(placeHolderContent).substr(condition.length);
+		if (condition instanceof RegExp) return replaceNbsps(placeHolderContent).match(condition)[1];
+		if (type === "function") return condition(placeHolderContent);
+	}
+	function getValues(condition, placeHolderContent) {
+		var type = _typeof(condition);
+		if (type === "string") return [placeHolderContent, replaceNbsps(placeHolderContent).substr(condition.length)];
+		if (condition instanceof RegExp) return replaceNbsps(placeHolderContent).match(condition);
+		if (type === "function") return [placeHolderContent, condition(placeHolderContent)];
+	}
+	module.exports = {
+		match,
+		getValue,
+		getValues
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/parser.js
+var require_parser = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _typeof(o) {
+		"@babel/helpers - typeof";
+		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+			return typeof o;
+		} : function(o) {
+			return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+		}, _typeof(o);
+	}
+	function ownKeys(e, r) {
+		var t = Object.keys(e);
+		if (Object.getOwnPropertySymbols) {
+			var o = Object.getOwnPropertySymbols(e);
+			r && (o = o.filter(function(r) {
+				return Object.getOwnPropertyDescriptor(e, r).enumerable;
+			})), t.push.apply(t, o);
+		}
+		return t;
+	}
+	function _objectSpread(e) {
+		for (var r = 1; r < arguments.length; r++) {
+			var t = null != arguments[r] ? arguments[r] : {};
+			r % 2 ? ownKeys(Object(t), !0).forEach(function(r) {
+				_defineProperty(e, r, t[r]);
+			}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function(r) {
+				Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
+			});
+		}
+		return e;
+	}
+	function _defineProperty(e, r, t) {
+		return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+			value: t,
+			enumerable: !0,
+			configurable: !0,
+			writable: !0
+		}) : e[r] = t, e;
+	}
+	function _toPropertyKey(t) {
+		var i = _toPrimitive(t, "string");
+		return "symbol" == _typeof(i) ? i : i + "";
+	}
+	function _toPrimitive(t, r) {
+		if ("object" != _typeof(t) || !t) return t;
+		var e = t[Symbol.toPrimitive];
+		if (void 0 !== e) {
+			var i = e.call(t, r || "default");
+			if ("object" != _typeof(i)) return i;
+			throw new TypeError("@@toPrimitive must return a primitive value.");
+		}
+		return ("string" === r ? String : Number)(t);
+	}
+	function _slicedToArray(r, e) {
+		return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest();
+	}
+	function _nonIterableRest() {
+		throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+	}
+	function _unsupportedIterableToArray(r, a) {
+		if (r) {
+			if ("string" == typeof r) return _arrayLikeToArray(r, a);
+			var t = {}.toString.call(r).slice(8, -1);
+			return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0;
+		}
+	}
+	function _arrayLikeToArray(r, a) {
+		(null == a || a > r.length) && (a = r.length);
+		for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
+		return n;
+	}
+	function _iterableToArrayLimit(r, l) {
+		var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
+		if (null != t) {
+			var e, n, i, u, a = [], f = !0, o = !1;
+			try {
+				if (i = (t = t.call(r)).next, 0 === l) {
+					if (Object(t) !== t) return;
+					f = !1;
+				} else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0);
+			} catch (r) {
+				o = !0, n = r;
+			} finally {
+				try {
+					if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return;
+				} finally {
+					if (o) throw n;
+				}
+			}
+			return a;
+		}
+	}
+	function _arrayWithHoles(r) {
+		if (Array.isArray(r)) return r;
+	}
+	var _require = require_doc_utils();
+	var wordToUtf8 = _require.wordToUtf8;
+	var pushArray = _require.pushArray;
+	var isParagraphStart = _require.isParagraphStart;
+	var isBreakTag = _require.isBreakTag;
+	var _require2 = require_prefix_matcher();
+	var match = _require2.match;
+	var getValue = _require2.getValue;
+	var getValues = _require2.getValues;
+	function getMatchers(modules, options) {
+		var allMatchers = [];
+		for (var _i2 = 0; _i2 < modules.length; _i2++) {
+			var _module = modules[_i2];
+			if (_module.matchers) {
+				var matchers = _module.matchers(options);
+				if (!(matchers instanceof Array)) throw new Error("module matcher returns a non array");
+				pushArray(allMatchers, matchers);
+			}
+		}
+		return allMatchers;
+	}
+	function getMatches(matchers, placeHolderContent, options) {
+		var matches = [];
+		for (var _i4 = 0; _i4 < matchers.length; _i4++) {
+			var matcher = matchers[_i4];
+			var _matcher = _slicedToArray(matcher, 2), prefix = _matcher[0], _module2 = _matcher[1];
+			var properties = matcher[2] || {};
+			if (options.match(prefix, placeHolderContent)) {
+				var values = options.getValues(prefix, placeHolderContent);
+				if (typeof properties === "function") properties = properties(values);
+				if (!properties.value) {
+					var _values = _slicedToArray(values, 2);
+					properties.value = _values[1];
+				}
+				matches.push(_objectSpread({
+					type: "placeholder",
+					prefix,
+					module: _module2,
+					onMatch: properties.onMatch,
+					priority: properties.priority
+				}, properties));
+			}
+		}
+		return matches;
+	}
+	function moduleParse(placeHolderContent, options) {
+		var modules = options.modules, startOffset = options.startOffset;
+		var endLindex = options.lIndex;
+		var moduleParsed;
+		options.offset = startOffset;
+		options.match = match;
+		options.getValue = getValue;
+		options.getValues = getValues;
+		var matches = getMatches(getMatchers(modules, options), placeHolderContent, options);
+		if (matches.length > 0) {
+			var bestMatch = null;
+			for (var _i6 = 0; _i6 < matches.length; _i6++) {
+				var _match = matches[_i6];
+				_match.priority || (_match.priority = -_match.value.length);
+				if (!bestMatch || _match.priority > bestMatch.priority) bestMatch = _match;
+			}
+			bestMatch.offset = startOffset;
+			delete bestMatch.priority;
+			bestMatch.endLindex = endLindex;
+			bestMatch.lIndex = endLindex;
+			bestMatch.raw = placeHolderContent;
+			if (bestMatch.onMatch) bestMatch.onMatch(bestMatch);
+			delete bestMatch.onMatch;
+			delete bestMatch.prefix;
+			return bestMatch;
+		}
+		for (var _i8 = 0; _i8 < modules.length; _i8++) {
+			moduleParsed = modules[_i8].parse(placeHolderContent, options);
+			if (moduleParsed) {
+				moduleParsed.offset = startOffset;
+				moduleParsed.endLindex = endLindex;
+				moduleParsed.lIndex = endLindex;
+				moduleParsed.raw = placeHolderContent;
+				return moduleParsed;
+			}
+		}
+		return {
+			type: "placeholder",
+			value: placeHolderContent,
+			offset: startOffset,
+			endLindex,
+			lIndex: endLindex
+		};
+	}
+	module.exports = {
+		preparse: function preparse(parsed, modules, options) {
+			function preparse(parsed, options) {
+				for (var _i0 = 0; _i0 < modules.length; _i0++) parsed = modules[_i0].preparse(parsed, options) || parsed;
+				return parsed;
+			}
+			return preparse(parsed, options);
+		},
+		parse: function parse(lexed, modules, options) {
+			var inPlaceHolder = false;
+			var placeHolderContent = "";
+			var startOffset;
+			var tailParts = [];
+			var droppedTags = options.fileTypeConfig.droppedTagsInsidePlaceholder || [];
+			return lexed.reduce(function(parsed, token) {
+				if (token.type === "delimiter") {
+					inPlaceHolder = token.position === "start";
+					if (token.position === "end") {
+						options.parse = function(placeHolderContent) {
+							return moduleParse(placeHolderContent, _objectSpread(_objectSpread(_objectSpread({}, options), token), {}, {
+								startOffset,
+								modules
+							}));
+						};
+						parsed.push(options.parse(wordToUtf8(placeHolderContent)));
+						pushArray(parsed, tailParts);
+						tailParts = [];
+					}
+					if (token.position === "start") {
+						tailParts = [];
+						startOffset = token.offset;
+					}
+					placeHolderContent = "";
+					return parsed;
+				}
+				if (!inPlaceHolder) {
+					parsed.push(token);
+					return parsed;
+				}
+				if (token.type !== "content" || token.position !== "insidetag") {
+					if (options.syntax.preserveNewlinesInTags && (isBreakTag(token) || isParagraphStart(token))) placeHolderContent += "\n";
+					if (droppedTags.indexOf(token.tag) !== -1) return parsed;
+					tailParts.push(token);
+					return parsed;
+				}
+				placeHolderContent += token.value;
+				return parsed;
+			}, []);
+		},
+		postparse: function postparse(postparsed, modules, options) {
+			function getTraits(traitName, postparsed, options) {
+				var result = [];
+				for (var _i10 = 0; _i10 < modules.length; _i10++) {
+					var _module5 = modules[_i10];
+					result.push(_module5.getTraits(traitName, postparsed, options));
+				}
+				return result;
+			}
+			var errors = [];
+			function _postparse(postparsed, options) {
+				var newPostparsed = postparsed;
+				for (var _i12 = 0; _i12 < modules.length; _i12++) {
+					var postparseResult = modules[_i12].postparse(newPostparsed, _objectSpread(_objectSpread({}, options), {}, {
+						postparse: function postparse(parsed, opts) {
+							return _postparse(parsed, _objectSpread(_objectSpread({}, options), opts));
+						},
+						getTraits
+					}));
+					if (postparseResult == null) continue;
+					if (postparseResult.errors) {
+						pushArray(errors, postparseResult.errors);
+						newPostparsed = postparseResult.postparsed;
+						continue;
+					}
+					newPostparsed = postparseResult;
+				}
+				return newPostparsed;
+			}
+			return {
+				postparsed: _postparse(postparsed, options),
+				errors
+			};
+		}
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/get-resolved-id.js
+var require_get_resolved_id = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function getResolvedId(part, options) {
+		if (part.lIndex == null) return null;
+		var path = options.scopeManager.scopePathItem;
+		if (part.parentPart) path = path.slice(0, path.length - 1);
+		return options.filePath + "@" + part.lIndex.toString() + "-" + path.join("-");
+	}
+	module.exports = getResolvedId;
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/render.js
+var require_render$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var _require = require_errors();
+	var throwUnimplementedTagType = _require.throwUnimplementedTagType;
+	var XTScopeParserError = _require.XTScopeParserError;
+	var pushArray = require_doc_utils().pushArray;
+	var getResolvedId = require_get_resolved_id();
+	function moduleRender(part, options) {
+		for (var _i2 = 0, _options$modules2 = options.modules; _i2 < _options$modules2.length; _i2++) {
+			var moduleRendered = _options$modules2[_i2].render(part, options);
+			if (moduleRendered) return moduleRendered;
+		}
+		return false;
+	}
+	function render(options) {
+		var baseNullGetter = options.baseNullGetter;
+		var compiled = options.compiled, scopeManager = options.scopeManager;
+		options.nullGetter = function(part, sm) {
+			return baseNullGetter(part, sm || scopeManager);
+		};
+		var errors = [];
+		var parts = [];
+		for (var i = 0, len = compiled.length; i < len; i++) {
+			var part = compiled[i];
+			options.index = i;
+			options.resolvedId = getResolvedId(part, options);
+			var moduleRendered = void 0;
+			try {
+				moduleRendered = moduleRender(part, options);
+			} catch (e) {
+				if (e instanceof XTScopeParserError) {
+					errors.push(e);
+					parts.push(part);
+					continue;
+				}
+				throw e;
+			}
+			if (moduleRendered) {
+				if (moduleRendered.errors) pushArray(errors, moduleRendered.errors);
+				parts.push(moduleRendered);
+				continue;
+			}
+			if (part.type === "content" || part.type === "tag") {
+				parts.push(part);
+				continue;
+			}
+			throwUnimplementedTagType(part, i);
+		}
+		var totalParts = [];
+		for (var _i4 = 0; _i4 < parts.length; _i4++) {
+			var value = parts[_i4].value;
+			if (value instanceof Array) pushArray(totalParts, value);
+			else if (value) totalParts.push(value);
+		}
+		return {
+			errors,
+			parts: totalParts
+		};
+	}
+	module.exports = render;
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/postrender.js
+var require_postrender = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function string2buf(str) {
+		var c, c2, mPos, i, bufLen = 0;
+		var strLen = str.length;
+		for (mPos = 0; mPos < strLen; mPos++) {
+			c = str.charCodeAt(mPos);
+			if ((c & 64512) === 55296 && mPos + 1 < strLen) {
+				c2 = str.charCodeAt(mPos + 1);
+				if ((c2 & 64512) === 56320) {
+					c = 65536 + (c - 55296 << 10) + (c2 - 56320);
+					mPos++;
+				}
+			}
+			bufLen += c < 128 ? 1 : c < 2048 ? 2 : c < 65536 ? 3 : 4;
+		}
+		var buf = new Uint8Array(bufLen);
+		for (i = 0, mPos = 0; i < bufLen; mPos++) {
+			c = str.charCodeAt(mPos);
+			if ((c & 64512) === 55296 && mPos + 1 < strLen) {
+				c2 = str.charCodeAt(mPos + 1);
+				if ((c2 & 64512) === 56320) {
+					c = 65536 + (c - 55296 << 10) + (c2 - 56320);
+					mPos++;
+				}
+			}
+			if (c < 128) buf[i++] = c;
+			else if (c < 2048) {
+				buf[i++] = 192 | c >>> 6;
+				buf[i++] = 128 | c & 63;
+			} else if (c < 65536) {
+				buf[i++] = 224 | c >>> 12;
+				buf[i++] = 128 | c >>> 6 & 63;
+				buf[i++] = 128 | c & 63;
+			} else {
+				buf[i++] = 240 | c >>> 18;
+				buf[i++] = 128 | c >>> 12 & 63;
+				buf[i++] = 128 | c >>> 6 & 63;
+				buf[i++] = 128 | c & 63;
+			}
+		}
+		return buf;
+	}
+	function postrender(parts, options) {
+		for (var _i2 = 0, _options$modules2 = options.modules; _i2 < _options$modules2.length; _i2++) parts = _options$modules2[_i2].postrender(parts, options);
+		var fullLength = 0;
+		var newParts = options.joinUncorrupt(parts, options);
+		var longStr = "";
+		var lenStr = 0;
+		var maxCompact = 65536;
+		var uintArrays = [];
+		for (var i = 0, len = newParts.length; i < len; i++) {
+			var part = newParts[i];
+			if (part.length + lenStr > maxCompact) {
+				var _arr = string2buf(longStr);
+				fullLength += _arr.length;
+				uintArrays.push(_arr);
+				longStr = "";
+			}
+			longStr += part;
+			lenStr += part.length;
+			delete newParts[i];
+		}
+		var arr = string2buf(longStr);
+		fullLength += arr.length;
+		uintArrays.push(arr);
+		var array = new Uint8Array(fullLength);
+		var j = 0;
+		for (var _i4 = 0; _i4 < uintArrays.length; _i4++) {
+			var buf = uintArrays[_i4];
+			for (var _i5 = 0; _i5 < buf.length; ++_i5) array[_i5 + j] = buf[_i5];
+			j += buf.length;
+		}
+		return array;
+	}
+	module.exports = postrender;
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/resolve.js
+var require_resolve = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _typeof(o) {
+		"@babel/helpers - typeof";
+		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+			return typeof o;
+		} : function(o) {
+			return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+		}, _typeof(o);
+	}
+	function ownKeys(e, r) {
+		var t = Object.keys(e);
+		if (Object.getOwnPropertySymbols) {
+			var o = Object.getOwnPropertySymbols(e);
+			r && (o = o.filter(function(r) {
+				return Object.getOwnPropertyDescriptor(e, r).enumerable;
+			})), t.push.apply(t, o);
+		}
+		return t;
+	}
+	function _objectSpread(e) {
+		for (var r = 1; r < arguments.length; r++) {
+			var t = null != arguments[r] ? arguments[r] : {};
+			r % 2 ? ownKeys(Object(t), !0).forEach(function(r) {
+				_defineProperty(e, r, t[r]);
+			}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function(r) {
+				Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
+			});
+		}
+		return e;
+	}
+	function _defineProperty(e, r, t) {
+		return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+			value: t,
+			enumerable: !0,
+			configurable: !0,
+			writable: !0
+		}) : e[r] = t, e;
+	}
+	function _toPropertyKey(t) {
+		var i = _toPrimitive(t, "string");
+		return "symbol" == _typeof(i) ? i : i + "";
+	}
+	function _toPrimitive(t, r) {
+		if ("object" != _typeof(t) || !t) return t;
+		var e = t[Symbol.toPrimitive];
+		if (void 0 !== e) {
+			var i = e.call(t, r || "default");
+			if ("object" != _typeof(i)) return i;
+			throw new TypeError("@@toPrimitive must return a primitive value.");
+		}
+		return ("string" === r ? String : Number)(t);
+	}
+	var pushArray = require_doc_utils().pushArray;
+	var getResolvedId = require_get_resolved_id();
+	function moduleResolve(part, options) {
+		for (var _i2 = 0, _options$modules2 = options.modules; _i2 < _options$modules2.length; _i2++) {
+			var moduleResolved = _options$modules2[_i2].resolve(part, options);
+			if (moduleResolved) return moduleResolved;
+		}
+		return false;
+	}
+	function resolvePart(part, resolved, errors, options) {
+		var moduleResolved = moduleResolve(part, _objectSpread(_objectSpread({}, options), {}, { resolvedId: getResolvedId(part, options) }));
+		if (moduleResolved) return moduleResolved.then(function(value) {
+			resolved.push({
+				tag: part.value,
+				lIndex: part.lIndex,
+				value
+			});
+		})["catch"](function(e) {
+			if (e instanceof Array) pushArray(errors, e);
+			else errors.push(e);
+		});
+		if (part.type === "placeholder") return options.scopeManager.getValueAsync(part.value, { part }).then(function(value) {
+			return value == null ? options.nullGetter(part) : value;
+		}).then(function(value) {
+			resolved.push({
+				tag: part.value,
+				lIndex: part.lIndex,
+				value
+			});
+		})["catch"](function(e) {
+			if (e instanceof Array) pushArray(errors, e);
+			else errors.push(e);
+		});
+	}
+	function resolve(options) {
+		var resolved = [];
+		var errors = [];
+		var baseNullGetter = options.baseNullGetter;
+		var scopeManager = options.scopeManager;
+		options.nullGetter = function(part, sm) {
+			return baseNullGetter(part, sm || scopeManager);
+		};
+		options.resolved = resolved;
+		var p = resolveSerial(options, errors, resolved);
+		if (p) return p.then(function() {
+			return resolveParallel(options, errors, resolved);
+		});
+		return resolveParallel(options, errors, resolved);
+	}
+	function resolveSerial(options, errors, resolved) {
+		var p = null;
+		var _loop = function _loop() {
+			var part = _options$compiled2[_i4];
+			if (["content", "tag"].indexOf(part.type) !== -1) return 1;
+			if (part.resolveFirst) {
+				p !== null && p !== void 0 || (p = Promise.resolve(null));
+				p = p.then(function() {
+					return resolvePart(part, resolved, errors, options);
+				});
+			}
+		};
+		for (var _i4 = 0, _options$compiled2 = options.compiled; _i4 < _options$compiled2.length; _i4++) if (_loop()) continue;
+		return p;
+	}
+	function resolveParallel(options, errors, resolved) {
+		var promises = [];
+		for (var _i6 = 0, _options$compiled4 = options.compiled; _i6 < _options$compiled4.length; _i6++) {
+			var part = _options$compiled4[_i6];
+			if (["content", "tag"].indexOf(part.type) !== -1) continue;
+			if (!part.resolveFirst) promises.push(resolvePart(part, resolved, errors, options));
+		}
+		return Promise.all(promises).then(function() {
+			return {
+				errors,
+				resolved
+			};
+		});
+	}
+	module.exports = resolve;
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/join-uncorrupt.js
+var require_join_uncorrupt = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var _require = require_doc_utils();
+	var startsWith = _require.startsWith;
+	var endsWith = _require.endsWith;
+	var isStarting = _require.isStarting;
+	var isEnding = _require.isEnding;
+	var isWhiteSpace = _require.isWhiteSpace;
+	var filetypes = require_filetypes();
+	function addEmptyParagraphAfterTable(parts) {
+		var lastNonEmpty = "";
+		for (var i = 0, len = parts.length; i < len; i++) {
+			var p = parts[i];
+			if (isWhiteSpace(p) || startsWith(p, "<w:bookmarkEnd")) continue;
+			if (endsWith(lastNonEmpty, "</w:tbl>")) {
+				if (!startsWith(p, "<w:p") && !startsWith(p, "<w:tbl") && !startsWith(p, "<w:sectPr") && !startsWith(p, "</w:ftr>") && !startsWith(p, "</w:hdr>")) p = "<w:p/>".concat(p);
+			}
+			lastNonEmpty = p;
+			parts[i] = p;
+		}
+		return parts;
+	}
+	function joinUncorrupt(parts, options) {
+		var contains = options.fileTypeConfig.tagShouldContain || [];
+		var collecting = "";
+		var currentlyCollecting = -1;
+		if (filetypes.docx.indexOf(options.contentType) !== -1) parts = addEmptyParagraphAfterTable(parts);
+		var startIndex = -1;
+		for (var j = 0, len2 = contains.length; j < len2; j++) {
+			var _contains$j = contains[j], tag = _contains$j.tag, shouldContain = _contains$j.shouldContain, value = _contains$j.value, drop = _contains$j.drop, dropParent = _contains$j.dropParent;
+			for (var i = 0, len = parts.length; i < len; i++) {
+				var part = parts[i];
+				if (currentlyCollecting === j) {
+					if (isEnding(part, tag)) {
+						currentlyCollecting = -1;
+						if (dropParent) {
+							var start = -1;
+							for (var k = startIndex; k > 0; k--) if (isStarting(parts[k], dropParent)) {
+								start = k;
+								break;
+							}
+							for (var _k = start; _k <= parts.length; _k++) {
+								if (isEnding(parts[_k], dropParent)) {
+									parts[_k] = "";
+									break;
+								}
+								parts[_k] = "";
+							}
+						} else {
+							for (var _k2 = startIndex; _k2 <= i; _k2++) parts[_k2] = "";
+							if (!drop) parts[i] = collecting + value + part;
+						}
+					}
+					collecting += part;
+					for (var _k3 = 0, len3 = shouldContain.length; _k3 < len3; _k3++) {
+						var sc = shouldContain[_k3];
+						if (isStarting(part, sc)) {
+							currentlyCollecting = -1;
+							break;
+						}
+					}
+				}
+				if (currentlyCollecting === -1 && isStarting(part, tag) && part.substr(1).indexOf("<") === -1) if (part[part.length - 2] === "/") parts[i] = "";
+				else {
+					startIndex = i;
+					currentlyCollecting = j;
+					collecting = part;
+				}
+			}
+		}
+		return parts;
+	}
+	module.exports = joinUncorrupt;
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/xml-templater.js
+var require_xml_templater = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _typeof(o) {
+		"@babel/helpers - typeof";
+		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+			return typeof o;
+		} : function(o) {
+			return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+		}, _typeof(o);
+	}
+	function _classCallCheck(a, n) {
+		if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function");
+	}
+	function _defineProperties(e, r) {
+		for (var t = 0; t < r.length; t++) {
+			var o = r[t];
+			o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o);
+		}
+	}
+	function _createClass(e, r, t) {
+		return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e;
+	}
+	function _toPropertyKey(t) {
+		var i = _toPrimitive(t, "string");
+		return "symbol" == _typeof(i) ? i : i + "";
+	}
+	function _toPrimitive(t, r) {
+		if ("object" != _typeof(t) || !t) return t;
+		var e = t[Symbol.toPrimitive];
+		if (void 0 !== e) {
+			var i = e.call(t, r || "default");
+			if ("object" != _typeof(i)) return i;
+			throw new TypeError("@@toPrimitive must return a primitive value.");
+		}
+		return ("string" === r ? String : Number)(t);
+	}
+	var _require = require_doc_utils();
+	var pushArray = _require.pushArray;
+	var wordToUtf8 = _require.wordToUtf8;
+	var convertSpaces = _require.convertSpaces;
+	var xmlMatcher = require_xml_matcher();
+	var Lexer = require_lexer();
+	var Parser = require_parser();
+	var _render = require_render$1();
+	var postrender = require_postrender();
+	var resolve = require_resolve();
+	var joinUncorrupt = require_join_uncorrupt();
+	var nativeBind = Function.prototype.bind;
+	var nativeCall = Function.prototype.call;
+	var bind = nativeCall.bind(nativeCall, nativeBind);
+	function _getFullText(content, tagsXmlArray) {
+		var matcher = xmlMatcher(content, tagsXmlArray);
+		var result = [];
+		for (var _i2 = 0, _matcher$matches2 = matcher.matches; _i2 < _matcher$matches2.length; _i2++) {
+			var match = _matcher$matches2[_i2];
+			result.push(match.array[2]);
+		}
+		return wordToUtf8(convertSpaces(result.join("")));
+	}
+	module.exports = /*#__PURE__*/ function() {
+		function XmlTemplater(content, options) {
+			_classCallCheck(this, XmlTemplater);
+			this.cachedParsers = {};
+			this.content = content;
+			for (var key in options) this[key] = options[key];
+			this.setModules({ inspect: { filePath: options.filePath } });
+		}
+		return _createClass(XmlTemplater, [
+			{
+				key: "resolveTags",
+				value: function resolveTags(tags) {
+					var _this = this;
+					this.tags = tags;
+					var options = this.getOptions();
+					var filePath = this.filePath;
+					options.scopeManager = this.scopeManager;
+					options.resolve = resolve;
+					var errors = [];
+					var promises = [];
+					for (var _i4 = 0, _this$modules2 = this.modules; _i4 < _this$modules2.length; _i4++) {
+						var _module = _this$modules2[_i4];
+						promises.push(Promise.resolve(_module.preResolve(options))["catch"](function(e) {
+							errors.push(e);
+						}));
+					}
+					return Promise.all(promises).then(function() {
+						if (errors.length !== 0) throw errors;
+						return resolve(options).then(function(_ref) {
+							var resolved = _ref.resolved, errors = _ref.errors;
+							for (var i = 0; i < errors.length; i++) {
+								var _error;
+								var error = errors[i];
+								if (!(error instanceof Error)) error = new Error(error);
+								(_error = error).properties || (_error.properties = {});
+								error.properties.file = filePath;
+								errors[i] = error;
+							}
+							if (errors.length !== 0) throw errors;
+							return Promise.all(resolved).then(function(resolved) {
+								options.scopeManager.root.finishedResolving = true;
+								options.scopeManager.resolved = resolved;
+								_this.setModules({ inspect: {
+									resolved,
+									filePath
+								} });
+								return resolved;
+							});
+						})["catch"](function(error) {
+							_this.errorChecker(error);
+							throw error;
+						});
+					});
+				}
+			},
+			{
+				key: "getFullText",
+				value: function getFullText() {
+					return _getFullText(this.content, this.fileTypeConfig.tagsXmlTextArray);
+				}
+			},
+			{
+				key: "setModules",
+				value: function setModules(obj) {
+					for (var _i6 = 0, _this$modules4 = this.modules; _i6 < _this$modules4.length; _i6++) _this$modules4[_i6].set(obj);
+				}
+			},
+			{
+				key: "preparse",
+				value: function preparse() {
+					this.allErrors = [];
+					this.xmllexed = Lexer.xmlparse(this.content, {
+						text: this.fileTypeConfig.tagsXmlTextArray,
+						other: this.fileTypeConfig.tagsXmlLexedArray
+					});
+					this.setModules({ inspect: {
+						filePath: this.filePath,
+						xmllexed: this.xmllexed
+					} });
+					var _Lexer$parse = Lexer.parse(this.xmllexed, this.delimiters, this.syntax, this.fileType), lexed = _Lexer$parse.lexed, lexerErrors = _Lexer$parse.errors;
+					pushArray(this.allErrors, lexerErrors);
+					this.lexed = lexed;
+					this.setModules({ inspect: {
+						filePath: this.filePath,
+						lexed: this.lexed
+					} });
+					var options = this.getOptions();
+					this.lexed = Parser.preparse(this.lexed, this.modules, options);
+				}
+			},
+			{
+				key: "parse",
+				value: function parse() {
+					var noPostParse = (arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {}).noPostParse;
+					this.setModules({ inspect: { filePath: this.filePath } });
+					var options = this.getOptions();
+					this.parsed = Parser.parse(this.lexed, this.modules, options);
+					this.setModules({ inspect: {
+						filePath: this.filePath,
+						parsed: this.parsed
+					} });
+					if (noPostParse) return this;
+					return this.postparse();
+				}
+			},
+			{
+				key: "postparse",
+				value: function postparse() {
+					var options = this.getOptions();
+					var _Parser$postparse = Parser.postparse(this.parsed, this.modules, options), postparsed = _Parser$postparse.postparsed, postparsedErrors = _Parser$postparse.errors;
+					this.postparsed = postparsed;
+					this.setModules({ inspect: {
+						filePath: this.filePath,
+						postparsed: this.postparsed
+					} });
+					pushArray(this.allErrors, postparsedErrors);
+					this.errorChecker(this.allErrors);
+					return this;
+				}
+			},
+			{
+				key: "errorChecker",
+				value: function errorChecker(errors) {
+					for (var _i8 = 0, _errors2 = errors; _i8 < _errors2.length; _i8++) {
+						var error = _errors2[_i8];
+						error.properties || (error.properties = {});
+						error.properties.file = this.filePath;
+					}
+					for (var _i0 = 0, _this$modules6 = this.modules; _i0 < _this$modules6.length; _i0++) errors = _this$modules6[_i0].errorsTransformer(errors);
+				}
+			},
+			{
+				key: "baseNullGetter",
+				value: function baseNullGetter(part, sm) {
+					var value = null;
+					for (var _i10 = 0, _this$modules8 = this.modules; _i10 < _this$modules8.length; _i10++) {
+						var _module4 = _this$modules8[_i10];
+						if (value != null) continue;
+						value = _module4.nullGetter(part, sm, this);
+					}
+					if (value != null) return value;
+					return this.nullGetter(part, sm);
+				}
+			},
+			{
+				key: "getOptions",
+				value: function getOptions() {
+					return {
+						compiled: this.postparsed,
+						cachedParsers: this.cachedParsers,
+						tags: this.tags,
+						modules: this.modules,
+						parser: this.parser,
+						contentType: this.contentType,
+						relsType: this.relsType,
+						baseNullGetter: bind(this.baseNullGetter, this),
+						filePath: this.filePath,
+						syntax: this.syntax,
+						fileTypeConfig: this.fileTypeConfig,
+						fileType: this.fileType,
+						linebreaks: this.linebreaks,
+						stripInvalidXMLChars: this.stripInvalidXMLChars
+					};
+				}
+			},
+			{
+				key: "render",
+				value: function render(to) {
+					this.filePath = to;
+					var options = this.getOptions();
+					options.resolved = this.scopeManager.resolved;
+					options.scopeManager = this.scopeManager;
+					options.render = _render;
+					options.joinUncorrupt = joinUncorrupt;
+					var _render2 = _render(options), errors = _render2.errors, parts = _render2.parts;
+					if (errors.length > 0) {
+						this.allErrors = errors;
+						this.errorChecker(errors);
+						return this;
+					}
+					this.content = postrender(parts, options);
+					this.setModules({ inspect: {
+						filePath: this.filePath,
+						content: this.content
+					} });
+					return this;
+				}
+			}
+		]);
+	}();
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/modules/loop.js
+var require_loop = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _typeof(o) {
+		"@babel/helpers - typeof";
+		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+			return typeof o;
+		} : function(o) {
+			return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+		}, _typeof(o);
+	}
+	function ownKeys(e, r) {
+		var t = Object.keys(e);
+		if (Object.getOwnPropertySymbols) {
+			var o = Object.getOwnPropertySymbols(e);
+			r && (o = o.filter(function(r) {
+				return Object.getOwnPropertyDescriptor(e, r).enumerable;
+			})), t.push.apply(t, o);
+		}
+		return t;
+	}
+	function _objectSpread(e) {
+		for (var r = 1; r < arguments.length; r++) {
+			var t = null != arguments[r] ? arguments[r] : {};
+			r % 2 ? ownKeys(Object(t), !0).forEach(function(r) {
+				_defineProperty(e, r, t[r]);
+			}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function(r) {
+				Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
+			});
+		}
+		return e;
+	}
+	function _defineProperty(e, r, t) {
+		return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+			value: t,
+			enumerable: !0,
+			configurable: !0,
+			writable: !0
+		}) : e[r] = t, e;
+	}
+	function _slicedToArray(r, e) {
+		return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest();
+	}
+	function _nonIterableRest() {
+		throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+	}
+	function _unsupportedIterableToArray(r, a) {
+		if (r) {
+			if ("string" == typeof r) return _arrayLikeToArray(r, a);
+			var t = {}.toString.call(r).slice(8, -1);
+			return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0;
+		}
+	}
+	function _arrayLikeToArray(r, a) {
+		(null == a || a > r.length) && (a = r.length);
+		for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
+		return n;
+	}
+	function _iterableToArrayLimit(r, l) {
+		var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
+		if (null != t) {
+			var e, n, i, u, a = [], f = !0, o = !1;
+			try {
+				if (i = (t = t.call(r)).next, 0 === l) {
+					if (Object(t) !== t) return;
+					f = !1;
+				} else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0);
+			} catch (r) {
+				o = !0, n = r;
+			} finally {
+				try {
+					if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return;
+				} finally {
+					if (o) throw n;
+				}
+			}
+			return a;
+		}
+	}
+	function _arrayWithHoles(r) {
+		if (Array.isArray(r)) return r;
+	}
+	function _classCallCheck(a, n) {
+		if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function");
+	}
+	function _defineProperties(e, r) {
+		for (var t = 0; t < r.length; t++) {
+			var o = r[t];
+			o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o);
+		}
+	}
+	function _createClass(e, r, t) {
+		return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e;
+	}
+	function _toPropertyKey(t) {
+		var i = _toPrimitive(t, "string");
+		return "symbol" == _typeof(i) ? i : i + "";
+	}
+	function _toPrimitive(t, r) {
+		if ("object" != _typeof(t) || !t) return t;
+		var e = t[Symbol.toPrimitive];
+		if (void 0 !== e) {
+			var i = e.call(t, r || "default");
+			if ("object" != _typeof(i)) return i;
+			throw new TypeError("@@toPrimitive must return a primitive value.");
+		}
+		return ("string" === r ? String : Number)(t);
+	}
+	var _require = require_doc_utils();
+	var chunkBy = _require.chunkBy;
+	var last = _require.last;
+	var isParagraphStart = _require.isParagraphStart;
+	var isModule = _require.isModule;
+	var pushArray = _require.pushArray;
+	var isParagraphEnd = _require.isParagraphEnd;
+	var isContent = _require.isContent;
+	var startsWith = _require.startsWith;
+	var isTagEnd = _require.isTagEnd;
+	var isTagStart = _require.isTagStart;
+	var getSingleAttribute = _require.getSingleAttribute;
+	var setSingleAttribute = _require.setSingleAttribute;
+	var filetypes = require_filetypes();
+	var wrapper = require_module_wrapper();
+	var isWhiteSpace = require_doc_utils().isWhiteSpace;
+	var moduleName = "loop";
+	function hasContent(parts) {
+		for (var _i2 = 0; _i2 < parts.length; _i2++) {
+			var part = parts[_i2];
+			if (isContent(part)) return true;
+		}
+		return false;
+	}
+	function getFirstMeaningFulPart(parsed) {
+		for (var _i4 = 0; _i4 < parsed.length; _i4++) {
+			var part = parsed[_i4];
+			if (part.type !== "content") return part;
+		}
+		return null;
+	}
+	function isInsideParagraphLoop(part) {
+		var firstMeaningfulPart = getFirstMeaningFulPart(part.subparsed);
+		return firstMeaningfulPart != null && firstMeaningfulPart.tag !== "w:t";
+	}
+	function getPageBreakIfApplies(part) {
+		return part.hasPageBreak && isInsideParagraphLoop(part) ? "<w:p><w:r><w:br w:type=\"page\"/></w:r></w:p>" : "";
+	}
+	function isEnclosedByParagraphs(parsed) {
+		return parsed.length && isParagraphStart(parsed[0]) && isParagraphEnd(last(parsed));
+	}
+	function getOffset(chunk) {
+		return hasContent(chunk) ? 0 : chunk.length;
+	}
+	function addPageBreakAtEnd(subRendered) {
+		var j = subRendered.parts.length - 1;
+		if (subRendered.parts[j] === "</w:p>") subRendered.parts.splice(j, 0, "<w:r><w:br w:type=\"page\"/></w:r>");
+		else subRendered.parts.push("<w:p><w:r><w:br w:type=\"page\"/></w:r></w:p>");
+	}
+	function addPageBreakAtBeginning(subRendered) {
+		subRendered.parts.unshift("<w:p><w:r><w:br w:type=\"page\"/></w:r></w:p>");
+	}
+	function isContinuous(parts) {
+		for (var _i6 = 0; _i6 < parts.length; _i6++) {
+			var part = parts[_i6];
+			if (isTagStart("w:type", part) && part.value.indexOf("continuous") !== -1) return true;
+		}
+		return false;
+	}
+	function isNextPage(parts) {
+		for (var _i8 = 0; _i8 < parts.length; _i8++) {
+			var part = parts[_i8];
+			if (isTagStart("w:type", part) && part.value.indexOf("w:val=\"nextPage\"") !== -1) return true;
+		}
+		return false;
+	}
+	function addSectionBefore(parts, sect) {
+		var result = "";
+		for (var _i0 = 0; _i0 < sect.length; _i0++) {
+			var value = sect[_i0].value;
+			result += value;
+		}
+		parts.unshift("<w:p><w:pPr>".concat(result, "</w:pPr></w:p>"));
+	}
+	function addContinuousType(parts) {
+		var stop = false;
+		var inSectPr = false;
+		for (var i = 0; i < parts.length; i++) {
+			var part = parts[i];
+			if (!stop && startsWith(part, "<w:sectPr")) inSectPr = true;
+			if (inSectPr) {
+				if (startsWith(part, "<w:type")) stop = true;
+				if (!stop && startsWith(part, "</w:sectPr")) {
+					parts.splice(i, 0, "<w:type w:val=\"continuous\"/>");
+					i++;
+				}
+			}
+		}
+		return parts;
+	}
+	function dropHeaderFooterRefs(parts) {
+		var writeIndex = 0;
+		for (var readIndex = 0; readIndex < parts.length; readIndex++) if (!startsWith(parts[readIndex], "<w:headerReference") && !startsWith(parts[readIndex], "<w:footerReference")) {
+			parts[writeIndex] = parts[readIndex];
+			writeIndex++;
+		}
+		parts.length = writeIndex;
+		return parts;
+	}
+	function hasPageBreak(chunk) {
+		for (var _i10 = 0; _i10 < chunk.length; _i10++) {
+			var part = chunk[_i10];
+			if (part.tag === "w:br" && part.value.indexOf("w:type=\"page\"") !== -1) return true;
+		}
+		return false;
+	}
+	function hasImage(chunk) {
+		for (var _i12 = 0; _i12 < chunk.length; _i12++) if (chunk[_i12].tag === "w:drawing") return true;
+		return false;
+	}
+	function getSectPr(chunks) {
+		var sectPrs = [];
+		var currentSectPr = null;
+		for (var _i14 = 0; _i14 < chunks.length; _i14++) {
+			var part = chunks[_i14];
+			if (isTagStart("w:sectPr", part)) {
+				currentSectPr = [];
+				sectPrs.push(currentSectPr);
+			}
+			if (currentSectPr !== null) currentSectPr.push(part);
+			if (isTagEnd("w:sectPr", part)) currentSectPr = null;
+		}
+		return sectPrs;
+	}
+	function getSectPrHeaderFooterChangeCount(chunks) {
+		var collectSectPr = false;
+		var sectPrCount = 0;
+		for (var _i16 = 0; _i16 < chunks.length; _i16++) {
+			var part = chunks[_i16];
+			if (isTagStart("w:sectPr", part)) collectSectPr = true;
+			if (collectSectPr) {
+				if (part.tag === "w:headerReference" || part.tag === "w:footerReference") {
+					sectPrCount++;
+					collectSectPr = false;
+				}
+			}
+			if (isTagEnd("w:sectPr", part)) collectSectPr = false;
+		}
+		return sectPrCount;
+	}
+	function getLastSectPr(parsed) {
+		var sectPr = [];
+		var inSectPr = false;
+		for (var i = parsed.length - 1; i >= 0; i--) {
+			var part = parsed[i];
+			if (isTagEnd("w:sectPr", part)) inSectPr = true;
+			if (isTagStart("w:sectPr", part)) {
+				sectPr.unshift(part.value);
+				inSectPr = false;
+			}
+			if (inSectPr) sectPr.unshift(part.value);
+			if (isParagraphStart(part)) {
+				if (sectPr.length > 0) return sectPr.join("");
+				break;
+			}
+		}
+		return "";
+	}
+	var LoopModule = /*#__PURE__*/ function() {
+		function LoopModule() {
+			_classCallCheck(this, LoopModule);
+			this.name = "LoopModule";
+			this.inXfrm = false;
+			this.totalSectPr = 0;
+			this.prefix = {
+				start: "#",
+				end: "/",
+				dash: /^-([^\s]+)\s(.+)/,
+				inverted: "^"
+			};
+		}
+		return _createClass(LoopModule, [
+			{
+				key: "optionsTransformer",
+				value: function optionsTransformer(opts, docxtemplater) {
+					this.docxtemplater = docxtemplater;
+					return opts;
+				}
+			},
+			{
+				key: "preparse",
+				value: function preparse(parsed, _ref) {
+					var contentType = _ref.contentType;
+					if (filetypes.main.indexOf(contentType) !== -1) this.sects = getSectPr(parsed);
+				}
+			},
+			{
+				key: "matchers",
+				value: function matchers() {
+					var module$5 = moduleName;
+					return [
+						[
+							this.prefix.start,
+							module$5,
+							{
+								expandTo: "auto",
+								location: "start",
+								inverted: false
+							}
+						],
+						[
+							this.prefix.inverted,
+							module$5,
+							{
+								expandTo: "auto",
+								location: "start",
+								inverted: true
+							}
+						],
+						[
+							this.prefix.end,
+							module$5,
+							{ location: "end" }
+						],
+						[
+							this.prefix.dash,
+							module$5,
+							function(_ref2) {
+								var _ref3 = _slicedToArray(_ref2, 3);
+								return {
+									location: "start",
+									inverted: false,
+									expandTo: _ref3[1],
+									value: _ref3[2]
+								};
+							}
+						]
+					];
+				}
+			},
+			{
+				key: "getTraits",
+				value: function getTraits(traitName, parsed) {
+					if (traitName !== "expandPair") return;
+					var tags = [];
+					for (var offset = 0, len = parsed.length; offset < len; offset++) {
+						var part = parsed[offset];
+						if (isModule(part, moduleName) && part.subparsed == null) tags.push({
+							part,
+							offset
+						});
+					}
+					return tags;
+				}
+			},
+			{
+				key: "postparse",
+				value: function postparse(parsed, _ref4) {
+					var basePart = _ref4.basePart;
+					if (basePart && this.docxtemplater.fileType === "docx" && parsed.length > 0) {
+						basePart.sectPrCount = getSectPrHeaderFooterChangeCount(parsed);
+						this.totalSectPr += basePart.sectPrCount;
+						var sects = this.sects;
+						for (var index = 0, len = sects.length; index < len; index++) {
+							var sect = sects[index];
+							if (basePart.lIndex < sect[0].lIndex) {
+								if (index + 1 < sects.length && isContinuous(sects[index + 1])) basePart.addContinuousType = true;
+								break;
+							}
+							if (parsed[0].lIndex < sect[0].lIndex && sect[0].lIndex < basePart.lIndex) {
+								if (isNextPage(sects[index])) basePart.addNextPage = { index };
+								break;
+							}
+						}
+						basePart.lastParagrapSectPr = getLastSectPr(parsed);
+					}
+					if (!basePart || basePart.expandTo !== "auto" || basePart.module !== moduleName || !isEnclosedByParagraphs(parsed)) return parsed;
+					basePart.paragraphLoop = true;
+					var level = 0;
+					var chunks = chunkBy(parsed, function(p) {
+						if (isParagraphStart(p)) {
+							level++;
+							if (level === 1) return "start";
+						}
+						if (isParagraphEnd(p)) {
+							level--;
+							if (level === 0) return "end";
+						}
+						return null;
+					});
+					var firstChunk = chunks[0];
+					var lastChunk = last(chunks);
+					var firstOffset = getOffset(firstChunk);
+					var lastOffset = getOffset(lastChunk);
+					if (firstOffset > 0 && chunks[1][0].type === "content" && isWhiteSpace(chunks[1][0].value)) firstOffset += 1;
+					if (lastOffset > 0 && last(chunks[chunks.length - 2]).type === "content" && isWhiteSpace(last(chunks[chunks.length - 2]).value)) lastOffset += 1;
+					basePart.hasPageBreakBeginning = hasPageBreak(firstChunk);
+					basePart.hasPageBreak = hasPageBreak(lastChunk);
+					if (hasImage(firstChunk)) firstOffset = 0;
+					if (hasImage(lastChunk)) lastOffset = 0;
+					return parsed.slice(firstOffset, parsed.length - lastOffset);
+				}
+			},
+			{
+				key: "resolve",
+				value: function resolve(part, options) {
+					var self = this;
+					if (!isModule(part, moduleName)) return null;
+					var sm = options.scopeManager;
+					var promisedValue = sm.getValueAsync(part.value, { part });
+					var promises = [];
+					var lastPromise;
+					if (self.resolveSerially) lastPromise = Promise.resolve(null);
+					function loopOver(scope, i, length) {
+						var scopeManager = sm.createSubScopeManager(scope, part.value, i, part, length);
+						if (self.resolveSerially) {
+							lastPromise = lastPromise.then(function() {
+								return options.resolve(_objectSpread(_objectSpread({}, options), {}, {
+									compiled: part.subparsed,
+									tags: {},
+									scopeManager
+								}));
+							});
+							promises.push(lastPromise);
+						} else promises.push(options.resolve(_objectSpread(_objectSpread({}, options), {}, {
+							compiled: part.subparsed,
+							tags: {},
+							scopeManager
+						})));
+					}
+					var errorList = [];
+					return promisedValue.then(function(values) {
+						values !== null && values !== void 0 || (values = options.nullGetter(part));
+						if (values instanceof Promise) return values.then(function(values) {
+							if (values instanceof Array) return Promise.all(values);
+							return values;
+						});
+						if (values instanceof Array) return Promise.all(values);
+						return values;
+					}).then(function(values) {
+						sm.loopOverValue(values, loopOver, part.inverted);
+						return Promise.all(promises).then(function(r) {
+							var result = [];
+							for (var _i18 = 0; _i18 < r.length; _i18++) {
+								var _r$_i = r[_i18], resolved = _r$_i.resolved, errors = _r$_i.errors;
+								pushArray(errorList, errors);
+								result.push(resolved);
+							}
+							return result;
+						}).then(function(value) {
+							if (errorList.length > 0) throw errorList;
+							return value;
+						});
+					});
+				}
+			},
+			{
+				key: "render",
+				value: function render(part, options) {
+					var self = this;
+					if (part.tag === "p:xfrm") self.inXfrm = part.position === "start";
+					if (part.tag === "a:ext" && self.inXfrm) {
+						self.lastExt = part;
+						return part;
+					}
+					if (!isModule(part, moduleName)) return null;
+					var totalValue = [];
+					var errors = [];
+					var heightOffset = 0;
+					var firstTag = part.subparsed[0];
+					var tagHeight = 0;
+					if ((firstTag === null || firstTag === void 0 ? void 0 : firstTag.tag) === "a:tr") tagHeight = +getSingleAttribute(firstTag.value, "h");
+					heightOffset -= tagHeight;
+					var a16RowIdOffset = 0;
+					var insideParagraphLoop = isInsideParagraphLoop(part);
+					function loopOver(scope, i, length) {
+						heightOffset += tagHeight;
+						var scopeManager = options.scopeManager.createSubScopeManager(scope, part.value, i, part, length);
+						for (var _i20 = 0, _part$subparsed2 = part.subparsed; _i20 < _part$subparsed2.length; _i20++) {
+							var pp = _part$subparsed2[_i20];
+							if (isTagStart("a16:rowId", pp)) {
+								var val = +getSingleAttribute(pp.value, "val") + a16RowIdOffset;
+								a16RowIdOffset = 1;
+								pp.value = setSingleAttribute(pp.value, "val", val);
+							}
+						}
+						var subRendered = options.render(_objectSpread(_objectSpread({}, options), {}, {
+							compiled: part.subparsed,
+							tags: {},
+							scopeManager
+						}));
+						if (part.hasPageBreak && i === length - 1 && insideParagraphLoop) addPageBreakAtEnd(subRendered);
+						if (scopeManager.scopePathItem.some(function(i) {
+							return i !== 0;
+						})) {
+							if (part.sectPrCount === 1) subRendered.parts = dropHeaderFooterRefs(subRendered.parts);
+							if (part.addContinuousType) subRendered.parts = addContinuousType(subRendered.parts);
+						} else if (part.addNextPage) addSectionBefore(subRendered.parts, self.sects[part.addNextPage.index]);
+						if (part.addNextPage) addPageBreakAtEnd(subRendered);
+						if (part.hasPageBreakBeginning && insideParagraphLoop) addPageBreakAtBeginning(subRendered);
+						for (var _i22 = 0, _subRendered$parts2 = subRendered.parts; _i22 < _subRendered$parts2.length; _i22++) {
+							var _val = _subRendered$parts2[_i22];
+							totalValue.push(_val);
+						}
+						pushArray(errors, subRendered.errors);
+					}
+					var value = options.scopeManager.getValue(part.value, { part });
+					value !== null && value !== void 0 || (value = options.nullGetter(part));
+					if (options.scopeManager.loopOverValue(value, loopOver, part.inverted) === false) {
+						if (part.lastParagrapSectPr) {
+							if (part.paragraphLoop) return { value: "<w:p><w:pPr>".concat(part.lastParagrapSectPr, "</w:pPr></w:p>") };
+							return { value: "</w:t></w:r></w:p><w:p><w:pPr>".concat(part.lastParagrapSectPr, "</w:pPr><w:r><w:t>") };
+						}
+						return {
+							value: getPageBreakIfApplies(part) || "",
+							errors
+						};
+					}
+					if (heightOffset !== 0) {
+						var cy = +getSingleAttribute(self.lastExt.value, "cy");
+						self.lastExt.value = setSingleAttribute(self.lastExt.value, "cy", cy + heightOffset);
+					}
+					return {
+						value: options.joinUncorrupt(totalValue, _objectSpread(_objectSpread({}, options), {}, { basePart: part })),
+						errors
+					};
+				}
+			}
+		]);
+	}();
+	module.exports = function() {
+		return wrapper(new LoopModule());
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/modules/space-preserve.js
+var require_space_preserve = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _typeof(o) {
+		"@babel/helpers - typeof";
+		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+			return typeof o;
+		} : function(o) {
+			return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+		}, _typeof(o);
+	}
+	function _classCallCheck(a, n) {
+		if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function");
+	}
+	function _defineProperties(e, r) {
+		for (var t = 0; t < r.length; t++) {
+			var o = r[t];
+			o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o);
+		}
+	}
+	function _createClass(e, r, t) {
+		return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e;
+	}
+	function _toPropertyKey(t) {
+		var i = _toPrimitive(t, "string");
+		return "symbol" == _typeof(i) ? i : i + "";
+	}
+	function _toPrimitive(t, r) {
+		if ("object" != _typeof(t) || !t) return t;
+		var e = t[Symbol.toPrimitive];
+		if (void 0 !== e) {
+			var i = e.call(t, r || "default");
+			if ("object" != _typeof(i)) return i;
+			throw new TypeError("@@toPrimitive must return a primitive value.");
+		}
+		return ("string" === r ? String : Number)(t);
+	}
+	var wrapper = require_module_wrapper();
+	var _require = require_doc_utils();
+	var isTextStart = _require.isTextStart;
+	var isTextEnd = _require.isTextEnd;
+	var endsWith = _require.endsWith;
+	var startsWith = _require.startsWith;
+	var pushArray = _require.pushArray;
+	var wTpreserve = "<w:t xml:space=\"preserve\">";
+	var wTpreservelen = wTpreserve.length;
+	var wtEnd = "</w:t>";
+	var wtEndlen = wtEnd.length;
+	function isWtStart(part) {
+		return isTextStart(part) && part.tag === "w:t";
+	}
+	function addXMLPreserve(chunk, index) {
+		var tag = chunk[index].value;
+		if (chunk[index + 1].value === "</w:t>") return tag;
+		if (tag.indexOf("xml:space=\"preserve\"") !== -1) return tag;
+		return tag.substr(0, tag.length - 1) + " xml:space=\"preserve\">";
+	}
+	function isInsideLoop(meta, chunk) {
+		return meta && meta.basePart && chunk.length > 1;
+	}
+	var SpacePreserve = /*#__PURE__*/ function() {
+		function SpacePreserve() {
+			_classCallCheck(this, SpacePreserve);
+			this.name = "SpacePreserveModule";
+		}
+		return _createClass(SpacePreserve, [{
+			key: "postparse",
+			value: function postparse(postparsed, meta) {
+				var chunk = [], inTextTag = false, endLindex = 0, lastTextTag = 0;
+				function isStartingPlaceHolder(part, chunk) {
+					return part.type === "placeholder" && chunk.length > 1;
+				}
+				var result = postparsed.reduce(function(postparsed, part) {
+					if (isWtStart(part)) {
+						inTextTag = true;
+						lastTextTag = chunk.length;
+					}
+					if (!inTextTag) {
+						postparsed.push(part);
+						return postparsed;
+					}
+					chunk.push(part);
+					if (isInsideLoop(meta, chunk)) {
+						endLindex = meta.basePart.endLindex;
+						chunk[0].value = addXMLPreserve(chunk, 0);
+					}
+					if (isStartingPlaceHolder(part, chunk)) {
+						chunk[lastTextTag].value = addXMLPreserve(chunk, lastTextTag);
+						endLindex = part.endLindex;
+					}
+					if (isTextEnd(part) && part.lIndex > endLindex) {
+						if (endLindex !== 0) chunk[lastTextTag].value = addXMLPreserve(chunk, lastTextTag);
+						pushArray(postparsed, chunk);
+						chunk = [];
+						inTextTag = false;
+						endLindex = 0;
+						lastTextTag = 0;
+					}
+					return postparsed;
+				}, []);
+				pushArray(result, chunk);
+				return result;
+			}
+		}, {
+			key: "postrender",
+			value: function postrender(parts) {
+				var lastNonEmpty = "";
+				var lastNonEmptyIndex = 0;
+				for (var i = 0, len = parts.length; i < len; i++) {
+					var p = parts[i];
+					if (p === "") continue;
+					if (endsWith(lastNonEmpty, wTpreserve) && startsWith(p, wtEnd)) {
+						parts[lastNonEmptyIndex] = lastNonEmpty.substr(0, lastNonEmpty.length - wTpreservelen) + "<w:t/>";
+						p = p.substr(wtEndlen);
+					}
+					lastNonEmpty = p;
+					lastNonEmptyIndex = i;
+					parts[i] = p;
+				}
+				return parts;
+			}
+		}]);
+	}();
+	module.exports = function() {
+		return wrapper(new SpacePreserve());
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/modules/rawxml.js
+var require_rawxml = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _typeof(o) {
+		"@babel/helpers - typeof";
+		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+			return typeof o;
+		} : function(o) {
+			return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+		}, _typeof(o);
+	}
+	function _classCallCheck(a, n) {
+		if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function");
+	}
+	function _defineProperties(e, r) {
+		for (var t = 0; t < r.length; t++) {
+			var o = r[t];
+			o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o);
+		}
+	}
+	function _createClass(e, r, t) {
+		return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e;
+	}
+	function _toPropertyKey(t) {
+		var i = _toPrimitive(t, "string");
+		return "symbol" == _typeof(i) ? i : i + "";
+	}
+	function _toPrimitive(t, r) {
+		if ("object" != _typeof(t) || !t) return t;
+		var e = t[Symbol.toPrimitive];
+		if (void 0 !== e) {
+			var i = e.call(t, r || "default");
+			if ("object" != _typeof(i)) return i;
+			throw new TypeError("@@toPrimitive must return a primitive value.");
+		}
+		return ("string" === r ? String : Number)(t);
+	}
+	var traits = require_traits();
+	var _require = require_doc_utils();
+	var isContent = _require.isContent;
+	var getPartWithDelimiters = _require.getPartWithDelimiters;
+	var _require2 = require_errors();
+	var throwRawTagShouldBeOnlyTextInParagraph = _require2.throwRawTagShouldBeOnlyTextInParagraph;
+	var getInvalidRawXMLValueException = _require2.getInvalidRawXMLValueException;
+	var wrapper = require_module_wrapper();
+	var moduleName = "rawxml";
+	function getInner(_ref) {
+		var part = _ref.part, left = _ref.left, right = _ref.right, postparsed = _ref.postparsed, index = _ref.index;
+		var paragraphParts = postparsed.slice(left + 1, right);
+		for (var i = 0, len = paragraphParts.length; i < len; i++) {
+			if (i === index - left - 1) continue;
+			var p = paragraphParts[i];
+			if (isContent(p)) throwRawTagShouldBeOnlyTextInParagraph({
+				paragraphParts,
+				part
+			});
+		}
+		return part;
+	}
+	var RawXmlModule = /*#__PURE__*/ function() {
+		function RawXmlModule() {
+			_classCallCheck(this, RawXmlModule);
+			this.name = "RawXmlModule";
+			this.prefix = "@";
+		}
+		return _createClass(RawXmlModule, [
+			{
+				key: "optionsTransformer",
+				value: function optionsTransformer(options, docxtemplater) {
+					this.fileTypeConfig = docxtemplater.fileTypeConfig;
+					return options;
+				}
+			},
+			{
+				key: "matchers",
+				value: function matchers() {
+					return [[this.prefix, moduleName]];
+				}
+			},
+			{
+				key: "postparse",
+				value: function postparse(postparsed) {
+					var _this = this;
+					return traits.expandToOne(postparsed, {
+						moduleName,
+						getInner,
+						expandTo: this.fileTypeConfig.tagRawXml,
+						error: {
+							message: "Raw tag not in paragraph",
+							id: "raw_tag_outerxml_invalid",
+							explanation: function explanation(part) {
+								return "The tag \"".concat(getPartWithDelimiters(part, _this.docxtemplater), "\" is not inside a paragraph, putting raw tags inside an inline loop is disallowed.");
+							}
+						}
+					});
+				}
+			},
+			{
+				key: "render",
+				value: function render(part, options) {
+					if (part.module !== moduleName) return null;
+					var value;
+					var errors = [];
+					try {
+						value = options.scopeManager.getValue(part.value, { part });
+						value !== null && value !== void 0 || (value = options.nullGetter(part));
+					} catch (e) {
+						errors.push(e);
+						return { errors };
+					}
+					value = value ? value : "";
+					if (typeof value === "string") return { value };
+					return { errors: [getInvalidRawXMLValueException({
+						tag: part.value,
+						value,
+						partDelims: getPartWithDelimiters(part, this.docxtemplater),
+						part,
+						offset: part.offset
+					})] };
+				}
+			}
+		]);
+	}();
+	module.exports = function() {
+		return wrapper(new RawXmlModule());
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/merge-sort.js
+var require_merge_sort = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function getMinFromArrays(arrays, state) {
+		var minIndex = -1;
+		for (var i = 0, l = arrays.length; i < l; i++) {
+			if (state[i] >= arrays[i].length) continue;
+			if (minIndex === -1 || arrays[i][state[i]].offset < arrays[minIndex][state[minIndex]].offset) minIndex = i;
+		}
+		return minIndex;
+	}
+	module.exports = function(arrays) {
+		var totalLength = 0;
+		for (var _i2 = 0, _arrays2 = arrays; _i2 < _arrays2.length; _i2++) {
+			var array = _arrays2[_i2];
+			totalLength += array.length;
+		}
+		arrays = arrays.filter(function(array) {
+			return array.length > 0;
+		});
+		var resultArray = new Array(totalLength);
+		var state = arrays.map(function() {
+			return 0;
+		});
+		for (var i = 0; i < totalLength; i++) {
+			var arrayIndex = getMinFromArrays(arrays, state);
+			resultArray[i] = arrays[arrayIndex][state[arrayIndex]];
+			state[arrayIndex]++;
+		}
+		return resultArray;
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/modules/expand-pair-trait.js
+var require_expand_pair_trait = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _typeof(o) {
+		"@babel/helpers - typeof";
+		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+			return typeof o;
+		} : function(o) {
+			return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+		}, _typeof(o);
+	}
+	function _classCallCheck(a, n) {
+		if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function");
+	}
+	function _defineProperties(e, r) {
+		for (var t = 0; t < r.length; t++) {
+			var o = r[t];
+			o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o);
+		}
+	}
+	function _createClass(e, r, t) {
+		return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e;
+	}
+	function _toPropertyKey(t) {
+		var i = _toPrimitive(t, "string");
+		return "symbol" == _typeof(i) ? i : i + "";
+	}
+	function _toPrimitive(t, r) {
+		if ("object" != _typeof(t) || !t) return t;
+		var e = t[Symbol.toPrimitive];
+		if (void 0 !== e) {
+			var i = e.call(t, r || "default");
+			if ("object" != _typeof(i)) return i;
+			throw new TypeError("@@toPrimitive must return a primitive value.");
+		}
+		return ("string" === r ? String : Number)(t);
+	}
+	var traitName = "expandPair";
+	var mergeSort = require_merge_sort();
+	var _require = require_doc_utils();
+	var getLeft = _require.getLeft;
+	var getRight = _require.getRight;
+	var pushArray = _require.pushArray;
+	var wrapper = require_module_wrapper();
+	var getExpandToDefault = require_traits().getExpandToDefault;
+	var _require3 = require_errors();
+	var getUnmatchedLoopException = _require3.getUnmatchedLoopException;
+	var getClosingTagNotMatchOpeningTag = _require3.getClosingTagNotMatchOpeningTag;
+	var getUnbalancedLoopException = _require3.getUnbalancedLoopException;
+	function getOpenCountChange(part) {
+		switch (part.location) {
+			case "start": return 1;
+			case "end": return -1;
+		}
+	}
+	function match(start, end) {
+		return start != null && end != null && (start.part.location === "start" && end.part.location === "end" && start.part.value === end.part.value || end.part.value === "");
+	}
+	function transformer(traits) {
+		var i = 0;
+		var errors = [];
+		while (i < traits.length) {
+			var part = traits[i].part;
+			if (part.location === "end") {
+				if (i === 0) {
+					traits.splice(0, 1);
+					errors.push(getUnmatchedLoopException(part));
+					return {
+						traits,
+						errors
+					};
+				}
+				var endIndex = i;
+				var startIndex = i - 1;
+				var offseter = 1;
+				if (match(traits[startIndex], traits[endIndex])) {
+					traits.splice(endIndex, 1);
+					traits.splice(startIndex, 1);
+					return {
+						errors,
+						traits
+					};
+				}
+				while (offseter < 50) {
+					var startCandidate = traits[startIndex - offseter];
+					var endCandidate = traits[endIndex + offseter];
+					if (match(startCandidate, traits[endIndex])) {
+						traits.splice(endIndex, 1);
+						traits.splice(startIndex - offseter, 1);
+						return {
+							errors,
+							traits
+						};
+					}
+					if (match(traits[startIndex], endCandidate)) {
+						traits.splice(endIndex + offseter, 1);
+						traits.splice(startIndex, 1);
+						return {
+							errors,
+							traits
+						};
+					}
+					offseter++;
+				}
+				errors.push(getClosingTagNotMatchOpeningTag({ tags: [traits[startIndex].part, traits[endIndex].part] }));
+				traits.splice(endIndex, 1);
+				traits.splice(startIndex, 1);
+				return {
+					traits,
+					errors
+				};
+			}
+			i++;
+		}
+		for (var _i2 = 0; _i2 < traits.length; _i2++) {
+			var _part = traits[_i2].part;
+			errors.push(getUnmatchedLoopException(_part));
+		}
+		return {
+			traits: [],
+			errors
+		};
+	}
+	function getPairs(traits) {
+		var levelTraits = {};
+		var errors = [];
+		var pairs = [];
+		var transformedTraits = [];
+		pushArray(transformedTraits, traits);
+		while (transformedTraits.length > 0) {
+			var result = transformer(transformedTraits);
+			pushArray(errors, result.errors);
+			transformedTraits = result.traits;
+		}
+		if (errors.length > 0) return {
+			pairs,
+			errors
+		};
+		var countOpen = 0;
+		for (var _i4 = 0; _i4 < traits.length; _i4++) {
+			var currentTrait = traits[_i4];
+			var part = currentTrait.part;
+			var change = getOpenCountChange(part);
+			countOpen += change;
+			if (change === 1) levelTraits[countOpen] = currentTrait;
+			else {
+				var startTrait = levelTraits[countOpen + 1];
+				if (countOpen === 0) pairs.push([startTrait, currentTrait]);
+			}
+			countOpen = countOpen >= 0 ? countOpen : 0;
+		}
+		return {
+			pairs,
+			errors
+		};
+	}
+	var ExpandPairTrait = /*#__PURE__*/ function() {
+		function ExpandPairTrait() {
+			_classCallCheck(this, ExpandPairTrait);
+			this.name = "ExpandPairTrait";
+		}
+		return _createClass(ExpandPairTrait, [{
+			key: "optionsTransformer",
+			value: function optionsTransformer(options, docxtemplater) {
+				if (docxtemplater.options.paragraphLoop) pushArray(docxtemplater.fileTypeConfig.expandTags, docxtemplater.fileTypeConfig.onParagraphLoop);
+				this.expandTags = docxtemplater.fileTypeConfig.expandTags;
+				return options;
+			}
+		}, {
+			key: "postparse",
+			value: function postparse(postparsed, options) {
+				var _this = this;
+				var getTraits = options.getTraits, postparse = options.postparse, fileType = options.fileType;
+				var traits = getTraits(traitName, postparsed, options);
+				traits = traits.map(function(trait) {
+					return trait || [];
+				});
+				traits = mergeSort(traits);
+				var _getPairs = getPairs(traits), pairs = _getPairs.pairs, errors = _getPairs.errors;
+				var lastRight = 0;
+				var lastPair = null;
+				var expandedPairs = pairs.map(function(pair) {
+					var expandTo = pair[0].part.expandTo;
+					if (expandTo === "auto" && fileType !== "text") {
+						var result = getExpandToDefault(postparsed, pair, _this.expandTags);
+						if (result.error) errors.push(result.error);
+						expandTo = result.value;
+					}
+					if (!expandTo || fileType === "text") {
+						var _left = pair[0].offset;
+						var _right = pair[1].offset;
+						if (_left < lastRight && !_this.docxtemplater.options.syntax.allowUnbalancedLoops) errors.push(getUnbalancedLoopException(pair, lastPair));
+						lastPair = pair;
+						lastRight = _right;
+						return [_left, _right];
+					}
+					var left, right;
+					try {
+						left = getLeft(postparsed, expandTo, pair[0].offset);
+					} catch (e) {
+						errors.push(e);
+					}
+					try {
+						right = getRight(postparsed, expandTo, pair[1].offset);
+					} catch (e) {
+						errors.push(e);
+					}
+					if (left < lastRight && !_this.docxtemplater.options.syntax.allowUnbalancedLoops) errors.push(getUnbalancedLoopException(pair, lastPair));
+					lastRight = right;
+					lastPair = pair;
+					return [left, right];
+				});
+				if (errors.length > 0) return {
+					postparsed,
+					errors
+				};
+				var currentPairIndex = 0;
+				var innerParts;
+				return {
+					postparsed: postparsed.reduce(function(newParsed, part, i) {
+						var inPair = currentPairIndex < pairs.length && expandedPairs[currentPairIndex][0] <= i && i <= expandedPairs[currentPairIndex][1];
+						var pair = pairs[currentPairIndex];
+						var expandedPair = expandedPairs[currentPairIndex];
+						if (!inPair) {
+							newParsed.push(part);
+							return newParsed;
+						}
+						if (expandedPair[0] === i) innerParts = [];
+						if (pair[0].offset !== i && pair[1].offset !== i) innerParts.push(part);
+						if (expandedPair[1] === i) {
+							var basePart = postparsed[pair[0].offset];
+							basePart.subparsed = postparse(innerParts, { basePart });
+							basePart.endLindex = pair[1].part.lIndex;
+							delete basePart.location;
+							delete basePart.expandTo;
+							newParsed.push(basePart);
+							currentPairIndex++;
+							var _expandedPair = expandedPairs[currentPairIndex];
+							while (_expandedPair && _expandedPair[0] < i) {
+								currentPairIndex++;
+								_expandedPair = expandedPairs[currentPairIndex];
+							}
+						}
+						return newParsed;
+					}, []),
+					errors
+				};
+			}
+		}]);
+	}();
+	module.exports = function() {
+		return wrapper(new ExpandPairTrait());
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/modules/render.js
+var require_render = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _typeof(o) {
+		"@babel/helpers - typeof";
+		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+			return typeof o;
+		} : function(o) {
+			return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+		}, _typeof(o);
+	}
+	function _classCallCheck(a, n) {
+		if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function");
+	}
+	function _defineProperties(e, r) {
+		for (var t = 0; t < r.length; t++) {
+			var o = r[t];
+			o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o);
+		}
+	}
+	function _createClass(e, r, t) {
+		return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e;
+	}
+	function _toPropertyKey(t) {
+		var i = _toPrimitive(t, "string");
+		return "symbol" == _typeof(i) ? i : i + "";
+	}
+	function _toPrimitive(t, r) {
+		if ("object" != _typeof(t) || !t) return t;
+		var e = t[Symbol.toPrimitive];
+		if (void 0 !== e) {
+			var i = e.call(t, r || "default");
+			if ("object" != _typeof(i)) return i;
+			throw new TypeError("@@toPrimitive must return a primitive value.");
+		}
+		return ("string" === r ? String : Number)(t);
+	}
+	var wrapper = require_module_wrapper();
+	var _require = require_errors();
+	var getScopeCompilationError = _require.getScopeCompilationError;
+	var getCorruptCharactersException = _require.getCorruptCharactersException;
+	var _require2 = require_doc_utils();
+	var utf8ToWord = _require2.utf8ToWord;
+	var hasCorruptCharacters = _require2.hasCorruptCharacters;
+	var removeCorruptCharacters = _require2.removeCorruptCharacters;
+	var _require3 = require_content_types();
+	var NON_LINE_BREAKS_CONTENT_TYPE = [
+		_require3.settingsContentType,
+		_require3.coreContentType,
+		_require3.appContentType,
+		_require3.customContentType
+	];
+	var ftprefix = {
+		docx: "w",
+		pptx: "a"
+	};
+	var Render = /*#__PURE__*/ function() {
+		function Render() {
+			_classCallCheck(this, Render);
+			this.name = "Render";
+			this.recordRun = false;
+			this.recordedRun = [];
+		}
+		return _createClass(Render, [
+			{
+				key: "set",
+				value: function set(obj) {
+					if (obj.compiled) this.compiled = obj.compiled;
+					if (obj.data != null) this.data = obj.data;
+				}
+			},
+			{
+				key: "optionsTransformer",
+				value: function optionsTransformer(options, docxtemplater) {
+					this.docxtemplater = docxtemplater;
+					this.brTag = docxtemplater.fileType === "docx" ? "<w:r><w:br/></w:r>" : "<a:br/>";
+					this.prefix = ftprefix[docxtemplater.fileType];
+					this.runStartTag = "".concat(this.prefix, ":r");
+					this.runPropsStartTag = "".concat(this.prefix, ":rPr");
+					return options;
+				}
+			},
+			{
+				key: "postparse",
+				value: function postparse(postparsed, options) {
+					var errors = [];
+					for (var _i2 = 0; _i2 < postparsed.length; _i2++) {
+						var p = postparsed[_i2];
+						if (p.type === "placeholder") {
+							var tag = p.value;
+							try {
+								options.cachedParsers[p.lIndex] = this.docxtemplater.parser(tag, { tag: p });
+							} catch (rootError) {
+								errors.push(getScopeCompilationError({
+									tag,
+									rootError,
+									offset: p.offset
+								}));
+							}
+						}
+					}
+					return {
+						postparsed,
+						errors
+					};
+				}
+			},
+			{
+				key: "getRenderedMap",
+				value: function getRenderedMap(mapper) {
+					for (var from in this.compiled) mapper[from] = {
+						from,
+						data: this.data
+					};
+					return mapper;
+				}
+			},
+			{
+				key: "render",
+				value: function render(part, _ref) {
+					var contentType = _ref.contentType, scopeManager = _ref.scopeManager, linebreaks = _ref.linebreaks, nullGetter = _ref.nullGetter, fileType = _ref.fileType, stripInvalidXMLChars = _ref.stripInvalidXMLChars;
+					if (NON_LINE_BREAKS_CONTENT_TYPE.indexOf(contentType) !== -1) linebreaks = false;
+					if (linebreaks) this.recordRuns(part);
+					if (part.type !== "placeholder" || part.module) return;
+					var value;
+					try {
+						value = scopeManager.getValue(part.value, { part });
+					} catch (e) {
+						return { errors: [e] };
+					}
+					value !== null && value !== void 0 || (value = nullGetter(part));
+					if (typeof value === "string") {
+						if (stripInvalidXMLChars) value = removeCorruptCharacters(value);
+						else if ([
+							"docx",
+							"pptx",
+							"xlsx"
+						].indexOf(fileType) !== -1 && hasCorruptCharacters(value)) return { errors: [getCorruptCharactersException({
+							tag: part.value,
+							value,
+							offset: part.offset
+						})] };
+					}
+					if (fileType === "text") return { value };
+					return { value: linebreaks && typeof value === "string" ? this.renderLineBreaks(value) : utf8ToWord(value) };
+				}
+			},
+			{
+				key: "recordRuns",
+				value: function recordRuns(part) {
+					if (part.tag === this.runStartTag) this.recordedRun = "";
+					else if (part.tag === this.runPropsStartTag) {
+						if (part.position === "start") {
+							this.recordRun = true;
+							this.recordedRun += part.value;
+						}
+						if (part.position === "end" || part.position === "selfclosing") {
+							this.recordedRun += part.value;
+							this.recordRun = false;
+						}
+					} else if (this.recordRun) this.recordedRun += part.value;
+				}
+			},
+			{
+				key: "renderLineBreaks",
+				value: function renderLineBreaks(value) {
+					var result = [];
+					var lines = value.split("\n");
+					for (var i = 0, len = lines.length; i < len; i++) {
+						result.push(utf8ToWord(lines[i]));
+						if (i < lines.length - 1) result.push("</".concat(this.prefix, ":t></").concat(this.prefix, ":r>").concat(this.brTag, "<").concat(this.prefix, ":r>").concat(this.recordedRun, "<").concat(this.prefix, ":t").concat(this.docxtemplater.fileType === "docx" ? " xml:space=\"preserve\"" : "", ">"));
+					}
+					return result;
+				}
+			}
+		]);
+	}();
+	module.exports = function() {
+		return wrapper(new Render());
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/file-type-config.js
+var require_file_type_config = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var loopModule = require_loop();
+	var spacePreserveModule = require_space_preserve();
+	var rawXmlModule = require_rawxml();
+	var expandPairTrait = require_expand_pair_trait();
+	var render = require_render();
+	function DocXFileTypeConfig() {
+		return {
+			getTemplatedFiles: function getTemplatedFiles() {
+				return [];
+			},
+			templatedNs: ["http://schemas.microsoft.com/office/2006/coverPageProps"],
+			textPath: function textPath(doc) {
+				return doc.textTarget;
+			},
+			tagsXmlTextArray: [
+				"Company",
+				"HyperlinkBase",
+				"Manager",
+				"cp:category",
+				"cp:keywords",
+				"dc:creator",
+				"dc:description",
+				"dc:subject",
+				"dc:title",
+				"cp:contentStatus",
+				"PublishDate",
+				"Abstract",
+				"CompanyAddress",
+				"CompanyPhone",
+				"CompanyFax",
+				"CompanyEmail",
+				"w:t",
+				"a:t",
+				"m:t",
+				"vt:lpstr",
+				"vt:lpwstr"
+			],
+			tagsXmlLexedArray: [
+				"w:proofState",
+				"w:tc",
+				"w:tr",
+				"w:tbl",
+				"w:ftr",
+				"w:hdr",
+				"w:body",
+				"w:document",
+				"w:p",
+				"w:r",
+				"w:br",
+				"w:rPr",
+				"w:pPr",
+				"w:spacing",
+				"w:sdtContent",
+				"w:sdt",
+				"w:drawing",
+				"w:sectPr",
+				"w:type",
+				"w:headerReference",
+				"w:footerReference",
+				"w:bookmarkStart",
+				"w:bookmarkEnd",
+				"w:commentRangeStart",
+				"w:commentRangeEnd",
+				"w:commentReference"
+			],
+			droppedTagsInsidePlaceholder: [
+				"w:p",
+				"w:br",
+				"w:bookmarkStart",
+				"w:bookmarkEnd"
+			],
+			expandTags: [{
+				contains: "w:tc",
+				expand: "w:tr"
+			}],
+			onParagraphLoop: [{
+				contains: "w:p",
+				expand: "w:p",
+				onlyTextInTag: true
+			}],
+			tagRawXml: "w:p",
+			baseModules: [
+				loopModule,
+				spacePreserveModule,
+				expandPairTrait,
+				rawXmlModule,
+				render
+			],
+			tagShouldContain: [
+				{
+					tag: "w:sdtContent",
+					shouldContain: [
+						"w:p",
+						"w:r",
+						"w:commentRangeStart",
+						"w:sdt"
+					],
+					value: "<w:p></w:p>"
+				},
+				{
+					tag: "w:tc",
+					shouldContain: ["w:p"],
+					value: "<w:p></w:p>"
+				},
+				{
+					tag: "w:tr",
+					shouldContain: ["w:tc"],
+					drop: true
+				},
+				{
+					tag: "w:tbl",
+					shouldContain: ["w:tr"],
+					drop: true
+				}
+			]
+		};
+	}
+	function PptXFileTypeConfig() {
+		return {
+			getTemplatedFiles: function getTemplatedFiles() {
+				return [];
+			},
+			textPath: function textPath(doc) {
+				return doc.textTarget;
+			},
+			tagsXmlTextArray: [
+				"Company",
+				"HyperlinkBase",
+				"Manager",
+				"cp:category",
+				"cp:keywords",
+				"dc:creator",
+				"dc:description",
+				"dc:subject",
+				"dc:title",
+				"a:t",
+				"m:t",
+				"vt:lpstr",
+				"vt:lpwstr"
+			],
+			tagsXmlLexedArray: [
+				"p:sp",
+				"a:tc",
+				"a:tr",
+				"a:tbl",
+				"a:graphicData",
+				"a:p",
+				"a:r",
+				"a:rPr",
+				"p:txBody",
+				"a:txBody",
+				"a:off",
+				"a:ext",
+				"p:graphicFrame",
+				"p:xfrm",
+				"a16:rowId",
+				"a:endParaRPr"
+			],
+			droppedTagsInsidePlaceholder: ["a:p", "a:endParaRPr"],
+			expandTags: [{
+				contains: "a:tc",
+				expand: "a:tr"
+			}],
+			onParagraphLoop: [{
+				contains: "a:p",
+				expand: "a:p",
+				onlyTextInTag: true
+			}],
+			tagRawXml: "p:sp",
+			baseModules: [
+				loopModule,
+				expandPairTrait,
+				rawXmlModule,
+				render
+			],
+			tagShouldContain: [
+				{
+					tag: "a:tbl",
+					shouldContain: ["a:tr"],
+					dropParent: "p:graphicFrame"
+				},
+				{
+					tag: "p:txBody",
+					shouldContain: ["a:p"],
+					value: "<a:p></a:p>"
+				},
+				{
+					tag: "a:txBody",
+					shouldContain: ["a:p"],
+					value: "<a:p></a:p>"
+				}
+			]
+		};
+	}
+	module.exports = {
+		docx: DocXFileTypeConfig,
+		pptx: PptXFileTypeConfig
+	};
+}));
+//#endregion
+//#region node_modules/docxtemplater/js/docxtemplater.js
+var require_docxtemplater = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var _excluded = ["modules"];
+	function ownKeys(e, r) {
+		var t = Object.keys(e);
+		if (Object.getOwnPropertySymbols) {
+			var o = Object.getOwnPropertySymbols(e);
+			r && (o = o.filter(function(r) {
+				return Object.getOwnPropertyDescriptor(e, r).enumerable;
+			})), t.push.apply(t, o);
+		}
+		return t;
+	}
+	function _objectSpread(e) {
+		for (var r = 1; r < arguments.length; r++) {
+			var t = null != arguments[r] ? arguments[r] : {};
+			r % 2 ? ownKeys(Object(t), !0).forEach(function(r) {
+				_defineProperty(e, r, t[r]);
+			}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function(r) {
+				Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
+			});
+		}
+		return e;
+	}
+	function _defineProperty(e, r, t) {
+		return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+			value: t,
+			enumerable: !0,
+			configurable: !0,
+			writable: !0
+		}) : e[r] = t, e;
+	}
+	function _slicedToArray(r, e) {
+		return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest();
+	}
+	function _nonIterableRest() {
+		throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+	}
+	function _unsupportedIterableToArray(r, a) {
+		if (r) {
+			if ("string" == typeof r) return _arrayLikeToArray(r, a);
+			var t = {}.toString.call(r).slice(8, -1);
+			return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0;
+		}
+	}
+	function _arrayLikeToArray(r, a) {
+		(null == a || a > r.length) && (a = r.length);
+		for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
+		return n;
+	}
+	function _iterableToArrayLimit(r, l) {
+		var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
+		if (null != t) {
+			var e, n, i, u, a = [], f = !0, o = !1;
+			try {
+				if (i = (t = t.call(r)).next, 0 === l) {
+					if (Object(t) !== t) return;
+					f = !1;
+				} else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0);
+			} catch (r) {
+				o = !0, n = r;
+			} finally {
+				try {
+					if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return;
+				} finally {
+					if (o) throw n;
+				}
+			}
+			return a;
+		}
+	}
+	function _arrayWithHoles(r) {
+		if (Array.isArray(r)) return r;
+	}
+	function _typeof(o) {
+		"@babel/helpers - typeof";
+		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+			return typeof o;
+		} : function(o) {
+			return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+		}, _typeof(o);
+	}
+	function _objectWithoutProperties(e, t) {
+		if (null == e) return {};
+		var o, r, i = _objectWithoutPropertiesLoose(e, t);
+		if (Object.getOwnPropertySymbols) {
+			var n = Object.getOwnPropertySymbols(e);
+			for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]);
+		}
+		return i;
+	}
+	function _objectWithoutPropertiesLoose(r, e) {
+		if (null == r) return {};
+		var t = {};
+		for (var n in r) if ({}.hasOwnProperty.call(r, n)) {
+			if (-1 !== e.indexOf(n)) continue;
+			t[n] = r[n];
+		}
+		return t;
+	}
+	function _classCallCheck(a, n) {
+		if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function");
+	}
+	function _defineProperties(e, r) {
+		for (var t = 0; t < r.length; t++) {
+			var o = r[t];
+			o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o);
+		}
+	}
+	function _createClass(e, r, t) {
+		return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e;
+	}
+	function _toPropertyKey(t) {
+		var i = _toPrimitive(t, "string");
+		return "symbol" == _typeof(i) ? i : i + "";
+	}
+	function _toPrimitive(t, r) {
+		if ("object" != _typeof(t) || !t) return t;
+		var e = t[Symbol.toPrimitive];
+		if (void 0 !== e) {
+			var i = e.call(t, r || "default");
+			if ("object" != _typeof(i)) return i;
+			throw new TypeError("@@toPrimitive must return a primitive value.");
+		}
+		return ("string" === r ? String : Number)(t);
+	}
+	var DocUtils = require_doc_utils();
+	var z = require_minizod();
+	var dxtSyntaxSchema = z.object({
+		allowUnopenedTag: z["boolean"]().optional(),
+		allowUnclosedTag: z["boolean"]().optional(),
+		allowUnbalancedLoops: z["boolean"]().optional(),
+		changeDelimiterPrefix: z.string().optional().nullable()
+	});
+	var dxtOptionsSchema = z.object({
+		delimiters: z.object({
+			start: z.string().nullable(),
+			end: z.string().nullable()
+		}).strict().optional(),
+		fileTypeConfig: z.object({}).optional(),
+		paragraphLoop: z["boolean"]().optional(),
+		parser: z["function"]().optional(),
+		errorLogging: z.union([z["boolean"](), z.string()]).optional(),
+		linebreaks: z["boolean"]().optional(),
+		nullGetter: z["function"]().optional(),
+		syntax: dxtSyntaxSchema.optional(),
+		stripInvalidXMLChars: z["boolean"]().optional(),
+		warnFn: z["function"]().optional()
+	}).strict();
+	var getRelsTypes = require_get_relation_types().getRelsTypes;
+	var _require2 = require_get_content_types();
+	var collectContentTypes = _require2.collectContentTypes;
+	var getContentTypes = _require2.getContentTypes;
+	var moduleWrapper = require_module_wrapper();
+	var traits = require_traits();
+	var commonModule = require_common();
+	var createScope = require_scope_manager();
+	var Lexer = require_lexer();
+	var _getTags = require_get_tags().getTags;
+	var logErrors = require_error_logger();
+	var _require4 = require_errors();
+	var throwMultiError = _require4.throwMultiError;
+	var throwResolveBeforeCompile = _require4.throwResolveBeforeCompile;
+	var throwRenderInvalidTemplate = _require4.throwRenderInvalidTemplate;
+	var throwRenderTwice = _require4.throwRenderTwice;
+	var XTInternalError = _require4.XTInternalError;
+	var XTTemplateError = _require4.XTTemplateError;
+	var throwFileTypeNotIdentified = _require4.throwFileTypeNotIdentified;
+	var throwFileTypeNotHandled = _require4.throwFileTypeNotHandled;
+	var throwApiVersionError = _require4.throwApiVersionError;
+	DocUtils.getRelsTypes = getRelsTypes;
+	DocUtils.traits = traits;
+	DocUtils.moduleWrapper = moduleWrapper;
+	DocUtils.collectContentTypes = collectContentTypes;
+	DocUtils.getContentTypes = getContentTypes;
+	var getDefaults = DocUtils.getDefaults;
+	var str2xml = DocUtils.str2xml;
+	var xml2str = DocUtils.xml2str;
+	var concatArrays = DocUtils.concatArrays;
+	var uniq = DocUtils.uniq;
+	var getDuplicates = DocUtils.getDuplicates;
+	var stableSort = DocUtils.stableSort;
+	var pushArray = DocUtils.pushArray;
+	var utf8ToWord = DocUtils.utf8ToWord;
+	var invertMap = DocUtils.invertMap;
+	var ctXML = "[Content_Types].xml";
+	var relsFile = "_rels/.rels";
+	var currentModuleApiVersion = [
+		3,
+		47,
+		2
+	];
+	function throwIfDuplicateModules(modules) {
+		var names = [];
+		for (var _i2 = 0; _i2 < modules.length; _i2++) {
+			var mod = modules[_i2];
+			names.push(mod.name);
+		}
+		var duplicates = getDuplicates(names);
+		if (duplicates.length > 0) throw new XTInternalError("Detected duplicate module \"".concat(duplicates[0], "\""));
+	}
+	function addXmlFileNamesFromXmlContentType(doc) {
+		for (var _i4 = 0, _doc$modules2 = doc.modules; _i4 < _doc$modules2.length; _i4++) {
+			var _module = _doc$modules2[_i4];
+			for (var _i6 = 0, _ref2 = _module.xmlContentTypes || []; _i6 < _ref2.length; _i6++) {
+				var contentType = _ref2[_i6];
+				var candidates = doc.invertedContentTypes[contentType] || [];
+				for (var _i8 = 0; _i8 < candidates.length; _i8++) {
+					var candidate = candidates[_i8];
+					if (doc.zip.files[candidate]) doc.options.xmlFileNames.push(candidate);
+				}
+			}
+		}
+	}
+	function reorderModules(modules) {
+		/**
+		* Modules will be sorted according to priority.
+		*
+		* Input example:
+		* [
+		*   { priority: 1, name: "FooMod" },
+		*   { priority: -1, name: "XMod" },
+		*   { priority: 4, name: "OtherMod" }
+		* ]
+		*
+		* Output example (sorted by priority in descending order):
+		* [
+		*   { priority: 4, name: "OtherMod" },
+		*   { priority: 1, name: "FooMod" },
+		*   { priority: -1, name: "XMod" }
+		* ]
+		* Tested in #test-reorder-modules
+		*/
+		return stableSort(modules, function(m1, m2) {
+			return (m2.priority || 0) - (m1.priority || 0);
+		});
+	}
+	function zipFileOrder(files) {
+		var allFiles = [];
+		for (var name in files) allFiles.push(name);
+		var resultFiles = [ctXML, relsFile];
+		var prefixes = [
+			"word/",
+			"xl/",
+			"ppt/"
+		];
+		for (var _i0 = 0; _i0 < allFiles.length; _i0++) {
+			var _name = allFiles[_i0];
+			for (var _i10 = 0; _i10 < prefixes.length; _i10++) {
+				var prefix = prefixes[_i10];
+				if (_name.indexOf("".concat(prefix)) === 0) resultFiles.push(_name);
+			}
+		}
+		for (var _i12 = 0; _i12 < allFiles.length; _i12++) {
+			var _name2 = allFiles[_i12];
+			if (resultFiles.indexOf(_name2) === -1) resultFiles.push(_name2);
+		}
+		return resultFiles;
+	}
+	function deprecatedMessage(obj, message) {
+		if (obj.hideDeprecations === true) return;
+		console.warn(message);
+	}
+	function deprecatedMethod(obj, method) {
+		if (obj.hideDeprecations === true) return;
+		return deprecatedMessage(obj, "Deprecated method \".".concat(method, "\", view upgrade guide : https://docxtemplater.com/docs/api/#upgrade-guide, stack : ").concat((/* @__PURE__ */ new Error()).stack));
+	}
+	function dropUnsupportedFileTypesModules(doc) {
+		doc.modules = doc.modules.filter(function(module$1) {
+			if (!module$1.supportedFileTypes) return true;
+			if (!Array.isArray(module$1.supportedFileTypes)) throw new Error("The supportedFileTypes field of the module must be an array");
+			var isSupportedModule = module$1.supportedFileTypes.includes(doc.fileType);
+			if (!isSupportedModule) module$1.on("detached");
+			return isSupportedModule;
+		});
+	}
+	function verifyErrors(doc) {
+		var compiled = doc.compiled;
+		doc.errors = concatArrays(Object.keys(compiled).map(function(name) {
+			return compiled[name].allErrors;
+		}));
+		if (doc.errors.length !== 0) {
+			if (doc.options.errorLogging) logErrors(doc.errors, doc.options.errorLogging);
+			throwMultiError(doc.errors);
+		}
+	}
+	function isBuffer(v) {
+		return typeof Buffer !== "undefined" && typeof Buffer.isBuffer === "function" && Buffer.isBuffer(v);
+	}
+	var Docxtemplater = /*#__PURE__*/ function() {
+		function Docxtemplater(zip) {
+			var _ref3 = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {}, _ref3$modules = _ref3.modules, modules = _ref3$modules === void 0 ? [] : _ref3$modules, options = _objectWithoutProperties(_ref3, _excluded);
+			_classCallCheck(this, Docxtemplater);
+			this.targets = [];
+			this.rendered = false;
+			this.scopeManagers = {};
+			this.compiled = {};
+			this.modules = [commonModule()];
+			this.xmlDocuments = {};
+			if (arguments.length === 0) {
+				deprecatedMessage(this, "Deprecated docxtemplater constructor with no arguments, view upgrade guide : https://docxtemplater.com/docs/api/#upgrade-guide, stack : ".concat((/* @__PURE__ */ new Error()).stack));
+				this.hideDeprecations = true;
+				this.setOptions(options);
+			} else {
+				this.hideDeprecations = true;
+				this.setOptions(options);
+				if (isBuffer(zip)) throw new Error("You passed a Buffer to the Docxtemplater constructor. The first argument of docxtemplater's constructor must be a valid zip file (jszip v2 or pizzip v3)");
+				if (!zip || !zip.files || typeof zip.file !== "function") throw new Error("The first argument of docxtemplater's constructor must be a valid zip file (jszip v2 or pizzip v3)");
+				if (!Array.isArray(modules)) throw new Error("The modules argument of docxtemplater's constructor must be an array");
+				for (var _i14 = 0; _i14 < modules.length; _i14++) {
+					var _module2 = modules[_i14];
+					this.attachModule(_module2);
+				}
+				this.loadZip(zip);
+				this.compile();
+				this.v4Constructor = true;
+			}
+			this.hideDeprecations = false;
+		}
+		return _createClass(Docxtemplater, [
+			{
+				key: "verifyApiVersion",
+				value: function verifyApiVersion(neededVersion) {
+					neededVersion = neededVersion.split(".");
+					for (var i = 0; i < neededVersion.length; i++) neededVersion[i] = parseInt(neededVersion[i], 10);
+					if (neededVersion.length !== 3) throwApiVersionError("neededVersion is not a valid version", {
+						neededVersion,
+						explanation: "the neededVersion must be an array of length 3"
+					});
+					if (neededVersion[0] !== currentModuleApiVersion[0]) throwApiVersionError("The major api version do not match, you probably have to update docxtemplater with npm install --save docxtemplater", {
+						neededVersion,
+						currentModuleApiVersion,
+						explanation: "moduleAPIVersionMismatch : needed=".concat(neededVersion.join("."), ", current=").concat(currentModuleApiVersion.join("."))
+					});
+					if (neededVersion[1] > currentModuleApiVersion[1]) throwApiVersionError("The minor api version is not uptodate, you probably have to update docxtemplater with npm install --save docxtemplater", {
+						neededVersion,
+						currentModuleApiVersion,
+						explanation: "moduleAPIVersionMismatch : needed=".concat(neededVersion.join("."), ", current=").concat(currentModuleApiVersion.join("."))
+					});
+					if (neededVersion[1] === currentModuleApiVersion[1] && neededVersion[2] > currentModuleApiVersion[2]) throwApiVersionError("The patch api version is not uptodate, you probably have to update docxtemplater with npm install --save docxtemplater", {
+						neededVersion,
+						currentModuleApiVersion,
+						explanation: "moduleAPIVersionMismatch : needed=".concat(neededVersion.join("."), ", current=").concat(currentModuleApiVersion.join("."))
+					});
+					return true;
+				}
+			},
+			{
+				key: "setModules",
+				value: function setModules(obj) {
+					for (var _i16 = 0, _this$modules2 = this.modules; _i16 < _this$modules2.length; _i16++) _this$modules2[_i16].set(obj);
+				}
+			},
+			{
+				key: "sendEvent",
+				value: function sendEvent(eventName) {
+					for (var _i18 = 0, _this$modules4 = this.modules; _i18 < _this$modules4.length; _i18++) _this$modules4[_i18].on(eventName);
+				}
+			},
+			{
+				key: "attachModule",
+				value: function attachModule(module$2) {
+					if (this.v4Constructor) throw new XTInternalError("attachModule() should not be called manually when using the v4 constructor");
+					deprecatedMethod(this, "attachModule");
+					var moduleType = _typeof(module$2);
+					if (moduleType === "function") throw new XTInternalError("Cannot attach a class/function as a module. Most probably you forgot to instantiate the module by using `new` on the module.");
+					if (!module$2 || moduleType !== "object") throw new XTInternalError("Cannot attachModule with a falsy value");
+					if (module$2.requiredAPIVersion) this.verifyApiVersion(module$2.requiredAPIVersion);
+					if (module$2.attached === true) if (typeof module$2.clone === "function") module$2 = module$2.clone();
+					else throw new Error("Cannot attach a module that was already attached : \"".concat(module$2.name, "\". The most likely cause is that you are instantiating the module at the root level, and using it for multiple instances of Docxtemplater"));
+					module$2.attached = true;
+					var wrappedModule = moduleWrapper(module$2);
+					this.modules.push(wrappedModule);
+					wrappedModule.on("attached");
+					if (this.fileType) dropUnsupportedFileTypesModules(this);
+					return this;
+				}
+			},
+			{
+				key: "findModule",
+				value: function findModule(name) {
+					for (var _i20 = 0, _this$modules6 = this.modules; _i20 < _this$modules6.length; _i20++) {
+						var _module5 = _this$modules6[_i20];
+						if (_module5.name === name) return _module5;
+					}
+				}
+			},
+			{
+				key: "setOptions",
+				value: function setOptions(options) {
+					var _this$delimiters, _this$delimiters2;
+					if (this.v4Constructor) throw new Error("setOptions() should not be called manually when using the v4 constructor");
+					if (!options) throw new Error("setOptions should be called with an object as first parameter");
+					var result = dxtOptionsSchema.validate(options);
+					if (result.success === false) throw new Error(result.error);
+					deprecatedMethod(this, "setOptions");
+					this.options = {};
+					var defaults = getDefaults();
+					for (var key in defaults) {
+						var defaultValue = defaults[key];
+						this.options[key] = options[key] != null ? options[key] : this[key] || defaultValue;
+						this[key] = this.options[key];
+					}
+					(_this$delimiters = this.delimiters).start && (_this$delimiters.start = utf8ToWord(this.delimiters.start));
+					(_this$delimiters2 = this.delimiters).end && (_this$delimiters2.end = utf8ToWord(this.delimiters.end));
+					return this;
+				}
+			},
+			{
+				key: "loadZip",
+				value: function loadZip(zip) {
+					if (this.v4Constructor) throw new Error("loadZip() should not be called manually when using the v4 constructor");
+					deprecatedMethod(this, "loadZip");
+					if (zip.loadAsync) throw new XTInternalError("Docxtemplater doesn't handle JSZip version >=3, please use pizzip");
+					if (zip.xtRendered) this.options.warnFn([/* @__PURE__ */ new Error("This zip file appears to be the outcome of a previous docxtemplater generation. This typically indicates that docxtemplater was integrated by reusing the same zip file. It is recommended to create a new Pizzip instance for each docxtemplater generation.")]);
+					this.zip = zip;
+					this.updateFileTypeConfig();
+					this.modules = concatArrays([this.fileTypeConfig.baseModules.map(function(moduleFunction) {
+						return moduleFunction();
+					}), this.modules]);
+					for (var _i22 = 0, _this$modules8 = this.modules; _i22 < _this$modules8.length; _i22++) {
+						var _module6 = _this$modules8[_i22];
+						_module6.zip = this.zip;
+						_module6.docxtemplater = this;
+						_module6.fileTypeConfig = this.fileTypeConfig;
+						_module6.fileType = this.fileType;
+						_module6.xtOptions = this.options;
+						_module6.modules = this.modules;
+					}
+					dropUnsupportedFileTypesModules(this);
+					return this;
+				}
+			},
+			{
+				key: "precompileFile",
+				value: function precompileFile(fileName) {
+					var currentFile = this.createTemplateClass(fileName);
+					currentFile.preparse();
+					this.compiled[fileName] = currentFile;
+				}
+			},
+			{
+				key: "compileFile",
+				value: function compileFile(fileName) {
+					this.compiled[fileName].parse();
+				}
+			},
+			{
+				key: "getScopeManager",
+				value: function getScopeManager(to, currentFile, tags) {
+					var _this$scopeManagers;
+					(_this$scopeManagers = this.scopeManagers)[to] || (_this$scopeManagers[to] = createScope({
+						tags,
+						parser: this.parser,
+						cachedParsers: currentFile.cachedParsers
+					}));
+					return this.scopeManagers[to];
+				}
+			},
+			{
+				key: "resolveData",
+				value: function resolveData(data) {
+					var _this = this;
+					deprecatedMethod(this, "resolveData");
+					var errors = [];
+					if (!Object.keys(this.compiled).length) throwResolveBeforeCompile();
+					return Promise.resolve(data).then(function(data) {
+						_this.data = data;
+						_this.setModules({
+							data: _this.data,
+							Lexer
+						});
+						_this.mapper = _this.modules.reduce(function(value, module$3) {
+							return module$3.getRenderedMap(value);
+						}, {});
+						var promises = [];
+						var _loop = function _loop() {
+							var to = _Object$keys2[_i24];
+							var _this$mapper$to = _this.mapper[to], from = _this$mapper$to.from, data = _this$mapper$to.data;
+							promises.push(Promise.resolve(data).then(function(data) {
+								var currentFile = _this.compiled[from];
+								currentFile.filePath = to;
+								currentFile.scopeManager = _this.getScopeManager(to, currentFile, data);
+								return currentFile.resolveTags(data).then(function(result) {
+									currentFile.scopeManager.finishedResolving = true;
+									return result;
+								}, function(errs) {
+									pushArray(errors, errs);
+								});
+							}));
+						};
+						for (var _i24 = 0, _Object$keys2 = Object.keys(_this.mapper); _i24 < _Object$keys2.length; _i24++) _loop();
+						return Promise.all(promises).then(function(resolved) {
+							if (errors.length !== 0) {
+								if (_this.options.errorLogging) logErrors(errors, _this.options.errorLogging);
+								throwMultiError(errors);
+							}
+							return concatArrays(resolved);
+						});
+					});
+				}
+			},
+			{
+				key: "compile",
+				value: function compile() {
+					deprecatedMethod(this, "compile");
+					this.updateFileTypeConfig();
+					throwIfDuplicateModules(this.modules);
+					this.modules = reorderModules(this.modules);
+					if (Object.keys(this.compiled).length) return this;
+					var options = this.options;
+					for (var _i26 = 0, _this$modules0 = this.modules; _i26 < _this$modules0.length; _i26++) options = _this$modules0[_i26].optionsTransformer(options, this);
+					this.options = options;
+					this.options.xmlFileNames = uniq(this.options.xmlFileNames);
+					for (var _i28 = 0, _this$options$xmlFile2 = this.options.xmlFileNames; _i28 < _this$options$xmlFile2.length; _i28++) {
+						var fileName = _this$options$xmlFile2[_i28];
+						var content = this.zip.files[fileName].asText();
+						this.xmlDocuments[fileName] = str2xml(content);
+					}
+					this.setModules({
+						zip: this.zip,
+						xmlDocuments: this.xmlDocuments
+					});
+					for (var _i30 = 0, _this$modules10 = this.modules; _i30 < _this$modules10.length; _i30++) {
+						var _module8 = _this$modules10[_i30];
+						_module8.xmlDocuments = this.xmlDocuments;
+					}
+					this.getTemplatedFiles();
+					this.sendEvent("before-preparse");
+					for (var _i32 = 0, _this$templatedFiles2 = this.templatedFiles; _i32 < _this$templatedFiles2.length; _i32++) {
+						var _fileName = _this$templatedFiles2[_i32];
+						if (this.zip.files[_fileName] != null) this.precompileFile(_fileName);
+					}
+					this.sendEvent("after-preparse");
+					for (var _i34 = 0, _this$templatedFiles4 = this.templatedFiles; _i34 < _this$templatedFiles4.length; _i34++) {
+						var _fileName2 = _this$templatedFiles4[_i34];
+						if (this.zip.files[_fileName2] != null) this.compiled[_fileName2].parse({ noPostParse: true });
+					}
+					this.sendEvent("after-parse");
+					for (var _i36 = 0, _this$templatedFiles6 = this.templatedFiles; _i36 < _this$templatedFiles6.length; _i36++) {
+						var _fileName3 = _this$templatedFiles6[_i36];
+						if (this.zip.files[_fileName3] != null) this.compiled[_fileName3].postparse();
+					}
+					this.sendEvent("after-postparse");
+					this.setModules({ compiled: this.compiled });
+					verifyErrors(this);
+					return this;
+				}
+			},
+			{
+				key: "updateFileTypeConfig",
+				value: function updateFileTypeConfig() {
+					this.relsTypes = getRelsTypes(this.zip);
+					var _getContentTypes = getContentTypes(this.zip), overrides = _getContentTypes.overrides, defaults = _getContentTypes.defaults, contentTypes = _getContentTypes.contentTypes, contentTypeXml = _getContentTypes.contentTypeXml;
+					if (contentTypeXml) {
+						this.filesContentTypes = collectContentTypes(overrides, defaults, this.zip);
+						this.invertedContentTypes = invertMap(this.filesContentTypes);
+						this.setModules({
+							contentTypes: this.contentTypes,
+							invertedContentTypes: this.invertedContentTypes
+						});
+					}
+					var fileType;
+					if (this.zip.files.mimetype) fileType = "odt";
+					for (var _i38 = 0, _this$modules12 = this.modules; _i38 < _this$modules12.length; _i38++) fileType = _this$modules12[_i38].getFileType({
+						zip: this.zip,
+						contentTypes,
+						contentTypeXml,
+						overrides,
+						defaults,
+						doc: this
+					}) || fileType;
+					this.fileType = fileType;
+					if (fileType === "odt") throwFileTypeNotHandled(fileType);
+					if (!fileType) throwFileTypeNotIdentified(this.zip);
+					addXmlFileNamesFromXmlContentType(this);
+					dropUnsupportedFileTypesModules(this);
+					this.fileTypeConfig = this.options.fileTypeConfig || this.fileTypeConfig;
+					if (!this.fileTypeConfig) if (Docxtemplater.FileTypeConfig[this.fileType]) this.fileTypeConfig = Docxtemplater.FileTypeConfig[this.fileType]();
+					else {
+						var message = "Filetype \"".concat(this.fileType, "\" is not supported");
+						var id = "filetype_not_supported";
+						if (this.fileType === "xlsx") {
+							message = "Filetype \"".concat(this.fileType, "\" is supported only with the paid XlsxModule");
+							id = "xlsx_filetype_needs_xlsx_module";
+						}
+						var err = new XTTemplateError(message);
+						err.properties = {
+							id,
+							explanation: message
+						};
+						throw err;
+					}
+					return this;
+				}
+			},
+			{
+				key: "renderAsync",
+				value: function renderAsync(data) {
+					var _this2 = this;
+					this.hideDeprecations = true;
+					var promise = this.resolveData(data);
+					this.hideDeprecations = false;
+					this.zip.xtRendered = true;
+					return promise.then(function() {
+						return _this2.render();
+					});
+				}
+			},
+			{
+				key: "render",
+				value: function render(data) {
+					this.zip.xtRendered = true;
+					if (this.rendered) throwRenderTwice();
+					this.rendered = true;
+					if (Object.keys(this.compiled).length === 0) this.compile();
+					if (this.errors.length > 0) throwRenderInvalidTemplate();
+					if (arguments.length > 0) this.data = data;
+					this.setModules({
+						data: this.data,
+						Lexer
+					});
+					this.mapper || (this.mapper = this.modules.reduce(function(value, module$4) {
+						return module$4.getRenderedMap(value);
+					}, {}));
+					var output = [];
+					for (var to in this.mapper) {
+						var _this$mapper$to2 = this.mapper[to], from = _this$mapper$to2.from, _data = _this$mapper$to2.data;
+						var currentFile = this.compiled[from];
+						currentFile.scopeManager = this.getScopeManager(to, currentFile, _data);
+						currentFile.render(to);
+						output.push([
+							to,
+							currentFile.content,
+							currentFile
+						]);
+						delete currentFile.content;
+					}
+					for (var _i40 = 0; _i40 < output.length; _i40++) {
+						var outputPart = output[_i40];
+						var _outputPart = _slicedToArray(outputPart, 3), content = _outputPart[1], _currentFile = _outputPart[2];
+						for (var _i42 = 0, _this$modules14 = this.modules; _i42 < _this$modules14.length; _i42++) {
+							var _module0 = _this$modules14[_i42];
+							if (_module0.preZip) {
+								var result = _module0.preZip(content, _currentFile);
+								if (typeof result === "string") outputPart[1] = result;
+							}
+						}
+					}
+					for (var _i44 = 0; _i44 < output.length; _i44++) {
+						var _output$_i = _slicedToArray(output[_i44], 2), _to = _output$_i[0], _content = _output$_i[1];
+						this.zip.file(_to, _content, { createFolders: true });
+					}
+					verifyErrors(this);
+					this.sendEvent("syncing-zip");
+					this.syncZip();
+					this.sendEvent("synced-zip");
+					return this;
+				}
+			},
+			{
+				key: "syncZip",
+				value: function syncZip() {
+					for (var fileName in this.xmlDocuments) {
+						this.zip.remove(fileName);
+						var content = xml2str(this.xmlDocuments[fileName]);
+						this.zip.file(fileName, content, { createFolders: true });
+					}
+				}
+			},
+			{
+				key: "setData",
+				value: function setData(data) {
+					deprecatedMethod(this, "setData");
+					this.data = data;
+					return this;
+				}
+			},
+			{
+				key: "getZip",
+				value: function getZip() {
+					return this.zip;
+				}
+			},
+			{
+				key: "createTemplateClass",
+				value: function createTemplateClass(path) {
+					var content = this.zip.files[path].asText();
+					return this.createTemplateClassFromContent(content, path);
+				}
+			},
+			{
+				key: "createTemplateClassFromContent",
+				value: function createTemplateClassFromContent(content, filePath) {
+					var xmltOptions = {
+						filePath,
+						contentType: this.filesContentTypes[filePath],
+						relsType: this.relsTypes[filePath]
+					};
+					var defaults = getDefaults();
+					var defaultKeys = pushArray(Object.keys(defaults), [
+						"filesContentTypes",
+						"fileTypeConfig",
+						"fileType",
+						"modules"
+					]);
+					for (var _i46 = 0; _i46 < defaultKeys.length; _i46++) {
+						var key = defaultKeys[_i46];
+						xmltOptions[key] = this[key];
+					}
+					return new Docxtemplater.XmlTemplater(content, xmltOptions);
+				}
+			},
+			{
+				key: "getFullText",
+				value: function getFullText(path) {
+					return this.createTemplateClass(path || this.fileTypeConfig.textPath(this)).getFullText();
+				}
+			},
+			{
+				key: "getTemplatedFiles",
+				value: function getTemplatedFiles() {
+					this.templatedFiles = this.fileTypeConfig.getTemplatedFiles(this.zip);
+					pushArray(this.templatedFiles, this.targets);
+					var templatedNs = this.fileTypeConfig.templatedNs || [];
+					if (templatedNs.length > 0) {
+						for (var key in this.filesContentTypes) if (/^customXml\/item\d+\.xml$/.test(key)) for (var _i48 = 0; _i48 < templatedNs.length; _i48++) {
+							var ns = templatedNs[_i48];
+							if (this.zip.file(key).asText().indexOf("xmlns=\"".concat(ns, "\"")) !== -1) this.templatedFiles.push(key);
+						}
+					}
+					this.templatedFiles = uniq(this.templatedFiles);
+					return this.templatedFiles;
+				}
+			},
+			{
+				key: "getTags",
+				value: function getTags() {
+					var result = {
+						headers: [],
+						footers: []
+					};
+					for (var key in this.compiled) {
+						var contentType = this.filesContentTypes[key];
+						if (contentType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml") result.document = {
+							target: key,
+							tags: _getTags(this.compiled[key].postparsed)
+						};
+						if (contentType === "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml") result.headers.push({
+							target: key,
+							tags: _getTags(this.compiled[key].postparsed)
+						});
+						if (contentType === "application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml") result.footers.push({
+							target: key,
+							tags: _getTags(this.compiled[key].postparsed)
+						});
+					}
+					return result;
+				}
+			},
+			{
+				key: "toBuffer",
+				value: function toBuffer(options) {
+					return this.zip.generate(_objectSpread(_objectSpread({
+						compression: "DEFLATE",
+						fileOrder: zipFileOrder
+					}, options), {}, { type: "nodebuffer" }));
+				}
+			},
+			{
+				key: "toBlob",
+				value: function toBlob(options) {
+					return this.zip.generate(_objectSpread(_objectSpread({
+						compression: "DEFLATE",
+						fileOrder: zipFileOrder
+					}, options), {}, { type: "blob" }));
+				}
+			},
+			{
+				key: "toBase64",
+				value: function toBase64(options) {
+					return this.zip.generate(_objectSpread(_objectSpread({
+						compression: "DEFLATE",
+						fileOrder: zipFileOrder
+					}, options), {}, { type: "base64" }));
+				}
+			},
+			{
+				key: "toUint8Array",
+				value: function toUint8Array(options) {
+					return this.zip.generate(_objectSpread(_objectSpread({
+						compression: "DEFLATE",
+						fileOrder: zipFileOrder
+					}, options), {}, { type: "uint8array" }));
+				}
+			},
+			{
+				key: "toArrayBuffer",
+				value: function toArrayBuffer(options) {
+					return this.zip.generate(_objectSpread(_objectSpread({
+						compression: "DEFLATE",
+						fileOrder: zipFileOrder
+					}, options), {}, { type: "arraybuffer" }));
+				}
+			}
+		]);
+	}();
+	Docxtemplater.DocUtils = DocUtils;
+	Docxtemplater.Errors = require_errors();
+	Docxtemplater.XmlTemplater = require_xml_templater();
+	Docxtemplater.FileTypeConfig = require_file_type_config();
+	Docxtemplater.XmlMatcher = require_xml_matcher();
+	module.exports = Docxtemplater;
+	module.exports["default"] = Docxtemplater;
+}));
+//#endregion
+//#region node_modules/pizzip/js/base64.js
+var require_base64 = /* @__PURE__ */ __commonJSMin(((exports) => {
+	var _keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+	exports.encode = function(input) {
+		var output = "";
+		var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+		var i = 0;
+		while (i < input.length) {
+			chr1 = input.charCodeAt(i++);
+			chr2 = input.charCodeAt(i++);
+			chr3 = input.charCodeAt(i++);
+			enc1 = chr1 >> 2;
+			enc2 = (chr1 & 3) << 4 | chr2 >> 4;
+			enc3 = (chr2 & 15) << 2 | chr3 >> 6;
+			enc4 = chr3 & 63;
+			if (isNaN(chr2)) enc3 = enc4 = 64;
+			else if (isNaN(chr3)) enc4 = 64;
+			output = output + _keyStr.charAt(enc1) + _keyStr.charAt(enc2) + _keyStr.charAt(enc3) + _keyStr.charAt(enc4);
+		}
+		return output;
+	};
+	exports.decode = function(input) {
+		var output = "";
+		var chr1, chr2, chr3;
+		var enc1, enc2, enc3, enc4;
+		var i = 0;
+		input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+		while (i < input.length) {
+			enc1 = _keyStr.indexOf(input.charAt(i++));
+			enc2 = _keyStr.indexOf(input.charAt(i++));
+			enc3 = _keyStr.indexOf(input.charAt(i++));
+			enc4 = _keyStr.indexOf(input.charAt(i++));
+			chr1 = enc1 << 2 | enc2 >> 4;
+			chr2 = (enc2 & 15) << 4 | enc3 >> 2;
+			chr3 = (enc3 & 3) << 6 | enc4;
+			output += String.fromCharCode(chr1);
+			if (enc3 !== 64) output += String.fromCharCode(chr2);
+			if (enc4 !== 64) output += String.fromCharCode(chr3);
+		}
+		return output;
+	};
+}));
+//#endregion
+//#region node_modules/pizzip/js/support.js
+var require_support = /* @__PURE__ */ __commonJSMin(((exports) => {
+	exports.base64 = true;
+	exports.array = true;
+	exports.string = true;
+	exports.arraybuffer = typeof ArrayBuffer !== "undefined" && typeof Uint8Array !== "undefined";
+	exports.nodebuffer = typeof Buffer !== "undefined";
+	exports.uint8array = typeof Uint8Array !== "undefined";
+	if (typeof ArrayBuffer === "undefined") exports.blob = false;
+	else {
+		var buffer = /* @__PURE__ */ new ArrayBuffer(0);
+		try {
+			exports.blob = new Blob([buffer], { type: "application/zip" }).size === 0;
+		} catch (_unused) {
+			try {
+				var builder = new (window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder || window.MSBlobBuilder)();
+				builder.append(buffer);
+				exports.blob = builder.getBlob("application/zip").size === 0;
+			} catch (_unused2) {
+				exports.blob = false;
+			}
+		}
+	}
+}));
+//#endregion
+//#region node_modules/pizzip/node_modules/pako/dist/pako.es5.min.js
+var require_pako_es5_min = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	/*! pako 2.2.0 https://github.com/nodeca/pako @license (MIT AND Zlib) */
+	(function(t, e) {
+		"object" == typeof exports && "undefined" != typeof module ? e(exports) : "function" == typeof define && define.amd ? define(["exports"], e) : e((t = "undefined" != typeof globalThis ? globalThis : t || self).pako = {});
+	})(exports, (function(t) {
+		"use strict";
+		function e(t) {
+			for (var e = t.length; --e >= 0;) t[e] = 0;
+		}
+		var a = 256, n = 286, i = 30, r = 15, s = new Uint8Array([
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			1,
+			1,
+			1,
+			1,
+			2,
+			2,
+			2,
+			2,
+			3,
+			3,
+			3,
+			3,
+			4,
+			4,
+			4,
+			4,
+			5,
+			5,
+			5,
+			5,
+			0
+		]), o = new Uint8Array([
+			0,
+			0,
+			0,
+			0,
+			1,
+			1,
+			2,
+			2,
+			3,
+			3,
+			4,
+			4,
+			5,
+			5,
+			6,
+			6,
+			7,
+			7,
+			8,
+			8,
+			9,
+			9,
+			10,
+			10,
+			11,
+			11,
+			12,
+			12,
+			13,
+			13
+		]), l = new Uint8Array([
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			2,
+			3,
+			7
+		]), h = new Uint8Array([
+			16,
+			17,
+			18,
+			0,
+			8,
+			7,
+			9,
+			6,
+			10,
+			5,
+			11,
+			4,
+			12,
+			3,
+			13,
+			2,
+			14,
+			1,
+			15
+		]), d = new Array(576);
+		e(d);
+		var _ = new Array(60);
+		e(_);
+		var f = new Array(512);
+		e(f);
+		var u = new Array(256);
+		e(u);
+		var c = new Array(29);
+		e(c);
+		var w, m, b, g = new Array(i);
+		function p(t, e, a, n, i) {
+			this.static_tree = t, this.extra_bits = e, this.extra_base = a, this.elems = n, this.max_length = i, this.has_stree = t && t.length;
+		}
+		function v(t, e) {
+			this.dyn_tree = t, this.max_code = 0, this.stat_desc = e;
+		}
+		e(g);
+		var k = function(t) {
+			return t < 256 ? f[t] : f[256 + (t >>> 7)];
+		}, y = function(t, e) {
+			t.pending_buf[t.pending++] = 255 & e, t.pending_buf[t.pending++] = e >>> 8 & 255;
+		}, x = function(t, e, a) {
+			t.bi_valid > 16 - a ? (t.bi_buf |= e << t.bi_valid & 65535, y(t, t.bi_buf), t.bi_buf = e >> 16 - t.bi_valid, t.bi_valid += a - 16) : (t.bi_buf |= e << t.bi_valid & 65535, t.bi_valid += a);
+		}, z = function(t, e, a) {
+			x(t, a[2 * e], a[2 * e + 1]);
+		}, A = function(t, e) {
+			var a = 0;
+			do
+				a |= 1 & t, t >>>= 1, a <<= 1;
+			while (--e > 0);
+			return a >>> 1;
+		}, E = function(t, e, a) {
+			var n, i, s = new Array(16), o = 0;
+			for (n = 1; n <= r; n++) o = o + a[n - 1] << 1, s[n] = o;
+			for (i = 0; i <= e; i++) {
+				var l = t[2 * i + 1];
+				0 !== l && (t[2 * i] = A(s[l]++, l));
+			}
+		}, R = function(t) {
+			var e;
+			for (e = 0; e < n; e++) t.dyn_ltree[2 * e] = 0;
+			for (e = 0; e < i; e++) t.dyn_dtree[2 * e] = 0;
+			for (e = 0; e < 19; e++) t.bl_tree[2 * e] = 0;
+			t.dyn_ltree[512] = 1, t.opt_len = t.static_len = 0, t.sym_next = t.matches = 0;
+		}, Z = function(t) {
+			t.bi_valid > 8 ? y(t, t.bi_buf) : t.bi_valid > 0 && (t.pending_buf[t.pending++] = t.bi_buf), t.bi_buf = 0, t.bi_valid = 0;
+		}, S = function(t, e, a, n) {
+			var i = 2 * e, r = 2 * a;
+			return t[i] < t[r] || t[i] === t[r] && n[e] <= n[a];
+		}, U = function(t, e, a) {
+			for (var n = t.heap[a], i = a << 1; i <= t.heap_len && (i < t.heap_len && S(e, t.heap[i + 1], t.heap[i], t.depth) && i++, !S(e, n, t.heap[i], t.depth));) t.heap[a] = t.heap[i], a = i, i <<= 1;
+			t.heap[a] = n;
+		}, D = function(t, e, n) {
+			var i, r, l, h, d = 0;
+			if (0 !== t.sym_next) do
+				i = 255 & t.pending_buf[t.sym_buf + d++], i += (255 & t.pending_buf[t.sym_buf + d++]) << 8, r = t.pending_buf[t.sym_buf + d++], 0 === i ? z(t, r, e) : (l = u[r], z(t, l + a + 1, e), 0 !== (h = s[l]) && (r -= c[l], x(t, r, h)), i--, l = k(i), z(t, l, n), 0 !== (h = o[l]) && (i -= g[l], x(t, i, h)));
+			while (d < t.sym_next);
+			z(t, 256, e);
+		}, T = function(t, e) {
+			var a, n, i, s = e.dyn_tree, o = e.stat_desc.static_tree, l = e.stat_desc.has_stree, h = e.stat_desc.elems, d = -1;
+			for (t.heap_len = 0, t.heap_max = 573, a = 0; a < h; a++) 0 !== s[2 * a] ? (t.heap[++t.heap_len] = d = a, t.depth[a] = 0) : s[2 * a + 1] = 0;
+			for (; t.heap_len < 2;) s[2 * (i = t.heap[++t.heap_len] = d < 2 ? ++d : 0)] = 1, t.depth[i] = 0, t.opt_len--, l && (t.static_len -= o[2 * i + 1]);
+			for (e.max_code = d, a = t.heap_len >> 1; a >= 1; a--) U(t, s, a);
+			i = h;
+			do
+				a = t.heap[1], t.heap[1] = t.heap[t.heap_len--], U(t, s, 1), n = t.heap[1], t.heap[--t.heap_max] = a, t.heap[--t.heap_max] = n, s[2 * i] = s[2 * a] + s[2 * n], t.depth[i] = (t.depth[a] >= t.depth[n] ? t.depth[a] : t.depth[n]) + 1, s[2 * a + 1] = s[2 * n + 1] = i, t.heap[1] = i++, U(t, s, 1);
+			while (t.heap_len >= 2);
+			t.heap[--t.heap_max] = t.heap[1], function(t, e) {
+				var a, n, i, s, o, l, h = e.dyn_tree, d = e.max_code, _ = e.stat_desc.static_tree, f = e.stat_desc.has_stree, u = e.stat_desc.extra_bits, c = e.stat_desc.extra_base, w = e.stat_desc.max_length, m = 0;
+				for (s = 0; s <= r; s++) t.bl_count[s] = 0;
+				for (h[2 * t.heap[t.heap_max] + 1] = 0, a = t.heap_max + 1; a < 573; a++) (s = h[2 * h[2 * (n = t.heap[a]) + 1] + 1] + 1) > w && (s = w, m++), h[2 * n + 1] = s, n > d || (t.bl_count[s]++, o = 0, n >= c && (o = u[n - c]), l = h[2 * n], t.opt_len += l * (s + o), f && (t.static_len += l * (_[2 * n + 1] + o)));
+				if (0 !== m) {
+					do {
+						for (s = w - 1; 0 === t.bl_count[s];) s--;
+						t.bl_count[s]--, t.bl_count[s + 1] += 2, t.bl_count[w]--, m -= 2;
+					} while (m > 0);
+					for (s = w; 0 !== s; s--) for (n = t.bl_count[s]; 0 !== n;) (i = t.heap[--a]) > d || (h[2 * i + 1] !== s && (t.opt_len += (s - h[2 * i + 1]) * h[2 * i], h[2 * i + 1] = s), n--);
+				}
+			}(t, e), E(s, d, t.bl_count);
+		}, O = function(t, e, a) {
+			var n, i, r = -1, s = e[1], o = 0, l = 7, h = 4;
+			for (0 === s && (l = 138, h = 3), e[2 * (a + 1) + 1] = 65535, n = 0; n <= a; n++) i = s, s = e[2 * (n + 1) + 1], ++o < l && i === s || (o < h ? t.bl_tree[2 * i] += o : 0 !== i ? (i !== r && t.bl_tree[2 * i]++, t.bl_tree[32]++) : o <= 10 ? t.bl_tree[34]++ : t.bl_tree[36]++, o = 0, r = i, 0 === s ? (l = 138, h = 3) : i === s ? (l = 6, h = 3) : (l = 7, h = 4));
+		}, F = function(t, e, a) {
+			var n, i, r = -1, s = e[1], o = 0, l = 7, h = 4;
+			for (0 === s && (l = 138, h = 3), n = 0; n <= a; n++) if (i = s, s = e[2 * (n + 1) + 1], !(++o < l && i === s)) {
+				if (o < h) do
+					z(t, i, t.bl_tree);
+				while (0 != --o);
+				else 0 !== i ? (i !== r && (z(t, i, t.bl_tree), o--), z(t, 16, t.bl_tree), x(t, o - 3, 2)) : o <= 10 ? (z(t, 17, t.bl_tree), x(t, o - 3, 3)) : (z(t, 18, t.bl_tree), x(t, o - 11, 7));
+				o = 0, r = i, 0 === s ? (l = 138, h = 3) : i === s ? (l = 6, h = 3) : (l = 7, h = 4);
+			}
+		}, I = !1, L = function(t, e, a, n) {
+			x(t, 0 + (n ? 1 : 0), 3), Z(t), y(t, a), y(t, ~a), a && t.pending_buf.set(t.window.subarray(e, e + a), t.pending), t.pending += a;
+		}, N = function(t, e, n, i) {
+			var r, s, o = 0;
+			t.level > 0 ? (2 === t.strm.data_type && (t.strm.data_type = function(t) {
+				var e, n = 4093624447;
+				for (e = 0; e <= 31; e++, n >>>= 1) if (1 & n && 0 !== t.dyn_ltree[2 * e]) return 0;
+				if (0 !== t.dyn_ltree[18] || 0 !== t.dyn_ltree[20] || 0 !== t.dyn_ltree[26]) return 1;
+				for (e = 32; e < a; e++) if (0 !== t.dyn_ltree[2 * e]) return 1;
+				return 0;
+			}(t)), T(t, t.l_desc), T(t, t.d_desc), o = function(t) {
+				var e;
+				for (O(t, t.dyn_ltree, t.l_desc.max_code), O(t, t.dyn_dtree, t.d_desc.max_code), T(t, t.bl_desc), e = 18; e >= 3 && 0 === t.bl_tree[2 * h[e] + 1]; e--);
+				return t.opt_len += 3 * (e + 1) + 5 + 5 + 4, e;
+			}(t), r = t.opt_len + 3 + 7 >>> 3, (s = t.static_len + 3 + 7 >>> 3) <= r && (r = s)) : r = s = n + 5, n + 4 <= r && -1 !== e ? L(t, e, n, i) : 4 === t.strategy || s === r ? (x(t, 2 + (i ? 1 : 0), 3), D(t, d, _)) : (x(t, 4 + (i ? 1 : 0), 3), function(t, e, a, n) {
+				var i;
+				for (x(t, e - 257, 5), x(t, a - 1, 5), x(t, n - 4, 4), i = 0; i < n; i++) x(t, t.bl_tree[2 * h[i] + 1], 3);
+				F(t, t.dyn_ltree, e - 1), F(t, t.dyn_dtree, a - 1);
+			}(t, t.l_desc.max_code + 1, t.d_desc.max_code + 1, o + 1), D(t, t.dyn_ltree, t.dyn_dtree)), R(t), i && Z(t);
+		}, B = {
+			_tr_init: function(t) {
+				I || (function() {
+					var t, e, a, h, v, k = new Array(16);
+					for (a = 0, h = 0; h < 28; h++) for (c[h] = a, t = 0; t < 1 << s[h]; t++) u[a++] = h;
+					for (u[a - 1] = h, v = 0, h = 0; h < 16; h++) for (g[h] = v, t = 0; t < 1 << o[h]; t++) f[v++] = h;
+					for (v >>= 7; h < i; h++) for (g[h] = v << 7, t = 0; t < 1 << o[h] - 7; t++) f[256 + v++] = h;
+					for (e = 0; e <= r; e++) k[e] = 0;
+					for (t = 0; t <= 143;) d[2 * t + 1] = 8, t++, k[8]++;
+					for (; t <= 255;) d[2 * t + 1] = 9, t++, k[9]++;
+					for (; t <= 279;) d[2 * t + 1] = 7, t++, k[7]++;
+					for (; t <= 287;) d[2 * t + 1] = 8, t++, k[8]++;
+					for (E(d, 287, k), t = 0; t < i; t++) _[2 * t + 1] = 5, _[2 * t] = A(t, 5);
+					w = new p(d, s, 257, n, r), m = new p(_, o, 0, i, r), b = new p(new Array(0), l, 0, 19, 7);
+				}(), I = !0), t.l_desc = new v(t.dyn_ltree, w), t.d_desc = new v(t.dyn_dtree, m), t.bl_desc = new v(t.bl_tree, b), t.bi_buf = 0, t.bi_valid = 0, R(t);
+			},
+			_tr_stored_block: L,
+			_tr_flush_block: N,
+			_tr_tally: function(t, e, n) {
+				return t.pending_buf[t.sym_buf + t.sym_next++] = e, t.pending_buf[t.sym_buf + t.sym_next++] = e >> 8, t.pending_buf[t.sym_buf + t.sym_next++] = n, 0 === e ? t.dyn_ltree[2 * n]++ : (t.matches++, e--, t.dyn_ltree[2 * (u[n] + a + 1)]++, t.dyn_dtree[2 * k(e)]++), t.sym_next === t.sym_end;
+			},
+			_tr_align: function(t) {
+				x(t, 2, 3), z(t, 256, d), function(t) {
+					16 === t.bi_valid ? (y(t, t.bi_buf), t.bi_buf = 0, t.bi_valid = 0) : t.bi_valid >= 8 && (t.pending_buf[t.pending++] = 255 & t.bi_buf, t.bi_buf >>= 8, t.bi_valid -= 8);
+				}(t);
+			}
+		}, C = function(t, e, a, n) {
+			for (var i = 65535 & t | 0, r = t >>> 16 & 65535 | 0, s = 0; 0 !== a;) {
+				a -= s = a > 2e3 ? 2e3 : a;
+				do
+					r = r + (i = i + e[n++] | 0) | 0;
+				while (--s);
+				i %= 65521, r %= 65521;
+			}
+			return i | r << 16 | 0;
+		}, H = new Uint32Array(function() {
+			for (var t, e = [], a = 0; a < 256; a++) {
+				t = a;
+				for (var n = 0; n < 8; n++) t = 1 & t ? 3988292384 ^ t >>> 1 : t >>> 1;
+				e[a] = t;
+			}
+			return e;
+		}()), M = function(t, e, a, n) {
+			var i = H, r = n + a;
+			t ^= -1;
+			for (var s = n; s < r; s++) t = t >>> 8 ^ i[255 & (t ^ e[s])];
+			return -1 ^ t;
+		}, j = {
+			2: "need dictionary",
+			1: "stream end",
+			0: "",
+			"-1": "file error",
+			"-2": "stream error",
+			"-3": "data error",
+			"-4": "insufficient memory",
+			"-5": "buffer error",
+			"-6": "incompatible version"
+		}, K = {
+			Z_NO_FLUSH: 0,
+			Z_PARTIAL_FLUSH: 1,
+			Z_SYNC_FLUSH: 2,
+			Z_FULL_FLUSH: 3,
+			Z_FINISH: 4,
+			Z_BLOCK: 5,
+			Z_TREES: 6,
+			Z_OK: 0,
+			Z_STREAM_END: 1,
+			Z_NEED_DICT: 2,
+			Z_ERRNO: -1,
+			Z_STREAM_ERROR: -2,
+			Z_DATA_ERROR: -3,
+			Z_MEM_ERROR: -4,
+			Z_BUF_ERROR: -5,
+			Z_NO_COMPRESSION: 0,
+			Z_BEST_SPEED: 1,
+			Z_BEST_COMPRESSION: 9,
+			Z_DEFAULT_COMPRESSION: -1,
+			Z_FILTERED: 1,
+			Z_HUFFMAN_ONLY: 2,
+			Z_RLE: 3,
+			Z_FIXED: 4,
+			Z_DEFAULT_STRATEGY: 0,
+			Z_BINARY: 0,
+			Z_TEXT: 1,
+			Z_UNKNOWN: 2,
+			Z_DEFLATED: 8
+		}, P = B._tr_init, Y = B._tr_stored_block, G = B._tr_flush_block, X = B._tr_tally, W = B._tr_align, q = K.Z_NO_FLUSH, J = K.Z_PARTIAL_FLUSH, Q = K.Z_FULL_FLUSH, V = K.Z_FINISH, $ = K.Z_BLOCK, tt = K.Z_OK, et = K.Z_STREAM_END, at = K.Z_STREAM_ERROR, nt = K.Z_DATA_ERROR, it = K.Z_BUF_ERROR, rt = K.Z_DEFAULT_COMPRESSION, st = K.Z_FILTERED, ot = K.Z_HUFFMAN_ONLY, lt = K.Z_RLE, ht = K.Z_FIXED, dt = K.Z_DEFAULT_STRATEGY, _t = K.Z_UNKNOWN, ft = K.Z_DEFLATED, ut = 258, ct = 262, wt = 42, mt = 113, bt = 666, gt = function(t, e) {
+			return t.msg = j[e], e;
+		}, pt = function(t) {
+			return 2 * t - (t > 4 ? 9 : 0);
+		}, vt = function(t) {
+			for (var e = t.length; --e >= 0;) t[e] = 0;
+		}, kt = function(t) {
+			var e, a, n, i = t.w_size;
+			n = e = t.hash_size;
+			do
+				a = t.head[--n], t.head[n] = a >= i ? a - i : 0;
+			while (--e);
+			n = e = i;
+			do
+				a = t.prev[--n], t.prev[n] = a >= i ? a - i : 0;
+			while (--e);
+		}, yt = function(t, e, a) {
+			return (e << t.hash_shift ^ a) & t.hash_mask;
+		}, xt = function(t, e) {
+			var a;
+			if (t.legacy_hash) a = t.ins_h = yt(t, t.ins_h, t.window[e + 3 - 1]);
+			else {
+				var n = t.window, i = n[e] | n[e + 1] << 8 | n[e + 2] << 16 | n[e + 3] << 24;
+				a = t.ins_h = Math.imul(i, 66521) + 66521 >>> 16 & t.hash_mask;
+			}
+			var r = t.prev[e & t.w_mask] = t.head[a];
+			return t.head[a] = e, r;
+		}, zt = function(t) {
+			var e = t.state, a = e.pending;
+			a > t.avail_out && (a = t.avail_out), 0 !== a && (t.output.set(e.pending_buf.subarray(e.pending_out, e.pending_out + a), t.next_out), t.next_out += a, e.pending_out += a, t.total_out += a, t.avail_out -= a, e.pending -= a, 0 === e.pending && (e.pending_out = 0));
+		}, At = function(t, e) {
+			G(t, t.block_start >= 0 ? t.block_start : -1, t.strstart - t.block_start, e), t.block_start = t.strstart, zt(t.strm);
+		}, Et = function(t, e) {
+			t.pending_buf[t.pending++] = e;
+		}, Rt = function(t, e) {
+			t.pending_buf[t.pending++] = e >>> 8 & 255, t.pending_buf[t.pending++] = 255 & e;
+		}, Zt = function(t, e, a, n) {
+			var i = t.avail_in;
+			return i > n && (i = n), 0 === i ? 0 : (t.avail_in -= i, e.set(t.input.subarray(t.next_in, t.next_in + i), a), 1 === t.state.wrap ? t.adler = C(t.adler, e, i, a) : 2 === t.state.wrap && (t.adler = M(t.adler, e, i, a)), t.next_in += i, t.total_in += i, i);
+		}, St = function(t, e) {
+			var a, n, i = t.max_chain_length, r = t.strstart, s = t.prev_length, o = t.nice_match, l = t.strstart > t.w_size - ct ? t.strstart - (t.w_size - ct) : 0, h = t.window, d = t.w_mask, _ = t.prev, f = t.strstart + ut, u = h[r + s - 1], c = h[r + s];
+			t.prev_length >= t.good_match && (i >>= 2), o > t.lookahead && (o = t.lookahead);
+			do
+				if (h[(a = e) + s] === c && h[a + s - 1] === u && h[a] === h[r] && h[++a] === h[r + 1]) {
+					r += 2, a++;
+					do					;
+while (h[++r] === h[++a] && h[++r] === h[++a] && h[++r] === h[++a] && h[++r] === h[++a] && h[++r] === h[++a] && h[++r] === h[++a] && h[++r] === h[++a] && h[++r] === h[++a] && r < f);
+					if (n = ut - (f - r), r = f - ut, n > s) {
+						if (t.match_start = e, s = n, n >= o) break;
+						u = h[r + s - 1], c = h[r + s];
+					}
+				}
+			while ((e = _[e & d]) > l && 0 != --i);
+			return s <= t.lookahead ? s : t.lookahead;
+		}, Ut = function(t) {
+			var e, a, n, i = t.w_size;
+			do {
+				if (a = t.window_size - t.lookahead - t.strstart, t.strstart >= i + (i - ct) && (t.window.set(t.window.subarray(i, i + i - a), 0), t.match_start -= i, t.strstart -= i, t.block_start -= i, t.insert > t.strstart && (t.insert = t.strstart), kt(t), a += i), 0 === t.strm.avail_in) break;
+				if (e = Zt(t.strm, t.window, t.strstart + t.lookahead, a), t.lookahead += e, t.legacy_hash) {
+					if (t.lookahead + t.insert >= 3) for (n = t.strstart - t.insert, t.ins_h = t.window[n], t.ins_h = yt(t, t.ins_h, t.window[n + 1]); t.insert && (xt(t, n), n++, t.insert--, !(t.lookahead + t.insert < 3)););
+				} else if (t.lookahead + t.insert > 3) for (n = t.strstart - t.insert; t.insert && (xt(t, n), n++, t.insert--, !(t.lookahead + t.insert <= 3)););
+			} while (t.lookahead < ct && 0 !== t.strm.avail_in);
+		}, Dt = function(t, e) {
+			var a, n, i, r = t.pending_buf_size - 5 > t.w_size ? t.w_size : t.pending_buf_size - 5, s = 0, o = t.strm.avail_in;
+			do {
+				if (a = 65535, i = t.bi_valid + 42 >> 3, t.strm.avail_out < i) break;
+				if (i = t.strm.avail_out - i, a > (n = t.strstart - t.block_start) + t.strm.avail_in && (a = n + t.strm.avail_in), a > i && (a = i), a < r && (0 === a && e !== V || e === q || a !== n + t.strm.avail_in)) break;
+				s = e === V && a === n + t.strm.avail_in ? 1 : 0, Y(t, 0, 0, s), t.pending_buf[t.pending - 4] = a, t.pending_buf[t.pending - 3] = a >> 8, t.pending_buf[t.pending - 2] = ~a, t.pending_buf[t.pending - 1] = ~a >> 8, zt(t.strm), n && (n > a && (n = a), t.strm.output.set(t.window.subarray(t.block_start, t.block_start + n), t.strm.next_out), t.strm.next_out += n, t.strm.avail_out -= n, t.strm.total_out += n, t.block_start += n, a -= n), a && (Zt(t.strm, t.strm.output, t.strm.next_out, a), t.strm.next_out += a, t.strm.avail_out -= a, t.strm.total_out += a);
+			} while (0 === s);
+			return (o -= t.strm.avail_in) && (o >= t.w_size ? (t.matches = 2, t.window.set(t.strm.input.subarray(t.strm.next_in - t.w_size, t.strm.next_in), 0), t.strstart = t.w_size, t.insert = t.strstart) : (t.window_size - t.strstart <= o && (t.strstart -= t.w_size, t.window.set(t.window.subarray(t.w_size, t.w_size + t.strstart), 0), t.matches < 2 && t.matches++, t.insert > t.strstart && (t.insert = t.strstart)), t.window.set(t.strm.input.subarray(t.strm.next_in - o, t.strm.next_in), t.strstart), t.strstart += o, t.insert += o > t.w_size - t.insert ? t.w_size - t.insert : o), t.block_start = t.strstart), t.high_water < t.strstart && (t.high_water = t.strstart), s ? 4 : e !== q && e !== V && 0 === t.strm.avail_in && t.strstart === t.block_start ? 2 : (i = t.window_size - t.strstart, t.strm.avail_in > i && t.block_start >= t.w_size && (t.block_start -= t.w_size, t.strstart -= t.w_size, t.window.set(t.window.subarray(t.w_size, t.w_size + t.strstart), 0), t.matches < 2 && t.matches++, i += t.w_size, t.insert > t.strstart && (t.insert = t.strstart)), i > t.strm.avail_in && (i = t.strm.avail_in), i && (Zt(t.strm, t.window, t.strstart, i), t.strstart += i, t.insert += i > t.w_size - t.insert ? t.w_size - t.insert : i), t.high_water < t.strstart && (t.high_water = t.strstart), i = t.bi_valid + 42 >> 3, r = (i = t.pending_buf_size - i > 65535 ? 65535 : t.pending_buf_size - i) > t.w_size ? t.w_size : i, ((n = t.strstart - t.block_start) >= r || (n || e === V) && e !== q && 0 === t.strm.avail_in && n <= i) && (a = n > i ? i : n, s = e === V && 0 === t.strm.avail_in && a === n ? 1 : 0, Y(t, t.block_start, a, s), t.block_start += a, zt(t.strm)), s ? 3 : 1);
+		}, Tt = function(t, e) {
+			for (var a, n;;) {
+				if (t.lookahead < ct) {
+					if (Ut(t), t.lookahead < ct && e === q) return 1;
+					if (0 === t.lookahead) break;
+				}
+				if (a = 0, t.lookahead >= 3 && (a = xt(t, t.strstart)), 0 !== a && t.strstart - a <= t.w_size - ct && (t.match_length = St(t, a)), t.match_length >= 3) if (n = X(t, t.strstart - t.match_start, t.match_length - 3), t.lookahead -= t.match_length, t.match_length <= t.max_lazy_match && t.lookahead >= 3) {
+					t.match_length--;
+					do
+						t.strstart++, a = xt(t, t.strstart);
+					while (0 != --t.match_length);
+					t.strstart++;
+				} else t.strstart += t.match_length, t.match_length = 0, t.legacy_hash && (t.ins_h = t.window[t.strstart], t.ins_h = yt(t, t.ins_h, t.window[t.strstart + 1]));
+				else n = X(t, 0, t.window[t.strstart]), t.lookahead--, t.strstart++;
+				if (n && (At(t, !1), 0 === t.strm.avail_out)) return 1;
+			}
+			return t.insert = t.strstart < 2 ? t.strstart : 2, e === V ? (At(t, !0), 0 === t.strm.avail_out ? 3 : 4) : t.sym_next && (At(t, !1), 0 === t.strm.avail_out) ? 1 : 2;
+		}, Ot = function(t, e) {
+			for (var a, n, i;;) {
+				if (t.lookahead < ct) {
+					if (Ut(t), t.lookahead < ct && e === q) return 1;
+					if (0 === t.lookahead) break;
+				}
+				if (a = 0, t.lookahead >= 3 && (a = xt(t, t.strstart)), t.prev_length = t.match_length, t.prev_match = t.match_start, t.match_length = 2, 0 !== a && t.prev_length < t.max_lazy_match && t.strstart - a <= t.w_size - ct && (t.match_length = St(t, a), t.match_length <= 5 && (t.strategy === st || 3 === t.match_length && t.strstart - t.match_start > 4096) && (t.match_length = 2)), t.prev_length >= 3 && t.match_length <= t.prev_length) {
+					i = t.strstart + t.lookahead - 3, n = X(t, t.strstart - 1 - t.prev_match, t.prev_length - 3), t.lookahead -= t.prev_length - 1, t.prev_length -= 2;
+					do
+						++t.strstart <= i && (a = xt(t, t.strstart));
+					while (0 != --t.prev_length);
+					if (t.match_available = 0, t.match_length = 2, t.strstart++, n && (At(t, !1), 0 === t.strm.avail_out)) return 1;
+				} else if (t.match_available) {
+					if ((n = X(t, 0, t.window[t.strstart - 1])) && At(t, !1), t.strstart++, t.lookahead--, 0 === t.strm.avail_out) return 1;
+				} else t.match_available = 1, t.strstart++, t.lookahead--;
+			}
+			return t.match_available && (n = X(t, 0, t.window[t.strstart - 1]), t.match_available = 0), t.insert = t.strstart < 2 ? t.strstart : 2, e === V ? (At(t, !0), 0 === t.strm.avail_out ? 3 : 4) : t.sym_next && (At(t, !1), 0 === t.strm.avail_out) ? 1 : 2;
+		};
+		function Ft(t, e, a, n, i) {
+			this.good_length = t, this.max_lazy = e, this.nice_length = a, this.max_chain = n, this.func = i;
+		}
+		var It = [
+			new Ft(0, 0, 0, 0, Dt),
+			new Ft(4, 4, 8, 4, Tt),
+			new Ft(4, 5, 16, 8, Tt),
+			new Ft(4, 6, 32, 32, Tt),
+			new Ft(4, 4, 16, 16, Ot),
+			new Ft(8, 16, 32, 32, Ot),
+			new Ft(8, 16, 128, 128, Ot),
+			new Ft(8, 32, 128, 256, Ot),
+			new Ft(32, 128, 258, 1024, Ot),
+			new Ft(32, 258, 258, 4096, Ot)
+		];
+		function Lt() {
+			this.strm = null, this.status = 0, this.pending_buf = null, this.pending_buf_size = 0, this.pending_out = 0, this.pending = 0, this.wrap = 0, this.gzhead = null, this.gzindex = 0, this.method = ft, this.last_flush = -1, this.w_size = 0, this.w_bits = 0, this.w_mask = 0, this.window = null, this.window_size = 0, this.prev = null, this.head = null, this.ins_h = 0, this.legacy_hash = 0, this.hash_size = 0, this.hash_bits = 0, this.hash_mask = 0, this.hash_shift = 0, this.block_start = 0, this.match_length = 0, this.prev_match = 0, this.match_available = 0, this.strstart = 0, this.match_start = 0, this.lookahead = 0, this.prev_length = 0, this.max_chain_length = 0, this.max_lazy_match = 0, this.level = 0, this.strategy = 0, this.good_match = 0, this.nice_match = 0, this.dyn_ltree = /* @__PURE__ */ new Uint16Array(1146), this.dyn_dtree = /* @__PURE__ */ new Uint16Array(122), this.bl_tree = /* @__PURE__ */ new Uint16Array(78), vt(this.dyn_ltree), vt(this.dyn_dtree), vt(this.bl_tree), this.l_desc = null, this.d_desc = null, this.bl_desc = null, this.bl_count = /* @__PURE__ */ new Uint16Array(16), this.heap = /* @__PURE__ */ new Uint16Array(573), vt(this.heap), this.heap_len = 0, this.heap_max = 0, this.depth = /* @__PURE__ */ new Uint16Array(573), vt(this.depth), this.sym_buf = 0, this.lit_bufsize = 0, this.sym_next = 0, this.sym_end = 0, this.opt_len = 0, this.static_len = 0, this.matches = 0, this.insert = 0, this.bi_buf = 0, this.bi_valid = 0;
+		}
+		var Nt = function(t) {
+			if (!t) return 1;
+			var e = t.state;
+			return !e || e.strm !== t || e.status !== wt && 57 !== e.status && 69 !== e.status && 73 !== e.status && 91 !== e.status && 103 !== e.status && e.status !== mt && e.status !== bt ? 1 : 0;
+		}, Bt = function(t) {
+			if (Nt(t)) return gt(t, at);
+			t.total_in = t.total_out = 0, t.data_type = _t;
+			var e = t.state;
+			return e.pending = 0, e.pending_out = 0, e.wrap < 0 && (e.wrap = -e.wrap), e.status = 2 === e.wrap ? 57 : e.wrap ? wt : mt, t.adler = 2 === e.wrap ? 0 : 1, e.last_flush = -2, P(e), tt;
+		}, Ct = function(t) {
+			var e, a = Bt(t);
+			return a === tt && ((e = t.state).window_size = 2 * e.w_size, vt(e.head), e.max_lazy_match = It[e.level].max_lazy, e.good_match = It[e.level].good_length, e.nice_match = It[e.level].nice_length, e.max_chain_length = It[e.level].max_chain, e.strstart = 0, e.block_start = 0, e.lookahead = 0, e.insert = 0, e.match_length = e.prev_length = 2, e.match_available = 0, e.ins_h = 0), a;
+		}, Ht = function(t, e, a, n, i, r, s) {
+			if (!t) return at;
+			var o = 1;
+			if (e === rt && (e = 6), n < 0 ? (o = 0, n = -n) : n > 15 && (o = 2, n -= 16), i < 1 || i > 9 || a !== ft || n < 8 || n > 15 || e < 0 || e > 9 || r < 0 || r > ht || 8 === n && 1 !== o) return gt(t, at);
+			8 === n && (n = 9);
+			var l = new Lt();
+			return t.state = l, l.strm = t, l.status = wt, l.wrap = o, l.gzhead = null, l.w_bits = n, l.w_size = 1 << l.w_bits, l.w_mask = l.w_size - 1, l.legacy_hash = s ? 1 : 0, l.hash_bits = i + 7, !l.legacy_hash && l.hash_bits < 15 && (l.hash_bits = 15), l.hash_size = 1 << l.hash_bits, l.hash_mask = l.hash_size - 1, l.hash_shift = ~~((l.hash_bits + 3 - 1) / 3), l.window = new Uint8Array(2 * l.w_size), l.head = new Uint16Array(l.hash_size), l.prev = new Uint16Array(l.w_size), l.lit_bufsize = 1 << i + 6, l.pending_buf_size = 4 * l.lit_bufsize, l.pending_buf = new Uint8Array(l.pending_buf_size), l.sym_buf = l.lit_bufsize, l.sym_end = 3 * (l.lit_bufsize - 1), l.level = e, l.strategy = r, l.method = a, Ct(t);
+		}, Mt = {
+			deflateInit: function(t, e) {
+				return Ht(t, e, ft, 15, 8, dt);
+			},
+			deflateInit2: Ht,
+			deflateReset: Ct,
+			deflateResetKeep: Bt,
+			deflateSetHeader: function(t, e) {
+				return Nt(t) || 2 !== t.state.wrap ? at : (t.state.gzhead = e, tt);
+			},
+			deflate: function(t, e) {
+				if (Nt(t) || e > $ || e < 0) return t ? gt(t, at) : at;
+				var a = t.state;
+				if (!t.output || 0 !== t.avail_in && !t.input || a.status === bt && e !== V) return gt(t, 0 === t.avail_out ? it : at);
+				var n = a.last_flush;
+				if (a.last_flush = e, 0 !== a.pending) {
+					if (zt(t), 0 === t.avail_out) return a.last_flush = -1, tt;
+				} else if (0 === t.avail_in && pt(e) <= pt(n) && e !== V) return gt(t, it);
+				if (a.status === bt && 0 !== t.avail_in) return gt(t, it);
+				if (a.status === wt && 0 === a.wrap && (a.status = mt), a.status === wt) {
+					var i = ft + (a.w_bits - 8 << 4) << 8;
+					if (i |= (a.strategy >= ot || a.level < 2 ? 0 : a.level < 6 ? 1 : 6 === a.level ? 2 : 3) << 6, 0 !== a.strstart && (i |= 32), Rt(a, i += 31 - i % 31), 0 !== a.strstart && (Rt(a, t.adler >>> 16), Rt(a, 65535 & t.adler)), t.adler = 1, a.status = mt, zt(t), 0 !== a.pending) return a.last_flush = -1, tt;
+				}
+				if (57 === a.status) {
+					if (t.adler = 0, Et(a, 31), Et(a, 139), Et(a, 8), a.gzhead) Et(a, (a.gzhead.text ? 1 : 0) + (a.gzhead.hcrc ? 2 : 0) + (a.gzhead.extra ? 4 : 0) + (a.gzhead.name ? 8 : 0) + (a.gzhead.comment ? 16 : 0)), Et(a, 255 & a.gzhead.time), Et(a, a.gzhead.time >> 8 & 255), Et(a, a.gzhead.time >> 16 & 255), Et(a, a.gzhead.time >> 24 & 255), Et(a, 9 === a.level ? 2 : a.strategy >= ot || a.level < 2 ? 4 : 0), Et(a, 255 & a.gzhead.os), a.gzhead.extra && a.gzhead.extra.length && (Et(a, 255 & a.gzhead.extra.length), Et(a, a.gzhead.extra.length >> 8 & 255)), a.gzhead.hcrc && (t.adler = M(t.adler, a.pending_buf, a.pending, 0)), a.gzindex = 0, a.status = 69;
+					else if (Et(a, 0), Et(a, 0), Et(a, 0), Et(a, 0), Et(a, 0), Et(a, 9 === a.level ? 2 : a.strategy >= ot || a.level < 2 ? 4 : 0), Et(a, 3), a.status = mt, zt(t), 0 !== a.pending) return a.last_flush = -1, tt;
+				}
+				if (69 === a.status) {
+					if (a.gzhead.extra) {
+						for (var r = a.pending, s = (65535 & a.gzhead.extra.length) - a.gzindex; a.pending + s > a.pending_buf_size;) {
+							var o = a.pending_buf_size - a.pending;
+							if (a.pending_buf.set(a.gzhead.extra.subarray(a.gzindex, a.gzindex + o), a.pending), a.pending = a.pending_buf_size, a.gzhead.hcrc && a.pending > r && (t.adler = M(t.adler, a.pending_buf, a.pending - r, r)), a.gzindex += o, zt(t), 0 !== a.pending) return a.last_flush = -1, tt;
+							r = 0, s -= o;
+						}
+						var l = new Uint8Array(a.gzhead.extra);
+						a.pending_buf.set(l.subarray(a.gzindex, a.gzindex + s), a.pending), a.pending += s, a.gzhead.hcrc && a.pending > r && (t.adler = M(t.adler, a.pending_buf, a.pending - r, r)), a.gzindex = 0;
+					}
+					a.status = 73;
+				}
+				if (73 === a.status) {
+					if (a.gzhead.name) {
+						var h, d = a.pending;
+						do {
+							if (a.pending === a.pending_buf_size) {
+								if (a.gzhead.hcrc && a.pending > d && (t.adler = M(t.adler, a.pending_buf, a.pending - d, d)), zt(t), 0 !== a.pending) return a.last_flush = -1, tt;
+								d = 0;
+							}
+							h = a.gzindex < a.gzhead.name.length ? 255 & a.gzhead.name.charCodeAt(a.gzindex++) : 0, Et(a, h);
+						} while (0 !== h);
+						a.gzhead.hcrc && a.pending > d && (t.adler = M(t.adler, a.pending_buf, a.pending - d, d)), a.gzindex = 0;
+					}
+					a.status = 91;
+				}
+				if (91 === a.status) {
+					if (a.gzhead.comment) {
+						var _, f = a.pending;
+						do {
+							if (a.pending === a.pending_buf_size) {
+								if (a.gzhead.hcrc && a.pending > f && (t.adler = M(t.adler, a.pending_buf, a.pending - f, f)), zt(t), 0 !== a.pending) return a.last_flush = -1, tt;
+								f = 0;
+							}
+							_ = a.gzindex < a.gzhead.comment.length ? 255 & a.gzhead.comment.charCodeAt(a.gzindex++) : 0, Et(a, _);
+						} while (0 !== _);
+						a.gzhead.hcrc && a.pending > f && (t.adler = M(t.adler, a.pending_buf, a.pending - f, f));
+					}
+					a.status = 103;
+				}
+				if (103 === a.status) {
+					if (a.gzhead.hcrc) {
+						if (a.pending + 2 > a.pending_buf_size && (zt(t), 0 !== a.pending)) return a.last_flush = -1, tt;
+						Et(a, 255 & t.adler), Et(a, t.adler >> 8 & 255), t.adler = 0;
+					}
+					if (a.status = mt, zt(t), 0 !== a.pending) return a.last_flush = -1, tt;
+				}
+				if (0 !== t.avail_in || 0 !== a.lookahead || e !== q && a.status !== bt) {
+					var u = 0 === a.level ? Dt(a, e) : a.strategy === ot ? function(t, e) {
+						for (var a;;) {
+							if (0 === t.lookahead && (Ut(t), 0 === t.lookahead)) {
+								if (e === q) return 1;
+								break;
+							}
+							if (t.match_length = 0, a = X(t, 0, t.window[t.strstart]), t.lookahead--, t.strstart++, a && (At(t, !1), 0 === t.strm.avail_out)) return 1;
+						}
+						return t.insert = 0, e === V ? (At(t, !0), 0 === t.strm.avail_out ? 3 : 4) : t.sym_next && (At(t, !1), 0 === t.strm.avail_out) ? 1 : 2;
+					}(a, e) : a.strategy === lt ? function(t, e) {
+						for (var a, n, i, r, s = t.window;;) {
+							if (t.lookahead <= ut) {
+								if (Ut(t), t.lookahead <= ut && e === q) return 1;
+								if (0 === t.lookahead) break;
+							}
+							if (t.match_length = 0, t.lookahead >= 3 && t.strstart > 0 && (n = s[i = t.strstart - 1]) === s[++i] && n === s[++i] && n === s[++i]) {
+								r = t.strstart + ut;
+								do								;
+while (n === s[++i] && n === s[++i] && n === s[++i] && n === s[++i] && n === s[++i] && n === s[++i] && n === s[++i] && n === s[++i] && i < r);
+								t.match_length = ut - (r - i), t.match_length > t.lookahead && (t.match_length = t.lookahead);
+							}
+							if (t.match_length >= 3 ? (a = X(t, 1, t.match_length - 3), t.lookahead -= t.match_length, t.strstart += t.match_length, t.match_length = 0) : (a = X(t, 0, t.window[t.strstart]), t.lookahead--, t.strstart++), a && (At(t, !1), 0 === t.strm.avail_out)) return 1;
+						}
+						return t.insert = 0, e === V ? (At(t, !0), 0 === t.strm.avail_out ? 3 : 4) : t.sym_next && (At(t, !1), 0 === t.strm.avail_out) ? 1 : 2;
+					}(a, e) : It[a.level].func(a, e);
+					if (3 !== u && 4 !== u || (a.status = bt), 1 === u || 3 === u) return 0 === t.avail_out && (a.last_flush = -1), tt;
+					if (2 === u && (e === J ? W(a) : e !== $ && (Y(a, 0, 0, !1), e === Q && (vt(a.head), 0 === a.lookahead && (a.strstart = 0, a.block_start = 0, a.insert = 0))), zt(t), 0 === t.avail_out)) return a.last_flush = -1, tt;
+				}
+				return e !== V ? tt : a.wrap <= 0 ? et : (2 === a.wrap ? (Et(a, 255 & t.adler), Et(a, t.adler >> 8 & 255), Et(a, t.adler >> 16 & 255), Et(a, t.adler >> 24 & 255), Et(a, 255 & t.total_in), Et(a, t.total_in >> 8 & 255), Et(a, t.total_in >> 16 & 255), Et(a, t.total_in >> 24 & 255)) : (Rt(a, t.adler >>> 16), Rt(a, 65535 & t.adler)), zt(t), a.wrap > 0 && (a.wrap = -a.wrap), 0 !== a.pending ? tt : et);
+			},
+			deflateEnd: function(t) {
+				if (Nt(t)) return at;
+				var e = t.state.status;
+				return t.state = null, e === mt ? gt(t, nt) : tt;
+			},
+			deflateSetDictionary: function(t, e) {
+				var a = e.length;
+				if (Nt(t)) return at;
+				var n = t.state, i = n.wrap;
+				if (2 === i || 1 === i && n.status !== wt || n.lookahead) return at;
+				if (1 === i && (t.adler = C(t.adler, e, a, 0)), n.wrap = 0, a >= n.w_size) {
+					0 === i && (vt(n.head), n.strstart = 0, n.block_start = 0, n.insert = 0);
+					var r = new Uint8Array(n.w_size);
+					r.set(e.subarray(a - n.w_size, a), 0), e = r, a = n.w_size;
+				}
+				var s = t.avail_in, o = t.next_in, l = t.input;
+				for (t.avail_in = a, t.next_in = 0, t.input = e, Ut(n); n.lookahead >= 3;) {
+					var h = n.strstart, d = n.lookahead - 2;
+					do
+						xt(n, h), h++;
+					while (--d);
+					n.strstart = h, n.lookahead = 2, Ut(n);
+				}
+				return n.strstart += n.lookahead, n.block_start = n.strstart, n.insert = n.lookahead, n.lookahead = 0, n.match_length = n.prev_length = 2, n.match_available = 0, t.next_in = o, t.input = l, t.avail_in = s, n.wrap = i, tt;
+			},
+			deflateInfo: "pako deflate (from Nodeca project)"
+		};
+		function jt(t) {
+			return jt = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(t) {
+				return typeof t;
+			} : function(t) {
+				return t && "function" == typeof Symbol && t.constructor === Symbol && t !== Symbol.prototype ? "symbol" : typeof t;
+			}, jt(t);
+		}
+		var Kt = function(t, e) {
+			return Object.prototype.hasOwnProperty.call(t, e);
+		}, Pt = function(t) {
+			for (var e = Array.prototype.slice.call(arguments, 1); e.length;) {
+				var a = e.shift();
+				if (a) {
+					if ("object" !== jt(a)) throw new TypeError(a + "must be non-object");
+					for (var n in a) Kt(a, n) && (t[n] = a[n]);
+				}
+			}
+			return t;
+		}, Yt = function(t) {
+			for (var e = 0, a = 0, n = t.length; a < n; a++) e += t[a].length;
+			for (var i = new Uint8Array(e), r = 0, s = 0, o = t.length; r < o; r++) {
+				var l = t[r];
+				i.set(l, s), s += l.length;
+			}
+			return i;
+		}, Gt = !0;
+		try {
+			String.fromCharCode.apply(null, /* @__PURE__ */ new Uint8Array(1));
+		} catch (t) {
+			Gt = !1;
+		}
+		for (var Xt = /* @__PURE__ */ new Uint8Array(256), Wt = 0; Wt < 256; Wt++) Xt[Wt] = Wt >= 252 ? 6 : Wt >= 248 ? 5 : Wt >= 240 ? 4 : Wt >= 224 ? 3 : Wt >= 192 ? 2 : 1;
+		Xt[254] = Xt[255] = 1;
+		var qt = function(t) {
+			if ("function" == typeof TextEncoder && TextEncoder.prototype.encode) return new TextEncoder().encode(t);
+			var e, a, n, i, r, s = t.length, o = 0;
+			for (i = 0; i < s; i++) 55296 == (64512 & (a = t.charCodeAt(i))) && i + 1 < s && 56320 == (64512 & (n = t.charCodeAt(i + 1))) && (a = 65536 + (a - 55296 << 10) + (n - 56320), i++), o += a < 128 ? 1 : a < 2048 ? 2 : a < 65536 ? 3 : 4;
+			for (e = new Uint8Array(o), r = 0, i = 0; r < o; i++) 55296 == (64512 & (a = t.charCodeAt(i))) && i + 1 < s && 56320 == (64512 & (n = t.charCodeAt(i + 1))) && (a = 65536 + (a - 55296 << 10) + (n - 56320), i++), a < 128 ? e[r++] = a : a < 2048 ? (e[r++] = 192 | a >>> 6, e[r++] = 128 | 63 & a) : a < 65536 ? (e[r++] = 224 | a >>> 12, e[r++] = 128 | a >>> 6 & 63, e[r++] = 128 | 63 & a) : (e[r++] = 240 | a >>> 18, e[r++] = 128 | a >>> 12 & 63, e[r++] = 128 | a >>> 6 & 63, e[r++] = 128 | 63 & a);
+			return e;
+		}, Jt = function(t, e) {
+			var a, n, i = e || t.length;
+			if ("function" == typeof TextDecoder && TextDecoder.prototype.decode) return new TextDecoder().decode(t.subarray(0, e));
+			var r = new Array(2 * i);
+			for (n = 0, a = 0; a < i;) {
+				var s = t[a++];
+				if (s < 128) r[n++] = s;
+				else {
+					var o = Xt[s];
+					if (o > 4) r[n++] = 65533, a += o - 1;
+					else {
+						for (s &= 2 === o ? 31 : 3 === o ? 15 : 7; o > 1 && a < i;) s = s << 6 | 63 & t[a++], o--;
+						o > 1 ? r[n++] = 65533 : s < 65536 ? r[n++] = s : (s -= 65536, r[n++] = 55296 | s >> 10 & 1023, r[n++] = 56320 | 1023 & s);
+					}
+				}
+			}
+			return function(t, e) {
+				if (e < 65534 && t.subarray && Gt) return String.fromCharCode.apply(null, t.length === e ? t : t.subarray(0, e));
+				for (var a = "", n = 0; n < e; n++) a += String.fromCharCode(t[n]);
+				return a;
+			}(r, n);
+		}, Qt = function(t, e) {
+			(e = e || t.length) > t.length && (e = t.length);
+			for (var a = e - 1; a >= 0 && 128 == (192 & t[a]);) a--;
+			return a < 0 || 0 === a ? e : a + Xt[t[a]] > e ? a : e;
+		};
+		var Vt = function() {
+			this.input = null, this.next_in = 0, this.avail_in = 0, this.total_in = 0, this.output = null, this.next_out = 0, this.avail_out = 0, this.total_out = 0, this.msg = "", this.state = null, this.data_type = 2, this.adler = 0;
+		}, $t = Object.prototype.toString, te = K.Z_NO_FLUSH, ee = K.Z_SYNC_FLUSH, ae = K.Z_FULL_FLUSH, ne = K.Z_FINISH, ie = K.Z_OK, re = K.Z_STREAM_END, se = {
+			level: K.Z_DEFAULT_COMPRESSION,
+			method: K.Z_DEFLATED,
+			chunkSize: 16384,
+			windowBits: 15,
+			memLevel: 8,
+			strategy: K.Z_DEFAULT_STRATEGY,
+			legacyHash: !0
+		};
+		function oe(t) {
+			this.options = Pt({}, se, t || {});
+			var e = this.options;
+			e.raw && e.windowBits > 0 ? e.windowBits = -e.windowBits : e.gzip && e.windowBits > 0 && e.windowBits < 16 && (e.windowBits += 16), this.err = 0, this.msg = "", this.ended = !1, this.chunks = [], this.strm = new Vt(), this.strm.avail_out = 0;
+			var a = Mt.deflateInit2(this.strm, e.level, e.method, e.windowBits, e.memLevel, e.strategy, e.legacyHash);
+			if (a !== ie) throw new Error(j[a]);
+			if (e.header && Mt.deflateSetHeader(this.strm, e.header), e.dictionary) {
+				var n;
+				if (n = "string" == typeof e.dictionary ? qt(e.dictionary) : "[object ArrayBuffer]" === $t.call(e.dictionary) ? new Uint8Array(e.dictionary) : e.dictionary, (a = Mt.deflateSetDictionary(this.strm, n)) !== ie) throw new Error(j[a]);
+				this._dict_set = !0;
+			}
+		}
+		function le(t, e) {
+			var a = new oe(e);
+			if (a.push(t, !0), a.err) throw a.msg || j[a.err];
+			return a.result;
+		}
+		oe.prototype.push = function(t, e) {
+			var a, n, i = this.strm, r = this.options.chunkSize;
+			if (this.ended) return !1;
+			for (n = e === ~~e ? e : !0 === e ? ne : te, "string" == typeof t ? i.input = qt(t) : "[object ArrayBuffer]" === $t.call(t) ? i.input = new Uint8Array(t) : i.input = t, i.next_in = 0, i.avail_in = i.input.length;;) if (0 === i.avail_out && (i.output = new Uint8Array(r), i.next_out = 0, i.avail_out = r), (n === ee || n === ae) && i.avail_out <= 6) this.onData(i.output.subarray(0, i.next_out)), i.avail_out = 0;
+			else {
+				if ((a = Mt.deflate(i, n)) === re) return i.next_out > 0 && this.onData(i.output.subarray(0, i.next_out)), a = Mt.deflateEnd(this.strm), this.onEnd(a), this.ended = !0, a === ie;
+				if (0 !== i.avail_out) {
+					if (n > 0 && i.next_out > 0) this.onData(i.output.subarray(0, i.next_out)), i.avail_out = 0;
+					else if (0 === i.avail_in) break;
+				} else this.onData(i.output);
+			}
+			return !0;
+		}, oe.prototype.onData = function(t) {
+			this.chunks.push(t);
+		}, oe.prototype.onEnd = function(t) {
+			t === ie && (this.result = Yt(this.chunks)), this.chunks = [], this.err = t, this.msg = this.strm.msg;
+		};
+		var he = {
+			Deflate: oe,
+			deflate: le,
+			deflateRaw: function(t, e) {
+				return (e = e || {}).raw = !0, le(t, e);
+			},
+			gzip: function(t, e) {
+				return (e = e || {}).gzip = !0, le(t, e);
+			},
+			constants: K
+		}, de = 16209, _e = function(t, e) {
+			var a, n, i, r, s, o, l, h, d, _, f, u, c, w, m, b, g, p, v, k, y, x, z, A, E = t.state;
+			a = t.next_in, z = t.input, n = a + (t.avail_in - 5), i = t.next_out, A = t.output, r = i - (e - t.avail_out), s = i + (t.avail_out - 257), o = E.dmax, l = E.wsize, h = E.whave, d = E.wnext, _ = E.window, f = E.hold, u = E.bits, c = E.lencode, w = E.distcode, m = (1 << E.lenbits) - 1, b = (1 << E.distbits) - 1;
+			t: do {
+				u < 15 && (f += z[a++] << u, u += 8, f += z[a++] << u, u += 8), g = c[f & m];
+				e: for (;;) {
+					if (f >>>= p = g >>> 24, u -= p, 0 === (p = g >>> 16 & 255)) A[i++] = 65535 & g;
+					else {
+						if (!(16 & p)) {
+							if (0 == (64 & p)) {
+								g = c[(65535 & g) + (f & (1 << p) - 1)];
+								continue e;
+							}
+							if (32 & p) {
+								E.mode = 16191;
+								break t;
+							}
+							t.msg = "invalid literal/length code", E.mode = de;
+							break t;
+						}
+						v = 65535 & g, (p &= 15) && (u < p && (f += z[a++] << u, u += 8), v += f & (1 << p) - 1, f >>>= p, u -= p), u < 15 && (f += z[a++] << u, u += 8, f += z[a++] << u, u += 8), g = w[f & b];
+						a: for (;;) {
+							if (f >>>= p = g >>> 24, u -= p, !(16 & (p = g >>> 16 & 255))) {
+								if (0 == (64 & p)) {
+									g = w[(65535 & g) + (f & (1 << p) - 1)];
+									continue a;
+								}
+								t.msg = "invalid distance code", E.mode = de;
+								break t;
+							}
+							if (k = 65535 & g, u < (p &= 15) && (f += z[a++] << u, (u += 8) < p && (f += z[a++] << u, u += 8)), (k += f & (1 << p) - 1) > o) {
+								t.msg = "invalid distance too far back", E.mode = de;
+								break t;
+							}
+							if (f >>>= p, u -= p, k > (p = i - r)) {
+								if ((p = k - p) > h && E.sane) {
+									t.msg = "invalid distance too far back", E.mode = de;
+									break t;
+								}
+								if (y = 0, x = _, 0 === d) {
+									if (y += l - p, p < v) {
+										v -= p;
+										do
+											A[i++] = _[y++];
+										while (--p);
+										y = i - k, x = A;
+									}
+								} else if (d < p) {
+									if (y += l + d - p, (p -= d) < v) {
+										v -= p;
+										do
+											A[i++] = _[y++];
+										while (--p);
+										if (y = 0, d < v) {
+											v -= p = d;
+											do
+												A[i++] = _[y++];
+											while (--p);
+											y = i - k, x = A;
+										}
+									}
+								} else if (y += d - p, p < v) {
+									v -= p;
+									do
+										A[i++] = _[y++];
+									while (--p);
+									y = i - k, x = A;
+								}
+								for (; v > 2;) A[i++] = x[y++], A[i++] = x[y++], A[i++] = x[y++], v -= 3;
+								v && (A[i++] = x[y++], v > 1 && (A[i++] = x[y++]));
+							} else {
+								y = i - k;
+								do
+									A[i++] = A[y++], A[i++] = A[y++], A[i++] = A[y++], v -= 3;
+								while (v > 2);
+								v && (A[i++] = A[y++], v > 1 && (A[i++] = A[y++]));
+							}
+							break;
+						}
+					}
+					break;
+				}
+			} while (a < n && i < s);
+			a -= v = u >> 3, f &= (1 << (u -= v << 3)) - 1, t.next_in = a, t.next_out = i, t.avail_in = a < n ? n - a + 5 : 5 - (a - n), t.avail_out = i < s ? s - i + 257 : 257 - (i - s), E.hold = f, E.bits = u;
+		}, fe = 15, ue = new Uint16Array([
+			3,
+			4,
+			5,
+			6,
+			7,
+			8,
+			9,
+			10,
+			11,
+			13,
+			15,
+			17,
+			19,
+			23,
+			27,
+			31,
+			35,
+			43,
+			51,
+			59,
+			67,
+			83,
+			99,
+			115,
+			131,
+			163,
+			195,
+			227,
+			258,
+			0,
+			0
+		]), ce = new Uint8Array([
+			16,
+			16,
+			16,
+			16,
+			16,
+			16,
+			16,
+			16,
+			17,
+			17,
+			17,
+			17,
+			18,
+			18,
+			18,
+			18,
+			19,
+			19,
+			19,
+			19,
+			20,
+			20,
+			20,
+			20,
+			21,
+			21,
+			21,
+			21,
+			16,
+			199,
+			75
+		]), we = new Uint16Array([
+			1,
+			2,
+			3,
+			4,
+			5,
+			7,
+			9,
+			13,
+			17,
+			25,
+			33,
+			49,
+			65,
+			97,
+			129,
+			193,
+			257,
+			385,
+			513,
+			769,
+			1025,
+			1537,
+			2049,
+			3073,
+			4097,
+			6145,
+			8193,
+			12289,
+			16385,
+			24577,
+			0,
+			0
+		]), me = new Uint8Array([
+			16,
+			16,
+			16,
+			16,
+			17,
+			17,
+			18,
+			18,
+			19,
+			19,
+			20,
+			20,
+			21,
+			21,
+			22,
+			22,
+			23,
+			23,
+			24,
+			24,
+			25,
+			25,
+			26,
+			26,
+			27,
+			27,
+			28,
+			28,
+			29,
+			29,
+			64,
+			64
+		]), be = function(t, e, a, n, i, r, s, o) {
+			var l, h, d, _, f, u, c, w, m, b = o.bits, g = 0, p = 0, v = 0, k = 0, y = 0, x = 0, z = 0, A = 0, E = 0, R = 0, Z = null, S = /* @__PURE__ */ new Uint16Array(16), U = /* @__PURE__ */ new Uint16Array(16), D = null;
+			for (g = 0; g <= fe; g++) S[g] = 0;
+			for (p = 0; p < n; p++) S[e[a + p]]++;
+			for (y = b, k = fe; k >= 1 && 0 === S[k]; k--);
+			if (y > k && (y = k), 0 === k) return i[r++] = 20971520, i[r++] = 20971520, o.bits = 1, 0;
+			for (v = 1; v < k && 0 === S[v]; v++);
+			for (y < v && (y = v), A = 1, g = 1; g <= fe; g++) if (A <<= 1, (A -= S[g]) < 0) return -1;
+			if (A > 0 && (0 === t || 1 !== k)) return -1;
+			for (U[1] = 0, g = 1; g < fe; g++) U[g + 1] = U[g] + S[g];
+			for (p = 0; p < n; p++) 0 !== e[a + p] && (s[U[e[a + p]]++] = p);
+			if (0 === t ? (Z = D = s, u = 20) : 1 === t ? (Z = ue, D = ce, u = 257) : (Z = we, D = me, u = 0), R = 0, p = 0, g = v, f = r, x = y, z = 0, d = -1, _ = (E = 1 << y) - 1, 1 === t && E > 852 || 2 === t && E > 592) return 1;
+			for (;;) {
+				c = g - z, s[p] + 1 < u ? (w = 0, m = s[p]) : s[p] >= u ? (w = D[s[p] - u], m = Z[s[p] - u]) : (w = 96, m = 0), l = 1 << g - z, v = h = 1 << x;
+				do
+					i[f + (R >> z) + (h -= l)] = c << 24 | w << 16 | m | 0;
+				while (0 !== h);
+				for (l = 1 << g - 1; R & l;) l >>= 1;
+				if (0 !== l ? (R &= l - 1, R += l) : R = 0, p++, 0 == --S[g]) {
+					if (g === k) break;
+					g = e[a + s[p]];
+				}
+				if (g > y && (R & _) !== d) {
+					for (0 === z && (z = y), f += v, A = 1 << (x = g - z); x + z < k && !((A -= S[x + z]) <= 0);) x++, A <<= 1;
+					if (E += 1 << x, 1 === t && E > 852 || 2 === t && E > 592) return 1;
+					i[d = R & _] = y << 24 | x << 16 | f - r | 0;
+				}
+			}
+			return 0 !== R && (i[f + R] = g - z << 24 | 4194304), o.bits = y, 0;
+		}, ge = K.Z_FINISH, pe = K.Z_BLOCK, ve = K.Z_TREES, ke = K.Z_OK, ye = K.Z_STREAM_END, xe = K.Z_NEED_DICT, ze = K.Z_STREAM_ERROR, Ae = K.Z_DATA_ERROR, Ee = K.Z_MEM_ERROR, Re = K.Z_BUF_ERROR, Ze = K.Z_DEFLATED, Se = 16180, Ue = 16190, De = 16191, Te = 16192, Oe = 16194, Fe = 16199, Ie = 16200, Le = 16206, Ne = 16209, Be = function(t) {
+			return (t >>> 24 & 255) + (t >>> 8 & 65280) + ((65280 & t) << 8) + ((255 & t) << 24);
+		};
+		function Ce() {
+			this.strm = null, this.mode = 0, this.last = !1, this.wrap = 0, this.havedict = !1, this.flags = 0, this.dmax = 0, this.check = 0, this.total = 0, this.head = null, this.wbits = 0, this.wsize = 0, this.whave = 0, this.wnext = 0, this.window = null, this.hold = 0, this.bits = 0, this.length = 0, this.offset = 0, this.extra = 0, this.lencode = null, this.distcode = null, this.lenbits = 0, this.distbits = 0, this.ncode = 0, this.nlen = 0, this.ndist = 0, this.have = 0, this.next = null, this.lens = /* @__PURE__ */ new Uint16Array(320), this.work = /* @__PURE__ */ new Uint16Array(288), this.lendyn = null, this.distdyn = null, this.sane = 0, this.back = 0, this.was = 0;
+		}
+		var He, Me, je = function(t) {
+			if (!t) return 1;
+			var e = t.state;
+			return !e || e.strm !== t || e.mode < Se || e.mode > 16211 ? 1 : 0;
+		}, Ke = function(t) {
+			if (je(t)) return ze;
+			var e = t.state;
+			return t.total_in = t.total_out = e.total = 0, t.msg = "", e.wrap && (t.adler = 1 & e.wrap), e.mode = Se, e.last = 0, e.havedict = 0, e.flags = -1, e.dmax = 32768, e.head = null, e.hold = 0, e.bits = 0, e.lencode = e.lendyn = /* @__PURE__ */ new Int32Array(852), e.distcode = e.distdyn = /* @__PURE__ */ new Int32Array(592), e.sane = 1, e.back = -1, ke;
+		}, Pe = function(t) {
+			if (je(t)) return ze;
+			var e = t.state;
+			return e.wsize = 0, e.whave = 0, e.wnext = 0, Ke(t);
+		}, Ye = function(t, e) {
+			var a;
+			if (je(t)) return ze;
+			var n = t.state;
+			return e < 0 ? (a = 0, e = -e) : (a = 5 + (e >> 4), e < 48 && (e &= 15)), e && (e < 8 || e > 15) ? ze : (null !== n.window && n.wbits !== e && (n.window = null), n.wrap = a, n.wbits = e, Pe(t));
+		}, Ge = function(t, e) {
+			if (!t) return ze;
+			var a = new Ce();
+			t.state = a, a.strm = t, a.window = null, a.mode = Se;
+			var n = Ye(t, e);
+			return n !== ke && (t.state = null), n;
+		}, Xe = !0, We = function(t) {
+			if (Xe) {
+				He = /* @__PURE__ */ new Int32Array(512), Me = /* @__PURE__ */ new Int32Array(32);
+				for (var e = 0; e < 144;) t.lens[e++] = 8;
+				for (; e < 256;) t.lens[e++] = 9;
+				for (; e < 280;) t.lens[e++] = 7;
+				for (; e < 288;) t.lens[e++] = 8;
+				for (be(1, t.lens, 0, 288, He, 0, t.work, { bits: 9 }), e = 0; e < 32;) t.lens[e++] = 5;
+				be(2, t.lens, 0, 32, Me, 0, t.work, { bits: 5 }), Xe = !1;
+			}
+			t.lencode = He, t.lenbits = 9, t.distcode = Me, t.distbits = 5;
+		}, qe = function(t, e, a, n) {
+			var i, r = t.state;
+			return null === r.window && (r.window = new Uint8Array(1 << r.wbits)), 0 === r.wsize && (r.wsize = 1 << r.wbits, r.wnext = 0, r.whave = 0), n >= r.wsize ? (r.window.set(e.subarray(a - r.wsize, a), 0), r.wnext = 0, r.whave = r.wsize) : ((i = r.wsize - r.wnext) > n && (i = n), r.window.set(e.subarray(a - n, a - n + i), r.wnext), (n -= i) ? (r.window.set(e.subarray(a - n, a), 0), r.wnext = n, r.whave = r.wsize) : (r.wnext += i, r.wnext === r.wsize && (r.wnext = 0), r.whave < r.wsize && (r.whave += i))), 0;
+		}, Je = {
+			inflateReset: Pe,
+			inflateReset2: Ye,
+			inflateResetKeep: Ke,
+			inflateInit: function(t) {
+				return Ge(t, 15);
+			},
+			inflateInit2: Ge,
+			inflate: function(t, e) {
+				var a, n, i, r, s, o, l, h, d, _, f, u, c, w, m, b, g, p, v, k, y, x, z, A, E = 0, R = /* @__PURE__ */ new Uint8Array(4), Z = new Uint8Array([
+					16,
+					17,
+					18,
+					0,
+					8,
+					7,
+					9,
+					6,
+					10,
+					5,
+					11,
+					4,
+					12,
+					3,
+					13,
+					2,
+					14,
+					1,
+					15
+				]);
+				if (je(t) || !t.output || !t.input && 0 !== t.avail_in) return ze;
+				(a = t.state).mode === De && (a.mode = Te), s = t.next_out, i = t.output, l = t.avail_out, r = t.next_in, n = t.input, o = t.avail_in, h = a.hold, d = a.bits, _ = o, f = l, x = ke;
+				t: for (;;) switch (a.mode) {
+					case Se:
+						if (0 === a.wrap) {
+							a.mode = Te;
+							break;
+						}
+						for (; d < 16;) {
+							if (0 === o) break t;
+							o--, h += n[r++] << d, d += 8;
+						}
+						if (2 & a.wrap && 35615 === h) {
+							0 === a.wbits && (a.wbits = 15), a.check = 0, R[0] = 255 & h, R[1] = h >>> 8 & 255, a.check = M(a.check, R, 2, 0), h = 0, d = 0, a.mode = 16181;
+							break;
+						}
+						if (a.head && (a.head.done = !1), !(1 & a.wrap) || (((255 & h) << 8) + (h >> 8)) % 31) {
+							t.msg = "incorrect header check", a.mode = Ne;
+							break;
+						}
+						if ((15 & h) !== Ze) {
+							t.msg = "unknown compression method", a.mode = Ne;
+							break;
+						}
+						if (d -= 4, y = 8 + (15 & (h >>>= 4)), 0 === a.wbits && (a.wbits = y), y > 15 || y > a.wbits) {
+							t.msg = "invalid window size", a.mode = Ne;
+							break;
+						}
+						a.dmax = 1 << a.wbits, a.flags = 0, t.adler = a.check = 1, a.mode = 512 & h ? 16189 : De, h = 0, d = 0;
+						break;
+					case 16181:
+						for (; d < 16;) {
+							if (0 === o) break t;
+							o--, h += n[r++] << d, d += 8;
+						}
+						if (a.flags = h, (255 & a.flags) !== Ze) {
+							t.msg = "unknown compression method", a.mode = Ne;
+							break;
+						}
+						if (57344 & a.flags) {
+							t.msg = "unknown header flags set", a.mode = Ne;
+							break;
+						}
+						a.head && (a.head.text = h >> 8 & 1), 512 & a.flags && 4 & a.wrap && (R[0] = 255 & h, R[1] = h >>> 8 & 255, a.check = M(a.check, R, 2, 0)), h = 0, d = 0, a.mode = 16182;
+					case 16182:
+						for (; d < 32;) {
+							if (0 === o) break t;
+							o--, h += n[r++] << d, d += 8;
+						}
+						a.head && (a.head.time = h), 512 & a.flags && 4 & a.wrap && (R[0] = 255 & h, R[1] = h >>> 8 & 255, R[2] = h >>> 16 & 255, R[3] = h >>> 24 & 255, a.check = M(a.check, R, 4, 0)), h = 0, d = 0, a.mode = 16183;
+					case 16183:
+						for (; d < 16;) {
+							if (0 === o) break t;
+							o--, h += n[r++] << d, d += 8;
+						}
+						a.head && (a.head.xflags = 255 & h, a.head.os = h >> 8), 512 & a.flags && 4 & a.wrap && (R[0] = 255 & h, R[1] = h >>> 8 & 255, a.check = M(a.check, R, 2, 0)), h = 0, d = 0, a.mode = 16184;
+					case 16184:
+						if (1024 & a.flags) {
+							for (; d < 16;) {
+								if (0 === o) break t;
+								o--, h += n[r++] << d, d += 8;
+							}
+							a.length = h, a.head && (a.head.extra_len = h), 512 & a.flags && 4 & a.wrap && (R[0] = 255 & h, R[1] = h >>> 8 & 255, a.check = M(a.check, R, 2, 0)), h = 0, d = 0;
+						} else a.head && (a.head.extra = null);
+						a.mode = 16185;
+					case 16185:
+						if (1024 & a.flags && ((u = a.length) > o && (u = o), u && (a.head && (y = a.head.extra_len - a.length, a.head.extra || (a.head.extra = new Uint8Array(a.head.extra_len)), a.head.extra.set(n.subarray(r, r + u), y)), 512 & a.flags && 4 & a.wrap && (a.check = M(a.check, n, u, r)), o -= u, r += u, a.length -= u), a.length)) break t;
+						a.length = 0, a.mode = 16186;
+					case 16186:
+						if (2048 & a.flags) {
+							if (0 === o) break t;
+							u = 0;
+							do
+								y = n[r + u++], a.head && y && a.length < 65536 && (a.head.name += String.fromCharCode(y));
+							while (y && u < o);
+							if (512 & a.flags && 4 & a.wrap && (a.check = M(a.check, n, u, r)), o -= u, r += u, y) break t;
+						} else a.head && (a.head.name = null);
+						a.length = 0, a.mode = 16187;
+					case 16187:
+						if (4096 & a.flags) {
+							if (0 === o) break t;
+							u = 0;
+							do
+								y = n[r + u++], a.head && y && a.length < 65536 && (a.head.comment += String.fromCharCode(y));
+							while (y && u < o);
+							if (512 & a.flags && 4 & a.wrap && (a.check = M(a.check, n, u, r)), o -= u, r += u, y) break t;
+						} else a.head && (a.head.comment = null);
+						a.mode = 16188;
+					case 16188:
+						if (512 & a.flags) {
+							for (; d < 16;) {
+								if (0 === o) break t;
+								o--, h += n[r++] << d, d += 8;
+							}
+							if (4 & a.wrap && h !== (65535 & a.check)) {
+								t.msg = "header crc mismatch", a.mode = Ne;
+								break;
+							}
+							h = 0, d = 0;
+						}
+						a.head && (a.head.hcrc = a.flags >> 9 & 1, a.head.done = !0), t.adler = a.check = 0, a.mode = De;
+						break;
+					case 16189:
+						for (; d < 32;) {
+							if (0 === o) break t;
+							o--, h += n[r++] << d, d += 8;
+						}
+						t.adler = a.check = Be(h), h = 0, d = 0, a.mode = Ue;
+					case Ue:
+						if (0 === a.havedict) return t.next_out = s, t.avail_out = l, t.next_in = r, t.avail_in = o, a.hold = h, a.bits = d, xe;
+						t.adler = a.check = 1, a.mode = De;
+					case De: if (e === pe || e === ve) break t;
+					case Te:
+						if (a.last) {
+							h >>>= 7 & d, d -= 7 & d, a.mode = Le;
+							break;
+						}
+						for (; d < 3;) {
+							if (0 === o) break t;
+							o--, h += n[r++] << d, d += 8;
+						}
+						switch (a.last = 1 & h, d -= 1, 3 & (h >>>= 1)) {
+							case 0:
+								a.mode = 16193;
+								break;
+							case 1:
+								if (We(a), a.mode = Fe, e === ve) {
+									h >>>= 2, d -= 2;
+									break t;
+								}
+								break;
+							case 2:
+								a.mode = 16196;
+								break;
+							case 3: t.msg = "invalid block type", a.mode = Ne;
+						}
+						h >>>= 2, d -= 2;
+						break;
+					case 16193:
+						for (h >>>= 7 & d, d -= 7 & d; d < 32;) {
+							if (0 === o) break t;
+							o--, h += n[r++] << d, d += 8;
+						}
+						if ((65535 & h) != (h >>> 16 ^ 65535)) {
+							t.msg = "invalid stored block lengths", a.mode = Ne;
+							break;
+						}
+						if (a.length = 65535 & h, h = 0, d = 0, a.mode = Oe, e === ve) break t;
+					case Oe: a.mode = 16195;
+					case 16195:
+						if (u = a.length) {
+							if (u > o && (u = o), u > l && (u = l), 0 === u) break t;
+							i.set(n.subarray(r, r + u), s), o -= u, r += u, l -= u, s += u, a.length -= u;
+							break;
+						}
+						a.mode = De;
+						break;
+					case 16196:
+						for (; d < 14;) {
+							if (0 === o) break t;
+							o--, h += n[r++] << d, d += 8;
+						}
+						if (a.nlen = 257 + (31 & h), h >>>= 5, d -= 5, a.ndist = 1 + (31 & h), h >>>= 5, d -= 5, a.ncode = 4 + (15 & h), h >>>= 4, d -= 4, a.nlen > 286 || a.ndist > 30) {
+							t.msg = "too many length or distance symbols", a.mode = Ne;
+							break;
+						}
+						a.have = 0, a.mode = 16197;
+					case 16197:
+						for (; a.have < a.ncode;) {
+							for (; d < 3;) {
+								if (0 === o) break t;
+								o--, h += n[r++] << d, d += 8;
+							}
+							a.lens[Z[a.have++]] = 7 & h, h >>>= 3, d -= 3;
+						}
+						for (; a.have < 19;) a.lens[Z[a.have++]] = 0;
+						if (a.lencode = a.lendyn, a.lenbits = 7, z = { bits: a.lenbits }, x = be(0, a.lens, 0, 19, a.lencode, 0, a.work, z), a.lenbits = z.bits, x) {
+							t.msg = "invalid code lengths set", a.mode = Ne;
+							break;
+						}
+						a.have = 0, a.mode = 16198;
+					case 16198:
+						for (; a.have < a.nlen + a.ndist;) {
+							for (; b = (E = a.lencode[h & (1 << a.lenbits) - 1]) >>> 16 & 255, g = 65535 & E, !((m = E >>> 24) <= d);) {
+								if (0 === o) break t;
+								o--, h += n[r++] << d, d += 8;
+							}
+							if (g < 16) h >>>= m, d -= m, a.lens[a.have++] = g;
+							else {
+								if (16 === g) {
+									for (A = m + 2; d < A;) {
+										if (0 === o) break t;
+										o--, h += n[r++] << d, d += 8;
+									}
+									if (h >>>= m, d -= m, 0 === a.have) {
+										t.msg = "invalid bit length repeat", a.mode = Ne;
+										break;
+									}
+									y = a.lens[a.have - 1], u = 3 + (3 & h), h >>>= 2, d -= 2;
+								} else if (17 === g) {
+									for (A = m + 3; d < A;) {
+										if (0 === o) break t;
+										o--, h += n[r++] << d, d += 8;
+									}
+									d -= m, y = 0, u = 3 + (7 & (h >>>= m)), h >>>= 3, d -= 3;
+								} else {
+									for (A = m + 7; d < A;) {
+										if (0 === o) break t;
+										o--, h += n[r++] << d, d += 8;
+									}
+									d -= m, y = 0, u = 11 + (127 & (h >>>= m)), h >>>= 7, d -= 7;
+								}
+								if (a.have + u > a.nlen + a.ndist) {
+									t.msg = "invalid bit length repeat", a.mode = Ne;
+									break;
+								}
+								for (; u--;) a.lens[a.have++] = y;
+							}
+						}
+						if (a.mode === Ne) break;
+						if (0 === a.lens[256]) {
+							t.msg = "invalid code -- missing end-of-block", a.mode = Ne;
+							break;
+						}
+						if (a.lenbits = 9, z = { bits: a.lenbits }, x = be(1, a.lens, 0, a.nlen, a.lencode, 0, a.work, z), a.lenbits = z.bits, x) {
+							t.msg = "invalid literal/lengths set", a.mode = Ne;
+							break;
+						}
+						if (a.distbits = 6, a.distcode = a.distdyn, z = { bits: a.distbits }, x = be(2, a.lens, a.nlen, a.ndist, a.distcode, 0, a.work, z), a.distbits = z.bits, x) {
+							t.msg = "invalid distances set", a.mode = Ne;
+							break;
+						}
+						if (a.mode = Fe, e === ve) break t;
+					case Fe: a.mode = Ie;
+					case Ie:
+						if (o >= 6 && l >= 258) {
+							t.next_out = s, t.avail_out = l, t.next_in = r, t.avail_in = o, a.hold = h, a.bits = d, _e(t, f), s = t.next_out, i = t.output, l = t.avail_out, r = t.next_in, n = t.input, o = t.avail_in, h = a.hold, d = a.bits, a.mode === De && (a.back = -1);
+							break;
+						}
+						for (a.back = 0; b = (E = a.lencode[h & (1 << a.lenbits) - 1]) >>> 16 & 255, g = 65535 & E, !((m = E >>> 24) <= d);) {
+							if (0 === o) break t;
+							o--, h += n[r++] << d, d += 8;
+						}
+						if (b && 0 == (240 & b)) {
+							for (p = m, v = b, k = g; b = (E = a.lencode[k + ((h & (1 << p + v) - 1) >> p)]) >>> 16 & 255, g = 65535 & E, !(p + (m = E >>> 24) <= d);) {
+								if (0 === o) break t;
+								o--, h += n[r++] << d, d += 8;
+							}
+							h >>>= p, d -= p, a.back += p;
+						}
+						if (h >>>= m, d -= m, a.back += m, a.length = g, 0 === b) {
+							a.mode = 16205;
+							break;
+						}
+						if (32 & b) {
+							a.back = -1, a.mode = De;
+							break;
+						}
+						if (64 & b) {
+							t.msg = "invalid literal/length code", a.mode = Ne;
+							break;
+						}
+						a.extra = 15 & b, a.mode = 16201;
+					case 16201:
+						if (a.extra) {
+							for (A = a.extra; d < A;) {
+								if (0 === o) break t;
+								o--, h += n[r++] << d, d += 8;
+							}
+							a.length += h & (1 << a.extra) - 1, h >>>= a.extra, d -= a.extra, a.back += a.extra;
+						}
+						a.was = a.length, a.mode = 16202;
+					case 16202:
+						for (; b = (E = a.distcode[h & (1 << a.distbits) - 1]) >>> 16 & 255, g = 65535 & E, !((m = E >>> 24) <= d);) {
+							if (0 === o) break t;
+							o--, h += n[r++] << d, d += 8;
+						}
+						if (0 == (240 & b)) {
+							for (p = m, v = b, k = g; b = (E = a.distcode[k + ((h & (1 << p + v) - 1) >> p)]) >>> 16 & 255, g = 65535 & E, !(p + (m = E >>> 24) <= d);) {
+								if (0 === o) break t;
+								o--, h += n[r++] << d, d += 8;
+							}
+							h >>>= p, d -= p, a.back += p;
+						}
+						if (h >>>= m, d -= m, a.back += m, 64 & b) {
+							t.msg = "invalid distance code", a.mode = Ne;
+							break;
+						}
+						a.offset = g, a.extra = 15 & b, a.mode = 16203;
+					case 16203:
+						if (a.extra) {
+							for (A = a.extra; d < A;) {
+								if (0 === o) break t;
+								o--, h += n[r++] << d, d += 8;
+							}
+							a.offset += h & (1 << a.extra) - 1, h >>>= a.extra, d -= a.extra, a.back += a.extra;
+						}
+						if (a.offset > a.dmax) {
+							t.msg = "invalid distance too far back", a.mode = Ne;
+							break;
+						}
+						a.mode = 16204;
+					case 16204:
+						if (0 === l) break t;
+						if (u = f - l, a.offset > u) {
+							if ((u = a.offset - u) > a.whave && a.sane) {
+								t.msg = "invalid distance too far back", a.mode = Ne;
+								break;
+							}
+							u > a.wnext ? (u -= a.wnext, c = a.wsize - u) : c = a.wnext - u, u > a.length && (u = a.length), w = a.window;
+						} else w = i, c = s - a.offset, u = a.length;
+						u > l && (u = l), l -= u, a.length -= u;
+						do
+							i[s++] = w[c++];
+						while (--u);
+						0 === a.length && (a.mode = Ie);
+						break;
+					case 16205:
+						if (0 === l) break t;
+						i[s++] = a.length, l--, a.mode = Ie;
+						break;
+					case Le:
+						if (a.wrap) {
+							for (; d < 32;) {
+								if (0 === o) break t;
+								o--, h |= n[r++] << d, d += 8;
+							}
+							if (f -= l, t.total_out += f, a.total += f, 4 & a.wrap && f && (t.adler = a.check = a.flags ? M(a.check, i, f, s - f) : C(a.check, i, f, s - f)), f = l, 4 & a.wrap && (a.flags ? h : Be(h)) !== a.check) {
+								t.msg = "incorrect data check", a.mode = Ne;
+								break;
+							}
+							h = 0, d = 0;
+						}
+						a.mode = 16207;
+					case 16207:
+						if (a.wrap && a.flags) {
+							for (; d < 32;) {
+								if (0 === o) break t;
+								o--, h += n[r++] << d, d += 8;
+							}
+							if (4 & a.wrap && h !== (4294967295 & a.total)) {
+								t.msg = "incorrect length check", a.mode = Ne;
+								break;
+							}
+							h = 0, d = 0;
+						}
+						a.mode = 16208;
+					case 16208:
+						x = ye;
+						break t;
+					case Ne:
+						x = Ae;
+						break t;
+					case 16210: return Ee;
+					default: return ze;
+				}
+				return t.next_out = s, t.avail_out = l, t.next_in = r, t.avail_in = o, a.hold = h, a.bits = d, (a.wsize || f !== t.avail_out && a.mode < Ne && (a.mode < Le || e !== ge)) && qe(t, t.output, t.next_out, f - t.avail_out), _ -= t.avail_in, f -= t.avail_out, t.total_in += _, t.total_out += f, a.total += f, 4 & a.wrap && f && (t.adler = a.check = a.flags ? M(a.check, i, f, t.next_out - f) : C(a.check, i, f, t.next_out - f)), t.data_type = a.bits + (a.last ? 64 : 0) + (a.mode === De ? 128 : 0) + (a.mode === Fe || a.mode === Oe ? 256 : 0), (0 === _ && 0 === f || e === ge) && x === ke && (x = Re), x;
+			},
+			inflateEnd: function(t) {
+				if (je(t)) return ze;
+				var e = t.state;
+				return e.window && (e.window = null), t.state = null, ke;
+			},
+			inflateGetHeader: function(t, e) {
+				if (je(t)) return ze;
+				var a = t.state;
+				return 0 == (2 & a.wrap) ? ze : (a.head = e, e.done = !1, ke);
+			},
+			inflateSetDictionary: function(t, e) {
+				var a, n = e.length;
+				return je(t) || 0 !== (a = t.state).wrap && a.mode !== Ue ? ze : a.mode === Ue && C(1, e, n, 0) !== a.check ? Ae : qe(t, e, n, n) ? (a.mode = 16210, Ee) : (a.havedict = 1, ke);
+			},
+			inflateInfo: "pako inflate (from Nodeca project)"
+		};
+		var Qe = function() {
+			this.text = 0, this.time = 0, this.xflags = 0, this.os = 0, this.extra = null, this.extra_len = 0, this.name = "", this.comment = "", this.hcrc = 0, this.done = !1;
+		}, Ve = Object.prototype.toString, $e = K.Z_NO_FLUSH, ta = K.Z_FINISH, ea = K.Z_OK, aa = K.Z_STREAM_END, na = K.Z_NEED_DICT, ia = K.Z_STREAM_ERROR, ra = K.Z_DATA_ERROR, sa = K.Z_MEM_ERROR, oa = K.Z_BUF_ERROR, la = {
+			chunkSize: 65536,
+			windowBits: 15,
+			to: ""
+		};
+		function ha(t) {
+			this.options = Pt({}, la, t || {});
+			var e = this.options;
+			e.raw && e.windowBits >= 0 && e.windowBits < 16 && (e.windowBits = -e.windowBits, 0 === e.windowBits && (e.windowBits = -15)), !(e.windowBits >= 0 && e.windowBits < 16) || t && t.windowBits || (e.windowBits += 32), e.windowBits > 15 && e.windowBits < 48 && 0 == (15 & e.windowBits) && (e.windowBits |= 15), this.err = 0, this.msg = "", this.ended = !1, this.chunks = [], this.strm = new Vt(), this.strm.avail_out = 0;
+			var a = Je.inflateInit2(this.strm, e.windowBits);
+			if (a !== ea) throw new Error(j[a]);
+			if (this.header = new Qe(), Je.inflateGetHeader(this.strm, this.header), e.dictionary && ("string" == typeof e.dictionary ? e.dictionary = qt(e.dictionary) : "[object ArrayBuffer]" === Ve.call(e.dictionary) && (e.dictionary = new Uint8Array(e.dictionary)), e.raw && (a = Je.inflateSetDictionary(this.strm, e.dictionary)) !== ea)) throw new Error(j[a]);
+		}
+		function da(t, e) {
+			var a = new ha(e);
+			if (a.push(t, !0), a.err) throw a.msg || j[a.err];
+			return a.result;
+		}
+		ha.prototype.push = function(t, e) {
+			var a, n, i, r = this.strm, s = this.options.chunkSize, o = this.options.dictionary;
+			if (this.ended) return !1;
+			for (n = e === ~~e ? e : !0 === e ? ta : $e, "[object ArrayBuffer]" === Ve.call(t) ? r.input = new Uint8Array(t) : r.input = t, r.next_in = 0, r.avail_in = r.input.length;;) {
+				for (0 === r.avail_out && (r.output = new Uint8Array(s), r.next_out = 0, r.avail_out = s), (a = Je.inflate(r, n)) === na && o && ((a = Je.inflateSetDictionary(r, o)) === ea ? a = Je.inflate(r, n) : a === ra && (a = na)); r.avail_in > 0 && a === aa && 2 & r.state.wrap && 0 !== r.state.flags && 0 !== r.input[r.next_in];) Je.inflateReset(r), a = Je.inflate(r, n);
+				switch (a) {
+					case ia:
+					case ra:
+					case na:
+					case sa: return this.onEnd(a), this.ended = !0, !1;
+				}
+				if (i = r.avail_out, r.next_out && (0 === r.avail_out || a === aa || n > 0)) if ("string" === this.options.to) {
+					var l = Qt(r.output, r.next_out), h = r.next_out - l, d = Jt(r.output, l);
+					r.next_out = h, r.avail_out = s - h, h && r.output.set(r.output.subarray(l, l + h), 0), this.onData(d);
+				} else this.onData(r.output.length === r.next_out ? r.output : r.output.subarray(0, r.next_out)), r.avail_out = 0, r.next_out = 0;
+				if (a !== ea && a !== oa || 0 !== i) {
+					if (a === aa) return a = Je.inflateEnd(this.strm), this.onEnd(a), this.ended = !0, !0;
+					if (0 === r.avail_in) {
+						if (n === ta) return a = Je.inflateEnd(this.strm), this.onEnd(a === ea ? oa : a), this.ended = !0, !1;
+						break;
+					}
+				}
+			}
+			return !0;
+		}, ha.prototype.onData = function(t) {
+			this.chunks.push(t);
+		}, ha.prototype.onEnd = function(t) {
+			t === ea && ("string" === this.options.to ? this.result = this.chunks.join("") : this.result = Yt(this.chunks)), this.chunks = [], this.err = t, this.msg = this.strm.msg;
+		};
+		var _a = {
+			Inflate: ha,
+			inflate: da,
+			inflateRaw: function(t, e) {
+				return (e = e || {}).raw = !0, da(t, e);
+			},
+			ungzip: da,
+			constants: K
+		}, fa = he.Deflate, ua = he.deflate, ca = he.deflateRaw, wa = he.gzip, ma = _a.Inflate, ba = _a.inflate, ga = _a.inflateRaw, pa = _a.ungzip, va = K, ka = {
+			Deflate: fa,
+			deflate: ua,
+			deflateRaw: ca,
+			gzip: wa,
+			Inflate: ma,
+			inflate: ba,
+			inflateRaw: ga,
+			ungzip: pa,
+			constants: va
+		};
+		t.Deflate = fa, t.Inflate = ma, t.constants = va, t.default = ka, t.deflate = ua, t.deflateRaw = ca, t.gzip = wa, t.inflate = ba, t.inflateRaw = ga, t.ungzip = pa, Object.defineProperty(t, "__esModule", { value: !0 });
+	}));
+}));
+//#endregion
+//#region node_modules/pizzip/js/flate.js
+var require_flate = /* @__PURE__ */ __commonJSMin(((exports) => {
+	var USE_TYPEDARRAY = typeof Uint8Array !== "undefined" && typeof Uint16Array !== "undefined" && typeof Uint32Array !== "undefined";
+	var pako = require_pako_es5_min();
+	exports.uncompressInputType = USE_TYPEDARRAY ? "uint8array" : "array";
+	exports.compressInputType = USE_TYPEDARRAY ? "uint8array" : "array";
+	exports.magic = "\b\0";
+	exports.compress = function(input, compressionOptions) {
+		return pako.deflateRaw(input, { level: compressionOptions.level || -1 });
+	};
+	exports.uncompress = function(input) {
+		return pako.inflateRaw(input);
+	};
+}));
+//#endregion
+//#region node_modules/pizzip/js/compressions.js
+var require_compressions = /* @__PURE__ */ __commonJSMin(((exports) => {
+	exports.STORE = {
+		magic: "\0\0",
+		compress: function compress(content) {
+			return content;
+		},
+		uncompress: function uncompress(content) {
+			return content;
+		},
+		compressInputType: null,
+		uncompressInputType: null
+	};
+	exports.DEFLATE = require_flate();
+}));
+//#endregion
+//#region node_modules/pizzip/js/nodeBuffer.js
+var require_nodeBuffer = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	module.exports = function(data, encoding) {
+		if (typeof data === "number") return Buffer.alloc(data);
+		return Buffer.from(data, encoding);
+	};
+	module.exports.test = function(b) {
+		return Buffer.isBuffer(b);
+	};
+}));
+//#endregion
+//#region node_modules/pizzip/js/utils.js
+var require_utils = /* @__PURE__ */ __commonJSMin(((exports) => {
+	function _typeof(o) {
+		"@babel/helpers - typeof";
+		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+			return typeof o;
+		} : function(o) {
+			return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+		}, _typeof(o);
+	}
+	var support = require_support();
+	var compressions = require_compressions();
+	var nodeBuffer = require_nodeBuffer();
+	/**
+	* Convert a string to a "binary string" : a string containing only char codes between 0 and 255.
+	* @param {string} str the string to transform.
+	* @return {String} the binary string.
+	*/
+	exports.string2binary = function(str) {
+		var result = "";
+		for (var i = 0; i < str.length; i++) result += String.fromCharCode(str.charCodeAt(i) & 255);
+		return result;
+	};
+	exports.arrayBuffer2Blob = function(buffer, mimeType) {
+		exports.checkSupport("blob");
+		mimeType = mimeType || "application/zip";
+		try {
+			return new Blob([buffer], { type: mimeType });
+		} catch (_unused) {
+			try {
+				var builder = new (window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder || window.MSBlobBuilder)();
+				builder.append(buffer);
+				return builder.getBlob(mimeType);
+			} catch (_unused2) {
+				throw new Error("Bug : can't construct the Blob.");
+			}
+		}
+	};
+	/**
+	* The identity function.
+	* @param {Object} input the input.
+	* @return {Object} the same input.
+	*/
+	function identity(input) {
+		return input;
+	}
+	/**
+	* Fill in an array with a string.
+	* @param {String} str the string to use.
+	* @param {Array|ArrayBuffer|Uint8Array|Buffer} array the array to fill in (will be mutated).
+	* @return {Array|ArrayBuffer|Uint8Array|Buffer} the updated array.
+	*/
+	function stringToArrayLike(str, array) {
+		for (var i = 0; i < str.length; ++i) array[i] = str.charCodeAt(i) & 255;
+		return array;
+	}
+	/**
+	* Transform an array-like object to a string.
+	* @param {Array|ArrayBuffer|Uint8Array|Buffer} array the array to transform.
+	* @return {String} the result.
+	*/
+	function arrayLikeToString(array) {
+		var chunk = 65536;
+		var result = [], len = array.length, type = exports.getTypeOf(array);
+		var k = 0, canUseApply = true;
+		try {
+			switch (type) {
+				case "uint8array":
+					String.fromCharCode.apply(null, /* @__PURE__ */ new Uint8Array(0));
+					break;
+				case "nodebuffer":
+					String.fromCharCode.apply(null, nodeBuffer(0));
+					break;
+			}
+		} catch (_unused3) {
+			canUseApply = false;
+		}
+		if (!canUseApply) {
+			var resultStr = "";
+			for (var i = 0; i < array.length; i++) resultStr += String.fromCharCode(array[i]);
+			return resultStr;
+		}
+		while (k < len && chunk > 1) try {
+			if (type === "array" || type === "nodebuffer") result.push(String.fromCharCode.apply(null, array.slice(k, Math.min(k + chunk, len))));
+			else result.push(String.fromCharCode.apply(null, array.subarray(k, Math.min(k + chunk, len))));
+			k += chunk;
+		} catch (_unused4) {
+			chunk = Math.floor(chunk / 2);
+		}
+		return result.join("");
+	}
+	exports.applyFromCharCode = arrayLikeToString;
+	/**
+	* Copy the data from an array-like to an other array-like.
+	* @param {Array|ArrayBuffer|Uint8Array|Buffer} arrayFrom the origin array.
+	* @param {Array|ArrayBuffer|Uint8Array|Buffer} arrayTo the destination array which will be mutated.
+	* @return {Array|ArrayBuffer|Uint8Array|Buffer} the updated destination array.
+	*/
+	function arrayLikeToArrayLike(arrayFrom, arrayTo) {
+		for (var i = 0; i < arrayFrom.length; i++) arrayTo[i] = arrayFrom[i];
+		return arrayTo;
+	}
+	var transform = {};
+	transform.string = {
+		string: identity,
+		array: function array(input) {
+			return stringToArrayLike(input, new Array(input.length));
+		},
+		arraybuffer: function arraybuffer(input) {
+			return transform.string.uint8array(input).buffer;
+		},
+		uint8array: function uint8array(input) {
+			return stringToArrayLike(input, new Uint8Array(input.length));
+		},
+		nodebuffer: function nodebuffer(input) {
+			return stringToArrayLike(input, nodeBuffer(input.length));
+		}
+	};
+	transform.array = {
+		string: arrayLikeToString,
+		array: identity,
+		arraybuffer: function arraybuffer(input) {
+			return new Uint8Array(input).buffer;
+		},
+		uint8array: function uint8array(input) {
+			return new Uint8Array(input);
+		},
+		nodebuffer: function nodebuffer(input) {
+			return nodeBuffer(input);
+		}
+	};
+	transform.arraybuffer = {
+		string: function string(input) {
+			return arrayLikeToString(new Uint8Array(input));
+		},
+		array: function array(input) {
+			return arrayLikeToArrayLike(new Uint8Array(input), new Array(input.byteLength));
+		},
+		arraybuffer: identity,
+		uint8array: function uint8array(input) {
+			return new Uint8Array(input);
+		},
+		nodebuffer: function nodebuffer(input) {
+			return nodeBuffer(new Uint8Array(input));
+		}
+	};
+	transform.uint8array = {
+		string: arrayLikeToString,
+		array: function array(input) {
+			return arrayLikeToArrayLike(input, new Array(input.length));
+		},
+		arraybuffer: function arraybuffer(input) {
+			return input.buffer;
+		},
+		uint8array: identity,
+		nodebuffer: function nodebuffer(input) {
+			return nodeBuffer(input);
+		}
+	};
+	transform.nodebuffer = {
+		string: arrayLikeToString,
+		array: function array(input) {
+			return arrayLikeToArrayLike(input, new Array(input.length));
+		},
+		arraybuffer: function arraybuffer(input) {
+			return transform.nodebuffer.uint8array(input).buffer;
+		},
+		uint8array: function uint8array(input) {
+			return arrayLikeToArrayLike(input, new Uint8Array(input.length));
+		},
+		nodebuffer: identity
+	};
+	/**
+	* Transform an input into any type.
+	* The supported output type are : string, array, uint8array, arraybuffer, nodebuffer.
+	* If no output type is specified, the unmodified input will be returned.
+	* @param {String} outputType the output type.
+	* @param {String|Array|ArrayBuffer|Uint8Array|Buffer} input the input to convert.
+	* @throws {Error} an Error if the browser doesn't support the requested output type.
+	*/
+	exports.transformTo = function(outputType, input) {
+		if (!input) input = "";
+		if (!outputType) return input;
+		exports.checkSupport(outputType);
+		return transform[exports.getTypeOf(input)][outputType](input);
+	};
+	/**
+	* Return the type of the input.
+	* The type will be in a format valid for PizZip.utils.transformTo : string, array, uint8array, arraybuffer.
+	* @param {Object} input the input to identify.
+	* @return {String} the (lowercase) type of the input.
+	*/
+	exports.getTypeOf = function(input) {
+		if (input == null) return;
+		if (typeof input === "string") return "string";
+		var protoResult = Object.prototype.toString.call(input);
+		if (protoResult === "[object Array]") return "array";
+		if (support.nodebuffer && nodeBuffer.test(input)) return "nodebuffer";
+		if (support.uint8array && protoResult === "[object Uint8Array]") return "uint8array";
+		if (support.arraybuffer && protoResult === "[object ArrayBuffer]") return "arraybuffer";
+		if (protoResult === "[object Promise]") throw new Error("Cannot read data from a promise, you probably are running new PizZip(data) with a promise");
+		if (_typeof(input) === "object" && typeof input.file === "function") throw new Error("Cannot read data from a pizzip instance, you probably are running new PizZip(zip) with a zipinstance");
+		if (protoResult === "[object Date]") throw new Error("Cannot read data from a Date, you probably are running new PizZip(data) with a date");
+		if (_typeof(input) === "object" && input.crc32 == null) throw new Error("Unsupported data given to new PizZip(data) (object given)");
+	};
+	/**
+	* Throw an exception if the type is not supported.
+	* @param {String} type the type to check.
+	* @throws {Error} an Error if the browser doesn't support the requested type.
+	*/
+	exports.checkSupport = function(type) {
+		if (!support[type.toLowerCase()]) throw new Error(type + " is not supported by this browser");
+	};
+	exports.MAX_VALUE_16BITS = 65535;
+	exports.MAX_VALUE_32BITS = -1;
+	/**
+	* Prettify a string read as binary.
+	* @param {string} str the string to prettify.
+	* @return {string} a pretty string.
+	*/
+	exports.pretty = function(str) {
+		var res = "", code, i;
+		for (i = 0; i < (str || "").length; i++) {
+			code = str.charCodeAt(i);
+			res += "\\x" + (code < 16 ? "0" : "") + code.toString(16).toUpperCase();
+		}
+		return res;
+	};
+	/**
+	* Find a compression registered in PizZip.
+	* @param {string} compressionMethod the method magic to find.
+	* @return {Object|null} the PizZip compression object, null if none found.
+	*/
+	exports.findCompression = function(compressionMethod) {
+		for (var method in compressions) {
+			if (!compressions.hasOwnProperty(method)) continue;
+			if (compressions[method].magic === compressionMethod) return compressions[method];
+		}
+		return null;
+	};
+	/**
+	* Cross-window, cross-Node-context regular expression detection
+	* @param  {Object}  object Anything
+	* @return {Boolean}        true if the object is a regular expression,
+	* false otherwise
+	*/
+	exports.isRegExp = function(object) {
+		return Object.prototype.toString.call(object) === "[object RegExp]";
+	};
+	/**
+	* Merge the objects passed as parameters into a new one.
+	* @private
+	* @param {...Object} var_args All objects to merge.
+	* @return {Object} a new object with the data of the others.
+	*/
+	exports.extend = function() {
+		var result = {};
+		var i, attr;
+		for (i = 0; i < arguments.length; i++) for (attr in arguments[i]) if (arguments[i].hasOwnProperty(attr) && typeof result[attr] === "undefined") result[attr] = arguments[i][attr];
+		return result;
+	};
+}));
+//#endregion
+//#region node_modules/pizzip/js/crc32.js
+var require_crc32 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var utils = require_utils();
+	var table = [
+		0,
+		1996959894,
+		3993919788,
+		2567524794,
+		124634137,
+		1886057615,
+		3915621685,
+		2657392035,
+		249268274,
+		2044508324,
+		3772115230,
+		2547177864,
+		162941995,
+		2125561021,
+		3887607047,
+		2428444049,
+		498536548,
+		1789927666,
+		4089016648,
+		2227061214,
+		450548861,
+		1843258603,
+		4107580753,
+		2211677639,
+		325883990,
+		1684777152,
+		4251122042,
+		2321926636,
+		335633487,
+		1661365465,
+		4195302755,
+		2366115317,
+		997073096,
+		1281953886,
+		3579855332,
+		2724688242,
+		1006888145,
+		1258607687,
+		3524101629,
+		2768942443,
+		901097722,
+		1119000684,
+		3686517206,
+		2898065728,
+		853044451,
+		1172266101,
+		3705015759,
+		2882616665,
+		651767980,
+		1373503546,
+		3369554304,
+		3218104598,
+		565507253,
+		1454621731,
+		3485111705,
+		3099436303,
+		671266974,
+		1594198024,
+		3322730930,
+		2970347812,
+		795835527,
+		1483230225,
+		3244367275,
+		3060149565,
+		1994146192,
+		31158534,
+		2563907772,
+		4023717930,
+		1907459465,
+		112637215,
+		2680153253,
+		3904427059,
+		2013776290,
+		251722036,
+		2517215374,
+		3775830040,
+		2137656763,
+		141376813,
+		2439277719,
+		3865271297,
+		1802195444,
+		476864866,
+		2238001368,
+		4066508878,
+		1812370925,
+		453092731,
+		2181625025,
+		4111451223,
+		1706088902,
+		314042704,
+		2344532202,
+		4240017532,
+		1658658271,
+		366619977,
+		2362670323,
+		4224994405,
+		1303535960,
+		984961486,
+		2747007092,
+		3569037538,
+		1256170817,
+		1037604311,
+		2765210733,
+		3554079995,
+		1131014506,
+		879679996,
+		2909243462,
+		3663771856,
+		1141124467,
+		855842277,
+		2852801631,
+		3708648649,
+		1342533948,
+		654459306,
+		3188396048,
+		3373015174,
+		1466479909,
+		544179635,
+		3110523913,
+		3462522015,
+		1591671054,
+		702138776,
+		2966460450,
+		3352799412,
+		1504918807,
+		783551873,
+		3082640443,
+		3233442989,
+		3988292384,
+		2596254646,
+		62317068,
+		1957810842,
+		3939845945,
+		2647816111,
+		81470997,
+		1943803523,
+		3814918930,
+		2489596804,
+		225274430,
+		2053790376,
+		3826175755,
+		2466906013,
+		167816743,
+		2097651377,
+		4027552580,
+		2265490386,
+		503444072,
+		1762050814,
+		4150417245,
+		2154129355,
+		426522225,
+		1852507879,
+		4275313526,
+		2312317920,
+		282753626,
+		1742555852,
+		4189708143,
+		2394877945,
+		397917763,
+		1622183637,
+		3604390888,
+		2714866558,
+		953729732,
+		1340076626,
+		3518719985,
+		2797360999,
+		1068828381,
+		1219638859,
+		3624741850,
+		2936675148,
+		906185462,
+		1090812512,
+		3747672003,
+		2825379669,
+		829329135,
+		1181335161,
+		3412177804,
+		3160834842,
+		628085408,
+		1382605366,
+		3423369109,
+		3138078467,
+		570562233,
+		1426400815,
+		3317316542,
+		2998733608,
+		733239954,
+		1555261956,
+		3268935591,
+		3050360625,
+		752459403,
+		1541320221,
+		2607071920,
+		3965973030,
+		1969922972,
+		40735498,
+		2617837225,
+		3943577151,
+		1913087877,
+		83908371,
+		2512341634,
+		3803740692,
+		2075208622,
+		213261112,
+		2463272603,
+		3855990285,
+		2094854071,
+		198958881,
+		2262029012,
+		4057260610,
+		1759359992,
+		534414190,
+		2176718541,
+		4139329115,
+		1873836001,
+		414664567,
+		2282248934,
+		4279200368,
+		1711684554,
+		285281116,
+		2405801727,
+		4167216745,
+		1634467795,
+		376229701,
+		2685067896,
+		3608007406,
+		1308918612,
+		956543938,
+		2808555105,
+		3495958263,
+		1231636301,
+		1047427035,
+		2932959818,
+		3654703836,
+		1088359270,
+		936918e3,
+		2847714899,
+		3736837829,
+		1202900863,
+		817233897,
+		3183342108,
+		3401237130,
+		1404277552,
+		615818150,
+		3134207493,
+		3453421203,
+		1423857449,
+		601450431,
+		3009837614,
+		3294710456,
+		1567103746,
+		711928724,
+		3020668471,
+		3272380065,
+		1510334235,
+		755167117
+	];
+	/**
+	*
+	*  Javascript crc32
+	*  http://www.webtoolkit.info/
+	*
+	*/
+	module.exports = function crc32(input, crc) {
+		if (typeof input === "undefined" || !input.length) return 0;
+		var isArray = utils.getTypeOf(input) !== "string";
+		if (typeof crc == "undefined") crc = 0;
+		var x = 0;
+		var y = 0;
+		var b = 0;
+		crc ^= -1;
+		for (var i = 0, iTop = input.length; i < iTop; i++) {
+			b = isArray ? input[i] : input.charCodeAt(i);
+			y = (crc ^ b) & 255;
+			x = table[y];
+			crc = crc >>> 8 ^ x;
+		}
+		return crc ^ -1;
+	};
+}));
+//#endregion
+//#region node_modules/pizzip/js/signature.js
+var require_signature = /* @__PURE__ */ __commonJSMin(((exports) => {
+	exports.LOCAL_FILE_HEADER = "PK";
+	exports.CENTRAL_FILE_HEADER = "PK";
+	exports.CENTRAL_DIRECTORY_END = "PK";
+	exports.ZIP64_CENTRAL_DIRECTORY_LOCATOR = "PK\x07";
+	exports.ZIP64_CENTRAL_DIRECTORY_END = "PK";
+	exports.DATA_DESCRIPTOR = "PK\x07\b";
+}));
+//#endregion
+//#region node_modules/pizzip/js/defaults.js
+var require_defaults = /* @__PURE__ */ __commonJSMin(((exports) => {
+	exports.base64 = false;
+	exports.binary = false;
+	exports.dir = false;
+	exports.createFolders = false;
+	exports.date = null;
+	exports.compression = null;
+	exports.compressionOptions = null;
+	exports.comment = null;
+	exports.unixPermissions = null;
+	exports.dosPermissions = null;
+}));
+//#endregion
+//#region node_modules/pizzip/js/compressedObject.js
+var require_compressedObject = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function CompressedObject() {
+		this.compressedSize = 0;
+		this.uncompressedSize = 0;
+		this.crc32 = 0;
+		this.compressionMethod = null;
+		this.compressedContent = null;
+	}
+	CompressedObject.prototype = {
+		/**
+		* Return the decompressed content in an unspecified format.
+		* The format will depend on the decompressor.
+		* @return {Object} the decompressed content.
+		*/
+		getContent: function getContent() {
+			return null;
+		},
+		/**
+		* Return the compressed content in an unspecified format.
+		* The format will depend on the compressed conten source.
+		* @return {Object} the compressed content.
+		*/
+		getCompressedContent: function getCompressedContent() {
+			return null;
+		}
+	};
+	module.exports = CompressedObject;
+}));
+//#endregion
+//#region node_modules/pizzip/js/utf8.js
+var require_utf8 = /* @__PURE__ */ __commonJSMin(((exports) => {
+	var utils = require_utils();
+	var support = require_support();
+	var nodeBuffer = require_nodeBuffer();
+	/**
+	* The following functions come from pako, from pako/lib/utils/strings
+	* released under the MIT license, see pako https://github.com/nodeca/pako/
+	*/
+	var _utf8len = new Array(256);
+	for (var i = 0; i < 256; i++) _utf8len[i] = i >= 252 ? 6 : i >= 248 ? 5 : i >= 240 ? 4 : i >= 224 ? 3 : i >= 192 ? 2 : 1;
+	_utf8len[254] = _utf8len[254] = 1;
+	function string2buf(str) {
+		var buf, c, c2, mPos, i, bufLen = 0;
+		var strLen = str.length;
+		for (mPos = 0; mPos < strLen; mPos++) {
+			c = str.charCodeAt(mPos);
+			if ((c & 64512) === 55296 && mPos + 1 < strLen) {
+				c2 = str.charCodeAt(mPos + 1);
+				if ((c2 & 64512) === 56320) {
+					c = 65536 + (c - 55296 << 10) + (c2 - 56320);
+					mPos++;
+				}
+			}
+			bufLen += c < 128 ? 1 : c < 2048 ? 2 : c < 65536 ? 3 : 4;
+		}
+		if (support.uint8array) buf = new Uint8Array(bufLen);
+		else buf = new Array(bufLen);
+		for (i = 0, mPos = 0; i < bufLen; mPos++) {
+			c = str.charCodeAt(mPos);
+			if ((c & 64512) === 55296 && mPos + 1 < strLen) {
+				c2 = str.charCodeAt(mPos + 1);
+				if ((c2 & 64512) === 56320) {
+					c = 65536 + (c - 55296 << 10) + (c2 - 56320);
+					mPos++;
+				}
+			}
+			if (c < 128) buf[i++] = c;
+			else if (c < 2048) {
+				buf[i++] = 192 | c >>> 6;
+				buf[i++] = 128 | c & 63;
+			} else if (c < 65536) {
+				buf[i++] = 224 | c >>> 12;
+				buf[i++] = 128 | c >>> 6 & 63;
+				buf[i++] = 128 | c & 63;
+			} else {
+				buf[i++] = 240 | c >>> 18;
+				buf[i++] = 128 | c >>> 12 & 63;
+				buf[i++] = 128 | c >>> 6 & 63;
+				buf[i++] = 128 | c & 63;
+			}
+		}
+		return buf;
+	}
+	function utf8border(buf, max) {
+		var pos;
+		max = max || buf.length;
+		if (max > buf.length) max = buf.length;
+		pos = max - 1;
+		while (pos >= 0 && (buf[pos] & 192) === 128) pos--;
+		if (pos < 0) return max;
+		if (pos === 0) return max;
+		return pos + _utf8len[buf[pos]] > max ? pos : max;
+	}
+	function buf2string(buf) {
+		var i, out, c, cLen;
+		var len = buf.length;
+		var utf16buf = new Array(len * 2);
+		for (out = 0, i = 0; i < len;) {
+			c = buf[i++];
+			if (c < 128) {
+				utf16buf[out++] = c;
+				continue;
+			}
+			cLen = _utf8len[c];
+			if (cLen > 4) {
+				utf16buf[out++] = 65533;
+				i += cLen - 1;
+				continue;
+			}
+			c &= cLen === 2 ? 31 : cLen === 3 ? 15 : 7;
+			while (cLen > 1 && i < len) {
+				c = c << 6 | buf[i++] & 63;
+				cLen--;
+			}
+			if (cLen > 1) {
+				utf16buf[out++] = 65533;
+				continue;
+			}
+			if (c < 65536) utf16buf[out++] = c;
+			else {
+				c -= 65536;
+				utf16buf[out++] = 55296 | c >> 10 & 1023;
+				utf16buf[out++] = 56320 | c & 1023;
+			}
+		}
+		if (utf16buf.length !== out) if (utf16buf.subarray) utf16buf = utf16buf.subarray(0, out);
+		else utf16buf.length = out;
+		return utils.applyFromCharCode(utf16buf);
+	}
+	/**
+	* Transform a javascript string into an array (typed if possible) of bytes,
+	* UTF-8 encoded.
+	* @param {String} str the string to encode
+	* @return {Array|Uint8Array|Buffer} the UTF-8 encoded string.
+	*/
+	exports.utf8encode = function utf8encode(str) {
+		if (support.nodebuffer) return nodeBuffer(str, "utf-8");
+		return string2buf(str);
+	};
+	/**
+	* Transform a bytes array (or a representation) representing an UTF-8 encoded
+	* string into a javascript string.
+	* @param {Array|Uint8Array|Buffer} buf the data de decode
+	* @return {String} the decoded string.
+	*/
+	exports.utf8decode = function utf8decode(buf) {
+		if (support.nodebuffer) return utils.transformTo("nodebuffer", buf).toString("utf-8");
+		buf = utils.transformTo(support.uint8array ? "uint8array" : "array", buf);
+		var result = [], len = buf.length, chunk = 65536;
+		var k = 0;
+		while (k < len) {
+			var nextBoundary = utf8border(buf, Math.min(k + chunk, len));
+			if (support.uint8array) result.push(buf2string(buf.subarray(k, nextBoundary)));
+			else result.push(buf2string(buf.slice(k, nextBoundary)));
+			k = nextBoundary;
+		}
+		return result.join("");
+	};
+}));
+//#endregion
+//#region node_modules/pizzip/js/stringWriter.js
+var require_stringWriter = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var utils = require_utils();
+	/**
+	* An object to write any content to a string.
+	* @constructor
+	*/
+	function StringWriter() {
+		this.data = [];
+	}
+	StringWriter.prototype = {
+		/**
+		* Append any content to the current string.
+		* @param {Object} input the content to add.
+		*/
+		append: function append(input) {
+			input = utils.transformTo("string", input);
+			this.data.push(input);
+		},
+		/**
+		* Finalize the construction an return the result.
+		* @return {string} the generated string.
+		*/
+		finalize: function finalize() {
+			return this.data.join("");
+		}
+	};
+	module.exports = StringWriter;
+}));
+//#endregion
+//#region node_modules/pizzip/js/uint8ArrayWriter.js
+var require_uint8ArrayWriter = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var utils = require_utils();
+	/**
+	* An object to write any content to an Uint8Array.
+	* @constructor
+	* @param {number} length The length of the array.
+	*/
+	function Uint8ArrayWriter(length) {
+		this.data = new Uint8Array(length);
+		this.index = 0;
+	}
+	Uint8ArrayWriter.prototype = {
+		/**
+		* Append any content to the current array.
+		* @param {Object} input the content to add.
+		*/
+		append: function append(input) {
+			if (input.length !== 0) {
+				input = utils.transformTo("uint8array", input);
+				this.data.set(input, this.index);
+				this.index += input.length;
+			}
+		},
+		/**
+		* Finalize the construction an return the result.
+		* @return {Uint8Array} the generated array.
+		*/
+		finalize: function finalize() {
+			return this.data;
+		}
+	};
+	module.exports = Uint8ArrayWriter;
+}));
+//#endregion
+//#region node_modules/pizzip/js/object.js
+var require_object = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function _createForOfIteratorHelper(r, e) {
+		var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
+		if (!t) {
+			if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) {
+				t && (r = t);
+				var _n = 0, F = function F() {};
+				return {
+					s: F,
+					n: function n() {
+						return _n >= r.length ? { done: !0 } : {
+							done: !1,
+							value: r[_n++]
+						};
+					},
+					e: function e(r) {
+						throw r;
+					},
+					f: F
+				};
+			}
+			throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+		}
+		var o, a = !0, u = !1;
+		return {
+			s: function s() {
+				t = t.call(r);
+			},
+			n: function n() {
+				var r = t.next();
+				return a = r.done, r;
+			},
+			e: function e(r) {
+				u = !0, o = r;
+			},
+			f: function f() {
+				try {
+					a || null == t["return"] || t["return"]();
+				} finally {
+					if (u) throw o;
+				}
+			}
+		};
+	}
+	function _unsupportedIterableToArray(r, a) {
+		if (r) {
+			if ("string" == typeof r) return _arrayLikeToArray(r, a);
+			var t = {}.toString.call(r).slice(8, -1);
+			return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0;
+		}
+	}
+	function _arrayLikeToArray(r, a) {
+		(null == a || a > r.length) && (a = r.length);
+		for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
+		return n;
+	}
+	var support = require_support();
+	var utils = require_utils();
+	var _crc = require_crc32();
+	var signature = require_signature();
+	var defaults = require_defaults();
+	var base64 = require_base64();
+	var compressions = require_compressions();
+	var CompressedObject = require_compressedObject();
+	var nodeBuffer = require_nodeBuffer();
+	var utf8 = require_utf8();
+	var StringWriter = require_stringWriter();
+	var Uint8ArrayWriter = require_uint8ArrayWriter();
+	/**
+	* Returns the raw data of a ZipObject, decompress the content if necessary.
+	* @param {ZipObject} file the file to use.
+	* @return {String|ArrayBuffer|Uint8Array|Buffer} the data.
+	*/
+	function getRawData(file) {
+		if (file._data instanceof CompressedObject) {
+			file._data = file._data.getContent();
+			file.options.binary = true;
+			file.options.base64 = false;
+			if (utils.getTypeOf(file._data) === "uint8array") {
+				var copy = file._data;
+				file._data = new Uint8Array(copy.length);
+				if (copy.length !== 0) file._data.set(copy, 0);
+			}
+		}
+		return file._data;
+	}
+	/**
+	* Returns the data of a ZipObject in a binary form. If the content is an unicode string, encode it.
+	* @param {ZipObject} file the file to use.
+	* @return {String|ArrayBuffer|Uint8Array|Buffer} the data.
+	*/
+	function getBinaryData(file) {
+		var result = getRawData(file);
+		if (utils.getTypeOf(result) === "string") {
+			if (!file.options.binary) {
+				if (support.nodebuffer) return nodeBuffer(result, "utf-8");
+			}
+			return file.asBinary();
+		}
+		return result;
+	}
+	var out = {
+		/**
+		* Read an existing zip and merge the data in the current PizZip object.
+		* The implementation is in pizzip-load.js, don't forget to include it.
+		* @param {String|ArrayBuffer|Uint8Array|Buffer} stream  The stream to load
+		* @param {Object} options Options for loading the stream.
+		*  options.base64 : is the stream in base64 ? default : false
+		* @return {PizZip} the current PizZip object
+		*/
+		load: function load() {
+			throw new Error("Load method is not defined. Is the file pizzip-load.js included ?");
+		},
+		/**
+		* Filter nested files/folders with the specified function.
+		* @param {Function} search the predicate to use :
+		* function (relativePath, file) {...}
+		* It takes 2 arguments : the relative path and the file.
+		* @return {Array} An array of matching elements.
+		*/
+		filter: function filter(search) {
+			var result = [];
+			var filename, relativePath, file, fileClone;
+			for (filename in this.files) {
+				if (!this.files.hasOwnProperty(filename)) continue;
+				file = this.files[filename];
+				fileClone = new ZipObject(file.name, file._data, utils.extend(file.options));
+				relativePath = filename.slice(this.root.length, filename.length);
+				if (filename.slice(0, this.root.length) === this.root && search(relativePath, fileClone)) result.push(fileClone);
+			}
+			return result;
+		},
+		/**
+		* Add a file to the zip file, or search a file.
+		* @param   {string|RegExp} name The name of the file to add (if data is defined),
+		* the name of the file to find (if no data) or a regex to match files.
+		* @param   {String|ArrayBuffer|Uint8Array|Buffer} data  The file data, either raw or base64 encoded
+		* @param   {Object} o     File options
+		* @return  {PizZip|Object|Array} this PizZip object (when adding a file),
+		* a file (when searching by string) or an array of files (when searching by regex).
+		*/
+		file: function file(name, data, o) {
+			if (arguments.length === 1) {
+				if (utils.isRegExp(name)) {
+					var regexp = name;
+					return this.filter(function(relativePath, file) {
+						return !file.dir && regexp.test(relativePath);
+					});
+				}
+				return this.filter(function(relativePath, file) {
+					return !file.dir && relativePath === name;
+				})[0] || null;
+			}
+			name = this.root + name;
+			fileAdd.call(this, name, data, o);
+			return this;
+		},
+		/**
+		* Add a directory to the zip file, or search.
+		* @param   {String|RegExp} arg The name of the directory to add, or a regex to search folders.
+		* @return  {PizZip} an object with the new directory as the root, or an array containing matching folders.
+		*/
+		folder: function folder(arg) {
+			if (!arg) return this;
+			if (utils.isRegExp(arg)) return this.filter(function(relativePath, file) {
+				return file.dir && arg.test(relativePath);
+			});
+			var name = this.root + arg;
+			var newFolder = folderAdd.call(this, name);
+			var ret = this.shallowClone();
+			ret.root = newFolder.name;
+			return ret;
+		},
+		/**
+		* Delete a file, or a directory and all sub-files, from the zip
+		* @param {string} name the name of the file to delete
+		* @return {PizZip} this PizZip object
+		*/
+		remove: function remove(name) {
+			name = this.root + name;
+			var file = this.files[name];
+			if (!file) {
+				if (name.slice(-1) !== "/") name += "/";
+				file = this.files[name];
+			}
+			if (file && !file.dir) delete this.files[name];
+			else {
+				var kids = this.filter(function(relativePath, file) {
+					return file.name.slice(0, name.length) === name;
+				});
+				for (var i = 0; i < kids.length; i++) delete this.files[kids[i].name];
+			}
+			return this;
+		},
+		/**
+		* Generate the complete zip file
+		* @param {Object} options the options to generate the zip file :
+		* - base64, (deprecated, use type instead) true to generate base64.
+		* - compression, "STORE" by default.
+		* - type, "base64" by default. Values are : string, base64, uint8array, arraybuffer, blob.
+		* @return {String|Uint8Array|ArrayBuffer|Buffer|Blob} the zip file
+		*/
+		generate: function generate(options) {
+			options = utils.extend(options || {}, {
+				base64: true,
+				compression: "STORE",
+				compressionOptions: null,
+				type: "base64",
+				platform: "DOS",
+				comment: null,
+				mimeType: "application/zip",
+				encodeFileName: utf8.utf8encode
+			});
+			utils.checkSupport(options.type);
+			if (options.platform === "darwin" || options.platform === "freebsd" || options.platform === "linux" || options.platform === "sunos") options.platform = "UNIX";
+			if (options.platform === "win32") options.platform = "DOS";
+			var zipData = [], encodedComment = utils.transformTo("string", options.encodeFileName(options.comment || this.comment || ""));
+			var localDirLength = 0, centralDirLength = 0, writer, i;
+			var fileNames = [];
+			if (options.fileOrder instanceof Array) fileNames = options.fileOrder;
+			for (var name in this.files) if (fileNames.indexOf(name) === -1) fileNames.push(name);
+			if (typeof options.fileOrder === "function") fileNames = options.fileOrder(this.files);
+			var _iterator = _createForOfIteratorHelper(fileNames), _step;
+			try {
+				for (_iterator.s(); !(_step = _iterator.n()).done;) {
+					var _name = _step.value;
+					if (!this.files.hasOwnProperty(_name)) continue;
+					var file = this.files[_name];
+					var compressionName = file.options.compression || options.compression.toUpperCase();
+					var compression = compressions[compressionName];
+					if (!compression) throw new Error(compressionName + " is not a valid compression method !");
+					var compressionOptions = file.options.compressionOptions || options.compressionOptions || {};
+					var compressedObject = generateCompressedObjectFrom.call(this, file, compression, compressionOptions);
+					var zipPart = generateZipParts.call(this, _name, file, compressedObject, localDirLength, options.platform, options.encodeFileName);
+					localDirLength += zipPart.fileRecord.length + compressedObject.compressedSize;
+					centralDirLength += zipPart.dirRecord.length;
+					zipData.push(zipPart);
+				}
+			} catch (err) {
+				_iterator.e(err);
+			} finally {
+				_iterator.f();
+			}
+			var dirEnd = "";
+			dirEnd = signature.CENTRAL_DIRECTORY_END + "\0\0\0\0" + decToHex(zipData.length, 2) + decToHex(zipData.length, 2) + decToHex(centralDirLength, 4) + decToHex(localDirLength, 4) + decToHex(encodedComment.length, 2) + encodedComment;
+			var typeName = options.type.toLowerCase();
+			if (typeName === "uint8array" || typeName === "arraybuffer" || typeName === "blob" || typeName === "nodebuffer") writer = new Uint8ArrayWriter(localDirLength + centralDirLength + dirEnd.length);
+			else writer = new StringWriter(localDirLength + centralDirLength + dirEnd.length);
+			for (i = 0; i < zipData.length; i++) {
+				writer.append(zipData[i].fileRecord);
+				writer.append(zipData[i].compressedObject.compressedContent);
+			}
+			for (i = 0; i < zipData.length; i++) writer.append(zipData[i].dirRecord);
+			writer.append(dirEnd);
+			var zip = writer.finalize();
+			switch (options.type.toLowerCase()) {
+				case "uint8array":
+				case "arraybuffer":
+				case "nodebuffer": return utils.transformTo(options.type.toLowerCase(), zip);
+				case "blob": return utils.arrayBuffer2Blob(utils.transformTo("arraybuffer", zip), options.mimeType);
+				case "base64": return options.base64 ? base64.encode(zip) : zip;
+				default: return zip;
+			}
+		},
+		/**
+		* @deprecated
+		* This method will be removed in a future version without replacement.
+		*/
+		crc32: function crc32(input, crc) {
+			return _crc(input, crc);
+		},
+		/**
+		* @deprecated
+		* This method will be removed in a future version without replacement.
+		*/
+		utf8encode: function utf8encode(string) {
+			return utils.transformTo("string", utf8.utf8encode(string));
+		},
+		/**
+		* @deprecated
+		* This method will be removed in a future version without replacement.
+		*/
+		utf8decode: function utf8decode(input) {
+			return utf8.utf8decode(input);
+		}
+	};
+	/**
+	* Transform this._data into a string.
+	* @param {function} filter a function String -> String, applied if not null on the result.
+	* @return {String} the string representing this._data.
+	*/
+	function dataToString(asUTF8) {
+		var result = getRawData(this);
+		if (result === null || typeof result === "undefined") return "";
+		if (this.options.base64) result = base64.decode(result);
+		if (asUTF8 && this.options.binary) result = out.utf8decode(result);
+		else result = utils.transformTo("string", result);
+		if (!asUTF8 && !this.options.binary) result = utils.transformTo("string", out.utf8encode(result));
+		return result;
+	}
+	/**
+	* A simple object representing a file in the zip file.
+	* @constructor
+	* @param {string} name the name of the file
+	* @param {String|ArrayBuffer|Uint8Array|Buffer} data the data
+	* @param {Object} options the options of the file
+	*/
+	function ZipObject(name, data, options) {
+		this.name = name;
+		this.dir = options.dir;
+		this.date = options.date;
+		this.comment = options.comment;
+		this.unixPermissions = options.unixPermissions;
+		this.dosPermissions = options.dosPermissions;
+		this._data = data;
+		this.options = options;
+		this._initialMetadata = {
+			dir: options.dir,
+			date: options.date
+		};
+	}
+	ZipObject.prototype = {
+		/**
+		* Return the content as UTF8 string.
+		* @return {string} the UTF8 string.
+		*/
+		asText: function asText() {
+			return dataToString.call(this, true);
+		},
+		/**
+		* Returns the binary content.
+		* @return {string} the content as binary.
+		*/
+		asBinary: function asBinary() {
+			return dataToString.call(this, false);
+		},
+		/**
+		* Returns the content as a nodejs Buffer.
+		* @return {Buffer} the content as a Buffer.
+		*/
+		asNodeBuffer: function asNodeBuffer() {
+			var result = getBinaryData(this);
+			return utils.transformTo("nodebuffer", result);
+		},
+		/**
+		* Returns the content as an Uint8Array.
+		* @return {Uint8Array} the content as an Uint8Array.
+		*/
+		asUint8Array: function asUint8Array() {
+			var result = getBinaryData(this);
+			return utils.transformTo("uint8array", result);
+		},
+		/**
+		* Returns the content as an ArrayBuffer.
+		* @return {ArrayBuffer} the content as an ArrayBufer.
+		*/
+		asArrayBuffer: function asArrayBuffer() {
+			return this.asUint8Array().buffer;
+		}
+	};
+	/**
+	* Transform an integer into a string in hexadecimal.
+	* @private
+	* @param {number} dec the number to convert.
+	* @param {number} bytes the number of bytes to generate.
+	* @returns {string} the result.
+	*/
+	function decToHex(dec, bytes) {
+		var hex = "", i;
+		for (i = 0; i < bytes; i++) {
+			hex += String.fromCharCode(dec & 255);
+			dec >>>= 8;
+		}
+		return hex;
+	}
+	/**
+	* Transforms the (incomplete) options from the user into the complete
+	* set of options to create a file.
+	* @private
+	* @param {Object} o the options from the user.
+	* @return {Object} the complete set of options.
+	*/
+	function prepareFileAttrs(o) {
+		o = o || {};
+		if (o.base64 === true && (o.binary === null || o.binary === void 0)) o.binary = true;
+		o = utils.extend(o, defaults);
+		o.date = o.date || /* @__PURE__ */ new Date();
+		if (o.compression !== null) o.compression = o.compression.toUpperCase();
+		return o;
+	}
+	/**
+	* Add a file in the current folder.
+	* @private
+	* @param {string} name the name of the file
+	* @param {String|ArrayBuffer|Uint8Array|Buffer} data the data of the file
+	* @param {Object} o the options of the file
+	* @return {Object} the new file.
+	*/
+	function fileAdd(name, data, o) {
+		var dataType = utils.getTypeOf(data), parent;
+		o = prepareFileAttrs(o);
+		if (typeof o.unixPermissions === "string") o.unixPermissions = parseInt(o.unixPermissions, 8);
+		if (o.unixPermissions && o.unixPermissions & 16384) o.dir = true;
+		if (o.dosPermissions && o.dosPermissions & 16) o.dir = true;
+		if (o.dir) name = forceTrailingSlash(name);
+		if (o.createFolders && (parent = parentFolder(name))) folderAdd.call(this, parent, true);
+		if (o.dir || data === null || typeof data === "undefined") {
+			o.base64 = false;
+			o.binary = false;
+			data = null;
+			dataType = null;
+		} else if (dataType === "string") {
+			if (o.binary && !o.base64) {
+				if (o.optimizedBinaryString !== true) data = utils.string2binary(data);
+			}
+		} else {
+			o.base64 = false;
+			o.binary = true;
+			if (!dataType && !(data instanceof CompressedObject)) throw new Error("The data of '" + name + "' is in an unsupported format !");
+			if (dataType === "arraybuffer") data = utils.transformTo("uint8array", data);
+		}
+		var object = new ZipObject(name, data, o);
+		this.files[name] = object;
+		return object;
+	}
+	/**
+	* Find the parent folder of the path.
+	* @private
+	* @param {string} path the path to use
+	* @return {string} the parent folder, or ""
+	*/
+	function parentFolder(path) {
+		if (path.slice(-1) === "/") path = path.substring(0, path.length - 1);
+		var lastSlash = path.lastIndexOf("/");
+		return lastSlash > 0 ? path.substring(0, lastSlash) : "";
+	}
+	/**
+	* Returns the path with a slash at the end.
+	* @private
+	* @param {String} path the path to check.
+	* @return {String} the path with a trailing slash.
+	*/
+	function forceTrailingSlash(path) {
+		if (path.slice(-1) !== "/") path += "/";
+		return path;
+	}
+	/**
+	* Add a (sub) folder in the current folder.
+	* @private
+	* @param {string} name the folder's name
+	* @param {boolean=} [createFolders] If true, automatically create sub
+	*  folders. Defaults to false.
+	* @return {Object} the new folder.
+	*/
+	function folderAdd(name, createFolders) {
+		createFolders = typeof createFolders !== "undefined" ? createFolders : false;
+		name = forceTrailingSlash(name);
+		if (!this.files[name]) fileAdd.call(this, name, null, {
+			dir: true,
+			createFolders
+		});
+		return this.files[name];
+	}
+	/**
+	* Generate a PizZip.CompressedObject for a given zipOject.
+	* @param {ZipObject} file the object to read.
+	* @param {PizZip.compression} compression the compression to use.
+	* @param {Object} compressionOptions the options to use when compressing.
+	* @return {PizZip.CompressedObject} the compressed result.
+	*/
+	function generateCompressedObjectFrom(file, compression, compressionOptions) {
+		var result = new CompressedObject();
+		var content;
+		if (file._data instanceof CompressedObject) {
+			result.uncompressedSize = file._data.uncompressedSize;
+			result.crc32 = file._data.crc32;
+			if (result.uncompressedSize === 0 || file.dir) {
+				compression = compressions.STORE;
+				result.compressedContent = "";
+				result.crc32 = 0;
+			} else if (file._data.compressionMethod === compression.magic) result.compressedContent = file._data.getCompressedContent();
+			else {
+				content = file._data.getContent();
+				result.compressedContent = compression.compress(utils.transformTo(compression.compressInputType, content), compressionOptions);
+			}
+		} else {
+			content = getBinaryData(file);
+			if (!content || content.length === 0 || file.dir) {
+				compression = compressions.STORE;
+				content = "";
+			}
+			result.uncompressedSize = content.length;
+			result.crc32 = _crc(content);
+			result.compressedContent = compression.compress(utils.transformTo(compression.compressInputType, content), compressionOptions);
+		}
+		result.compressedSize = result.compressedContent.length;
+		result.compressionMethod = compression.magic;
+		return result;
+	}
+	/**
+	* Generate the UNIX part of the external file attributes.
+	* @param {Object} unixPermissions the unix permissions or null.
+	* @param {Boolean} isDir true if the entry is a directory, false otherwise.
+	* @return {Number} a 32 bit integer.
+	*
+	* adapted from http://unix.stackexchange.com/questions/14705/the-zip-formats-external-file-attribute :
+	*
+	* TTTTsstrwxrwxrwx0000000000ADVSHR
+	* ^^^^____________________________ file type, see zipinfo.c (UNX_*)
+	*     ^^^_________________________ setuid, setgid, sticky
+	*        ^^^^^^^^^________________ permissions
+	*                 ^^^^^^^^^^______ not used ?
+	*                           ^^^^^^ DOS attribute bits : Archive, Directory, Volume label, System file, Hidden, Read only
+	*/
+	function generateUnixExternalFileAttr(unixPermissions, isDir) {
+		var result = unixPermissions;
+		if (!unixPermissions) result = isDir ? 16893 : 33204;
+		return (result & 65535) << 16;
+	}
+	/**
+	* Generate the DOS part of the external file attributes.
+	* @param {Object} dosPermissions the dos permissions or null.
+	* @param {Boolean} isDir true if the entry is a directory, false otherwise.
+	* @return {Number} a 32 bit integer.
+	*
+	* Bit 0     Read-Only
+	* Bit 1     Hidden
+	* Bit 2     System
+	* Bit 3     Volume Label
+	* Bit 4     Directory
+	* Bit 5     Archive
+	*/
+	function generateDosExternalFileAttr(dosPermissions) {
+		return (dosPermissions || 0) & 63;
+	}
+	/**
+	* Generate the various parts used in the construction of the final zip file.
+	* @param {string} name the file name.
+	* @param {ZipObject} file the file content.
+	* @param {PizZip.CompressedObject} compressedObject the compressed object.
+	* @param {number} offset the current offset from the start of the zip file.
+	* @param {String} platform let's pretend we are this platform (change platform dependents fields)
+	* @param {Function} encodeFileName the function to encode the file name / comment.
+	* @return {object} the zip parts.
+	*/
+	function generateZipParts(name, file, compressedObject, offset, platform, encodeFileName) {
+		var useCustomEncoding = encodeFileName !== utf8.utf8encode, encodedFileName = utils.transformTo("string", encodeFileName(file.name)), utfEncodedFileName = utils.transformTo("string", utf8.utf8encode(file.name)), comment = file.comment || "", encodedComment = utils.transformTo("string", encodeFileName(comment)), utfEncodedComment = utils.transformTo("string", utf8.utf8encode(comment)), useUTF8ForFileName = utfEncodedFileName.length !== file.name.length, useUTF8ForComment = utfEncodedComment.length !== comment.length, o = file.options;
+		var dosTime, dosDate, extraFields = "", unicodePathExtraField = "", unicodeCommentExtraField = "", dir, date;
+		if (file._initialMetadata.dir !== file.dir) dir = file.dir;
+		else dir = o.dir;
+		if (file._initialMetadata.date !== file.date) date = file.date;
+		else date = o.date;
+		var extFileAttr = 0;
+		var versionMadeBy = 0;
+		if (dir) extFileAttr |= 16;
+		if (platform === "UNIX") {
+			versionMadeBy = 798;
+			extFileAttr |= generateUnixExternalFileAttr(file.unixPermissions, dir);
+		} else {
+			versionMadeBy = 20;
+			extFileAttr |= generateDosExternalFileAttr(file.dosPermissions, dir);
+		}
+		dosTime = date.getHours();
+		dosTime <<= 6;
+		dosTime |= date.getMinutes();
+		dosTime <<= 5;
+		dosTime |= date.getSeconds() / 2;
+		dosDate = date.getFullYear() - 1980;
+		dosDate <<= 4;
+		dosDate |= date.getMonth() + 1;
+		dosDate <<= 5;
+		dosDate |= date.getDate();
+		if (useUTF8ForFileName) {
+			unicodePathExtraField = decToHex(1, 1) + decToHex(_crc(encodedFileName), 4) + utfEncodedFileName;
+			extraFields += "up" + decToHex(unicodePathExtraField.length, 2) + unicodePathExtraField;
+		}
+		if (useUTF8ForComment) {
+			unicodeCommentExtraField = decToHex(1, 1) + decToHex(this.crc32(encodedComment), 4) + utfEncodedComment;
+			extraFields += "uc" + decToHex(unicodeCommentExtraField.length, 2) + unicodeCommentExtraField;
+		}
+		var header = "";
+		header += "\n\0";
+		header += !useCustomEncoding && (useUTF8ForFileName || useUTF8ForComment) ? "\0\b" : "\0\0";
+		header += compressedObject.compressionMethod;
+		header += decToHex(dosTime, 2);
+		header += decToHex(dosDate, 2);
+		header += decToHex(compressedObject.crc32, 4);
+		header += decToHex(compressedObject.compressedSize, 4);
+		header += decToHex(compressedObject.uncompressedSize, 4);
+		header += decToHex(encodedFileName.length, 2);
+		header += decToHex(extraFields.length, 2);
+		return {
+			fileRecord: signature.LOCAL_FILE_HEADER + header + encodedFileName + extraFields,
+			dirRecord: signature.CENTRAL_FILE_HEADER + decToHex(versionMadeBy, 2) + header + decToHex(encodedComment.length, 2) + "\0\0\0\0" + decToHex(extFileAttr, 4) + decToHex(offset, 4) + encodedFileName + extraFields + encodedComment,
+			compressedObject
+		};
+	}
+	module.exports = out;
+}));
+//#endregion
+//#region node_modules/pizzip/js/dataReader.js
+var require_dataReader = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var utils = require_utils();
+	function DataReader() {
+		this.data = null;
+		this.length = 0;
+		this.index = 0;
+		this.zero = 0;
+	}
+	DataReader.prototype = {
+		/**
+		* Check that the offset will not go too far.
+		* @param {string} offset the additional offset to check.
+		* @throws {Error} an Error if the offset is out of bounds.
+		*/
+		checkOffset: function checkOffset(offset) {
+			this.checkIndex(this.index + offset);
+		},
+		/**
+		* Check that the specifed index will not be too far.
+		* @param {string} newIndex the index to check.
+		* @throws {Error} an Error if the index is out of bounds.
+		*/
+		checkIndex: function checkIndex(newIndex) {
+			if (this.length < this.zero + newIndex || newIndex < 0) throw new Error("End of data reached (data length = " + this.length + ", asked index = " + newIndex + "). Corrupted zip ?");
+		},
+		/**
+		* Change the index.
+		* @param {number} newIndex The new index.
+		* @throws {Error} if the new index is out of the data.
+		*/
+		setIndex: function setIndex(newIndex) {
+			this.checkIndex(newIndex);
+			this.index = newIndex;
+		},
+		/**
+		* Skip the next n bytes.
+		* @param {number} n the number of bytes to skip.
+		* @throws {Error} if the new index is out of the data.
+		*/
+		skip: function skip(n) {
+			this.setIndex(this.index + n);
+		},
+		/**
+		* Get the byte at the specified index.
+		* @param {number} i the index to use.
+		* @return {number} a byte.
+		*/
+		byteAt: function byteAt() {},
+		/**
+		* Get the next number with a given byte size.
+		* @param {number} size the number of bytes to read.
+		* @return {number} the corresponding number.
+		*/
+		readInt: function readInt(size) {
+			var result = 0, i;
+			this.checkOffset(size);
+			for (i = this.index + size - 1; i >= this.index; i--) result = (result << 8) + this.byteAt(i);
+			this.index += size;
+			return result;
+		},
+		/**
+		* Get the next string with a given byte size.
+		* @param {number} size the number of bytes to read.
+		* @return {string} the corresponding string.
+		*/
+		readString: function readString(size) {
+			return utils.transformTo("string", this.readData(size));
+		},
+		/**
+		* Get raw data without conversion, <size> bytes.
+		* @param {number} size the number of bytes to read.
+		* @return {Object} the raw data, implementation specific.
+		*/
+		readData: function readData() {},
+		/**
+		* Find the last occurence of a zip signature (4 bytes).
+		* @param {string} sig the signature to find.
+		* @return {number} the index of the last occurence, -1 if not found.
+		*/
+		lastIndexOfSignature: function lastIndexOfSignature() {},
+		/**
+		* Get the next date.
+		* @return {Date} the date.
+		*/
+		readDate: function readDate() {
+			var dostime = this.readInt(4);
+			return new Date((dostime >> 25 & 127) + 1980, (dostime >> 21 & 15) - 1, dostime >> 16 & 31, dostime >> 11 & 31, dostime >> 5 & 63, (dostime & 31) << 1);
+		}
+	};
+	module.exports = DataReader;
+}));
+//#endregion
+//#region node_modules/pizzip/js/stringReader.js
+var require_stringReader = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var DataReader = require_dataReader();
+	var utils = require_utils();
+	function StringReader(data, optimizedBinaryString) {
+		this.data = data;
+		if (!optimizedBinaryString) this.data = utils.string2binary(this.data);
+		this.length = this.data.length;
+		this.index = 0;
+		this.zero = 0;
+	}
+	StringReader.prototype = new DataReader();
+	/**
+	* @see DataReader.byteAt
+	*/
+	StringReader.prototype.byteAt = function(i) {
+		return this.data.charCodeAt(this.zero + i);
+	};
+	/**
+	* @see DataReader.lastIndexOfSignature
+	*/
+	StringReader.prototype.lastIndexOfSignature = function(sig) {
+		return this.data.lastIndexOf(sig) - this.zero;
+	};
+	/**
+	* @see DataReader.readData
+	*/
+	StringReader.prototype.readData = function(size) {
+		this.checkOffset(size);
+		var result = this.data.slice(this.zero + this.index, this.zero + this.index + size);
+		this.index += size;
+		return result;
+	};
+	module.exports = StringReader;
+}));
+//#endregion
+//#region node_modules/pizzip/js/arrayReader.js
+var require_arrayReader = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var DataReader = require_dataReader();
+	function ArrayReader(data) {
+		if (data) {
+			this.data = data;
+			this.length = this.data.length;
+			this.index = 0;
+			this.zero = 0;
+			for (var i = 0; i < this.data.length; i++) data[i] &= data[i];
+		}
+	}
+	ArrayReader.prototype = new DataReader();
+	/**
+	* @see DataReader.byteAt
+	*/
+	ArrayReader.prototype.byteAt = function(i) {
+		return this.data[this.zero + i];
+	};
+	/**
+	* @see DataReader.lastIndexOfSignature
+	*/
+	ArrayReader.prototype.lastIndexOfSignature = function(sig) {
+		var sig0 = sig.charCodeAt(0), sig1 = sig.charCodeAt(1), sig2 = sig.charCodeAt(2), sig3 = sig.charCodeAt(3);
+		for (var i = this.length - 4; i >= 0; --i) if (this.data[i] === sig0 && this.data[i + 1] === sig1 && this.data[i + 2] === sig2 && this.data[i + 3] === sig3) return i - this.zero;
+		return -1;
+	};
+	/**
+	* @see DataReader.readData
+	*/
+	ArrayReader.prototype.readData = function(size) {
+		this.checkOffset(size);
+		if (size === 0) return [];
+		var result = this.data.slice(this.zero + this.index, this.zero + this.index + size);
+		this.index += size;
+		return result;
+	};
+	module.exports = ArrayReader;
+}));
+//#endregion
+//#region node_modules/pizzip/js/uint8ArrayReader.js
+var require_uint8ArrayReader = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var ArrayReader = require_arrayReader();
+	function Uint8ArrayReader(data) {
+		if (data) {
+			this.data = data;
+			this.length = this.data.length;
+			this.index = 0;
+			this.zero = 0;
+		}
+	}
+	Uint8ArrayReader.prototype = new ArrayReader();
+	/**
+	* @see DataReader.readData
+	*/
+	Uint8ArrayReader.prototype.readData = function(size) {
+		this.checkOffset(size);
+		if (size === 0) return /* @__PURE__ */ new Uint8Array(0);
+		var result = this.data.subarray(this.zero + this.index, this.zero + this.index + size);
+		this.index += size;
+		return result;
+	};
+	module.exports = Uint8ArrayReader;
+}));
+//#endregion
+//#region node_modules/pizzip/js/nodeBufferReader.js
+var require_nodeBufferReader = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var Uint8ArrayReader = require_uint8ArrayReader();
+	function NodeBufferReader(data) {
+		this.data = data;
+		this.length = this.data.length;
+		this.index = 0;
+		this.zero = 0;
+	}
+	NodeBufferReader.prototype = new Uint8ArrayReader();
+	/**
+	* @see DataReader.readData
+	*/
+	NodeBufferReader.prototype.readData = function(size) {
+		this.checkOffset(size);
+		var result = this.data.slice(this.zero + this.index, this.zero + this.index + size);
+		this.index += size;
+		return result;
+	};
+	module.exports = NodeBufferReader;
+}));
+//#endregion
+//#region node_modules/pizzip/js/zipEntry.js
+var require_zipEntry = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var StringReader = require_stringReader();
+	var utils = require_utils();
+	var CompressedObject = require_compressedObject();
+	var pizzipProto = require_object();
+	var support = require_support();
+	var MADE_BY_DOS = 0;
+	var MADE_BY_UNIX = 3;
+	/**
+	* An entry in the zip file.
+	* @constructor
+	* @param {Object} options Options of the current file.
+	* @param {Object} loadOptions Options for loading the stream.
+	*/
+	function ZipEntry(options, loadOptions) {
+		this.options = options;
+		this.loadOptions = loadOptions;
+	}
+	ZipEntry.prototype = {
+		/**
+		* say if the file is encrypted.
+		* @return {boolean} true if the file is encrypted, false otherwise.
+		*/
+		isEncrypted: function isEncrypted() {
+			return (this.bitFlag & 1) === 1;
+		},
+		/**
+		* say if the file has utf-8 filename/comment.
+		* @return {boolean} true if the filename/comment is in utf-8, false otherwise.
+		*/
+		useUTF8: function useUTF8() {
+			return (this.bitFlag & 2048) === 2048;
+		},
+		/**
+		* Prepare the function used to generate the compressed content from this ZipFile.
+		* @param {DataReader} reader the reader to use.
+		* @param {number} from the offset from where we should read the data.
+		* @param {number} length the length of the data to read.
+		* @return {Function} the callback to get the compressed content (the type depends of the DataReader class).
+		*/
+		prepareCompressedContent: function prepareCompressedContent(reader, from, length) {
+			return function() {
+				var previousIndex = reader.index;
+				reader.setIndex(from);
+				var compressedFileData = reader.readData(length);
+				reader.setIndex(previousIndex);
+				return compressedFileData;
+			};
+		},
+		/**
+		* Prepare the function used to generate the uncompressed content from this ZipFile.
+		* @param {DataReader} reader the reader to use.
+		* @param {number} from the offset from where we should read the data.
+		* @param {number} length the length of the data to read.
+		* @param {PizZip.compression} compression the compression used on this file.
+		* @param {number} uncompressedSize the uncompressed size to expect.
+		* @return {Function} the callback to get the uncompressed content (the type depends of the DataReader class).
+		*/
+		prepareContent: function prepareContent(reader, from, length, compression, uncompressedSize) {
+			return function() {
+				var compressedFileData = utils.transformTo(compression.uncompressInputType, this.getCompressedContent());
+				var uncompressedFileData = compression.uncompress(compressedFileData);
+				if (uncompressedFileData.length !== uncompressedSize) throw new Error("Bug : uncompressed data size mismatch");
+				return uncompressedFileData;
+			};
+		},
+		/**
+		* Read the local part of a zip file and add the info in this object.
+		* @param {DataReader} reader the reader to use.
+		*/
+		readLocalPart: function readLocalPart(reader) {
+			reader.skip(22);
+			this.fileNameLength = reader.readInt(2);
+			var localExtraFieldsLength = reader.readInt(2);
+			this.fileName = reader.readData(this.fileNameLength);
+			reader.skip(localExtraFieldsLength);
+			if (this.compressedSize === -1 || this.uncompressedSize === -1) throw new Error("Bug or corrupted zip : didn't get enough informations from the central directory (compressedSize == -1 || uncompressedSize == -1)");
+			var compression = utils.findCompression(this.compressionMethod);
+			if (compression === null) throw new Error("Corrupted zip : compression " + utils.pretty(this.compressionMethod) + " unknown (inner file : " + utils.transformTo("string", this.fileName) + ")");
+			this.decompressed = new CompressedObject();
+			this.decompressed.compressedSize = this.compressedSize;
+			this.decompressed.uncompressedSize = this.uncompressedSize;
+			this.decompressed.crc32 = this.crc32;
+			this.decompressed.compressionMethod = this.compressionMethod;
+			this.decompressed.getCompressedContent = this.prepareCompressedContent(reader, reader.index, this.compressedSize, compression);
+			this.decompressed.getContent = this.prepareContent(reader, reader.index, this.compressedSize, compression, this.uncompressedSize);
+			if (this.loadOptions.checkCRC32) {
+				this.decompressed = utils.transformTo("string", this.decompressed.getContent());
+				if (pizzipProto.crc32(this.decompressed) !== this.crc32) throw new Error("Corrupted zip : CRC32 mismatch");
+			}
+		},
+		/**
+		* Read the central part of a zip file and add the info in this object.
+		* @param {DataReader} reader the reader to use.
+		*/
+		readCentralPart: function readCentralPart(reader) {
+			this.versionMadeBy = reader.readInt(2);
+			this.versionNeeded = reader.readInt(2);
+			this.bitFlag = reader.readInt(2);
+			this.compressionMethod = reader.readString(2);
+			this.date = reader.readDate();
+			this.crc32 = reader.readInt(4);
+			this.compressedSize = reader.readInt(4);
+			this.uncompressedSize = reader.readInt(4);
+			this.fileNameLength = reader.readInt(2);
+			this.extraFieldsLength = reader.readInt(2);
+			this.fileCommentLength = reader.readInt(2);
+			this.diskNumberStart = reader.readInt(2);
+			this.internalFileAttributes = reader.readInt(2);
+			this.externalFileAttributes = reader.readInt(4);
+			this.localHeaderOffset = reader.readInt(4);
+			if (this.isEncrypted()) throw new Error("Encrypted zip are not supported");
+			this.fileName = reader.readData(this.fileNameLength);
+			this.readExtraFields(reader);
+			this.parseZIP64ExtraField(reader);
+			this.fileComment = reader.readData(this.fileCommentLength);
+		},
+		/**
+		* Parse the external file attributes and get the unix/dos permissions.
+		*/
+		processAttributes: function processAttributes() {
+			this.unixPermissions = null;
+			this.dosPermissions = null;
+			var madeBy = this.versionMadeBy >> 8;
+			this.dir = !!(this.externalFileAttributes & 16);
+			if (madeBy === MADE_BY_DOS) this.dosPermissions = this.externalFileAttributes & 63;
+			if (madeBy === MADE_BY_UNIX) this.unixPermissions = this.externalFileAttributes >> 16 & 65535;
+			if (!this.dir && this.fileNameStr.slice(-1) === "/") this.dir = true;
+		},
+		/**
+		* Parse the ZIP64 extra field and merge the info in the current ZipEntry.
+		*/
+		parseZIP64ExtraField: function parseZIP64ExtraField() {
+			if (!this.extraFields[1]) return;
+			var extraReader = new StringReader(this.extraFields[1].value);
+			if (this.uncompressedSize === utils.MAX_VALUE_32BITS) this.uncompressedSize = extraReader.readInt(8);
+			if (this.compressedSize === utils.MAX_VALUE_32BITS) this.compressedSize = extraReader.readInt(8);
+			if (this.localHeaderOffset === utils.MAX_VALUE_32BITS) this.localHeaderOffset = extraReader.readInt(8);
+			if (this.diskNumberStart === utils.MAX_VALUE_32BITS) this.diskNumberStart = extraReader.readInt(4);
+		},
+		/**
+		* Read the central part of a zip file and add the info in this object.
+		* @param {DataReader} reader the reader to use.
+		*/
+		readExtraFields: function readExtraFields(reader) {
+			var start = reader.index;
+			var extraFieldId, extraFieldLength, extraFieldValue;
+			this.extraFields = this.extraFields || {};
+			while (reader.index < start + this.extraFieldsLength) {
+				extraFieldId = reader.readInt(2);
+				extraFieldLength = reader.readInt(2);
+				extraFieldValue = reader.readString(extraFieldLength);
+				this.extraFields[extraFieldId] = {
+					id: extraFieldId,
+					length: extraFieldLength,
+					value: extraFieldValue
+				};
+			}
+		},
+		/**
+		* Apply an UTF8 transformation if needed.
+		*/
+		handleUTF8: function handleUTF8() {
+			var decodeParamType = support.uint8array ? "uint8array" : "array";
+			if (this.useUTF8()) {
+				this.fileNameStr = pizzipProto.utf8decode(this.fileName);
+				this.fileCommentStr = pizzipProto.utf8decode(this.fileComment);
+			} else {
+				var upath = this.findExtraFieldUnicodePath();
+				if (upath !== null) this.fileNameStr = upath;
+				else {
+					var fileNameByteArray = utils.transformTo(decodeParamType, this.fileName);
+					this.fileNameStr = this.loadOptions.decodeFileName(fileNameByteArray);
+				}
+				var ucomment = this.findExtraFieldUnicodeComment();
+				if (ucomment !== null) this.fileCommentStr = ucomment;
+				else {
+					var commentByteArray = utils.transformTo(decodeParamType, this.fileComment);
+					this.fileCommentStr = this.loadOptions.decodeFileName(commentByteArray);
+				}
+			}
+		},
+		/**
+		* Find the unicode path declared in the extra field, if any.
+		* @return {String} the unicode path, null otherwise.
+		*/
+		findExtraFieldUnicodePath: function findExtraFieldUnicodePath() {
+			var upathField = this.extraFields[28789];
+			if (upathField) {
+				var extraReader = new StringReader(upathField.value);
+				if (extraReader.readInt(1) !== 1) return null;
+				if (pizzipProto.crc32(this.fileName) !== extraReader.readInt(4)) return null;
+				return pizzipProto.utf8decode(extraReader.readString(upathField.length - 5));
+			}
+			return null;
+		},
+		/**
+		* Find the unicode comment declared in the extra field, if any.
+		* @return {String} the unicode comment, null otherwise.
+		*/
+		findExtraFieldUnicodeComment: function findExtraFieldUnicodeComment() {
+			var ucommentField = this.extraFields[25461];
+			if (ucommentField) {
+				var extraReader = new StringReader(ucommentField.value);
+				if (extraReader.readInt(1) !== 1) return null;
+				if (pizzipProto.crc32(this.fileComment) !== extraReader.readInt(4)) return null;
+				return pizzipProto.utf8decode(extraReader.readString(ucommentField.length - 5));
+			}
+			return null;
+		}
+	};
+	module.exports = ZipEntry;
+}));
+//#endregion
+//#region node_modules/pizzip/js/zipEntries.js
+var require_zipEntries = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var StringReader = require_stringReader();
+	var NodeBufferReader = require_nodeBufferReader();
+	var Uint8ArrayReader = require_uint8ArrayReader();
+	var ArrayReader = require_arrayReader();
+	var utils = require_utils();
+	var sig = require_signature();
+	var ZipEntry = require_zipEntry();
+	var support = require_support();
+	/**
+	* All the entries in the zip file.
+	* @constructor
+	* @param {String|ArrayBuffer|Uint8Array} data the binary stream to load.
+	* @param {Object} loadOptions Options for loading the stream.
+	*/
+	function ZipEntries(data, loadOptions) {
+		this.files = [];
+		this.loadOptions = loadOptions;
+		if (data) this.load(data);
+	}
+	ZipEntries.prototype = {
+		/**
+		* Check that the reader is on the speficied signature.
+		* @param {string} expectedSignature the expected signature.
+		* @throws {Error} if it is an other signature.
+		*/
+		checkSignature: function checkSignature(expectedSignature) {
+			var signature = this.reader.readString(4);
+			if (signature !== expectedSignature) throw new Error("Corrupted zip or bug : unexpected signature (" + utils.pretty(signature) + ", expected " + utils.pretty(expectedSignature) + ")");
+		},
+		/**
+		* Check if the given signature is at the given index.
+		* @param {number} askedIndex the index to check.
+		* @param {string} expectedSignature the signature to expect.
+		* @return {boolean} true if the signature is here, false otherwise.
+		*/
+		isSignature: function isSignature(askedIndex, expectedSignature) {
+			var currentIndex = this.reader.index;
+			this.reader.setIndex(askedIndex);
+			var result = this.reader.readString(4) === expectedSignature;
+			this.reader.setIndex(currentIndex);
+			return result;
+		},
+		/**
+		* Read the end of the central directory.
+		*/
+		readBlockEndOfCentral: function readBlockEndOfCentral() {
+			this.diskNumber = this.reader.readInt(2);
+			this.diskWithCentralDirStart = this.reader.readInt(2);
+			this.centralDirRecordsOnThisDisk = this.reader.readInt(2);
+			this.centralDirRecords = this.reader.readInt(2);
+			this.centralDirSize = this.reader.readInt(4);
+			this.centralDirOffset = this.reader.readInt(4);
+			this.zipCommentLength = this.reader.readInt(2);
+			var zipComment = this.reader.readData(this.zipCommentLength);
+			var decodeParamType = support.uint8array ? "uint8array" : "array";
+			var decodeContent = utils.transformTo(decodeParamType, zipComment);
+			this.zipComment = this.loadOptions.decodeFileName(decodeContent);
+		},
+		/**
+		* Read the end of the Zip 64 central directory.
+		* Not merged with the method readEndOfCentral :
+		* The end of central can coexist with its Zip64 brother,
+		* I don't want to read the wrong number of bytes !
+		*/
+		readBlockZip64EndOfCentral: function readBlockZip64EndOfCentral() {
+			this.zip64EndOfCentralSize = this.reader.readInt(8);
+			this.versionMadeBy = this.reader.readString(2);
+			this.versionNeeded = this.reader.readInt(2);
+			this.diskNumber = this.reader.readInt(4);
+			this.diskWithCentralDirStart = this.reader.readInt(4);
+			this.centralDirRecordsOnThisDisk = this.reader.readInt(8);
+			this.centralDirRecords = this.reader.readInt(8);
+			this.centralDirSize = this.reader.readInt(8);
+			this.centralDirOffset = this.reader.readInt(8);
+			this.zip64ExtensibleData = {};
+			var extraDataSize = this.zip64EndOfCentralSize - 44;
+			var index = 0;
+			var extraFieldId, extraFieldLength, extraFieldValue;
+			while (index < extraDataSize) {
+				extraFieldId = this.reader.readInt(2);
+				extraFieldLength = this.reader.readInt(4);
+				extraFieldValue = this.reader.readString(extraFieldLength);
+				this.zip64ExtensibleData[extraFieldId] = {
+					id: extraFieldId,
+					length: extraFieldLength,
+					value: extraFieldValue
+				};
+			}
+		},
+		/**
+		* Read the end of the Zip 64 central directory locator.
+		*/
+		readBlockZip64EndOfCentralLocator: function readBlockZip64EndOfCentralLocator() {
+			this.diskWithZip64CentralDirStart = this.reader.readInt(4);
+			this.relativeOffsetEndOfZip64CentralDir = this.reader.readInt(8);
+			this.disksCount = this.reader.readInt(4);
+			if (this.disksCount > 1) throw new Error("Multi-volumes zip are not supported");
+		},
+		/**
+		* Read the local files, based on the offset read in the central part.
+		*/
+		readLocalFiles: function readLocalFiles() {
+			var i, file;
+			for (i = 0; i < this.files.length; i++) {
+				file = this.files[i];
+				this.reader.setIndex(file.localHeaderOffset);
+				this.checkSignature(sig.LOCAL_FILE_HEADER);
+				file.readLocalPart(this.reader);
+				file.handleUTF8();
+				file.processAttributes();
+			}
+		},
+		/**
+		* Read the central directory.
+		*/
+		readCentralDir: function readCentralDir() {
+			var file;
+			this.reader.setIndex(this.centralDirOffset);
+			while (this.reader.readString(4) === sig.CENTRAL_FILE_HEADER) {
+				file = new ZipEntry({ zip64: this.zip64 }, this.loadOptions);
+				file.readCentralPart(this.reader);
+				this.files.push(file);
+			}
+			if (this.centralDirRecords !== this.files.length) {
+				if (this.centralDirRecords !== 0 && this.files.length === 0) throw new Error("Corrupted zip or bug: expected " + this.centralDirRecords + " records in central dir, got " + this.files.length);
+			}
+		},
+		/**
+		* Read the end of central directory.
+		*/
+		readEndOfCentral: function readEndOfCentral() {
+			var offset = this.reader.lastIndexOfSignature(sig.CENTRAL_DIRECTORY_END);
+			if (offset < 0) if (!this.isSignature(0, sig.LOCAL_FILE_HEADER)) throw new Error("Can't find end of central directory : is this a zip file ?");
+			else throw new Error("Corrupted zip : can't find end of central directory");
+			this.reader.setIndex(offset);
+			var endOfCentralDirOffset = offset;
+			this.checkSignature(sig.CENTRAL_DIRECTORY_END);
+			this.readBlockEndOfCentral();
+			if (this.diskNumber === utils.MAX_VALUE_16BITS || this.diskWithCentralDirStart === utils.MAX_VALUE_16BITS || this.centralDirRecordsOnThisDisk === utils.MAX_VALUE_16BITS || this.centralDirRecords === utils.MAX_VALUE_16BITS || this.centralDirSize === utils.MAX_VALUE_32BITS || this.centralDirOffset === utils.MAX_VALUE_32BITS) {
+				this.zip64 = true;
+				offset = this.reader.lastIndexOfSignature(sig.ZIP64_CENTRAL_DIRECTORY_LOCATOR);
+				if (offset < 0) throw new Error("Corrupted zip : can't find the ZIP64 end of central directory locator");
+				this.reader.setIndex(offset);
+				this.checkSignature(sig.ZIP64_CENTRAL_DIRECTORY_LOCATOR);
+				this.readBlockZip64EndOfCentralLocator();
+				if (!this.isSignature(this.relativeOffsetEndOfZip64CentralDir, sig.ZIP64_CENTRAL_DIRECTORY_END)) {
+					this.relativeOffsetEndOfZip64CentralDir = this.reader.lastIndexOfSignature(sig.ZIP64_CENTRAL_DIRECTORY_END);
+					if (this.relativeOffsetEndOfZip64CentralDir < 0) throw new Error("Corrupted zip : can't find the ZIP64 end of central directory");
+				}
+				this.reader.setIndex(this.relativeOffsetEndOfZip64CentralDir);
+				this.checkSignature(sig.ZIP64_CENTRAL_DIRECTORY_END);
+				this.readBlockZip64EndOfCentral();
+			}
+			var expectedEndOfCentralDirOffset = this.centralDirOffset + this.centralDirSize;
+			if (this.zip64) {
+				expectedEndOfCentralDirOffset += 20;
+				expectedEndOfCentralDirOffset += 12 + this.zip64EndOfCentralSize;
+			}
+			var extraBytes = endOfCentralDirOffset - expectedEndOfCentralDirOffset;
+			if (extraBytes > 0) if (this.isSignature(endOfCentralDirOffset, sig.CENTRAL_FILE_HEADER)) {} else this.reader.zero = extraBytes;
+			else if (extraBytes < 0) throw new Error("Corrupted zip: missing " + Math.abs(extraBytes) + " bytes.");
+		},
+		prepareReader: function prepareReader(data) {
+			var type = utils.getTypeOf(data);
+			utils.checkSupport(type);
+			if (type === "string" && !support.uint8array) this.reader = new StringReader(data, this.loadOptions.optimizedBinaryString);
+			else if (type === "nodebuffer") this.reader = new NodeBufferReader(data);
+			else if (support.uint8array) this.reader = new Uint8ArrayReader(utils.transformTo("uint8array", data));
+			else if (support.array) this.reader = new ArrayReader(utils.transformTo("array", data));
+			else throw new Error("Unexpected error: unsupported type '" + type + "'");
+		},
+		/**
+		* Read a zip file and create ZipEntries.
+		* @param {String|ArrayBuffer|Uint8Array|Buffer} data the binary string representing a zip file.
+		*/
+		load: function load(data) {
+			this.prepareReader(data);
+			this.readEndOfCentral();
+			this.readCentralDir();
+			this.readLocalFiles();
+		}
+	};
+	module.exports = ZipEntries;
+}));
+//#endregion
+//#region node_modules/pizzip/js/load.js
+var require_load = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var base64 = require_base64();
+	var utf8 = require_utf8();
+	var utils = require_utils();
+	var ZipEntries = require_zipEntries();
+	module.exports = function(data, options) {
+		var i, input;
+		options = utils.extend(options || {}, {
+			base64: false,
+			checkCRC32: false,
+			optimizedBinaryString: false,
+			createFolders: false,
+			decodeFileName: utf8.utf8decode
+		});
+		if (options.base64) data = base64.decode(data);
+		var zipEntries = new ZipEntries(data, options);
+		var files = zipEntries.files;
+		for (i = 0; i < files.length; i++) {
+			input = files[i];
+			this.file(input.fileNameStr, input.decompressed, {
+				binary: true,
+				optimizedBinaryString: true,
+				date: input.date,
+				dir: input.dir,
+				comment: input.fileCommentStr.length ? input.fileCommentStr : null,
+				unixPermissions: input.unixPermissions,
+				dosPermissions: input.dosPermissions,
+				createFolders: options.createFolders
+			});
+		}
+		if (zipEntries.zipComment.length) this.comment = zipEntries.zipComment;
+		return this;
+	};
+}));
+//#endregion
+//#region node_modules/pizzip/js/deprecatedPublicUtils.js
+var require_deprecatedPublicUtils = /* @__PURE__ */ __commonJSMin(((exports) => {
+	var utils = require_utils();
+	/**
+	* @deprecated
+	* This function will be removed in a future version without replacement.
+	*/
+	exports.string2binary = function(str) {
+		return utils.string2binary(str);
+	};
+	/**
+	* @deprecated
+	* This function will be removed in a future version without replacement.
+	*/
+	exports.string2Uint8Array = function(str) {
+		return utils.transformTo("uint8array", str);
+	};
+	/**
+	* @deprecated
+	* This function will be removed in a future version without replacement.
+	*/
+	exports.uint8Array2String = function(array) {
+		return utils.transformTo("string", array);
+	};
+	/**
+	* @deprecated
+	* This function will be removed in a future version without replacement.
+	*/
+	exports.string2Blob = function(str) {
+		var buffer = utils.transformTo("arraybuffer", str);
+		return utils.arrayBuffer2Blob(buffer);
+	};
+	/**
+	* @deprecated
+	* This function will be removed in a future version without replacement.
+	*/
+	exports.arrayBuffer2Blob = function(buffer) {
+		return utils.arrayBuffer2Blob(buffer);
+	};
+	/**
+	* @deprecated
+	* This function will be removed in a future version without replacement.
+	*/
+	exports.transformTo = function(outputType, input) {
+		return utils.transformTo(outputType, input);
+	};
+	/**
+	* @deprecated
+	* This function will be removed in a future version without replacement.
+	*/
+	exports.getTypeOf = function(input) {
+		return utils.getTypeOf(input);
+	};
+	/**
+	* @deprecated
+	* This function will be removed in a future version without replacement.
+	*/
+	exports.checkSupport = function(type) {
+		return utils.checkSupport(type);
+	};
+	/**
+	* @deprecated
+	* This value will be removed in a future version without replacement.
+	*/
+	exports.MAX_VALUE_16BITS = utils.MAX_VALUE_16BITS;
+	/**
+	* @deprecated
+	* This value will be removed in a future version without replacement.
+	*/
+	exports.MAX_VALUE_32BITS = utils.MAX_VALUE_32BITS;
+	/**
+	* @deprecated
+	* This function will be removed in a future version without replacement.
+	*/
+	exports.pretty = function(str) {
+		return utils.pretty(str);
+	};
+	/**
+	* @deprecated
+	* This function will be removed in a future version without replacement.
+	*/
+	exports.findCompression = function(compressionMethod) {
+		return utils.findCompression(compressionMethod);
+	};
+	/**
+	* @deprecated
+	* This function will be removed in a future version without replacement.
+	*/
+	exports.isRegExp = function(object) {
+		return utils.isRegExp(object);
+	};
+}));
+//#endregion
+//#region node_modules/pizzip/js/index.js
+var require_js = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var base64 = require_base64();
+	/**
+	Usage:
+	zip = new PizZip();
+	zip.file("hello.txt", "Hello, World!").file("tempfile", "nothing");
+	zip.folder("images").file("smile.gif", base64Data, {base64: true});
+	zip.file("Xmas.txt", "Ho ho ho !", {date : new Date("December 25, 2007 00:00:01")});
+	zip.remove("tempfile");
+	
+	base64zip = zip.generate();
+	
+	**/
+	/**
+	* Representation a of zip file in js
+	* @constructor
+	* @param {String=|ArrayBuffer=|Uint8Array=} data the data to load, if any (optional).
+	* @param {Object=} options the options for creating this objects (optional).
+	*/
+	function PizZip(data, options) {
+		if (!(this instanceof PizZip)) return new PizZip(data, options);
+		this.files = {};
+		this.comment = null;
+		this.root = "";
+		if (data) this.load(data, options);
+		this.clone = function() {
+			var _this = this;
+			var newObj = new PizZip();
+			Object.keys(this.files).forEach(function(file) {
+				newObj.file(file, _this.files[file].asUint8Array());
+			});
+			return newObj;
+		};
+		this.shallowClone = function() {
+			var newObj = new PizZip();
+			for (var i in this) if (typeof this[i] !== "function") newObj[i] = this[i];
+			return newObj;
+		};
+	}
+	PizZip.prototype = require_object();
+	PizZip.prototype.load = require_load();
+	PizZip.support = require_support();
+	PizZip.defaults = require_defaults();
+	/**
+	* @deprecated
+	* This namespace will be removed in a future version without replacement.
+	*/
+	PizZip.utils = require_deprecatedPublicUtils();
+	PizZip.base64 = {
+		/**
+		* @deprecated
+		* This method will be removed in a future version without replacement.
+		*/
+		encode: function encode(input) {
+			return base64.encode(input);
+		},
+		/**
+		* @deprecated
+		* This method will be removed in a future version without replacement.
+		*/
+		decode: function decode(input) {
+			return base64.decode(input);
+		}
+	};
+	PizZip.compressions = require_compressions();
+	module.exports = PizZip;
+	module.exports["default"] = PizZip;
+}));
+//#endregion
+//#region electron/templates/template-placeholder.service.ts
+var import_docxtemplater = /* @__PURE__ */ __toESM(require_docxtemplater(), 1);
+var import_js = /* @__PURE__ */ __toESM(require_js(), 1);
+var TemplatePlaceholderService = class {
+	async createDocument(template, targetPath, data) {
+		if (template.extension === ".doc") {
+			await copyFile(template.filePath, targetPath);
+			return {
+				templateId: template.id,
+				fileName: path.basename(targetPath),
+				filePath: targetPath,
+				extension: ".doc",
+				replacedPlaceholders: [],
+				warning: "Das ältere DOC-Format wurde sicher kopiert. Platzhalter werden in DOC-Dateien nicht automatisch ersetzt."
+			};
+		}
+		try {
+			const zip = new import_js.default(await readFile(template.filePath));
+			if (template.extension === ".dotx") {
+				const contentTypes = zip.file("[Content_Types].xml");
+				if (contentTypes) zip.file("[Content_Types].xml", contentTypes.asText().replace("application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"));
+			}
+			const document = new import_docxtemplater.default(zip, {
+				paragraphLoop: true,
+				linebreaks: true,
+				delimiters: {
+					start: "{{",
+					end: "}}"
+				},
+				nullGetter: (part) => `{{${part.value}}}`
+			});
+			const fullText = document.getFullText();
+			const normalizedData = Object.fromEntries(templatePlaceholderKeys.map((key) => [key, data[key] ?? ""]));
+			const replacedPlaceholders = templatePlaceholderKeys.filter((key) => fullText.includes(`{{${key}}}`));
+			document.render(normalizedData);
+			await writeFile(targetPath, document.getZip().generate({
+				type: "nodebuffer",
+				compression: "DEFLATE"
+			}));
+			return {
+				templateId: template.id,
+				fileName: path.basename(targetPath),
+				filePath: targetPath,
+				extension: ".docx",
+				replacedPlaceholders
+			};
+		} catch (error) {
+			if (error instanceof TemplateError) throw error;
+			throw new TemplateError(`Die Word-Vorlage ist beschädigt oder enthält ungültige Platzhalter. ${toTemplateError(error).message}`, "CORRUPT");
+		}
+	}
+};
+//#endregion
+//#region electron/templates/template-preview.service.ts
+var escapeXml = (value) => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;");
+var TemplatePreviewService = class {
+	constructor(paths) {
+		this.paths = paths;
+	}
+	async generate(template) {
+		await mkdir(this.paths.previewCache, { recursive: true });
+		const version = new Date(template.modifiedAt ?? 0).getTime();
+		const fileName = `${template.id}-${version}.svg`;
+		const previewPath = path.join(this.paths.previewCache, fileName);
+		const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="420" height="594" viewBox="0 0 420 594">
+      <rect width="420" height="594" rx="8" fill="#fff"/>
+      <rect x="34" y="38" width="352" height="5" rx="2.5" fill="#36b99a"/>
+      <text x="34" y="76" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#36b99a">${template.documentType === "anschreiben" ? "ANSCHREIBEN" : template.documentType === "deckblatt" ? "DECKBLATT" : "LEBENSLAUF"}</text>
+      <text x="34" y="112" font-family="Arial,sans-serif" font-size="24" font-weight="700" fill="#1d2927">${escapeXml(template.name.slice(0, 26))}</text>
+      <rect x="34" y="140" width="260" height="8" rx="4" fill="#cfd8d5"/>
+      <rect x="34" y="160" width="330" height="6" rx="3" fill="#e5ebe9"/>
+      <rect x="34" y="174" width="310" height="6" rx="3" fill="#e5ebe9"/>
+      <rect x="34" y="218" width="170" height="9" rx="4" fill="#9aaba6"/>
+      ${Array.from({ length: 12 }, (_, index) => `<rect x="34" y="${246 + index * 20}" width="${index % 3 === 0 ? 330 : 300}" height="6" rx="3" fill="#e5ebe9"/>`).join("")}
+      <text x="34" y="558" font-family="Arial,sans-serif" font-size="12" fill="#71807c">${escapeXml(template.extension.toUpperCase())} · ${escapeXml(template.source === "existing-document" ? "Eigenes Dokument" : "Muster")}</text>
+    </svg>`;
+		try {
+			await readFile(previewPath);
+		} catch {
+			await writeFile(previewPath, svg, "utf8");
+			const files = await import("node:fs/promises").then((fs) => fs.readdir(this.paths.previewCache));
+			await Promise.all(files.filter((entry) => entry.startsWith(`${template.id}-`) && entry !== fileName).map((entry) => rm(path.join(this.paths.previewCache, entry), { force: true })));
+		}
+		return {
+			previewImagePath: previewPath,
+			previewDataUrl: `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`
+		};
+	}
+};
+//#endregion
+//#region electron/templates/template-mapper.ts
+var createTemplateId = (filePath) => createHash("sha256").update(path.resolve(filePath).toLocaleLowerCase("de-DE")).digest("hex");
+var mapTemplateFile = ({ filePath, extension, documentType, source, fileSize, createdAt, modifiedAt, metadata }) => {
+	const fileName = path.basename(filePath);
+	const fallbackName = path.basename(filePath, extension).replaceAll("_", " ").replaceAll("-", " ");
+	return {
+		id: createTemplateId(filePath),
+		name: metadata.name?.trim() || fallbackName,
+		fileName,
+		filePath,
+		extension,
+		documentType: metadata.documentType ?? documentType,
+		source,
+		createdAt,
+		modifiedAt,
+		fileSize,
+		description: metadata.description?.trim() || void 0,
+		tags: Array.from(new Set((metadata.tags ?? []).map((tag) => tag.trim()).filter(Boolean))),
+		isFavorite: metadata.isFavorite ?? false,
+		isSystemTemplate: metadata.isSystemTemplate ?? false
+	};
+};
+//#endregion
+//#region electron/templates/template-validator.ts
+var getTemplateExtension = (filePath) => {
+	const extension = path.extname(filePath).toLowerCase();
+	if (!allowedTemplateExtensions.has(extension)) throw new TemplateError("Dieses Dateiformat wird nicht als Word-Vorlage unterstützt.", "INVALID_FORMAT");
+	return extension;
+};
+var isPathInside = (root, candidate) => {
+	const resolvedRoot = path.resolve(root);
+	const resolvedCandidate = path.resolve(candidate);
+	return resolvedCandidate === resolvedRoot || resolvedCandidate.startsWith(`${resolvedRoot}${path.sep}`);
+};
+var assertAllowedTemplatePath = (paths, filePath) => {
+	if (![
+		paths.anschreibenTemplates,
+		paths.deckblattTemplates,
+		paths.lebenslaufTemplates,
+		paths.anschreibenDocuments
+	].some((root) => isPathInside(root, filePath))) throw new TemplateError("Ungültiger Vorlagenpfad.", "INVALID_PATH");
+	getTemplateExtension(filePath);
+};
+var validateTemplateFile = async (paths, filePath) => {
+	assertAllowedTemplatePath(paths, filePath);
+	const info = await stat(filePath);
+	if (!info.isFile()) throw new TemplateError("Die Vorlage ist keine Datei.", "INVALID_FORMAT");
+	if (info.size > 26214400) throw new TemplateError("Die Vorlage darf höchstens 25 MB groß sein.", "FILE_TOO_LARGE");
+	return info;
+};
+var withOneDriveRetry = async (action, attempts = 3) => {
+	let lastError;
+	for (let attempt = 0; attempt < attempts; attempt += 1) try {
+		return await action();
+	} catch (error) {
+		lastError = error;
+		const code = typeof error === "object" && error && "code" in error ? String(error.code) : "";
+		if (![
+			"EBUSY",
+			"EPERM",
+			"EACCES",
+			"EIO",
+			"ENODATA"
+		].includes(code)) break;
+		await new Promise((resolve) => setTimeout(resolve, 120 * (attempt + 1)));
+	}
+	throw toTemplateError(lastError);
+};
+//#endregion
+//#region electron/templates/template-scanner.ts
+var metadataPathFor = (filePath) => `${filePath.slice(0, -path.extname(filePath).length)}.template.json`;
+var readMetadata = async (filePath) => {
+	try {
+		const raw = JSON.parse(await readFile(metadataPathFor(filePath), "utf8"));
+		if (!raw || typeof raw !== "object") return {};
+		const value = raw;
+		return {
+			name: typeof value.name === "string" ? value.name : void 0,
+			documentType: value.documentType === "anschreiben" || value.documentType === "deckblatt" || value.documentType === "lebenslauf" ? value.documentType : void 0,
+			description: typeof value.description === "string" ? value.description : void 0,
+			tags: Array.isArray(value.tags) ? value.tags.filter((tag) => typeof tag === "string") : void 0,
+			isFavorite: typeof value.isFavorite === "boolean" ? value.isFavorite : void 0,
+			isSystemTemplate: typeof value.isSystemTemplate === "boolean" ? value.isSystemTemplate : void 0
+		};
+	} catch {
+		return {};
+	}
+};
+var listFilesRecursive = async (root) => {
+	const result = [];
+	const pending = [root];
+	while (pending.length) {
+		const current = pending.pop();
+		const entries = await readdir(current, { withFileTypes: true });
+		for (const entry of entries) {
+			const candidate = path.join(current, entry.name);
+			if (entry.isDirectory()) pending.push(candidate);
+			if (entry.isFile()) result.push(candidate);
+		}
+	}
+	return result;
+};
+var TemplateScanner = class {
+	constructor(paths) {
+		this.paths = paths;
+	}
+	locations() {
+		return [
+			{
+				root: this.paths.anschreibenTemplates,
+				documentType: "anschreiben",
+				source: "muster-folder"
+			},
+			{
+				root: this.paths.deckblattTemplates,
+				documentType: "deckblatt",
+				source: "muster-folder"
+			},
+			{
+				root: this.paths.lebenslaufTemplates,
+				documentType: "lebenslauf",
+				source: "muster-folder"
+			},
+			{
+				root: this.paths.anschreibenDocuments,
+				documentType: "anschreiben",
+				source: "existing-document"
+			}
+		];
+	}
+	async scanAllTemplates() {
+		const templates = [];
+		const warnings = [];
+		for (const location of this.locations()) {
+			let files = [];
+			try {
+				files = await withOneDriveRetry(() => listFilesRecursive(location.root));
+			} catch (error) {
+				warnings.push(error instanceof Error ? `${path.basename(location.root)}: ${error.message}` : `${path.basename(location.root)} konnte nicht gelesen werden.`);
+				continue;
+			}
+			for (const filePath of files) {
+				let extension;
+				try {
+					extension = getTemplateExtension(filePath);
+				} catch {
+					continue;
+				}
+				try {
+					const info = await withOneDriveRetry(() => validateTemplateFile(this.paths, filePath));
+					if (info.size > 26214400) continue;
+					templates.push(mapTemplateFile({
+						filePath,
+						extension,
+						documentType: location.documentType,
+						source: location.source,
+						fileSize: info.size,
+						createdAt: info.birthtime.toISOString(),
+						modifiedAt: info.mtime.toISOString(),
+						metadata: await readMetadata(filePath)
+					}));
+				} catch (error) {
+					warnings.push(error instanceof Error ? `${path.basename(filePath)}: ${error.message}` : `${path.basename(filePath)} konnte nicht gelesen werden.`);
+				}
+			}
+		}
+		return {
+			templates: templates.sort((left, right) => Number(right.isFavorite) - Number(left.isFavorite) || left.name.localeCompare(right.name, "de")),
+			warnings
+		};
+	}
+	async scanTemplatesByType(documentType) {
+		return (await this.scanAllTemplates()).templates.filter((template) => template.documentType === documentType);
+	}
+	async scanExistingAnschreiben() {
+		return (await this.scanAllTemplates()).templates.filter((template) => template.source === "existing-document");
+	}
+};
+//#endregion
+//#region electron/templates/template.repository.ts
+var TemplateRepository = class {
+	constructor(paths) {
+		this.paths = paths;
+		this.templates = [];
+		this.scanner = new TemplateScanner(paths);
+		this.previewService = new TemplatePreviewService(paths);
+	}
+	async initialize() {
+		await Promise.all([
+			this.paths.musterRoot,
+			this.paths.anschreibenTemplates,
+			this.paths.deckblattTemplates,
+			this.paths.lebenslaufTemplates,
+			this.paths.anschreibenDocuments,
+			this.paths.previewCache
+		].map((directory) => mkdir(directory, { recursive: true })));
+		return this.refresh();
+	}
+	async refresh() {
+		const result = await this.scanner.scanAllTemplates();
+		this.templates = await Promise.all(result.templates.map(async (template) => ({
+			...template,
+			...await this.previewService.generate(template)
+		})));
+		return {
+			templates: structuredClone(this.templates),
+			scannedAt: (/* @__PURE__ */ new Date()).toISOString(),
+			warnings: result.warnings
+		};
+	}
+	list() {
+		return structuredClone(this.templates);
+	}
+	async getById(templateId) {
+		let template = this.templates.find((item) => item.id === templateId);
+		if (!template) {
+			await this.refresh();
+			template = this.templates.find((item) => item.id === templateId);
+		}
+		return template ? structuredClone(template) : null;
+	}
+	async listByType(documentType) {
+		if (!this.templates.length) await this.refresh();
+		return structuredClone(this.templates.filter((template) => template.documentType === documentType));
+	}
+	async listExistingDocuments() {
+		if (!this.templates.length) await this.refresh();
+		return structuredClone(this.templates.filter((template) => template.source === "existing-document"));
+	}
+	async readMetadata(filePath) {
+		try {
+			return JSON.parse(await readFile(metadataPathFor(filePath), "utf8"));
+		} catch {
+			return {};
+		}
+	}
+	async writeMetadata(filePath, changes) {
+		const metadata = {
+			...await this.readMetadata(filePath),
+			...changes
+		};
+		await writeFile(metadataPathFor(filePath), JSON.stringify(metadata, null, 2), "utf8");
+	}
+};
+//#endregion
+//#region electron/templates/template.service.ts
+var TemplateService = class {
+	constructor(paths) {
+		this.paths = paths;
+		this.placeholderService = new TemplatePlaceholderService();
+		this.repository = new TemplateRepository(paths);
+	}
+	initialize() {
+		return this.repository.initialize();
+	}
+	scanAllTemplates() {
+		return this.repository.refresh();
+	}
+	scanTemplatesByType(documentType) {
+		return this.repository.listByType(documentType);
+	}
+	scanExistingAnschreiben() {
+		return this.repository.listExistingDocuments();
+	}
+	getTemplateById(templateId) {
+		return this.repository.getById(templateId);
+	}
+	rootForType(documentType) {
+		if (documentType === "anschreiben") return this.paths.anschreibenTemplates;
+		if (documentType === "deckblatt") return this.paths.deckblattTemplates;
+		return this.paths.lebenslaufTemplates;
+	}
+	async addExternalTemplate(sourceFilePath, documentType, requestedTemplateName) {
+		const extension = getTemplateExtension(sourceFilePath);
+		const sourceInfo = await stat(sourceFilePath);
+		if (!sourceInfo.isFile()) throw new TemplateError("Die ausgewählte Vorlage ist keine Datei.", "INVALID_FORMAT");
+		if (sourceInfo.size > 26214400) throw new TemplateError("Die Vorlage darf höchstens 25 MB groß sein.", "FILE_TOO_LARGE");
+		const targetRoot = this.rootForType(documentType);
+		await mkdir(targetRoot, { recursive: true });
+		const requestedName = requestedTemplateName || path.basename(sourceFilePath, extension);
+		const targetPath = await createUniqueFilePath(targetRoot, requestedName, extension);
+		await withOneDriveRetry(() => copyFile(sourceFilePath, targetPath));
+		await this.repository.writeMetadata(targetPath, {
+			name: requestedName.replaceAll("_", " "),
+			documentType,
+			tags: [],
+			isFavorite: false,
+			isSystemTemplate: false
+		});
+		await this.repository.refresh();
+		const created = this.repository.list().find((template) => template.filePath === targetPath);
+		if (!created) throw new TemplateError("Die Vorlage konnte nicht hinzugefügt werden.", "NOT_FOUND");
+		return created;
+	}
+	async copyExistingDocumentToTemplates(sourceFilePath, requestedTemplateName) {
+		assertAllowedTemplatePath(this.paths, sourceFilePath);
+		const source = this.repository.list().find((template) => template.filePath === sourceFilePath && template.source === "existing-document");
+		if (!source) throw new TemplateError("Das Anschreiben wurde nicht in den eigenen Dokumenten gefunden.", "NOT_FOUND");
+		return this.addExternalTemplate(source.filePath, "anschreiben", requestedTemplateName || source.name);
+	}
+	async copyExistingTemplateById(templateId, requestedTemplateName) {
+		const template = await this.requireTemplate(templateId);
+		if (template.source !== "existing-document") throw new TemplateError("Nur eigene Anschreiben können zu Muster hinzugefügt werden.", "INVALID_PATH");
+		return this.copyExistingDocumentToTemplates(template.filePath, requestedTemplateName);
+	}
+	async duplicateTemplate(templateId) {
+		const template = await this.requireTemplate(templateId);
+		const targetPath = await createUniqueFilePath(template.source === "existing-document" ? this.paths.anschreibenDocuments : path.dirname(template.filePath), `${path.basename(template.fileName, template.extension)}_Kopie`, template.extension);
+		await withOneDriveRetry(() => copyFile(template.filePath, targetPath));
+		if (template.source === "muster-folder") await this.repository.writeMetadata(targetPath, {
+			...await this.repository.readMetadata(template.filePath),
+			name: `${template.name} Kopie`,
+			isSystemTemplate: false
+		});
+		await this.repository.refresh();
+		return this.repository.list().find((candidate) => candidate.filePath === targetPath) ?? null;
+	}
+	async createDocumentFromTemplate(templateId, targetDirectory, requestedBaseName, data) {
+		const template = await this.requireTemplate(templateId);
+		if (!isPathInside(path.join(this.paths.dataRoot, "Bewerbungen"), targetDirectory)) throw new TemplateError("Ungültiger Zielordner.", "INVALID_PATH");
+		await validateTemplateFile(this.paths, template.filePath);
+		await mkdir(targetDirectory, { recursive: true });
+		const outputExtension = template.extension === ".doc" ? ".doc" : ".docx";
+		const targetPath = await createUniqueFilePath(targetDirectory, `${sanitizeTemplateFileName(requestedBaseName)}_${templateTimestamp()}`, outputExtension);
+		return withOneDriveRetry(() => this.placeholderService.createDocument(template, targetPath, data));
+	}
+	async toggleTemplateFavorite(templateId) {
+		const template = await this.requireTemplate(templateId);
+		await this.repository.writeMetadata(template.filePath, { isFavorite: !template.isFavorite });
+		return this.repository.refresh();
+	}
+	async deleteCustomTemplate(templateId) {
+		const template = await this.requireTemplate(templateId);
+		if (template.isSystemTemplate) throw new TemplateError("Systemvorlagen können nicht gelöscht werden.", "SYSTEM_TEMPLATE");
+		if (template.source !== "muster-folder") throw new TemplateError("Eigene Dokumente werden an dieser Stelle nicht gelöscht.", "INVALID_PATH");
+		await rm(template.filePath);
+		await rm(metadataPathFor(template.filePath), { force: true });
+		return this.repository.refresh();
+	}
+	async generateTemplatePreview(templateId) {
+		return (await this.requireTemplate(templateId)).previewDataUrl ?? null;
+	}
+	async requireTemplate(templateId) {
+		const template = await this.repository.getById(templateId);
+		if (!template) throw new TemplateError("Vorlage wurde nicht gefunden.", "NOT_FOUND");
+		return template;
+	}
+};
+//#endregion
+//#region electron/main.ts
+var mainWindow = null;
+var store;
+var templateService;
+var notifiedEvents = /* @__PURE__ */ new Set();
+var appId = "de.bewerbungsmanager.desktop";
+var __filename = fileURLToPath(import.meta.url);
+var __dirname = path.dirname(__filename);
+var isDevelopment = Boolean(process.env.VITE_DEV_SERVER_URL);
+if (process.platform === "win32") app.setAppUserModelId(appId);
+var createMainWindow = async () => {
+	mainWindow = new BrowserWindow({
+		width: 1480,
+		height: 940,
+		minWidth: 1060,
+		minHeight: 720,
+		show: false,
+		backgroundColor: "#f3f1ec",
+		titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "default",
+		webPreferences: {
+			preload: path.join(__dirname, "preload.mjs"),
+			contextIsolation: true,
+			nodeIntegration: false,
+			sandbox: true,
+			webSecurity: true
+		}
+	});
+	mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+		if (/^https?:\/\//i.test(url)) shell.openExternal(url);
+		return { action: "deny" };
+	});
+	mainWindow.webContents.on("will-navigate", (event, url) => {
+		if (!(isDevelopment ? url.startsWith(process.env.VITE_DEV_SERVER_URL) : url.startsWith(pathToFileURL(path.join(__dirname, "../dist/index.html")).toString()))) event.preventDefault();
+	});
+	mainWindow.once("ready-to-show", () => mainWindow?.show());
+	if (isDevelopment) await mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
+	else await mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
+};
+var registerIpc = () => {
+	ipcMain.handle("workspace:get", () => store.getWorkspace());
+	ipcMain.handle("applications:create", (_event, value) => store.createApplication(applicationInputSchema.parse(value)));
+	ipcMain.handle("applications:save", (_event, value) => store.saveApplication(applicationSchema.parse(value)));
+	ipcMain.handle("applications:remove", (_event, id) => store.removeApplication(String(id)));
+	ipcMain.handle("applications:duplicate", (_event, id) => store.duplicateApplication(String(id)));
+	ipcMain.handle("applications:change-status", (_event, id, status, reason) => {
+		const validStatus = applicationStatuses.find((item) => item === status);
+		const validReason = rejectionReasons.find((item) => item === reason);
+		if (!validStatus) throw new Error("Ungültiger Bewerbungsstatus.");
+		return store.changeStatus(String(id), validStatus, validReason);
+	});
+	ipcMain.handle("applications:open-folder", async (_event, id) => {
+		const error = await shell.openPath(store.getApplicationPath(String(id)));
+		if (error) throw new Error(error);
+	});
+	ipcMain.handle("profiles:save", (_event, value) => store.saveProfile(profileSchema.parse(value)));
+	ipcMain.handle("templates:scan", () => templateService.scanAllTemplates());
+	ipcMain.handle("templates:add", async (_event, rawInput) => {
+		const value = rawInput ?? {};
+		if (value.documentType !== "anschreiben" && value.documentType !== "deckblatt" && value.documentType !== "lebenslauf") throw new Error("Ungültiger Dokumenttyp.");
+		const selection = await dialog.showOpenDialog(mainWindow, {
+			title: "Word-Vorlage hinzufügen",
+			properties: ["openFile"],
+			filters: [{
+				name: "Word-Dokumente",
+				extensions: [
+					"docx",
+					"dotx",
+					"doc"
+				]
+			}]
+		});
+		const sourceFilePath = selection.filePaths[0];
+		if (selection.canceled || !sourceFilePath) return null;
+		return templateService.addExternalTemplate(sourceFilePath, value.documentType, typeof value.requestedName === "string" ? value.requestedName : void 0);
+	});
+	ipcMain.handle("templates:use", async (_event, rawInput) => {
+		const value = rawInput ?? {};
+		if (!value.templateId || !value.applicationId) throw new Error("Vorlage und Bewerbung sind erforderlich.");
+		const template = await templateService.getTemplateById(value.templateId);
+		if (!template) throw new Error("Vorlage wurde nicht gefunden.");
+		const context = store.getTemplateDocumentContext(value.applicationId);
+		const result = await templateService.createDocumentFromTemplate(template.id, context.targetDirectories[template.documentType], context.requestedBaseName, context.data);
+		const openError = await shell.openPath(result.filePath);
+		if (openError) throw new Error(openError);
+		return result;
+	});
+	ipcMain.handle("templates:duplicate", (_event, templateId) => templateService.duplicateTemplate(String(templateId)));
+	ipcMain.handle("templates:copy-to-muster", (_event, templateId) => templateService.copyExistingTemplateById(String(templateId)));
+	ipcMain.handle("templates:toggle-favorite", (_event, templateId) => templateService.toggleTemplateFavorite(String(templateId)));
+	ipcMain.handle("templates:remove", (_event, templateId) => templateService.deleteCustomTemplate(String(templateId)));
+	ipcMain.handle("templates:open", async (_event, templateId) => {
+		const template = await templateService.getTemplateById(String(templateId));
+		if (!template) throw new Error("Vorlage wurde nicht gefunden.");
+		const error = await shell.openPath(template.filePath);
+		if (error) throw new Error(error);
+	});
+	ipcMain.handle("templates:open-folder", async (_event, templateId) => {
+		const template = await templateService.getTemplateById(String(templateId));
+		if (!template) throw new Error("Vorlage wurde nicht gefunden.");
+		shell.showItemInFolder(template.filePath);
+	});
+	ipcMain.handle("media:pick-profile-image", async (_event, rawKind) => {
+		const kind = rawKind === "photo" || rawKind === "signature" ? rawKind : null;
+		if (!kind) throw new Error("Ungültiger Bildtyp.");
+		const selection = await dialog.showOpenDialog(mainWindow, {
+			title: kind === "photo" ? "Bewerbungsfoto auswählen" : "Unterschrift auswählen",
+			properties: ["openFile"],
+			filters: [{
+				name: "Bilddateien",
+				extensions: [
+					"png",
+					"jpg",
+					"jpeg",
+					"webp"
+				]
+			}]
+		});
+		const filePath = selection.filePaths[0];
+		if (selection.canceled || !filePath) return null;
+		const bytes = await readFile(filePath);
+		if (bytes.byteLength > 8 * 1024 * 1024) throw new Error("Das Bild darf höchstens 8 MB groß sein.");
+		const extension = filePath.split(".").pop()?.toLowerCase();
+		return {
+			dataUrl: `data:${extension === "png" ? "image/png" : extension === "webp" ? "image/webp" : "image/jpeg"};base64,${bytes.toString("base64")}`,
+			fileName: filePath.split(/[\\/]/).pop() ?? "Bild"
+		};
+	});
+	ipcMain.handle("settings:save", (_event, value) => store.saveSettings(appSettingsSchema.parse(value)));
+	ipcMain.handle("events:save", (_event, value) => store.saveEvent(calendarEventSchema.parse(value)));
+	ipcMain.handle("attachments:add", async (_event, applicationId, rawCategory) => {
+		const category = attachmentCategories.find((item) => item === rawCategory);
+		if (!category) throw new Error("Ungültige Dokumentkategorie.");
+		const selection = await dialog.showOpenDialog(mainWindow, {
+			title: `${category} hinzufügen`,
+			properties: ["openFile"],
+			filters: [{
+				name: "PDF-Dokumente",
+				extensions: ["pdf"]
+			}]
+		});
+		if (selection.canceled || !selection.filePaths[0]) return store.getWorkspace();
+		return store.addAttachment(String(applicationId), category, selection.filePaths[0]);
+	});
+	ipcMain.handle("attachments:save", (_event, value) => store.saveAttachment(attachmentSchema.parse(value)));
+	ipcMain.handle("attachments:move", (_event, id, rawDirection) => {
+		const direction = Number(rawDirection);
+		if (direction !== -1 && direction !== 1) throw new Error("Ungültige Sortierrichtung.");
+		return store.moveAttachment(String(id), direction);
+	});
+	ipcMain.handle("attachments:remove", (_event, id) => store.removeAttachment(String(id)));
+	ipcMain.handle("attachments:open", async (_event, id) => {
+		const error = await shell.openPath(store.getAttachmentPathById(String(id)));
+		if (error) throw new Error(error);
+	});
+	ipcMain.handle("export:pdf", async (_event, applicationId, rawTarget) => {
+		const target = [
+			"deckblatt",
+			"anschreiben",
+			"lebenslauf",
+			"mappe"
+		].find((item) => item === rawTarget);
+		if (!target) throw new Error("Ungültiges Exportziel.");
+		const result = await dialog.showSaveDialog(mainWindow, {
+			title: "PDF exportieren",
+			defaultPath: store.getExportDefaultName(String(applicationId), target),
+			filters: [{
+				name: "PDF",
+				extensions: ["pdf"]
+			}]
+		});
+		if (result.canceled || !result.filePath) return null;
+		const exporter = new BrowserWindow({
+			show: false,
+			webPreferences: {
+				sandbox: true,
+				contextIsolation: true,
+				nodeIntegration: false
+			}
+		});
+		try {
+			const html = store.getExportHtml(String(applicationId), target);
+			await exporter.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+			const generatedPdf = await exporter.webContents.printToPDF({
+				pageSize: "A4",
+				preferCSSPageSize: true,
+				printBackground: true,
+				margins: {
+					top: 0,
+					right: 0,
+					bottom: 0,
+					left: 0
+				}
+			});
+			const pdf = target === "mappe" ? await mergePdfDocuments(generatedPdf, await Promise.all(store.getPackageAttachmentPaths(String(applicationId)).map(async (attachment) => ({
+				fileName: attachment.fileName,
+				bytes: await readFile(attachment.path)
+			})))) : generatedPdf;
+			await writeFile(result.filePath, pdf);
+			return result.filePath;
+		} finally {
+			exporter.destroy();
+		}
+	});
+	ipcMain.handle("export:backup", async () => {
+		const result = await dialog.showSaveDialog(mainWindow, {
+			title: "JSON-Sicherung exportieren",
+			defaultPath: `BewerbungsManager_Backup_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.json`,
+			filters: [{
+				name: "JSON",
+				extensions: ["json"]
+			}]
+		});
+		if (result.canceled || !result.filePath) return null;
+		await store.writeBackup(result.filePath);
+		return result.filePath;
+	});
+	ipcMain.handle("export:import-backup", async () => {
+		const result = await dialog.showOpenDialog(mainWindow, {
+			title: "JSON-Sicherung wiederherstellen",
+			properties: ["openFile"],
+			filters: [{
+				name: "BewerbungsManager JSON",
+				extensions: ["json"]
+			}]
+		});
+		if (result.canceled || !result.filePaths[0]) return null;
+		return store.importBackup(result.filePaths[0]);
+	});
+	ipcMain.handle("export:settings", async () => {
+		const result = await dialog.showSaveDialog(mainWindow, {
+			title: "Einstellungen exportieren",
+			defaultPath: "BewerbungsManager_Einstellungen.json",
+			filters: [{
+				name: "JSON",
+				extensions: ["json"]
+			}]
+		});
+		if (result.canceled || !result.filePath) return null;
+		await store.writeSettings(result.filePath);
+		return result.filePath;
+	});
+	ipcMain.handle("export:import-settings", async () => {
+		const result = await dialog.showOpenDialog(mainWindow, {
+			title: "Einstellungen importieren",
+			properties: ["openFile"],
+			filters: [{
+				name: "JSON",
+				extensions: ["json"]
+			}]
+		});
+		if (result.canceled || !result.filePaths[0]) return null;
+		return store.importSettings(result.filePaths[0]);
+	});
+	ipcMain.handle("system:open-external", async (_event, rawUrl) => {
+		const url = new URL(String(rawUrl));
+		if (!["http:", "https:"].includes(url.protocol)) throw new Error("Nur HTTP- und HTTPS-Links sind erlaubt.");
+		await shell.openExternal(url.toString());
+	});
+	ipcMain.handle("system:data-path", () => store.dataPath);
+};
+var notifyDueEvents = () => {
+	const workspace = store.getWorkspace();
+	if (!workspace.settings.notificationsEnabled || !Notification.isSupported()) return;
+	const now = Date.now();
+	workspace.events.filter((event) => !event.cancelled && !event.completed).forEach((event) => {
+		const due = new Date(event.startAt).getTime();
+		const matchingReminder = event.reminderMinutes.some((minutes) => {
+			const alertAt = due - minutes * 6e4;
+			return alertAt <= now && alertAt > now - 65e3;
+		});
+		const key = `${event.id}:${Math.floor(now / 6e4)}`;
+		if (matchingReminder && !notifiedEvents.has(key)) {
+			notifiedEvents.add(key);
+			new Notification({
+				title: "BewerbungsManager",
+				body: event.title
+			}).show();
+		}
+	});
+};
+app.whenReady().then(async () => {
+	store = new DataStore(app.getPath("documents"));
+	await store.initialize();
+	templateService = new TemplateService(resolveApplicationPaths(app.getPath("documents")));
+	await templateService.initialize();
+	registerIpc();
+	await createMainWindow();
+	notifyDueEvents();
+	setInterval(notifyDueEvents, 6e4).unref();
+	app.on("activate", () => {
+		if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+	});
+});
+app.on("window-all-closed", () => {
+	if (process.platform !== "darwin") app.quit();
+});
+//#endregion

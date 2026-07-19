@@ -1,0 +1,424 @@
+import path from "node:path";
+import { readFile, writeFile } from "node:fs/promises";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  Notification,
+  shell,
+} from "electron";
+import {
+  appSettingsSchema,
+  applicationInputSchema,
+  applicationSchema,
+  attachmentSchema,
+  applicationStatuses,
+  attachmentCategories,
+  calendarEventSchema,
+  profileSchema,
+  rejectionReasons,
+} from "../src/shared/schema";
+import type { ExportTarget } from "../src/shared/ipc";
+import type {
+  AddTemplateInput,
+  UseTemplateInput,
+} from "../src/features/templates/template.types";
+import { resolveApplicationPaths } from "../src/config/application-paths";
+import { DataStore } from "./storage";
+import { mergePdfDocuments } from "./pdf";
+import { TemplateService } from "./templates/template.service";
+
+let mainWindow: BrowserWindow | null = null;
+let store: DataStore;
+let templateService: TemplateService;
+const notifiedEvents = new Set<string>();
+const appId = "de.bewerbungsmanager.desktop";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const isDevelopment = Boolean(process.env.VITE_DEV_SERVER_URL);
+
+if (process.platform === "win32") app.setAppUserModelId(appId);
+
+const createMainWindow = async () => {
+  mainWindow = new BrowserWindow({
+    width: 1480,
+    height: 940,
+    minWidth: 1060,
+    minHeight: 720,
+    show: false,
+    backgroundColor: "#f3f1ec",
+    titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "default",
+    webPreferences: {
+      preload: path.join(__dirname, "preload.mjs"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+      webSecurity: true,
+    },
+  });
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (/^https?:\/\//i.test(url)) void shell.openExternal(url);
+    return { action: "deny" };
+  });
+  mainWindow.webContents.on("will-navigate", (event, url) => {
+    const allowed = isDevelopment
+      ? url.startsWith(process.env.VITE_DEV_SERVER_URL!)
+      : url.startsWith(pathToFileURL(path.join(__dirname, "../dist/index.html")).toString());
+    if (!allowed) event.preventDefault();
+  });
+  mainWindow.once("ready-to-show", () => mainWindow?.show());
+  if (isDevelopment) {
+    await mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL!);
+  } else {
+    await mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
+  }
+};
+
+const registerIpc = () => {
+  ipcMain.handle("workspace:get", () => store.getWorkspace());
+  ipcMain.handle("applications:create", (_event, value: unknown) =>
+    store.createApplication(applicationInputSchema.parse(value)),
+  );
+  ipcMain.handle("applications:save", (_event, value: unknown) =>
+    store.saveApplication(applicationSchema.parse(value)),
+  );
+  ipcMain.handle("applications:remove", (_event, id: unknown) =>
+    store.removeApplication(String(id)),
+  );
+  ipcMain.handle("applications:duplicate", (_event, id: unknown) =>
+    store.duplicateApplication(String(id)),
+  );
+  ipcMain.handle(
+    "applications:change-status",
+    (_event, id: unknown, status: unknown, reason: unknown) => {
+      const validStatus = applicationStatuses.find((item) => item === status);
+      const validReason = rejectionReasons.find((item) => item === reason);
+      if (!validStatus) throw new Error("Ungültiger Bewerbungsstatus.");
+      return store.changeStatus(String(id), validStatus, validReason);
+    },
+  );
+  ipcMain.handle("applications:open-folder", async (_event, id: unknown) => {
+    const error = await shell.openPath(store.getApplicationPath(String(id)));
+    if (error) throw new Error(error);
+  });
+  ipcMain.handle("profiles:save", (_event, value: unknown) =>
+    store.saveProfile(profileSchema.parse(value)),
+  );
+  ipcMain.handle("templates:scan", () =>
+    templateService.scanAllTemplates(),
+  );
+  ipcMain.handle("templates:add", async (_event, rawInput: unknown) => {
+    const value = (rawInput ?? {}) as Partial<AddTemplateInput>;
+    if (
+      value.documentType !== "anschreiben" &&
+      value.documentType !== "deckblatt" &&
+      value.documentType !== "lebenslauf"
+    ) {
+      throw new Error("Ungültiger Dokumenttyp.");
+    }
+    const selection = await dialog.showOpenDialog(mainWindow!, {
+      title: "Word-Vorlage hinzufügen",
+      properties: ["openFile"],
+      filters: [
+        {
+          name: "Word-Dokumente",
+          extensions: ["docx", "dotx", "doc"],
+        },
+      ],
+    });
+    const sourceFilePath = selection.filePaths[0];
+    if (selection.canceled || !sourceFilePath) return null;
+    return templateService.addExternalTemplate(
+      sourceFilePath,
+      value.documentType,
+      typeof value.requestedName === "string"
+        ? value.requestedName
+        : undefined,
+    );
+  });
+  ipcMain.handle("templates:use", async (_event, rawInput: unknown) => {
+    const value = (rawInput ?? {}) as Partial<UseTemplateInput>;
+    if (!value.templateId || !value.applicationId) {
+      throw new Error("Vorlage und Bewerbung sind erforderlich.");
+    }
+    const template = await templateService.getTemplateById(value.templateId);
+    if (!template) throw new Error("Vorlage wurde nicht gefunden.");
+    const context = store.getTemplateDocumentContext(value.applicationId);
+    const result = await templateService.createDocumentFromTemplate(
+      template.id,
+      context.targetDirectories[template.documentType],
+      context.requestedBaseName,
+      context.data,
+    );
+    const openError = await shell.openPath(result.filePath);
+    if (openError) throw new Error(openError);
+    return result;
+  });
+  ipcMain.handle(
+    "templates:duplicate",
+    (_event, templateId: unknown) =>
+      templateService.duplicateTemplate(String(templateId)),
+  );
+  ipcMain.handle(
+    "templates:copy-to-muster",
+    (_event, templateId: unknown) =>
+      templateService.copyExistingTemplateById(String(templateId)),
+  );
+  ipcMain.handle(
+    "templates:toggle-favorite",
+    (_event, templateId: unknown) =>
+      templateService.toggleTemplateFavorite(String(templateId)),
+  );
+  ipcMain.handle("templates:remove", (_event, templateId: unknown) =>
+    templateService.deleteCustomTemplate(String(templateId)),
+  );
+  ipcMain.handle("templates:open", async (_event, templateId: unknown) => {
+    const template = await templateService.getTemplateById(String(templateId));
+    if (!template) throw new Error("Vorlage wurde nicht gefunden.");
+    const error = await shell.openPath(template.filePath);
+    if (error) throw new Error(error);
+  });
+  ipcMain.handle(
+    "templates:open-folder",
+    async (_event, templateId: unknown) => {
+      const template = await templateService.getTemplateById(
+        String(templateId),
+      );
+      if (!template) throw new Error("Vorlage wurde nicht gefunden.");
+      shell.showItemInFolder(template.filePath);
+    },
+  );
+  ipcMain.handle(
+    "media:pick-profile-image",
+    async (_event, rawKind: unknown) => {
+      const kind =
+        rawKind === "photo" || rawKind === "signature" ? rawKind : null;
+      if (!kind) throw new Error("Ungültiger Bildtyp.");
+      const selection = await dialog.showOpenDialog(mainWindow!, {
+        title:
+          kind === "photo"
+            ? "Bewerbungsfoto auswählen"
+            : "Unterschrift auswählen",
+        properties: ["openFile"],
+        filters: [
+          {
+            name: "Bilddateien",
+            extensions: ["png", "jpg", "jpeg", "webp"],
+          },
+        ],
+      });
+      const filePath = selection.filePaths[0];
+      if (selection.canceled || !filePath) return null;
+      const bytes = await readFile(filePath);
+      if (bytes.byteLength > 8 * 1024 * 1024) {
+        throw new Error("Das Bild darf höchstens 8 MB groß sein.");
+      }
+      const extension = filePath.split(".").pop()?.toLowerCase();
+      const mimeType =
+        extension === "png"
+          ? "image/png"
+          : extension === "webp"
+            ? "image/webp"
+            : "image/jpeg";
+      return {
+        dataUrl: `data:${mimeType};base64,${bytes.toString("base64")}`,
+        fileName: filePath.split(/[\\/]/).pop() ?? "Bild",
+      };
+    },
+  );
+  ipcMain.handle("settings:save", (_event, value: unknown) =>
+    store.saveSettings(appSettingsSchema.parse(value)),
+  );
+  ipcMain.handle("events:save", (_event, value: unknown) =>
+    store.saveEvent(calendarEventSchema.parse(value)),
+  );
+  ipcMain.handle(
+    "attachments:add",
+    async (_event, applicationId: unknown, rawCategory: unknown) => {
+      const category = attachmentCategories.find(
+        (item) => item === rawCategory,
+      );
+      if (!category) throw new Error("Ungültige Dokumentkategorie.");
+      const selection = await dialog.showOpenDialog(mainWindow!, {
+        title: `${category} hinzufügen`,
+        properties: ["openFile"],
+        filters: [{ name: "PDF-Dokumente", extensions: ["pdf"] }],
+      });
+      if (selection.canceled || !selection.filePaths[0])
+        return store.getWorkspace();
+      return store.addAttachment(
+        String(applicationId),
+        category,
+        selection.filePaths[0],
+      );
+    },
+  );
+  ipcMain.handle("attachments:save", (_event, value: unknown) =>
+    store.saveAttachment(attachmentSchema.parse(value)),
+  );
+  ipcMain.handle(
+    "attachments:move",
+    (_event, id: unknown, rawDirection: unknown) => {
+      const direction = Number(rawDirection);
+      if (direction !== -1 && direction !== 1)
+        throw new Error("Ungültige Sortierrichtung.");
+      return store.moveAttachment(String(id), direction);
+    },
+  );
+  ipcMain.handle("attachments:remove", (_event, id: unknown) =>
+    store.removeAttachment(String(id)),
+  );
+  ipcMain.handle("attachments:open", async (_event, id: unknown) => {
+    const error = await shell.openPath(store.getAttachmentPathById(String(id)));
+    if (error) throw new Error(error);
+  });
+  ipcMain.handle(
+    "export:pdf",
+    async (_event, applicationId: unknown, rawTarget: unknown) => {
+      const targets: ExportTarget[] = [
+        "deckblatt",
+        "anschreiben",
+        "lebenslauf",
+        "mappe",
+      ];
+      const target = targets.find((item) => item === rawTarget);
+      if (!target) throw new Error("Ungültiges Exportziel.");
+      const result = await dialog.showSaveDialog(mainWindow!, {
+        title: "PDF exportieren",
+        defaultPath: store.getExportDefaultName(String(applicationId), target),
+        filters: [{ name: "PDF", extensions: ["pdf"] }],
+      });
+      if (result.canceled || !result.filePath) return null;
+      const exporter = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          sandbox: true,
+          contextIsolation: true,
+          nodeIntegration: false,
+        },
+      });
+      try {
+        const html = store.getExportHtml(String(applicationId), target);
+        await exporter.loadURL(
+          `data:text/html;charset=utf-8,${encodeURIComponent(html)}`,
+        );
+        const generatedPdf = await exporter.webContents.printToPDF({
+          pageSize: "A4",
+          preferCSSPageSize: true,
+          printBackground: true,
+          margins: { top: 0, right: 0, bottom: 0, left: 0 },
+        });
+        const pdf =
+          target === "mappe"
+            ? await mergePdfDocuments(
+                generatedPdf,
+                await Promise.all(
+                  store
+                    .getPackageAttachmentPaths(String(applicationId))
+                    .map(async (attachment) => ({
+                      fileName: attachment.fileName,
+                      bytes: await readFile(attachment.path),
+                    })),
+                ),
+              )
+            : generatedPdf;
+        await writeFile(result.filePath, pdf);
+        return result.filePath;
+      } finally {
+        exporter.destroy();
+      }
+    },
+  );
+  ipcMain.handle("export:backup", async () => {
+    const result = await dialog.showSaveDialog(mainWindow!, {
+      title: "JSON-Sicherung exportieren",
+      defaultPath: `BewerbungsManager_Backup_${new Date().toISOString().slice(0, 10)}.json`,
+      filters: [{ name: "JSON", extensions: ["json"] }],
+    });
+    if (result.canceled || !result.filePath) return null;
+    await store.writeBackup(result.filePath);
+    return result.filePath;
+  });
+  ipcMain.handle("export:import-backup", async () => {
+    const result = await dialog.showOpenDialog(mainWindow!, {
+      title: "JSON-Sicherung wiederherstellen",
+      properties: ["openFile"],
+      filters: [{ name: "BewerbungsManager JSON", extensions: ["json"] }],
+    });
+    if (result.canceled || !result.filePaths[0]) return null;
+    return store.importBackup(result.filePaths[0]);
+  });
+  ipcMain.handle("export:settings", async () => {
+    const result = await dialog.showSaveDialog(mainWindow!, {
+      title: "Einstellungen exportieren",
+      defaultPath: "BewerbungsManager_Einstellungen.json",
+      filters: [{ name: "JSON", extensions: ["json"] }],
+    });
+    if (result.canceled || !result.filePath) return null;
+    await store.writeSettings(result.filePath);
+    return result.filePath;
+  });
+  ipcMain.handle("export:import-settings", async () => {
+    const result = await dialog.showOpenDialog(mainWindow!, {
+      title: "Einstellungen importieren",
+      properties: ["openFile"],
+      filters: [{ name: "JSON", extensions: ["json"] }],
+    });
+    if (result.canceled || !result.filePaths[0]) return null;
+    return store.importSettings(result.filePaths[0]);
+  });
+  ipcMain.handle("system:open-external", async (_event, rawUrl: unknown) => {
+    const url = new URL(String(rawUrl));
+    if (!["http:", "https:"].includes(url.protocol))
+      throw new Error("Nur HTTP- und HTTPS-Links sind erlaubt.");
+    await shell.openExternal(url.toString());
+  });
+  ipcMain.handle("system:data-path", () => store.dataPath);
+};
+
+const notifyDueEvents = () => {
+  const workspace = store.getWorkspace();
+  if (!workspace.settings.notificationsEnabled || !Notification.isSupported())
+    return;
+  const now = Date.now();
+  workspace.events
+    .filter((event) => !event.cancelled && !event.completed)
+    .forEach((event) => {
+      const due = new Date(event.startAt).getTime();
+      const matchingReminder = event.reminderMinutes.some((minutes) => {
+        const alertAt = due - minutes * 60_000;
+        return alertAt <= now && alertAt > now - 65_000;
+      });
+      const key = `${event.id}:${Math.floor(now / 60_000)}`;
+      if (matchingReminder && !notifiedEvents.has(key)) {
+        notifiedEvents.add(key);
+        new Notification({
+          title: "BewerbungsManager",
+          body: event.title,
+        }).show();
+      }
+    });
+};
+
+app.whenReady().then(async () => {
+  store = new DataStore(app.getPath("documents"));
+  await store.initialize();
+  templateService = new TemplateService(
+    resolveApplicationPaths(app.getPath("documents")),
+  );
+  await templateService.initialize();
+  registerIpc();
+  await createMainWindow();
+  notifyDueEvents();
+  setInterval(notifyDueEvents, 60_000).unref();
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0) void createMainWindow();
+  });
+});
+
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") app.quit();
+});

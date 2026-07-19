@@ -1,0 +1,870 @@
+import {
+  copyFile,
+  mkdir,
+  open,
+  readdir,
+  readFile,
+  rename,
+  rm,
+  stat,
+  writeFile,
+} from "node:fs/promises";
+import path from "node:path";
+import {
+  applicationInputSchema,
+  applicationSchema,
+  appSettingsSchema,
+  attachmentSchema,
+  defaultSettings,
+  profileSchema,
+  workspaceSchema,
+  type ApplicantProfile,
+  type Application,
+  type ApplicationInput,
+  type ApplicationStatus,
+  type AppSettings,
+  type Attachment,
+  type AttachmentCategory,
+  type CalendarEvent,
+  type CalendarEventType,
+  type RejectionReason,
+  type Workspace,
+} from "../src/shared/schema";
+import { templates } from "../src/shared/templates";
+import { ensureKnowledgeSection } from "../src/features/knowledge/knowledge.service";
+import { formatKnowledgeSectionAsText } from "../src/features/knowledge/knowledge.utils";
+import { buildCoverLetterMarkdown, buildDocumentHtml } from "./documents";
+
+const nowIso = () => new Date().toISOString();
+const createId = () => crypto.randomUUID();
+const terminalStatuses = new Set<ApplicationStatus>([
+  "Zusage",
+  "Absage",
+  "Zurückgezogen",
+  "Archiviert",
+]);
+
+const eventReminders: Record<CalendarEventType, number[]> = {
+  "application-sent": [],
+  "application-deadline": [4320, 1440],
+  interview: [1440, 60],
+  "second-interview": [1440, 60],
+  "phone-interview": [1440, 60],
+  "online-interview": [1440, 60],
+  "trial-work": [1440],
+  assessment: [1440],
+  "follow-up-call": [0],
+  "follow-up-email": [0],
+  "contract-start": [1440],
+  "contract-end": [10080],
+  "fixed-term-end": [20160],
+  "probation-end": [20160],
+  custom: [],
+};
+
+const emptyWorkspace = (): Workspace => ({
+  schemaVersion: 1,
+  applications: [],
+  profiles: [],
+  events: [],
+  attachments: [],
+  settings: defaultSettings,
+  updatedAt: nowIso(),
+});
+
+export const sanitizeFileName = (value: string) =>
+  value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[<>:"/\\|?*\u0000-\u001F]/g, "-")
+    .replace(/\s+/g, "_")
+    .replace(/[. ]+$/g, "")
+    .slice(0, 80) || "Bewerbung";
+
+const timestamp = () =>
+  new Date().toISOString().replace(/\D/g, "").slice(0, 14);
+
+const addDaysAtNine = (value: string, days: number) => {
+  const date = new Date(value);
+  date.setDate(date.getDate() + days);
+  date.setHours(9, 0, 0, 0);
+  return date.toISOString();
+};
+
+export class DataStore {
+  readonly dataPath: string;
+  private readonly workspacePath: string;
+  private workspace: Workspace = emptyWorkspace();
+
+  constructor(documentsPath: string) {
+    this.dataPath = path.join(documentsPath, "BewerbungsManager", "data");
+    this.workspacePath = path.join(this.dataPath, "Settings", "workspace.json");
+  }
+
+  async initialize() {
+    const directories = [
+      "Bewerbungen",
+      "Lebenslauf",
+      "Anschreiben",
+      "Zeugnisse",
+      "Zertifikate",
+      path.join("Muster", "Anschreiben"),
+      path.join("Muster", "Lebenslauf"),
+      path.join("Muster", "Deckblatt"),
+      "Profile",
+      "Settings",
+      "Backups",
+    ];
+    await Promise.all(
+      directories.map((directory) =>
+        mkdir(path.join(this.dataPath, directory), { recursive: true }),
+      ),
+    );
+    this.workspace = await this.loadWorkspace();
+    await this.persist();
+  }
+
+  getWorkspace() {
+    return structuredClone(this.workspace);
+  }
+
+  private async loadWorkspace() {
+    for (const candidate of [this.workspacePath, `${this.workspacePath}.bak`]) {
+      try {
+        const parsed: unknown = JSON.parse(await readFile(candidate, "utf8"));
+        const result = workspaceSchema.safeParse(parsed);
+        if (result.success) return result.data;
+      } catch {
+        // Try the next safe candidate.
+      }
+    }
+    return emptyWorkspace();
+  }
+
+  private async atomicWrite(filePath: string, content: string) {
+    await mkdir(path.dirname(filePath), { recursive: true });
+    const temporaryPath = `${filePath}.${createId()}.tmp`;
+    const backupPath = `${filePath}.bak`;
+    const handle = await open(temporaryPath, "w");
+    try {
+      await handle.writeFile(content, "utf8");
+      await handle.sync();
+    } finally {
+      await handle.close();
+    }
+    try {
+      await copyFile(filePath, backupPath);
+    } catch {
+      // A first write has no previous version.
+    }
+    try {
+      await rename(temporaryPath, filePath);
+    } catch {
+      await rm(filePath, { force: true });
+      await rename(temporaryPath, filePath);
+    }
+  }
+
+  private async persist() {
+    this.workspace.updatedAt = nowIso();
+    const validated = workspaceSchema.parse(this.workspace);
+    await this.atomicWrite(
+      this.workspacePath,
+      JSON.stringify(validated, null, 2),
+    );
+    await Promise.all(
+      validated.applications.map((application) =>
+        this.persistApplicationFiles(application),
+      ),
+    );
+    await this.createAutomaticBackup();
+  }
+
+  private async createAutomaticBackup() {
+    if (!this.workspace.settings.autoBackupEnabled) return;
+    const backupRoot = path.join(this.dataPath, "Backups");
+    await mkdir(backupRoot, { recursive: true });
+    const date = new Date().toISOString().slice(0, 10);
+    const backupPath = path.join(backupRoot, `workspace-${date}.json`);
+    try {
+      await stat(backupPath);
+    } catch {
+      await copyFile(this.workspacePath, backupPath);
+    }
+    const backups = (await readdir(backupRoot, { withFileTypes: true }))
+      .filter(
+        (entry) =>
+          entry.isFile() && /^workspace-\d{4}-\d{2}-\d{2}\.json$/.test(entry.name),
+      )
+      .map((entry) => entry.name)
+      .sort()
+      .reverse();
+    for (const fileName of backups.slice(
+      this.workspace.settings.backupRetention,
+    )) {
+      const target = path.resolve(backupRoot, fileName);
+      if (!target.startsWith(`${path.resolve(backupRoot)}${path.sep}`))
+        throw new Error("Ungültiger Sicherungspfad.");
+      await rm(target, { force: true });
+    }
+  }
+
+  private applicationPath(application: Application) {
+    return path.join(this.dataPath, "Bewerbungen", application.folderName);
+  }
+
+  getApplicationPath(id: string) {
+    const application = this.workspace.applications.find((item) => item.id === id);
+    if (!application) throw new Error("Bewerbung wurde nicht gefunden.");
+    return this.applicationPath(application);
+  }
+
+  private async ensureApplicationDirectories(application: Application) {
+    const root = this.applicationPath(application);
+    const folders = [
+      "Stellenanzeige",
+      "Anschreiben",
+      "Deckblatt",
+      "Lebenslauf",
+      "Zeugnisse",
+      "Zertifikate",
+      "Export",
+    ];
+    await Promise.all(
+      folders.map((folder) => mkdir(path.join(root, folder), { recursive: true })),
+    );
+    return root;
+  }
+
+  private async persistApplicationFiles(application: Application) {
+    const root = await this.ensureApplicationDirectories(application);
+    const profile = this.workspace.profiles.find(
+      (item) =>
+        item.id === application.profileId ||
+        (!application.profileId && item.isDefault),
+    );
+    await Promise.all([
+      this.atomicWrite(
+        path.join(root, "bewerbung.json"),
+        JSON.stringify(applicationSchema.parse(application), null, 2),
+      ),
+      this.atomicWrite(
+        path.join(root, "Stellenanzeige", "stellenanzeige.json"),
+        JSON.stringify(application.job, null, 2),
+      ),
+      this.atomicWrite(
+        path.join(root, "Stellenanzeige", "stellenanzeige.txt"),
+        application.job.fullText,
+      ),
+      this.atomicWrite(
+        path.join(root, "Anschreiben", `${sanitizeFileName(application.company.name)}.md`),
+        buildCoverLetterMarkdown(application, profile),
+      ),
+      this.atomicWrite(
+        path.join(root, "Export", "bewerbungsmappe.html"),
+        buildDocumentHtml(application, profile, "mappe"),
+      ),
+    ]);
+  }
+
+  private createEvent(
+    applicationId: string,
+    type: CalendarEventType,
+    title: string,
+    startAt: string,
+    allDay: boolean,
+  ): CalendarEvent {
+    const now = nowIso();
+    return {
+      id: createId(),
+      applicationId,
+      type,
+      title,
+      description: "",
+      startAt,
+      allDay,
+      completed: false,
+      cancelled: false,
+      reminderMinutes: eventReminders[type],
+      createdAt: now,
+      updatedAt: now,
+    };
+  }
+
+  private ensureEvent(
+    application: Application,
+    type: CalendarEventType,
+    title: string,
+    startAt?: string,
+    allDay = false,
+  ) {
+    const existing = this.workspace.events.find(
+      (event) =>
+        event.applicationId === application.id && event.type === type,
+    );
+    if (!startAt) {
+      if (existing) {
+        existing.cancelled = true;
+        existing.updatedAt = nowIso();
+      }
+      return;
+    }
+    if (existing) {
+      Object.assign(existing, {
+        title,
+        startAt,
+        allDay,
+        cancelled: false,
+        updatedAt: nowIso(),
+      });
+      return;
+    }
+    this.workspace.events.push(
+      this.createEvent(application.id, type, title, startAt, allDay),
+    );
+  }
+
+  private syncEvents(application: Application) {
+    const company = application.company.name;
+    this.ensureEvent(
+      application,
+      "application-sent",
+      `Bewerbung gesendet · ${company}`,
+      application.sentAt,
+      true,
+    );
+    this.ensureEvent(
+      application,
+      "application-deadline",
+      `Bewerbungsfrist · ${company}`,
+      application.deadlineAt,
+      true,
+    );
+    this.ensureEvent(
+      application,
+      "interview",
+      `Vorstellungsgespräch · ${company}`,
+      application.interviewAt,
+    );
+    this.ensureEvent(
+      application,
+      "second-interview",
+      `Zweites Gespräch · ${company}`,
+      application.secondInterviewAt,
+    );
+    this.ensureEvent(
+      application,
+      "contract-start",
+      `Vertragsbeginn · ${company}`,
+      application.startAt,
+      true,
+    );
+    this.ensureEvent(
+      application,
+      "contract-end",
+      `Vertragsende · ${company}`,
+      application.contractEndAt,
+      true,
+    );
+    this.ensureEvent(
+      application,
+      "fixed-term-end",
+      `Befristungsende · ${company}`,
+      application.fixedTermEndAt,
+      true,
+    );
+    this.ensureEvent(
+      application,
+      "probation-end",
+      `Probezeitende · ${company}`,
+      application.probationEndAt,
+      true,
+    );
+    const followUp =
+      application.status === "Beworben" &&
+      application.sentAt &&
+      this.workspace.settings.followUpDays !== null
+        ? addDaysAtNine(application.sentAt, this.workspace.settings.followUpDays)
+        : undefined;
+    this.ensureEvent(
+      application,
+      "follow-up-call",
+      `Bei ${company} zum Stand der Bewerbung nachfragen`,
+      followUp,
+    );
+    if (terminalStatuses.has(application.status)) {
+      const preserved = new Set<CalendarEventType>([
+        "application-sent",
+        "contract-start",
+        "contract-end",
+        "fixed-term-end",
+        "probation-end",
+      ]);
+      this.workspace.events.forEach((event) => {
+        if (
+          event.applicationId === application.id &&
+          !preserved.has(event.type) &&
+          new Date(event.startAt) > new Date()
+        ) {
+          event.cancelled = true;
+          event.updatedAt = nowIso();
+        }
+      });
+    }
+  }
+
+  async createApplication(rawInput: ApplicationInput) {
+    const input = applicationInputSchema.parse(rawInput);
+    const now = nowIso();
+    const folderName = `${sanitizeFileName(input.company.name)}_${timestamp()}`;
+    const application: Application = {
+      schemaVersion: 1,
+      id: createId(),
+      folderName,
+      ...input,
+      status: input.sentAt ? "Beworben" : "Entwurf",
+      documents: {
+        coverSubject: `Bewerbung als ${input.job.title}`,
+        coverIntroduction: `die Position als ${input.job.title} bei ${input.company.name} verbindet genau die Aufgaben, in denen ich meine Erfahrung gezielt einbringen möchte.`,
+        coverMotivation: "",
+        coverQualification: "",
+        coverCompanyFit: "",
+        coverClosing:
+          "Gerne überzeuge ich Sie in einem persönlichen Gespräch von meiner Motivation und Eignung. Auf Ihren Terminvorschlag freue ich mich.",
+        resumeProfile: "",
+        deckblattStatement: "",
+      },
+      attachmentIds: [],
+      statusHistory: [
+        {
+          at: now,
+          to: input.sentAt ? "Beworben" : "Entwurf",
+          note: "Bewerbung angelegt",
+        },
+      ],
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.workspace.applications.unshift(applicationSchema.parse(application));
+    this.syncEvents(application);
+    await this.persist();
+    return this.getWorkspace();
+  }
+
+  async saveApplication(rawApplication: Application) {
+    const application = applicationSchema.parse(rawApplication);
+    const index = this.workspace.applications.findIndex(
+      (item) => item.id === application.id,
+    );
+    if (index < 0) throw new Error("Bewerbung wurde nicht gefunden.");
+    application.updatedAt = nowIso();
+    this.workspace.applications[index] = application;
+    this.syncEvents(application);
+    await this.persist();
+    return this.getWorkspace();
+  }
+
+  async changeStatus(
+    id: string,
+    status: ApplicationStatus,
+    reason?: RejectionReason,
+  ) {
+    const application = this.workspace.applications.find((item) => item.id === id);
+    if (!application) throw new Error("Bewerbung wurde nicht gefunden.");
+    if (application.status !== status) {
+      const now = nowIso();
+      const previous = application.status;
+      application.status = status;
+      application.updatedAt = now;
+      application.statusHistory.push({ at: now, from: previous, to: status, note: "" });
+      if (status === "Absage") {
+        application.rejectionAt = now;
+        application.rejectionReason = reason ?? "Keine Begründung";
+      }
+      if (status === "Zusage") application.acceptedAt = now;
+      if (status === "Zurückgezogen") application.withdrawnAt = now;
+      if (status === "Archiviert") application.archivedAt = now;
+      this.syncEvents(application);
+      await this.persist();
+    }
+    return this.getWorkspace();
+  }
+
+  async removeApplication(id: string) {
+    this.workspace.applications = this.workspace.applications.filter(
+      (application) => application.id !== id,
+    );
+    this.workspace.events = this.workspace.events.filter(
+      (event) => event.applicationId !== id,
+    );
+    this.workspace.attachments = this.workspace.attachments.filter(
+      (attachment) => attachment.applicationId !== id,
+    );
+    await this.persist();
+    return this.getWorkspace();
+  }
+
+  async duplicateApplication(id: string) {
+    const source = this.workspace.applications.find((item) => item.id === id);
+    if (!source) throw new Error("Bewerbung wurde nicht gefunden.");
+    const now = nowIso();
+    const duplicate: Application = {
+      ...structuredClone(source),
+      id: createId(),
+      folderName: `${sanitizeFileName(source.company.name)}_${timestamp()}`,
+      status: "Entwurf",
+      sentAt: undefined,
+      rejectionAt: undefined,
+      rejectionReason: undefined,
+      acceptedAt: undefined,
+      attachmentIds: [],
+      statusHistory: [{ at: now, to: "Entwurf", note: "Bewerbung dupliziert" }],
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.workspace.applications.unshift(duplicate);
+    this.syncEvents(duplicate);
+    await this.persist();
+    return this.getWorkspace();
+  }
+
+  async saveProfile(rawProfile: ApplicantProfile) {
+    const profile = profileSchema.parse(rawProfile);
+    if (profile.isDefault) {
+      this.workspace.profiles.forEach((item) => {
+        item.isDefault = false;
+      });
+    }
+    const index = this.workspace.profiles.findIndex(
+      (item) => item.id === profile.id,
+    );
+    if (index >= 0) this.workspace.profiles[index] = profile;
+    else this.workspace.profiles.push(profile);
+    await this.persist();
+    return this.getWorkspace();
+  }
+
+  async saveSettings(settings: AppSettings) {
+    this.workspace.settings = appSettingsSchema.parse(settings);
+    this.workspace.applications.forEach((application) =>
+      this.syncEvents(application),
+    );
+    await this.persist();
+    return this.getWorkspace();
+  }
+
+  async saveEvent(event: CalendarEvent) {
+    const index = this.workspace.events.findIndex((item) => item.id === event.id);
+    if (index < 0) throw new Error("Termin wurde nicht gefunden.");
+    this.workspace.events[index] = event;
+    await this.persist();
+    return this.getWorkspace();
+  }
+
+  async addAttachment(
+    applicationId: string,
+    category: AttachmentCategory,
+    sourcePath: string,
+  ) {
+    const application = this.workspace.applications.find(
+      (item) => item.id === applicationId,
+    );
+    if (!application) throw new Error("Bewerbung wurde nicht gefunden.");
+    const sourceName = path.basename(sourcePath);
+    const storedName = `${timestamp()}_${sanitizeFileName(sourceName)}`;
+    const target = path.join(
+      this.applicationPath(application),
+      category,
+      storedName,
+    );
+    await mkdir(path.dirname(target), { recursive: true });
+    await copyFile(sourcePath, target);
+    const attachment = {
+      id: createId(),
+      applicationId,
+      category,
+      fileName: sourceName,
+      storedName,
+      description: "",
+      documentDate: "",
+      order: application.attachmentIds.length,
+      includedInPackage: true,
+      createdAt: nowIso(),
+    };
+    this.workspace.attachments.push(attachment);
+    application.attachmentIds.push(attachment.id);
+    await this.persist();
+    return this.getWorkspace();
+  }
+
+  private getAttachmentPath(attachment: Attachment) {
+    const application = this.getApplication(attachment.applicationId);
+    if (path.basename(attachment.storedName) !== attachment.storedName)
+      throw new Error("Ungültiger gespeicherter Dateiname.");
+    const categoryRoot = path.resolve(
+      this.applicationPath(application),
+      attachment.category,
+    );
+    const filePath = path.resolve(categoryRoot, attachment.storedName);
+    if (!filePath.startsWith(`${categoryRoot}${path.sep}`))
+      throw new Error("Ungültiger Dokumentpfad.");
+    return filePath;
+  }
+
+  getAttachmentPathById(id: string) {
+    const attachment = this.workspace.attachments.find((item) => item.id === id);
+    if (!attachment) throw new Error("Dokument wurde nicht gefunden.");
+    return this.getAttachmentPath(attachment);
+  }
+
+  async saveAttachment(rawAttachment: Attachment) {
+    const attachment = attachmentSchema.parse(rawAttachment);
+    const index = this.workspace.attachments.findIndex(
+      (item) => item.id === attachment.id,
+    );
+    if (index < 0) throw new Error("Dokument wurde nicht gefunden.");
+    const existing = this.workspace.attachments[index];
+    if (existing.applicationId !== attachment.applicationId)
+      throw new Error("Die Zuordnung einer Datei kann nicht frei geändert werden.");
+    if (existing.category !== attachment.category) {
+      const oldPath = this.getAttachmentPath(existing);
+      const newPath = this.getAttachmentPath(attachment);
+      await mkdir(path.dirname(newPath), { recursive: true });
+      await rename(oldPath, newPath);
+    }
+    this.workspace.attachments[index] = attachment;
+    await this.persist();
+    return this.getWorkspace();
+  }
+
+  async moveAttachment(id: string, direction: -1 | 1) {
+    const attachment = this.workspace.attachments.find((item) => item.id === id);
+    if (!attachment) throw new Error("Dokument wurde nicht gefunden.");
+    const siblings = this.workspace.attachments
+      .filter(
+        (item) =>
+          item.applicationId === attachment.applicationId &&
+          item.category === attachment.category,
+      )
+      .sort((left, right) => left.order - right.order);
+    const index = siblings.findIndex((item) => item.id === id);
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= siblings.length)
+      return this.getWorkspace();
+    const other = siblings[target];
+    const currentOrder = attachment.order;
+    attachment.order = other.order;
+    other.order = currentOrder;
+    await this.persist();
+    return this.getWorkspace();
+  }
+
+  async removeAttachment(id: string) {
+    const attachment = this.workspace.attachments.find((item) => item.id === id);
+    if (!attachment) throw new Error("Dokument wurde nicht gefunden.");
+    await rm(this.getAttachmentPath(attachment), { force: true });
+    this.workspace.attachments = this.workspace.attachments.filter(
+      (item) => item.id !== id,
+    );
+    const application = this.getApplication(attachment.applicationId);
+    application.attachmentIds = application.attachmentIds.filter(
+      (attachmentId) => attachmentId !== id,
+    );
+    await this.persist();
+    return this.getWorkspace();
+  }
+
+  getPackageAttachmentPaths(applicationId: string) {
+    const categoryOrder: Record<AttachmentCategory, number> = {
+      Zeugnisse: 0,
+      Zertifikate: 1,
+    };
+    return this.workspace.attachments
+      .filter(
+        (attachment) =>
+          attachment.applicationId === applicationId &&
+          attachment.includedInPackage,
+      )
+      .sort(
+        (left, right) =>
+          categoryOrder[left.category] - categoryOrder[right.category] ||
+          left.order - right.order,
+      )
+      .map((attachment) => ({
+        fileName: attachment.fileName,
+        path: this.getAttachmentPath(attachment),
+      }));
+  }
+
+  getProfileForApplication(application: Application) {
+    return this.workspace.profiles.find(
+      (profile) =>
+        profile.id === application.profileId ||
+        (!application.profileId && profile.isDefault),
+    );
+  }
+
+  getApplication(id: string) {
+    const application = this.workspace.applications.find((item) => item.id === id);
+    if (!application) throw new Error("Bewerbung wurde nicht gefunden.");
+    return application;
+  }
+
+  getTemplateDocumentContext(id: string) {
+    const application = this.getApplication(id);
+    const profile = this.getProfileForApplication(application);
+    const applicantName = profile
+      ? `${profile.firstName} ${profile.lastName}`.trim()
+      : "";
+    const contactName = [
+      application.contact.firstName,
+      application.contact.lastName,
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const greeting = application.contact.lastName
+      ? application.contact.salutation === "Herr"
+        ? `Sehr geehrter Herr ${application.contact.lastName},`
+        : application.contact.salutation === "Frau"
+          ? `Sehr geehrte Frau ${application.contact.lastName},`
+          : `Guten Tag ${contactName},`
+      : "Sehr geehrte Damen und Herren,";
+    const targetRoot = this.applicationPath(application);
+    return {
+      application,
+      targetDirectories: {
+        anschreiben: path.join(targetRoot, "Anschreiben"),
+        deckblatt: path.join(targetRoot, "Deckblatt"),
+        lebenslauf: path.join(targetRoot, "Lebenslauf"),
+      },
+      requestedBaseName: application.company.name,
+      data: {
+        BEWERBER_NAME: applicantName,
+        BEWERBER_VORNAME: profile?.firstName ?? "",
+        BEWERBER_NACHNAME: profile?.lastName ?? "",
+        BEWERBER_ADRESSE: profile?.street ?? "",
+        BEWERBER_PLZ: profile?.postalCode ?? "",
+        BEWERBER_ORT: profile?.city ?? "",
+        BEWERBER_TELEFON: profile?.phone ?? "",
+        BEWERBER_EMAIL: profile?.email ?? "",
+        FIRMA_NAME: application.company.name,
+        FIRMA_ADRESSE: application.company.street,
+        FIRMA_PLZ: application.company.postalCode,
+        FIRMA_ORT: application.company.city,
+        ANSPRECHPARTNER: contactName,
+        STELLENBEZEICHNUNG: application.job.title,
+        STELLENNUMMER: "",
+        BEWERBUNGSDATUM: new Intl.DateTimeFormat("de-DE").format(new Date()),
+        BETREFF:
+          application.documents.coverSubject ||
+          `Bewerbung als ${application.job.title}`,
+        ANREDE: greeting,
+        EINLEITUNG: application.documents.coverIntroduction,
+        HAUPTTEXT: [
+          application.documents.coverMotivation,
+          application.documents.coverQualification,
+          application.documents.coverCompanyFit,
+        ]
+          .filter(Boolean)
+          .join("\n\n"),
+        SCHLUSSTEXT: application.documents.coverClosing,
+        GRUSSFORMEL: "Mit freundlichen Grüßen",
+        UNTERSCHRIFT: applicantName,
+        KENNTNISSE: formatKnowledgeSectionAsText(
+          ensureKnowledgeSection(
+            profile?.knowledgeSection,
+            profile?.skills ?? [],
+          ),
+          false,
+        ),
+      },
+    };
+  }
+
+  getExportHtml(id: string, target: "deckblatt" | "anschreiben" | "lebenslauf" | "mappe") {
+    const application = this.getApplication(id);
+    return buildDocumentHtml(
+      application,
+      this.getProfileForApplication(application),
+      target,
+    );
+  }
+
+  getExportDefaultName(id: string, target: string) {
+    const application = this.getApplication(id);
+    return `${sanitizeFileName(application.company.name)}_${sanitizeFileName(application.job.title)}_${target}.pdf`;
+  }
+
+  async writeBackup(filePath: string) {
+    await writeFile(
+      filePath,
+      JSON.stringify(workspaceSchema.parse(this.workspace), null, 2),
+      "utf8",
+    );
+  }
+
+  async importBackup(filePath: string) {
+    const parsed: unknown = JSON.parse(await readFile(filePath, "utf8"));
+    const imported = workspaceSchema.parse(parsed);
+    const emergencyPath = path.join(
+      this.dataPath,
+      "Backups",
+      `vor-import-${timestamp()}.json`,
+    );
+    await copyFile(this.workspacePath, emergencyPath);
+    const previous = this.workspace;
+    try {
+      this.workspace = imported;
+      const availableAttachments = [];
+      for (const attachment of this.workspace.attachments) {
+        try {
+          await stat(this.getAttachmentPath(attachment));
+          availableAttachments.push(attachment);
+        } catch {
+          // A JSON backup cannot recreate a missing binary attachment.
+        }
+      }
+      this.workspace.attachments = availableAttachments;
+      const availableIds = new Set(
+        availableAttachments.map((attachment) => attachment.id),
+      );
+      this.workspace.applications.forEach((application) => {
+        application.attachmentIds = application.attachmentIds.filter((id) =>
+          availableIds.has(id),
+        );
+      });
+      await this.persist();
+      return this.getWorkspace();
+    } catch (error) {
+      this.workspace = previous;
+      try {
+        await this.persist();
+      } catch {
+        // Preserve and report the original import error.
+      }
+      throw error;
+    }
+  }
+
+  async writeSettings(filePath: string) {
+    await writeFile(
+      filePath,
+      JSON.stringify(appSettingsSchema.parse(this.workspace.settings), null, 2),
+      "utf8",
+    );
+  }
+
+  async importSettings(filePath: string) {
+    const parsed: unknown = JSON.parse(await readFile(filePath, "utf8"));
+    this.workspace.settings = appSettingsSchema.parse(parsed);
+    this.workspace.applications.forEach((application) =>
+      this.syncEvents(application),
+    );
+    await this.persist();
+    return this.getWorkspace();
+  }
+
+  getTemplateIds() {
+    return new Set(templates.map((template) => template.id));
+  }
+}
