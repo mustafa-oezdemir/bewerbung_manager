@@ -19,14 +19,19 @@ import {
 import { TemplateThumbnail } from "../components/TemplateThumbnail";
 import { KnowledgeSectionRenderer } from "../components/document/KnowledgeSectionRenderer";
 import { DocumentBackgroundLayer } from "../components/document/DocumentBackgroundLayer";
+import { ElegantResume } from "../components/resume/templates/elegant";
 import { GepflegtResume } from "../components/resume/templates/gepflegt";
+import { KreativResume } from "../components/resume/templates/kreativ";
 import { ModernResume } from "../components/resume/templates/modern";
 import { TabellarischResume } from "../components/resume/templates/tabellarisch";
+import { ZeitgenoessischResume } from "../components/resume/templates/zeitgenoessisch";
+import { ZweispaltigResume } from "../components/resume/templates/zweispaltig";
 import { analyzeKeywordMatch } from "../lib/keywordMatch";
 import {
   createResumePagePlan,
   getLetterPageStatus,
   type ResumePagePlan,
+  zweispaltigPaginationOptions,
 } from "../shared/documentPagination";
 import {
   columnLayoutOptions,
@@ -352,6 +357,9 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
   const resumePlan = createResumePagePlan(
     paginatedProfile,
     docs.resumeProfile,
+    template.id === "zweispaltig"
+      ? zweispaltigPaginationOptions
+      : undefined,
   );
   const letterStatus = getLetterPageStatus(docs);
   const isAtsMode =
@@ -1173,7 +1181,46 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                   backgroundId={design.settings.backgroundId}
                   atsMode={isAtsMode}
                 />
-                {template.id === "gepflegt" ? (
+                {template.id === "kreativ" ? (
+                  <KreativResume
+                    profile={profile}
+                    name={name}
+                    atsMode={isAtsMode}
+                    plan={plan}
+                    totalPages={resumePlan.length}
+                    accentColor={design.accentColor}
+                    secondaryColor={design.secondaryColor}
+                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    resumeProfile={docs.resumeProfile}
+                    sections={sections}
+                  />
+                ) : template.id === "zeitgenoessisch" ? (
+                  <ZeitgenoessischResume
+                    profile={profile}
+                    name={name}
+                    atsMode={isAtsMode}
+                    plan={plan}
+                    totalPages={resumePlan.length}
+                    accentColor={design.accentColor}
+                    secondaryColor={design.secondaryColor}
+                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    resumeProfile={docs.resumeProfile}
+                    sections={sections}
+                  />
+                ) : template.id === "zweispaltig" ? (
+                  <ZweispaltigResume
+                    profile={profile}
+                    name={name}
+                    atsMode={isAtsMode}
+                    plan={plan}
+                    totalPages={resumePlan.length}
+                    accentColor={design.accentColor}
+                    secondaryColor={design.secondaryColor}
+                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    resumeProfile={docs.resumeProfile}
+                    sections={sections}
+                  />
+                ) : template.id === "gepflegt" ? (
                   <GepflegtResume
                     profile={profile}
                     name={name}
@@ -1184,16 +1231,31 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                     secondaryColor={design.secondaryColor}
                     photoSource={getProfileMediaSource(profile?.photoPath)}
                   />
+                ) : template.id === "elegant" ? (
+                  <ElegantResume
+                    profile={profile}
+                    name={name}
+                    atsMode={isAtsMode}
+                    plan={plan}
+                    totalPages={resumePlan.length}
+                    accentColor={design.accentColor}
+                    secondaryColor={design.secondaryColor}
+                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    resumeProfile={docs.resumeProfile}
+                    sections={sections}
+                  />
                 ) : template.id === "tabellarisch" ? (
                   <TabellarischResume
                     profile={profile}
                     name={name}
                     atsMode={isAtsMode}
-                    pageNumber={plan.pageNumber}
+                    plan={plan}
                     totalPages={resumePlan.length}
                     accentColor={design.accentColor}
                     secondaryColor={design.secondaryColor}
                     photoSource={getProfileMediaSource(profile?.photoPath)}
+                    resumeProfile={docs.resumeProfile}
+                    sections={sections}
                   />
                 ) : template.id === "modern" ? (
                   <ModernResume

@@ -3,57 +3,10 @@
  */
 
 import type { ApplicantProfile } from "../../../../shared/schema";
+import type { ResumePagePlan } from "../../../../shared/documentPagination";
 
-export interface TabellarischPageProps {
-  profile: ApplicantProfile | undefined;
-  name: string;
-  atsMode: boolean;
-  pageNumber: number;
-  totalPages: number;
-  accentColor: string;
-  primaryColor: string;
-  photoSource: string | null;
-  isContinuation?: boolean;
-}
-
-export interface TabellarischHeaderProps {
-  name: string;
-  profile: ApplicantProfile | undefined;
-  primaryColor: string;
-  accentColor: string;
-  photoSource: string | null;
-  atsMode: boolean;
-}
-
-export interface TabellarischSummaryProps {
-  profile: ApplicantProfile | undefined;
-  textColor: string;
-}
-
-export interface TabellarischStrengthsProps {
-  profile: ApplicantProfile | undefined;
-  primaryColor: string;
-  accentColor: string;
-  atsMode: boolean;
-}
-
-export interface TabellarischTimelineProps {
-  items: Array<{
-    id: string;
-    from: string;
-    to: string;
-    role: string;
-    organization: string;
-    city?: string;
-    summary?: string;
-    achievements?: string[];
-  }>;
-  primaryColor: string;
-  accentColor: string;
-  textColor: string;
-}
-
-export interface TabellarischTimelineEntryProps {
+export type TabellarischTimelineItem = {
+  id: string;
   from: string;
   to: string;
   role: string;
@@ -61,9 +14,57 @@ export interface TabellarischTimelineEntryProps {
   city?: string;
   summary?: string;
   achievements?: string[];
-  primaryColor: string;
+};
+
+export interface TabellarischResumeProps {
+  profile: ApplicantProfile | undefined;
+  name: string;
+  atsMode: boolean;
+  plan: ResumePagePlan;
+  totalPages: number;
   accentColor: string;
-  textColor: string;
+  secondaryColor: string;
+  photoSource: string | null;
+  resumeProfile: string;
+  sections: ApplicantProfile["resumeSections"];
+}
+
+export interface TabellarischPageProps {
+  profile: ApplicantProfile | undefined;
+  name: string;
+  atsMode: boolean;
+  plan: ResumePagePlan;
+  totalPages: number;
+  photoSource: string | null;
+  resumeProfile: string;
+  sections: ApplicantProfile["resumeSections"];
+}
+
+export interface TabellarischHeaderProps {
+  name: string;
+  profile: ApplicantProfile | undefined;
+  photoSource: string | null;
+  atsMode: boolean;
+}
+
+export interface TabellarischSummaryProps {
+  text: string;
+}
+
+export interface TabellarischKnowledgeProps {
+  profile: ApplicantProfile | undefined;
+  atsMode: boolean;
+}
+
+export interface TabellarischTimelineProps {
+  items: TabellarischTimelineItem[];
+  atsMode: boolean;
+  continuesOnNextPage?: boolean;
+}
+
+export interface TabellarischTimelineEntryProps
+  extends TabellarischTimelineItem {
+  atsMode: boolean;
 }
 
 export interface TabellarischFooterProps {
@@ -71,6 +72,4 @@ export interface TabellarischFooterProps {
   pageNumber: number;
   totalPages: number;
   atsMode: boolean;
-  mutedColor: string;
-  accentColor: string;
 }

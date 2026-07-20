@@ -2886,6 +2886,51 @@ kbd {
     "main" 45% / 1fr;
 }
 
+.template-layout-timeline {
+  grid-template:
+    "head" 28%
+    "main" 72% / 1fr;
+}
+
+.template-layout-timeline .thumbnail-side {
+  display: none;
+}
+
+.template-layout-timeline .thumbnail-main {
+  position: relative;
+  padding-left: 24px;
+}
+
+.template-layout-timeline .thumbnail-main::before {
+  position: absolute;
+  top: 8px;
+  bottom: 10px;
+  left: 15px;
+  width: 2px;
+  background: var(--template-secondary);
+  content: "";
+}
+
+.template-layout-timeline .thumbnail-main::after {
+  position: absolute;
+  top: 11px;
+  left: 11px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: var(--template-accent);
+  box-shadow:
+    0 20px 0 -2px var(--template-accent),
+    0 39px 0 -2px var(--template-accent);
+  content: "";
+}
+
+.template-layout-timeline .thumbnail-main b {
+  width: 46%;
+  border-bottom-color: var(--template-accent);
+}
+
 .template-layout-centered .thumbnail-header {
   align-items: center;
 }

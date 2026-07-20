@@ -2,22 +2,18 @@
  * Tabellarisch Template - Summary Component
  */
 
-import type { ApplicantProfile } from "../../../../shared/schema";
 import type { TabellarischSummaryProps } from "./tabellarisch.types";
 
-export function TabellarischSummary({
-  profile,
-  textColor,
-}: TabellarischSummaryProps) {
-  if (!profile?.summary) return null;
+export function TabellarischSummary({ text }: TabellarischSummaryProps) {
+  if (!text) return null;
 
   return (
-    <div className="tabellarisch-summary">
-      <p
-        className="tabellarisch-summary__text"
-        style={{ color: textColor }}
-        dangerouslySetInnerHTML={{ __html: profile.summary }}
-      />
-    </div>
+    <section
+      className="tabellarisch-section tabellarisch-summary"
+      data-element-id="tabellarisch.summary"
+    >
+      <h2 className="tabellarisch-section__title">Kurzprofil</h2>
+      <p className="tabellarisch-summary__text">{text}</p>
+    </section>
   );
 }

@@ -22,9 +22,19 @@ export type LetterPageStatus = {
   isOverRecommendedLength: boolean;
 };
 
+export type ResumePaginationOptions = {
+  firstPageCapacity?: number;
+  secondPageCapacity?: number;
+};
+
 const FIRST_PAGE_CAPACITY = 30;
 const SECOND_PAGE_CAPACITY = 38;
 const RECOMMENDED_LETTER_CHARACTERS = 3_300;
+
+export const zweispaltigPaginationOptions: ResumePaginationOptions = {
+  firstPageCapacity: 35,
+  secondPageCapacity: 42,
+};
 
 const textWeight = (value: string, charactersPerUnit = 95) =>
   Math.max(0, Math.ceil(value.trim().length / charactersPerUnit));
@@ -72,7 +82,12 @@ const densityForWeight = (
 export const createResumePagePlan = (
   profile: ApplicantProfile | undefined,
   resumeProfile = "",
+  options: ResumePaginationOptions = {},
 ): ResumePagePlan[] => {
+  const firstPageCapacity =
+    options.firstPageCapacity ?? FIRST_PAGE_CAPACITY;
+  const secondPageCapacity =
+    options.secondPageCapacity ?? SECOND_PAGE_CAPACITY;
   const items: ResumePageItem[] = [
     ...(profile?.experiences ?? []).map(
       (experience): ResumePageItem => ({
@@ -95,12 +110,12 @@ export const createResumePagePlan = (
     sidebarWeight(profile, resumeProfile),
   );
 
-  if (firstPageWeight <= FIRST_PAGE_CAPACITY || items.length <= 1) {
+  if (firstPageWeight <= firstPageCapacity || items.length <= 1) {
     return [
       {
         pageNumber: 1,
         items,
-        density: densityForWeight(firstPageWeight, FIRST_PAGE_CAPACITY),
+        density: densityForWeight(firstPageWeight, firstPageCapacity),
       },
     ];
   }
@@ -112,7 +127,7 @@ export const createResumePagePlan = (
   for (const item of items) {
     if (
       pageOneItems.length === 0 ||
-      pageOneWeight + item.weight <= FIRST_PAGE_CAPACITY
+      pageOneWeight + item.weight <= firstPageCapacity
     ) {
       pageOneItems.push(item);
       pageOneWeight += item.weight;
@@ -140,13 +155,13 @@ export const createResumePagePlan = (
       items: pageOneItems,
       density: densityForWeight(
         Math.max(pageOneWeight, sidebarWeight(profile, resumeProfile)),
-        FIRST_PAGE_CAPACITY,
+        firstPageCapacity,
       ),
     },
     {
       pageNumber: 2,
       items: pageTwoItems,
-      density: densityForWeight(pageTwoWeight, SECOND_PAGE_CAPACITY),
+      density: densityForWeight(pageTwoWeight, secondPageCapacity),
     },
   ];
 };

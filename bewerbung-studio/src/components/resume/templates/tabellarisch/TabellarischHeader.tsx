@@ -3,33 +3,37 @@
  */
 
 import type { ApplicantProfile } from "../../../../shared/schema";
+import { toExternalHref } from "./tabellarisch.model";
 import type { TabellarischHeaderProps } from "./tabellarisch.types";
 
 export function TabellarischHeader({
   name,
   profile,
-  primaryColor,
-  accentColor,
   photoSource,
   atsMode,
 }: TabellarischHeaderProps) {
+  const expertise = Array.from(
+    new Set((profile?.skills ?? []).map((skill) => skill.trim()).filter(Boolean)),
+  ).slice(0, 3);
+
   return (
     <header
-      className={`tabellarisch-header ${!photoSource ? "tabellarisch-header--without-photo" : ""}`}>
+      className={`tabellarisch-header ${!photoSource || atsMode ? "tabellarisch-header--without-photo" : ""}`}
+      data-element-id="tabellarisch.header"
+    >
       <div className="tabellarisch-header__identity">
+        <p className="tabellarisch-header__kicker">Lebenslauf</p>
         <h1 className="tabellarisch-header__name">{name}</h1>
 
         {profile?.title && (
-          <p
-            className="tabellarisch-header__title"
-            style={{ color: accentColor }}>
+          <p className="tabellarisch-header__title">
             {profile.title}
           </p>
         )}
 
-        {profile?.skills && profile.skills.length > 0 && (
+        {expertise.length > 0 && (
           <p className="tabellarisch-header__expertise">
-            {profile.skills.slice(0, 3).join(" • ")}
+            {expertise.join(" · ")}
           </p>
         )}
 
@@ -38,40 +42,51 @@ export function TabellarischHeader({
           profile?.linkedin ||
           profile?.github ||
           profile?.city) && (
-          <div className="tabellarisch-header__contacts">
+          <address className="tabellarisch-header__contacts">
             {profile?.phone && (
-              <div className="tabellarisch-header__contact-item">
-                <strong>Tel:</strong> {profile.phone}
-              </div>
+              <p className="tabellarisch-header__contact-item">
+                <strong>Telefon</strong>
+                <a href={`tel:${profile.phone.replace(/[^\d+]/g, "")}`}>
+                  {profile.phone}
+                </a>
+              </p>
             )}
             {profile?.email && (
-              <div className="tabellarisch-header__contact-item">
-                <strong>E-Mail:</strong> {profile.email}
-              </div>
+              <p className="tabellarisch-header__contact-item">
+                <strong>E-Mail</strong>
+                <a href={`mailto:${profile.email}`}>{profile.email}</a>
+              </p>
             )}
             {profile?.linkedin && (
-              <div className="tabellarisch-header__contact-item">
-                <strong>LinkedIn:</strong> {profile.linkedin}
-              </div>
+              <p className="tabellarisch-header__contact-item">
+                <strong>LinkedIn</strong>
+                <a href={toExternalHref(profile.linkedin)}>
+                  {profile.linkedin}
+                </a>
+              </p>
             )}
             {profile?.github && (
-              <div className="tabellarisch-header__contact-item">
-                <strong>GitHub:</strong> {profile.github}
-              </div>
+              <p className="tabellarisch-header__contact-item">
+                <strong>GitHub</strong>
+                <a href={toExternalHref(profile.github)}>{profile.github}</a>
+              </p>
             )}
             {profile?.city && (
-              <div className="tabellarisch-header__contact-item">
-                <strong>Ort:</strong> {profile.city}
-                {profile?.country ? `, ${profile.country}` : ""}
-              </div>
+              <p className="tabellarisch-header__contact-item">
+                <strong>Ort</strong>
+                <span>
+                  {profile.city}
+                  {profile.country ? `, ${profile.country}` : ""}
+                </span>
+              </p>
             )}
-          </div>
+          </address>
         )}
       </div>
 
       {photoSource && !atsMode && (
         <div className="tabellarisch-header__photo">
-          <img src={photoSource} alt={name} />
+          <img src={photoSource} alt={`Bewerbungsfoto von ${name}`} />
         </div>
       )}
     </header>

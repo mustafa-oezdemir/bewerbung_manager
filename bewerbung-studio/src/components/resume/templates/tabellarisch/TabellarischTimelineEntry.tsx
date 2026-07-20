@@ -4,6 +4,7 @@
  */
 
 import type { TabellarischTimelineEntryProps } from "./tabellarisch.types";
+import { formatTabellarischDateRange } from "./tabellarisch.model";
 
 export function TabellarischTimelineEntry({
   from,
@@ -13,62 +14,74 @@ export function TabellarischTimelineEntry({
   city,
   summary,
   achievements,
-  primaryColor,
-  accentColor,
-  textColor,
+  atsMode,
 }: TabellarischTimelineEntryProps) {
+  const dateRange = formatTabellarischDateRange(from, to);
+  const uniqueAchievements = Array.from(
+    new Set((achievements ?? []).map((item) => item.trim()).filter(Boolean)),
+  );
+
+  if (atsMode) {
+    return (
+      <article className="tabellarisch-timeline-entry tabellarisch-timeline-entry--ats">
+        <h3 className="tabellarisch-timeline-entry__role">{role}</h3>
+        <p className="tabellarisch-timeline-entry__organization">
+          {organization}
+        </p>
+        {(dateRange || city) && (
+          <p className="tabellarisch-timeline-entry__ats-meta">
+            {[dateRange, city].filter(Boolean).join(" · ")}
+          </p>
+        )}
+        {summary ? (
+          <p className="tabellarisch-timeline-entry__summary">{summary}</p>
+        ) : null}
+        {uniqueAchievements.length > 0 ? (
+          <ul className="tabellarisch-timeline-entry__achievements">
+            {uniqueAchievements.map((achievement) => (
+              <li key={achievement}>{achievement}</li>
+            ))}
+          </ul>
+        ) : null}
+      </article>
+    );
+  }
+
   return (
-    <div className="tabellarisch-timeline-entry">
-      {/* Date & Location Column */}
+    <article className="tabellarisch-timeline-entry">
       <div className="tabellarisch-timeline-entry__meta">
-        <div
-          className="tabellarisch-timeline-entry__date"
-          style={{ color: primaryColor }}>
-          {from}–{to}
-        </div>
+        <p className="tabellarisch-timeline-entry__date">{dateRange}</p>
         {city && (
-          <div
-            className="tabellarisch-timeline-entry__location"
-            style={{ color: textColor }}>
+          <p className="tabellarisch-timeline-entry__location">
             {city}
-          </div>
+          </p>
         )}
       </div>
 
-      {/* Timeline Rail (Line + Dot) */}
-      <div className="tabellarisch-timeline-entry__rail" />
+      <span className="tabellarisch-timeline-entry__rail" aria-hidden="true" />
 
-      {/* Content Column */}
       <div className="tabellarisch-timeline-entry__content">
-        <h3
-          className="tabellarisch-timeline-entry__role"
-          style={{ color: primaryColor }}>
+        <h3 className="tabellarisch-timeline-entry__role">
           {role}
         </h3>
-        <p
-          className="tabellarisch-timeline-entry__organization"
-          style={{ color: accentColor }}>
+        <p className="tabellarisch-timeline-entry__organization">
           {organization}
         </p>
 
         {summary && (
-          <p
-            className="tabellarisch-timeline-entry__summary"
-            style={{ color: textColor }}>
+          <p className="tabellarisch-timeline-entry__summary">
             {summary}
           </p>
         )}
 
-        {achievements && achievements.length > 0 && (
-          <ul
-            className="tabellarisch-timeline-entry__achievements"
-            style={{ color: textColor }}>
-            {achievements.map((achievement, idx) => (
-              <li key={idx}>{achievement}</li>
+        {uniqueAchievements.length > 0 && (
+          <ul className="tabellarisch-timeline-entry__achievements">
+            {uniqueAchievements.map((achievement) => (
+              <li key={achievement}>{achievement}</li>
             ))}
           </ul>
         )}
       </div>
-    </div>
+    </article>
   );
 }

@@ -1,123 +1,140 @@
-/* Tabellarisch Template - Complete Stylesheet */
-/* Modern timeline-based CV for experienced professionals */
-
-/* ============================================
-   BASE CONFIGURATION & CSS VARIABLES
-   ============================================ */
-
-.tabellarisch-template {
-  --page-width: 210mm;
-  --page-height: 297mm;
-  --page-margin-top: 16mm;
-  --page-margin-right: 17mm;
-  --page-margin-bottom: 14mm;
-  --page-margin-left: 17mm;
-
-  --primary-color: #17263d;
-  --accent-color: #c78300;
-  --text-color: #3f4850;
-  --muted-color: #6d747a;
-  --line-color: #c8cdd1;
-  --background-color: #ffffff;
-
-  --font-family: "Source Sans 3", "Segoe UI", Arial, sans-serif;
-
-  --body-font-size: 9.4pt;
-  --body-line-height: 1.35;
-  --small-font-size: 8.4pt;
-  --small-line-height: 1.3;
-
-  --name-font-size: 25pt;
-  --job-title-font-size: 13.5pt;
-  --section-title-font-size: 15pt;
-  --entry-title-font-size: 12pt;
-
-  --section-gap: 8mm;
-  --entry-gap: 5mm;
-}
-
-/* ============================================
-   PAGE BASE
-   ============================================ */
-
 @page {
-  size: A4;
+  size: A4 portrait;
   margin: 0;
 }
 
-.tabellarisch-page {
+.tabellarisch-template {
+  --tabellarisch-page-width: 210mm;
+  --tabellarisch-page-height: 297mm;
+  --tabellarisch-primary: #17263d;
+  --tabellarisch-accent: #b86f12;
+  --tabellarisch-text: #303840;
+  --tabellarisch-muted: #66717b;
+  --tabellarisch-line: #c8cdd1;
+  --tabellarisch-soft: color-mix(
+    in srgb,
+    var(--tabellarisch-accent),
+    white 91%
+  );
+  --tabellarisch-margin: var(--doc-margin, 17mm);
+  --tabellarisch-section-gap: var(--doc-section-gap, 5.5mm);
+  --tabellarisch-entry-gap: 5mm;
+  --tabellarisch-body-size: var(--doc-body-size, 9.2pt);
+  --tabellarisch-line-height: var(--doc-line-height, 1.4);
+  --tabellarisch-font: var(
+    --doc-font,
+    "Source Sans 3",
+    "Segoe UI",
+    Arial,
+    sans-serif
+  );
+  --tabellarisch-heading-font: var(
+    --doc-heading-font,
+    var(--tabellarisch-font)
+  );
   position: relative;
-  width: 210mm;
-  min-height: 297mm;
-  margin: 0 auto;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--tabellarisch-page-height);
+  min-height: var(--tabellarisch-page-height);
   overflow: hidden;
-  background: var(--background-color);
+  color: var(--tabellarisch-text);
+  background: transparent;
+  font-family: var(--tabellarisch-font);
+  font-size: var(--tabellarisch-body-size);
+  line-height: var(--tabellarisch-line-height);
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
-  font-family: var(--font-family);
-  color: var(--text-color);
-  break-after: page;
-  page-break-after: always;
 }
 
-.tabellarisch-page:last-child {
-  break-after: auto;
-  page-break-after: auto;
+.tabellarisch-template *,
+.tabellarisch-template *::before,
+.tabellarisch-template *::after {
+  box-sizing: border-box;
 }
 
 .tabellarisch-page__wrapper {
   position: relative;
   width: 100%;
-  min-height: 100%;
+  height: 100%;
 }
 
 .tabellarisch-page__content {
   position: relative;
   z-index: 2;
-  padding: var(--page-margin-top) var(--page-margin-right)
-    calc(var(--page-margin-bottom) + 8mm) var(--page-margin-left);
+  height: 100%;
+  padding:
+    var(--tabellarisch-margin)
+    var(--tabellarisch-margin)
+    calc(var(--tabellarisch-margin) + 7mm);
 }
 
-/* ============================================
-   BACKGROUND LAYER (GEOMETRIC PATTERN)
-   ============================================ */
-
-.tabellarisch-background {
+.tabellarisch-decoration {
   position: absolute;
-  inset: 0 0 auto;
-  width: 100%;
-  height: 58mm;
+  top: 0;
+  right: 0;
   z-index: 0;
+  width: 92mm;
+  height: 52mm;
   overflow: hidden;
+  border-bottom-left-radius: 38mm;
+  background:
+    linear-gradient(
+      145deg,
+      transparent 0 56%,
+      color-mix(in srgb, var(--tabellarisch-accent), transparent 84%) 56.3%
+        57%,
+      transparent 57.3% 65%,
+      color-mix(in srgb, var(--tabellarisch-primary), transparent 92%) 65.3%
+        66%,
+      transparent 66.3%
+    ),
+    radial-gradient(
+      circle at 82% 12%,
+      color-mix(in srgb, var(--tabellarisch-accent), transparent 88%) 0 18mm,
+      transparent 18.2mm
+    );
   pointer-events: none;
 }
 
-.tabellarisch-background::before {
-  content: "";
+.tabellarisch-decoration::before,
+.tabellarisch-decoration::after {
   position: absolute;
-  top: -14mm;
-  right: -8mm;
-  width: 145mm;
-  height: 70mm;
-  opacity: 0.2;
-  background-image: var(--template-background-image);
-  background-repeat: no-repeat;
-  background-position: top right;
-  background-size: contain;
+  border: 0.35mm solid
+    color-mix(in srgb, var(--tabellarisch-primary), transparent 88%);
+  border-radius: 50%;
+  content: "";
 }
 
-/* ============================================
-   HEADER (PROFIL-BEREICH)
-   ============================================ */
+.tabellarisch-decoration::before {
+  top: -31mm;
+  right: -9mm;
+  width: 76mm;
+  height: 76mm;
+}
+
+.tabellarisch-decoration::after {
+  top: -18mm;
+  right: 4mm;
+  width: 49mm;
+  height: 49mm;
+  border-color: color-mix(
+    in srgb,
+    var(--tabellarisch-accent),
+    transparent 80%
+  );
+}
 
 .tabellarisch-header {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 34mm;
-  column-gap: 10mm;
+  grid-template-columns: minmax(0, 1fr) 32mm;
   align-items: start;
-  min-height: 42mm;
-  margin-bottom: 8mm;
+  min-width: 0;
+  min-height: 36mm;
+  column-gap: 9mm;
+  padding-bottom: 5mm;
+  border-bottom: 0.35mm solid var(--tabellarisch-line);
 }
 
 .tabellarisch-header--without-photo {
@@ -126,473 +143,549 @@
 
 .tabellarisch-header__identity {
   min-width: 0;
-  padding-top: 1mm;
+}
+
+.tabellarisch-header__kicker {
+  margin: 0 0 2mm;
+  color: var(--tabellarisch-accent);
+  font-size: 7.8pt;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .tabellarisch-header__name {
   margin: 0;
-  color: var(--primary-color);
-  font-family: var(--font-family);
-  font-size: var(--name-font-size);
-  font-weight: 750;
-  line-height: 1;
-  letter-spacing: 0.015em;
-  text-transform: uppercase;
+  color: var(--tabellarisch-primary);
+  font-family: var(--tabellarisch-heading-font);
+  font-size: 24pt;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.02;
   overflow-wrap: anywhere;
-  hyphens: auto;
 }
 
 .tabellarisch-header__title {
-  margin: 2.5mm 0 2mm;
-  font-size: var(--job-title-font-size);
-  font-weight: 650;
+  margin: 2mm 0 1.2mm;
+  color: var(--tabellarisch-accent);
+  font-family: var(--tabellarisch-heading-font);
+  font-size: 13pt;
+  font-weight: 600;
   line-height: 1.15;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 
 .tabellarisch-header__expertise {
   margin: 0;
-  color: var(--muted-color);
-  font-size: var(--small-font-size);
-  line-height: var(--small-line-height);
-  overflow-wrap: break-word;
+  color: var(--tabellarisch-muted);
+  font-size: 8.6pt;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 
 .tabellarisch-header__contacts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.2mm 7mm;
-  margin-top: 2.5mm;
-  color: var(--text-color);
-  font-size: var(--small-font-size);
+  gap: 1.4mm 7mm;
   min-width: 0;
+  margin: 3.2mm 0 0;
+  color: var(--tabellarisch-text);
+  font-size: 8.2pt;
+  font-style: normal;
+  line-height: 1.28;
 }
 
 .tabellarisch-header__contact-item {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 2mm;
   min-width: 0;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
+  margin: 0;
 }
 
 .tabellarisch-header__contact-item strong {
-  font-weight: 600;
+  color: var(--tabellarisch-primary);
+  font-weight: 700;
+}
+
+.tabellarisch-header__contact-item a,
+.tabellarisch-header__contact-item span {
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+  overflow-wrap: anywhere;
 }
 
 .tabellarisch-header__photo {
+  position: relative;
   width: 30mm;
   height: 30mm;
   justify-self: end;
   overflow: hidden;
+  border: 0.9mm solid white;
   border-radius: 50%;
   background: #e8ebed;
-  flex-shrink: 0;
+  box-shadow: 0 0 0 0.45mm var(--tabellarisch-accent);
 }
 
 .tabellarisch-header__photo img {
+  display: block;
   width: 100%;
   height: 100%;
-  display: block;
   object-fit: cover;
   object-position: center;
 }
 
-/* ============================================
-   SECTIONS (GENERIC)
-   ============================================ */
-
 .tabellarisch-section {
-  margin-top: var(--section-gap);
+  min-width: 0;
+  margin-top: var(--tabellarisch-section-gap);
   break-inside: auto;
   page-break-inside: auto;
 }
 
 .tabellarisch-section__title {
-  margin: 0 0 4mm;
-  color: var(--primary-color);
-  font-size: var(--section-title-font-size);
-  font-weight: 750;
-  line-height: 1.05;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
+  display: flex;
+  align-items: baseline;
+  gap: 2.5mm;
+  margin: 0 0 3.2mm;
+  color: var(--tabellarisch-primary);
+  font-family: var(--tabellarisch-heading-font);
+  font-size: 12pt;
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  line-height: 1.1;
   break-after: avoid;
   page-break-after: avoid;
 }
 
-/* ============================================
-   ZUSAMMENFASSUNG (SUMMARY)
-   ============================================ */
+.tabellarisch-section__title::after {
+  flex: 1;
+  height: 0.3mm;
+  background: linear-gradient(
+    90deg,
+    var(--tabellarisch-accent),
+    color-mix(in srgb, var(--tabellarisch-line), transparent 35%)
+  );
+  content: "";
+}
 
-.tabellarisch-summary {
-  max-width: 100%;
+.tabellarisch-section__title small {
+  order: 2;
+  color: var(--tabellarisch-muted);
+  font-size: 7.5pt;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 .tabellarisch-summary__text {
   margin: 0;
-  font-size: var(--body-font-size);
-  line-height: var(--body-line-height);
+  padding-left: 4mm;
+  border-left: 0.7mm solid var(--tabellarisch-accent);
+  color: var(--tabellarisch-text);
+  font-size: var(--tabellarisch-body-size);
+  line-height: var(--tabellarisch-line-height);
   hyphens: auto;
   overflow-wrap: break-word;
 }
-
-/* ============================================
-   STÄRKEN (STRENGTHS - 2-COLUMN CARDS)
-   ============================================ */
-
-.tabellarisch-strengths {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 5mm 12mm;
-}
-
-.tabellarisch-strength {
-  display: grid;
-  grid-template-columns: 8mm minmax(0, 1fr);
-  column-gap: 2.5mm;
-  align-items: start;
-  min-width: 0;
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-
-.tabellarisch-strength__icon {
-  font-size: 15pt;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.tabellarisch-strength__title {
-  margin: 0 0 1.5mm;
-  color: var(--primary-color);
-  font-size: 10.3pt;
-  font-weight: 700;
-  line-height: 1.15;
-  overflow-wrap: break-word;
-}
-
-.tabellarisch-strength__description {
-  margin: 0;
-  font-size: var(--body-font-size);
-  line-height: var(--body-line-height);
-  overflow-wrap: break-word;
-}
-
-/* ============================================
-   TIMELINE (EXPERIENCE & EDUCATION)
-   ============================================ */
 
 .tabellarisch-timeline {
   display: flex;
   flex-direction: column;
-  gap: var(--entry-gap);
+  min-width: 0;
 }
 
 .tabellarisch-timeline-entry {
-  display: grid;
-  grid-template-columns:
-    minmax(30mm, 35mm)
-    7mm
-    minmax(0, 1fr);
-  column-gap: 4mm;
   position: relative;
+  display: grid;
+  grid-template-columns: minmax(29mm, 34mm) 6mm minmax(0, 1fr);
+  column-gap: 3.5mm;
+  min-width: 0;
+  padding-bottom: var(--tabellarisch-entry-gap);
   break-inside: avoid;
   page-break-inside: avoid;
 }
 
-/* Timeline Meta (Date & Location) */
+.tabellarisch-timeline-entry:last-child {
+  padding-bottom: 0;
+}
 
 .tabellarisch-timeline-entry__meta {
   min-width: 0;
-  padding-top: 0.5mm;
+  padding-top: 0.25mm;
+  text-align: right;
+}
+
+.tabellarisch-timeline-entry__date,
+.tabellarisch-timeline-entry__location {
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .tabellarisch-timeline-entry__date {
-  font-size: 10pt;
-  font-weight: 750;
-  line-height: 1.15;
-  overflow-wrap: break-word;
-  hyphens: auto;
+  color: var(--tabellarisch-primary);
+  font-size: 8.8pt;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 .tabellarisch-timeline-entry__location {
-  margin-top: 2mm;
-  font-size: var(--small-font-size);
-  line-height: 1.3;
-  overflow-wrap: break-word;
-  hyphens: auto;
+  margin-top: 1.2mm;
+  color: var(--tabellarisch-muted);
+  font-size: 8pt;
+  line-height: 1.25;
 }
-
-/* Timeline Rail (Line + Dot) */
 
 .tabellarisch-timeline-entry__rail {
   position: relative;
+  display: block;
   min-height: 100%;
 }
 
 .tabellarisch-timeline-entry__rail::before {
-  content: "";
   position: absolute;
-  top: 1.5mm;
-  bottom: -5mm;
+  top: 2.6mm;
+  bottom: -1.2mm;
   left: 50%;
   width: 0.35mm;
-  background: var(--line-color);
+  background: var(--tabellarisch-line);
+  content: "";
   transform: translateX(-50%);
 }
 
 .tabellarisch-timeline-entry__rail::after {
-  content: "";
   position: absolute;
-  top: 0.6mm;
+  top: 0.55mm;
   left: 50%;
-  width: 2.3mm;
-  height: 2.3mm;
+  width: 2.7mm;
+  height: 2.7mm;
+  border: 0.55mm solid white;
   border-radius: 50%;
-  background: var(--primary-color);
+  background: var(--tabellarisch-accent);
+  box-shadow: 0 0 0 0.3mm var(--tabellarisch-accent);
+  content: "";
   transform: translateX(-50%);
-  z-index: 2;
 }
 
-.tabellarisch-timeline-entry:last-child
+.tabellarisch-timeline:not([data-continues-next-page="true"])
+  .tabellarisch-timeline-entry:last-child
   .tabellarisch-timeline-entry__rail::before {
-  bottom: 0;
+  bottom: auto;
+  height: 1.4mm;
 }
 
-/* Timeline Content */
+.tabellarisch-timeline[data-continues-next-page="true"]
+  .tabellarisch-timeline-entry:last-child
+  .tabellarisch-timeline-entry__rail::before {
+  bottom: -3mm;
+  background: linear-gradient(
+    var(--tabellarisch-line) 0 70%,
+    transparent 70% 100%
+  );
+}
 
 .tabellarisch-timeline-entry__content {
   min-width: 0;
-  padding-bottom: 0;
 }
 
 .tabellarisch-timeline-entry__role {
   margin: 0;
-  color: var(--primary-color);
-  font-size: var(--entry-title-font-size);
-  font-weight: 500;
-  line-height: 1.15;
-  overflow-wrap: break-word;
+  color: var(--tabellarisch-primary);
+  font-family: var(--tabellarisch-heading-font);
+  font-size: 11pt;
+  font-weight: 600;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
 }
 
 .tabellarisch-timeline-entry__organization {
-  margin: 1mm 0 1.5mm;
-  font-size: 10.2pt;
+  margin: 0.8mm 0 1.2mm;
+  color: var(--tabellarisch-accent);
+  font-size: 9.2pt;
   font-weight: 700;
   line-height: 1.2;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 
 .tabellarisch-timeline-entry__summary {
-  margin: 0 0 1.5mm;
-  font-size: var(--body-font-size);
-  line-height: var(--body-line-height);
-  overflow-wrap: break-word;
+  margin: 0 0 1.2mm;
+  color: var(--tabellarisch-text);
   hyphens: auto;
+  overflow-wrap: break-word;
 }
 
 .tabellarisch-timeline-entry__achievements {
   margin: 0;
   padding-left: 4.5mm;
-  font-size: var(--body-font-size);
-  line-height: var(--body-line-height);
+  color: var(--tabellarisch-text);
 }
 
 .tabellarisch-timeline-entry__achievements li {
-  margin: 0.6mm 0;
-  padding-left: 0.5mm;
-  overflow-wrap: break-word;
+  margin: 0.5mm 0;
+  padding-left: 0.4mm;
   hyphens: auto;
+  overflow-wrap: break-word;
 }
 
-/* ============================================
-   CONTINUATION HEADER (PAGE 2+)
-   ============================================ */
+.tabellarisch-timeline-entry__achievements li::marker {
+  color: var(--tabellarisch-accent);
+}
 
 .tabellarisch-continuation-header {
   display: flex;
-  justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 7mm;
+  justify-content: space-between;
+  gap: 8mm;
+  margin: 0 0 6mm;
   padding-bottom: 2.5mm;
-  border-bottom: 0.35mm solid var(--line-color);
+  border-bottom: 0.35mm solid var(--tabellarisch-line);
+}
+
+.tabellarisch-continuation-header__name,
+.tabellarisch-continuation-header__title {
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .tabellarisch-continuation-header__name {
-  margin: 0;
-  color: var(--primary-color);
+  color: var(--tabellarisch-primary);
+  font-family: var(--tabellarisch-heading-font);
   font-size: 13pt;
-  font-weight: 750;
-  overflow-wrap: break-word;
+  font-weight: 700;
 }
 
 .tabellarisch-continuation-header__title {
+  color: var(--tabellarisch-accent);
+  font-size: 8.8pt;
+  font-weight: 600;
+  text-align: right;
+}
+
+.tabellarisch-knowledge__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3.5mm 9mm;
+}
+
+.tabellarisch-knowledge__category {
+  min-width: 0;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.tabellarisch-knowledge__category h3,
+.tabellarisch-knowledge__subcategory h4 {
   margin: 0;
-  color: var(--accent-color);
-  font-size: 9.5pt;
+  color: var(--tabellarisch-primary);
+  font-family: var(--tabellarisch-heading-font);
+  overflow-wrap: anywhere;
+}
+
+.tabellarisch-knowledge__category h3 {
+  font-size: 9.4pt;
+  font-weight: 700;
+}
+
+.tabellarisch-knowledge__category > small {
+  display: block;
+  margin-top: 0.5mm;
+  color: var(--tabellarisch-muted);
+  font-size: 7.5pt;
+}
+
+.tabellarisch-knowledge__category p {
+  margin: 0.8mm 0 0;
+  color: var(--tabellarisch-text);
+  hyphens: auto;
   overflow-wrap: break-word;
 }
 
-/* ============================================
-   FOOTER
-   ============================================ */
+.tabellarisch-knowledge__subcategory {
+  margin-top: 1.5mm;
+}
+
+.tabellarisch-knowledge__subcategory h4 {
+  font-size: 8.5pt;
+  font-weight: 600;
+}
+
+.tabellarisch-list-section ul {
+  margin: 0;
+  padding-left: 4.5mm;
+}
+
+.tabellarisch-list-section li {
+  margin: 0.7mm 0;
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+.tabellarisch-list-section__inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2mm 7mm;
+  padding-left: 0 !important;
+  list-style: none;
+}
+
+.tabellarisch-list-section__inline li::before {
+  margin-right: 1.5mm;
+  color: var(--tabellarisch-accent);
+  content: "◆";
+  font-size: 5pt;
+  vertical-align: 0.3mm;
+}
 
 .tabellarisch-footer {
   position: absolute;
-  right: var(--page-margin-right);
+  right: var(--tabellarisch-margin);
   bottom: 6mm;
-  left: var(--page-margin-left);
+  left: var(--tabellarisch-margin);
+  z-index: 2;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-size: 7.5pt;
-  z-index: 1;
+  justify-content: space-between;
+  gap: 8mm;
+  padding-top: 1.8mm;
+  border-top: 0.25mm solid
+    color-mix(in srgb, var(--tabellarisch-line), transparent 30%);
+  color: var(--tabellarisch-muted);
+  font-size: 7.4pt;
+  line-height: 1.2;
+}
+
+.tabellarisch-footer p {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 .tabellarisch-footer__portfolio {
-  flex: 1;
   min-width: 0;
-  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .tabellarisch-footer__portfolio a {
+  color: var(--tabellarisch-accent);
   text-decoration: none;
 }
 
-.tabellarisch-footer__portfolio a:hover {
-  text-decoration: underline;
-}
-
 .tabellarisch-footer__pages {
-  flex-shrink: 0;
-  margin-left: 10mm;
+  flex: none;
 }
 
-/* ============================================
-   KNOWLEDGE/SKILLS SECTION
-   ============================================ */
-
-.tabellarisch-knowledge-section-renderer {
-  font-size: var(--body-font-size);
-  line-height: var(--body-line-height);
+.tabellarisch-template[data-density="compact"] {
+  --tabellarisch-section-gap: max(
+    3.8mm,
+    calc(var(--doc-section-gap, 5.5mm) - 1mm)
+  );
+  --tabellarisch-entry-gap: 4mm;
 }
 
-.tabellarisch-knowledge-section-renderer h3 {
-  margin: 0 0 1.5mm;
-  font-size: var(--section-title-font-size);
-  font-weight: 750;
-  text-transform: uppercase;
-  color: var(--primary-color);
+.tabellarisch-template[data-density="dense"] {
+  --tabellarisch-section-gap: max(
+    3.2mm,
+    calc(var(--doc-section-gap, 5.5mm) - 2mm)
+  );
+  --tabellarisch-entry-gap: 3mm;
 }
 
-.tabellarisch-knowledge-comma {
-  margin: 0;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  hyphens: auto;
+.tabellarisch-template[data-density="dense"] .tabellarisch-header {
+  min-height: 32mm;
+  padding-bottom: 3.5mm;
 }
 
-.tabellarisch-knowledge-tags {
-  display: flex;
-  flex-wrap: wrap;
+.tabellarisch-template[data-density="dense"] .tabellarisch-header__name {
+  font-size: 22pt;
+}
+
+.tabellarisch-template[data-density="dense"]
+  .tabellarisch-header__contacts {
+  margin-top: 2.2mm;
+}
+
+.tabellarisch-template[data-density="dense"]
+  .tabellarisch-section__title {
+  margin-bottom: 2.4mm;
+}
+
+.tabellarisch-template[data-ats-mode="true"] {
+  --tabellarisch-primary: #222b30;
+  --tabellarisch-accent: #222b30;
+  --tabellarisch-line: #cfd4d7;
+}
+
+.tabellarisch-template[data-ats-mode="true"] .tabellarisch-page__content {
+  padding-bottom: var(--tabellarisch-margin);
+}
+
+.tabellarisch-template[data-ats-mode="true"] .tabellarisch-decoration {
+  display: none;
+}
+
+.tabellarisch-template[data-ats-mode="true"] .tabellarisch-header {
+  display: block;
+  min-height: 0;
+}
+
+.tabellarisch-template[data-ats-mode="true"]
+  .tabellarisch-header__contacts {
+  grid-template-columns: 1fr;
+  gap: 1mm;
+}
+
+.tabellarisch-template[data-ats-mode="true"]
+  .tabellarisch-section__title::after {
+  background: var(--tabellarisch-line);
+}
+
+.tabellarisch-timeline-entry--ats {
+  display: block;
+  padding-bottom: var(--tabellarisch-entry-gap);
+}
+
+.tabellarisch-timeline-entry--ats:last-child {
+  padding-bottom: 0;
+}
+
+.tabellarisch-timeline-entry__ats-meta {
+  margin: 0 0 1.2mm;
+  color: var(--tabellarisch-muted);
+  font-size: 8.4pt;
+  line-height: 1.25;
+}
+
+.tabellarisch-template[data-ats-mode="true"]
+  .tabellarisch-knowledge__grid {
+  grid-template-columns: 1fr;
   gap: 2.5mm;
 }
 
-.tabellarisch-knowledge-tags span {
-  background: rgba(23, 38, 61, 0.08);
-  padding: 1.5mm 2.5mm;
-  border-radius: 12px;
-  font-size: var(--small-font-size);
-  line-height: 1.2;
-  color: var(--primary-color);
+.document-paper.no-print-background .tabellarisch-decoration {
+  display: none;
 }
-
-/* ============================================
-   MEDIA: SCREEN
-   ============================================ */
-
-@media screen {
-  .tabellarisch-page {
-    box-shadow: 0 4px 22px rgb(15 23 42 / 14%);
-    margin: 16px auto;
-  }
-
-  .editor-selection,
-  .editor-resize-handle,
-  .editor-toolbar,
-  .editor-guide,
-  .editor-grid {
-    display: none !important;
-  }
-}
-
-/* ============================================
-   MEDIA: PRINT
-   ============================================ */
 
 @media print {
-  html,
-  body {
-    margin: 0;
-    padding: 0;
-    background: #ffffff;
-  }
-
-  .tabellarisch-page {
-    width: 210mm;
+  .tabellarisch-template {
+    width: 100%;
     height: 297mm;
     min-height: 297mm;
     margin: 0;
     box-shadow: none;
-    overflow: hidden;
   }
 
-  .tabellarisch-page:last-child {
-    break-after: auto;
-    page-break-after: auto;
+  .tabellarisch-template a {
+    color: inherit;
+    text-decoration: none;
   }
 
-  .editor-selection,
-  .editor-resize-handle,
-  .editor-toolbar,
-  .editor-guide,
-  .editor-grid {
+  .tabellarisch-template .editor-selection,
+  .tabellarisch-template .editor-resize-handle,
+  .tabellarisch-template .editor-toolbar,
+  .tabellarisch-template .editor-guide,
+  .tabellarisch-template .editor-grid,
+  .tabellarisch-template [data-editor-only="true"] {
     display: none !important;
   }
-}
-
-/* ============================================
-   ATS MODE
-   ============================================ */
-
-.tabellarisch-page[data-ats-mode="true"] .tabellarisch-background {
-  display: none;
-}
-
-.tabellarisch-page[data-ats-mode="true"] .tabellarisch-header__photo {
-  display: none;
-}
-
-.tabellarisch-page[data-ats-mode="true"] .tabellarisch-timeline-entry__rail {
-  display: none;
-}
-
-.tabellarisch-page[data-ats-mode="true"] .tabellarisch-timeline-entry {
-  display: block;
-}
-
-.tabellarisch-page[data-ats-mode="true"] .tabellarisch-timeline-entry__meta {
-  margin-bottom: 1mm;
-}
-
-.tabellarisch-page[data-ats-mode="true"] .tabellarisch-strengths {
-  grid-template-columns: 1fr;
-  gap: var(--entry-gap);
-}
-
-.tabellarisch-page[data-ats-mode="true"] .tabellarisch-strength__icon {
-  display: none;
-}
-
-.tabellarisch-page[data-ats-mode="true"] .tabellarisch-strength {
-  grid-template-columns: 1fr;
-  column-gap: 0;
 }

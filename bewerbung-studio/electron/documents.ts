@@ -3,6 +3,7 @@ import {
   createResumePagePlan,
   getLetterPageStatus,
   type ResumePagePlan,
+  zweispaltigPaginationOptions,
 } from "../src/shared/documentPagination";
 import {
   fontSizeToPt,
@@ -37,6 +38,25 @@ const escapeHtml = (value = "") =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+
+const externalHref = (value = "") => {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  const withoutScheme = trimmed.replace(/^[a-z][a-z\d+.-]*:(?:\/\/)?/i, "");
+  return `https://${withoutScheme}`;
+};
+
+const uniqueValues = (values: string[]) =>
+  Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
+
+const formatDateRange = (from: string, to: string) => {
+  const start = from.trim();
+  const end = to.trim();
+  if (!start) return end;
+  if (!end) return start;
+  return `${start} – ${end}`;
+};
 
 const programmingBackgroundMarkup = (
   settings: DocumentDesignSettings,
@@ -255,12 +275,212 @@ const documentCss = (
 `;
 };
 
+const elegantDocumentCss = `
+  .elegant-pdf{--elegant-heading:#3b4247;--elegant-text:#4b5359;--elegant-muted:#6d757a;--elegant-line:#b9bfc3;--elegant-sidebar-muted:#e2e9ef;display:grid;grid-template-columns:minmax(0,140mm) 70mm;width:100%;height:100%;color:var(--elegant-text);background:#fff;font-family:var(--body-font)}
+  .elegant-pdf *{box-sizing:border-box}
+  .elegant-pdf-main{position:relative;min-width:0;height:100%;padding:max(14mm,calc(var(--doc-margin) - 2mm)) max(10mm,calc(var(--doc-margin) - 6mm)) max(13mm,calc(var(--doc-margin) - 4mm)) var(--doc-margin);overflow:hidden;background:#fff}
+  .elegant-pdf-header{position:relative;padding-bottom:5mm;border-bottom:.35mm solid var(--elegant-line)}
+  .elegant-pdf-header:after{position:absolute;bottom:-.35mm;left:0;width:27mm;height:.7mm;background:var(--accent);content:""}
+  .elegant-pdf-header .kicker{margin:0 0 2.2mm;font-size:7.7pt}
+  .elegant-pdf-header h1{margin:0;color:var(--elegant-heading);font-size:22pt;font-weight:500;letter-spacing:.01em;line-height:1.05;text-transform:uppercase;overflow-wrap:anywhere}
+  .elegant-pdf-header h2{margin:2mm 0 0;color:var(--accent);font-size:12pt;font-weight:400;line-height:1.25;overflow-wrap:anywhere}
+  .elegant-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.2mm 6mm;margin:3.3mm 0 0;color:var(--elegant-text);font-size:8pt;font-style:normal;line-height:1.3}
+  .elegant-pdf-contacts a,.elegant-pdf-contacts span{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:1.5mm;min-width:0;color:inherit;text-decoration:none}
+  .elegant-pdf-contacts strong{color:var(--elegant-heading)}
+  .elegant-pdf-contacts i{min-width:0;font-style:normal;overflow-wrap:anywhere}
+  .elegant-pdf-section{margin-top:var(--section-gap)}
+  .elegant-pdf-section>h3,.elegant-pdf-ats .knowledge-section>h3{display:flex;align-items:baseline;gap:2.5mm;margin:0 0 3.2mm;color:var(--elegant-heading);font-size:12pt;font-weight:500;letter-spacing:.055em;line-height:1.1;text-transform:uppercase}
+  .elegant-pdf-section>h3:after,.elegant-pdf-ats .knowledge-section>h3:after{flex:1;height:.3mm;background:linear-gradient(90deg,var(--accent),var(--elegant-line));content:""}
+  .elegant-pdf-list{display:flex;flex-direction:column;gap:5mm}
+  .elegant-pdf-entry{break-inside:avoid;page-break-inside:avoid}
+  .elegant-pdf-entry-head{display:grid;grid-template-columns:minmax(0,1fr) max-content;gap:5mm;align-items:start}
+  .elegant-pdf-entry-head h4{margin:0;color:var(--elegant-heading);font-family:var(--heading-font);font-size:11pt;font-weight:500;line-height:1.2;overflow-wrap:anywhere}
+  .elegant-pdf-entry-head p{margin:.8mm 0 0;color:var(--accent);font-size:11pt;font-weight:400;line-height:1.2;overflow-wrap:anywhere}
+  .elegant-pdf-entry-meta{min-width:24mm;color:var(--elegant-muted);font-size:8pt;line-height:1.3;text-align:right}
+  .elegant-pdf-entry-meta strong,.elegant-pdf-entry-meta span{display:block}
+  .elegant-pdf-entry-meta span{margin-top:.6mm;overflow-wrap:anywhere}
+  .elegant-pdf-entry ul{margin:1.8mm 0 0;padding-left:4.5mm}
+  .elegant-pdf-entry li{margin:.6mm 0;padding-left:.4mm;color:var(--elegant-text);font-size:var(--body-size);line-height:var(--body-line)}
+  .elegant-pdf-entry li::marker{color:var(--accent)}
+  .elegant-pdf-sidebar{display:flex;flex-direction:column;gap:var(--section-gap);min-width:0;height:100%;padding:max(13mm,calc(var(--doc-margin) - 3mm)) max(12mm,calc(var(--doc-margin) - 5mm));overflow:hidden;color:#fff;background:var(--secondary)}
+  .elegant-pdf-photo{display:block;width:27mm;height:27mm;margin:0 auto 12mm;overflow:hidden;border-radius:1.5mm;background:color-mix(in srgb,var(--secondary),white 12%);object-fit:cover}
+  .elegant-pdf-sidebar section{margin:0;break-inside:avoid;page-break-inside:avoid}
+  .elegant-pdf-sidebar section>h3{position:relative;margin:0 0 2.4mm;padding-bottom:1.6mm;border:0;color:#fff;font-size:11.5pt;font-weight:400;letter-spacing:.075em;line-height:1.15;text-transform:uppercase}
+  .elegant-pdf-sidebar section>h3:after{position:absolute;bottom:0;left:0;width:14mm;height:.45mm;background:var(--accent);content:""}
+  .elegant-pdf-sidebar section p,.elegant-pdf-sidebar section li{color:var(--elegant-sidebar-muted);font-size:var(--body-size);line-height:var(--body-line)}
+  .elegant-pdf-sidebar section p{margin:0}
+  .elegant-pdf-sidebar section ul{margin:0;padding-left:4mm}
+  .elegant-pdf-sidebar .knowledge-category{margin-bottom:2.5mm}
+  .elegant-pdf-sidebar .knowledge-category h4,.elegant-pdf-sidebar .knowledge-subcategory h5{color:#fff;font-size:8.7pt}
+  .elegant-pdf-sidebar .knowledge-tags span{border-color:color-mix(in srgb,white,transparent 50%);color:#fff}
+  .elegant-pdf-strengths{display:grid;gap:3mm}
+  .elegant-pdf-strength{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:2mm;align-items:start}
+  .elegant-pdf-strength i{display:grid;width:4mm;height:4mm;place-items:center;border:.25mm solid color-mix(in srgb,white,transparent 45%);border-radius:50%;color:#fff;font-size:7pt;font-style:normal;line-height:1}
+  .elegant-pdf-strength span{color:var(--elegant-sidebar-muted);font-size:var(--body-size);line-height:var(--body-line);overflow-wrap:anywhere}
+  .elegant-pdf-continuation .kicker{color:var(--accent);font-size:8pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+  .elegant-pdf-continuation h2{margin:3.5mm 0 0;color:#fff;font-size:18pt;line-height:1.05;overflow-wrap:anywhere}
+  .elegant-pdf-continuation p{margin:1.8mm 0 0;color:var(--elegant-sidebar-muted)}
+  .elegant-pdf-continuation hr{width:18mm;height:.6mm;margin:6mm 0;border:0;background:var(--accent)}
+  .elegant-pdf-continuation a{display:block;margin-top:1.7mm;color:#fff;font-size:8.3pt;text-decoration:none;overflow-wrap:anywhere}
+  .elegant-pdf-footer{position:absolute;right:max(10mm,calc(var(--doc-margin) - 6mm));bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;padding-top:1.7mm;border-top:.25mm solid var(--elegant-line);color:var(--elegant-muted);font-size:7.2pt}
+  .elegant-pdf-footer a{color:var(--accent);text-decoration:none}
+  .elegant-pdf-footer span:last-child{margin-left:auto}
+  .elegant-pdf-ats{--elegant-heading:#3b4247;--elegant-text:#4b5359;--elegant-muted:#6d757a;--elegant-line:#b9bfc3;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--elegant-text);background:#fff}
+  .elegant-pdf-ats .elegant-pdf-header:after{display:none}
+  .elegant-pdf-ats .elegant-pdf-contacts{display:block}
+  .elegant-pdf-ats .elegant-pdf-contacts a,.elegant-pdf-ats .elegant-pdf-contacts span{display:block;margin-top:.8mm}
+  .elegant-pdf-ats .elegant-pdf-contacts strong{margin-right:1.5mm}
+  .elegant-pdf-ats .elegant-pdf-entry-head{display:block}
+  .elegant-pdf-ats .elegant-pdf-entry-meta{margin-top:.8mm;text-align:left}
+  .elegant-pdf-ats .elegant-pdf-entry-meta strong,.elegant-pdf-ats .elegant-pdf-entry-meta span{display:inline}
+  .elegant-pdf-ats .elegant-pdf-entry-meta span:before{content:" · "}
+  .elegant-pdf-ats .knowledge-section{margin-top:var(--section-gap)}
+  .elegant-pdf-ats .knowledge-category h4,.elegant-pdf-ats .knowledge-subcategory h5{color:var(--elegant-heading)}
+`;
+
+const zweispaltigDocumentCss = `
+  .zweispaltig-pdf{--zweispaltig-heading:#253746;--zweispaltig-text:#3f4d59;--zweispaltig-muted:#6b7782;--zweispaltig-divider:#9db7d1;position:relative;width:100%;height:100%;padding:max(14mm,calc(var(--doc-margin) - 3mm)) var(--doc-margin) max(13mm,calc(var(--doc-margin) - 4mm));overflow:hidden;color:var(--zweispaltig-text);background:#fff;font-family:var(--body-font)}
+  .zweispaltig-pdf *{box-sizing:border-box}
+  .zweispaltig-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8mm;padding-bottom:4.5mm;border-bottom:.4mm solid var(--zweispaltig-divider)}
+  .zweispaltig-pdf-header h1{margin:0;color:var(--accent);font-size:24pt;font-weight:750;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}
+  .zweispaltig-pdf-header h2{margin:1.5mm 0 0;color:var(--zweispaltig-heading);font-size:10.5pt;font-weight:650;letter-spacing:.055em;line-height:1.2;text-transform:uppercase;overflow-wrap:anywhere}
+  .zweispaltig-pdf-specializations{margin:1.4mm 0 0;color:color-mix(in srgb,var(--accent),#123f72 48%);font-size:8pt;font-weight:650;letter-spacing:.035em;line-height:1.25}
+  .zweispaltig-pdf-contacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.1mm 5mm;margin:3.2mm 0 0;color:var(--zweispaltig-muted);font-size:7.5pt;font-style:normal;line-height:1.2}
+  .zweispaltig-pdf-contacts a,.zweispaltig-pdf-contacts span{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:1.2mm;min-width:0;color:inherit;text-decoration:none}
+  .zweispaltig-pdf-contacts strong{color:var(--zweispaltig-heading)}
+  .zweispaltig-pdf-contacts i{min-width:0;font-style:normal;overflow-wrap:anywhere}
+  .zweispaltig-pdf-photo{display:block;width:23mm;height:23mm;overflow:hidden;border:.45mm solid var(--accent);border-radius:50%;background:color-mix(in srgb,var(--accent),white 90%);object-fit:cover}
+  .zweispaltig-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1.5mm 4mm;padding-bottom:3.5mm}
+  .zweispaltig-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--accent);font-size:7.3pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+  .zweispaltig-pdf-header.compact h1{font-size:15pt}
+  .zweispaltig-pdf-header.compact h2{margin:0;color:var(--zweispaltig-muted);font-size:8.6pt}
+  .zweispaltig-pdf-columns{display:grid;grid-template-columns:minmax(0,62%) minmax(0,38%)}
+  .zweispaltig-pdf-columns.continuation{grid-template-columns:minmax(0,1fr)}
+  .zweispaltig-pdf-main{min-width:0;padding-right:8mm}
+  .zweispaltig-pdf-sidebar{min-width:0;padding-left:8mm;border-left:.35mm solid var(--zweispaltig-divider)}
+  .zweispaltig-pdf-section,.zweispaltig-pdf-sidebar>section,.zweispaltig-pdf-sidebar>.knowledge-section{margin-top:var(--section-gap);break-inside:avoid;page-break-inside:avoid}
+  .zweispaltig-pdf-section>h3,.zweispaltig-pdf-sidebar section>h3,.zweispaltig-pdf-ats section>h3,.zweispaltig-pdf-ats .knowledge-section>h3{margin:0 0 2.5mm;padding-bottom:1.2mm;border-bottom:.45mm solid var(--accent);color:var(--accent);font-size:10.5pt;font-weight:750;letter-spacing:.075em;line-height:1.1;text-transform:uppercase}
+  .zweispaltig-pdf-summary{margin:0;hyphens:auto;overflow-wrap:break-word}
+  .zweispaltig-pdf-list{display:flex;flex-direction:column;gap:4.5mm}
+  .zweispaltig-pdf-entry{break-inside:avoid;page-break-inside:avoid}
+  .zweispaltig-pdf-entry-head{display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:start;gap:4mm}
+  .zweispaltig-pdf-entry-head h4{margin:0;color:var(--zweispaltig-heading);font-size:9.7pt;font-weight:750;line-height:1.18;overflow-wrap:anywhere}
+  .zweispaltig-pdf-entry-head p{margin:.7mm 0 0;color:var(--accent);font-size:8.5pt;font-weight:650;line-height:1.18;overflow-wrap:anywhere}
+  .zweispaltig-pdf-entry-meta{min-width:25mm;color:var(--zweispaltig-muted);font-size:7.5pt;line-height:1.25;text-align:right}
+  .zweispaltig-pdf-entry-meta strong,.zweispaltig-pdf-entry-meta span{display:block}
+  .zweispaltig-pdf-entry-meta span{margin-top:.5mm;overflow-wrap:anywhere}
+  .zweispaltig-pdf-entry ul,.zweispaltig-pdf-sidebar ul,.zweispaltig-pdf-ats ul{margin:1.5mm 0 0;padding-left:4.5mm}
+  .zweispaltig-pdf-entry li,.zweispaltig-pdf-sidebar li,.zweispaltig-pdf-ats li{margin:.5mm 0;padding-left:.3mm;hyphens:auto;overflow-wrap:break-word}
+  .zweispaltig-pdf-entry li::marker,.zweispaltig-pdf-sidebar li::marker,.zweispaltig-pdf-ats li::marker{color:var(--accent)}
+  .zweispaltig-pdf-sidebar .knowledge-category{margin-bottom:2.3mm}
+  .zweispaltig-pdf-sidebar .knowledge-category h4,.zweispaltig-pdf-sidebar .knowledge-subcategory h5{color:var(--zweispaltig-heading);font-size:8.4pt}
+  .zweispaltig-pdf-sidebar .knowledge-section p,.zweispaltig-pdf-sidebar .knowledge-section li{font-size:var(--body-size);line-height:var(--body-line)}
+  .zweispaltig-pdf-strengths{display:grid;gap:2.2mm}
+  .zweispaltig-pdf-strength{display:grid;grid-template-columns:4.2mm minmax(0,1fr);align-items:start;gap:1.7mm}
+  .zweispaltig-pdf-strength i{display:grid;width:3.8mm;height:3.8mm;place-items:center;border-radius:50%;color:#fff;background:var(--accent);font-size:6.8pt;font-style:normal;font-weight:800;line-height:1}
+  .zweispaltig-pdf-strength span{color:var(--zweispaltig-heading);font-size:var(--body-size);font-weight:650;line-height:1.25;overflow-wrap:anywhere}
+  .zweispaltig-pdf-footer{position:absolute;right:var(--doc-margin);bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;padding-top:1.4mm;border-top:.25mm solid var(--zweispaltig-divider);color:var(--zweispaltig-muted);font-size:7pt}
+  .zweispaltig-pdf-footer a{color:var(--accent);text-decoration:none;overflow-wrap:anywhere}
+  .zweispaltig-pdf-footer span:last-child{margin-left:auto}
+  .zweispaltig-pdf-ats{--zweispaltig-heading:#263641;--zweispaltig-text:#303c44;--zweispaltig-muted:#6b7782;--zweispaltig-divider:#c8d0d6;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--zweispaltig-text);background:#fff}
+  .zweispaltig-pdf-ats .zweispaltig-pdf-header{display:block}
+  .zweispaltig-pdf-ats .zweispaltig-pdf-contacts{display:block}
+  .zweispaltig-pdf-ats .zweispaltig-pdf-contacts a,.zweispaltig-pdf-ats .zweispaltig-pdf-contacts span{display:block;margin-top:.7mm}
+  .zweispaltig-pdf-ats .zweispaltig-pdf-contacts strong{margin-right:1.3mm}
+  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-head{display:block}
+  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta{margin-top:.7mm;text-align:left}
+  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta strong,.zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta span{display:inline}
+  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta span:before{content:" · "}
+  .zweispaltig-pdf-ats .zweispaltig-pdf-section>h3,.zweispaltig-pdf-ats section>h3,.zweispaltig-pdf-ats .knowledge-section>h3{border-bottom-color:var(--zweispaltig-divider)}
+`;
+
+const zeitgenoessischDocumentCss = `
+  .zeit-pdf{--zeit-dark:#075e4e;--zeit-soft:#cbeccd;--zeit-pale:#e5f5ec;--zeit-heading:#374247;--zeit-text:#434d52;--zeit-muted:#687277;--zeit-divider:#d5deda;position:relative;width:100%;height:100%;padding:max(15mm,calc(var(--doc-margin) - 2mm)) var(--doc-margin) max(14mm,calc(var(--doc-margin) - 3mm));overflow:hidden;color:var(--zeit-text);background:#fff;font-family:var(--body-font)}
+  .zeit-pdf *{box-sizing:border-box}
+  .zeit-pdf-header{display:grid;grid-template-columns:minmax(0,28.4%) minmax(0,6.25%) minmax(0,65.35%);min-height:42mm;margin-bottom:5.5mm}
+  .zeit-pdf-identity{grid-column:3;min-width:0;padding-top:4mm}
+  .zeit-pdf-identity h1{margin:0;color:var(--zeit-heading);font-size:25pt;font-weight:350;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}
+  .zeit-pdf-identity h2{display:inline-block;max-width:100%;margin:4mm 0 0;padding:2.6mm 4mm;border-radius:3.8mm;color:var(--zeit-dark);background:var(--zeit-soft);font-size:12.5pt;font-weight:600;letter-spacing:.045em;line-height:1.15;text-transform:uppercase;overflow-wrap:anywhere}
+  .zeit-pdf-photo-composition{position:relative;grid-column:1;width:50mm;max-width:100%;height:42mm}
+  .zeit-pdf-photo-composition span{position:absolute;display:block}
+  .zeit-pdf-photo-pale{top:1mm;left:0;width:42mm;height:39mm;border-radius:48% 52% 45% 55%/57% 40% 60% 43%;background:var(--zeit-pale);transform:rotate(-13deg)}
+  .zeit-pdf-photo-soft{top:-2mm;right:0;width:31mm;height:30mm;border-radius:58% 42% 62% 38%/44% 62% 38% 56%;background:color-mix(in srgb,var(--zeit-soft),var(--accent) 15%);transform:rotate(17deg)}
+  .zeit-pdf-photo-accent{right:2mm;bottom:0;width:24mm;height:23mm;border-radius:54% 46% 44% 56%/41% 55% 45% 59%;background:var(--accent);opacity:.92;transform:rotate(-11deg)}
+  .zeit-pdf-photo{position:absolute;top:3mm;left:5mm;z-index:2;display:block;width:36mm;height:36mm;border:1.8mm solid #fff;border-radius:50%;object-fit:cover}
+  .zeit-pdf-header.no-photo{min-height:29mm}.zeit-pdf-header.no-photo .zeit-pdf-identity{grid-column:1/-1;padding-top:0}
+  .zeit-pdf-header.compact{display:block;min-height:auto;margin-bottom:5mm;padding-bottom:3mm;border-bottom:.35mm solid var(--zeit-divider)}
+  .zeit-pdf-header.compact .zeit-pdf-identity{padding:0}.zeit-pdf-header.compact .kicker{margin:0 0 1.5mm;color:var(--zeit-dark);font-size:7.3pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+  .zeit-pdf-header.compact h1{font-size:15pt;font-weight:600}.zeit-pdf-header.compact h2{margin:0 0 0 3mm;padding:0;color:var(--zeit-muted);background:transparent;font-size:8.5pt}
+  .zeit-pdf-columns{position:relative;display:grid;grid-template-columns:minmax(0,28.4%) minmax(0,6.25%) minmax(0,65.35%)}
+  .zeit-pdf-columns:before{position:absolute;top:0;bottom:0;left:31.525%;width:.3mm;background:color-mix(in srgb,var(--accent),transparent 64%);content:""}
+  .zeit-pdf-columns.continuation{display:block}.zeit-pdf-columns.continuation:before{display:none}
+  .zeit-pdf-left{grid-column:1;min-width:0}.zeit-pdf-main{grid-column:3;min-width:0}
+  .zeit-pdf-section,.zeit-pdf-left>section{margin-top:var(--section-gap);break-inside:avoid;page-break-inside:avoid}
+  .zeit-pdf-left>section:first-child,.zeit-pdf-main>.zeit-pdf-section:first-child{margin-top:0}
+  .zeit-pdf-heading{display:flex;align-items:center;gap:2mm;margin:0 0 3mm;padding-bottom:1.4mm;border-bottom:.45mm solid var(--accent)}
+  .zeit-pdf-heading i{display:grid;flex:none;width:6.5mm;height:6.5mm;place-items:center;border-radius:1.5mm;color:var(--zeit-dark);background:var(--zeit-soft);font-size:8pt;font-style:normal;font-weight:700}
+  .zeit-pdf-heading h3{margin:0;color:var(--zeit-dark);font-size:11pt;font-weight:750;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}
+  .zeit-pdf-summary{margin:0;color:var(--zeit-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}
+  .zeit-pdf-contacts{display:grid;gap:2.3mm}
+  .zeit-pdf-contact{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;min-width:0;color:inherit;font-size:var(--body-size);line-height:1.25;text-decoration:none}
+  .zeit-pdf-contact i{color:var(--zeit-dark);font-size:7.2pt;font-style:normal;font-weight:750;text-align:center}.zeit-pdf-contact span{overflow-wrap:anywhere}
+  .zeit-pdf-strengths{display:grid;gap:2.5mm}.zeit-pdf-strength{display:grid;grid-template-columns:3.5mm minmax(0,1fr);gap:1.5mm;align-items:start}
+  .zeit-pdf-strength i{width:2mm;height:2mm;margin-top:1.2mm;border-radius:50%;background:var(--accent)}.zeit-pdf-strength span{color:var(--zeit-heading);font-size:9pt;font-weight:700;line-height:1.2;overflow-wrap:anywhere}
+  .zeit-pdf-languages{display:grid;gap:3mm}.zeit-pdf-language h4{margin:0;color:var(--zeit-dark);font-size:8.8pt;font-weight:750;text-transform:uppercase}.zeit-pdf-language>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2mm;margin-top:1mm;color:var(--zeit-muted);font-size:7.8pt}
+  .zeit-pdf-dots{display:flex;gap:.7mm}.zeit-pdf-dots i{display:block;width:1.35mm;height:1.35mm;border:.25mm solid var(--zeit-muted);border-radius:50%}.zeit-pdf-dots i.filled{border-color:var(--zeit-dark);background:var(--zeit-dark)}
+  .zeit-pdf-list{display:flex;flex-direction:column;gap:5mm}.zeit-pdf-entry{break-inside:avoid;page-break-inside:avoid}
+  .zeit-pdf-entry-top,.zeit-pdf-entry-role{display:grid;grid-template-columns:minmax(0,1fr) minmax(25mm,35mm);gap:5mm;align-items:start}
+  .zeit-pdf-entry-top h4,.zeit-pdf-entry-role h5{margin:0;overflow-wrap:anywhere}.zeit-pdf-entry-top h4{color:var(--zeit-dark);font-size:10.5pt;font-weight:750;line-height:1.2;text-transform:uppercase}
+  .zeit-pdf-entry-top span,.zeit-pdf-entry-role span{color:var(--zeit-muted);font-size:7.8pt;line-height:1.2;text-align:right;overflow-wrap:anywhere}
+  .zeit-pdf-entry-role{margin-top:.8mm}.zeit-pdf-entry-role h5{color:var(--zeit-heading);font-size:9.2pt;font-weight:600;line-height:1.2}
+  .zeit-pdf-entry ul,.zeit-pdf-left ul,.zeit-pdf-ats ul{margin:1.5mm 0 0;padding-left:4.5mm}.zeit-pdf-entry li,.zeit-pdf-left li,.zeit-pdf-ats li{margin:.5mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.zeit-pdf-entry li::marker,.zeit-pdf-left li::marker,.zeit-pdf-ats li::marker{color:var(--accent)}
+  .zeit-pdf-footer{position:absolute;right:var(--doc-margin);bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;color:var(--zeit-muted);font-size:7.2pt}.zeit-pdf-footer a{color:var(--zeit-dark);text-decoration:none}.zeit-pdf-footer span:last-child{margin-left:auto}
+  .zeit-pdf-ats{--zeit-dark:#075e4e;--zeit-heading:#263a35;--zeit-text:#303c39;--zeit-muted:#687277;--zeit-divider:#ccd6d2;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--zeit-text);background:#fff}
+  .zeit-pdf-ats .zeit-pdf-header{display:block;min-height:auto;margin:0;padding-bottom:4mm;border-bottom:.35mm solid var(--zeit-divider)}.zeit-pdf-ats .zeit-pdf-identity{padding:0}.zeit-pdf-ats .zeit-pdf-identity h1{font-size:20pt;font-weight:600}.zeit-pdf-ats .zeit-pdf-identity h2{margin:1.5mm 0 0;padding:0;background:transparent;font-size:10pt}
+  .zeit-pdf-ats-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 5mm;margin-top:3mm;font-size:7.8pt;font-style:normal}.zeit-pdf-ats-contacts a,.zeit-pdf-ats-contacts span{color:inherit;text-decoration:none;overflow-wrap:anywhere}
+  .zeit-pdf-ats .zeit-pdf-heading i{display:none}.zeit-pdf-ats .zeit-pdf-heading{gap:0;border-bottom-color:var(--zeit-divider)}
+  .zeit-pdf-ats>section,.zeit-pdf-ats .knowledge-section{margin-top:var(--section-gap)}.zeit-pdf-ats>section>h3,.zeit-pdf-ats .knowledge-section>h3{margin:0 0 3mm;padding-bottom:1.4mm;border-bottom:.45mm solid var(--zeit-divider);color:var(--zeit-dark);font-size:11pt;font-weight:750;text-transform:uppercase}
+`;
+
+const kreativDocumentCss = `
+  .kreativ-pdf{--kreativ-dark:#075d4e;--kreativ-text:#465156;--kreativ-muted:#687277;--kreativ-divider:#b8c4c0;--kreativ-light:#d7dfdc;--kreativ-inactive:#e1e5e3;--kreativ-margin:calc(var(--doc-margin) + 1mm);position:relative;width:100%;height:100%;overflow:hidden;color:var(--kreativ-text);background:#fff;font-family:var(--body-font)}
+  .kreativ-pdf *{box-sizing:border-box}
+  .kreativ-pdf-header{position:relative;z-index:3;display:grid;grid-template-columns:minmax(0,1fr) 28mm;align-items:center;gap:10mm;width:100%;height:46mm;padding:8mm var(--kreativ-margin) 6mm;color:#fff;background:var(--accent)}
+  .kreativ-pdf-identity{min-width:0}.kreativ-pdf-identity h1{margin:0;color:inherit;font-size:23pt;font-weight:750;letter-spacing:.015em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.kreativ-pdf-identity h2{margin:1.5mm 0 0;color:inherit;font-size:11.5pt;font-weight:650;line-height:1.15;overflow-wrap:anywhere}
+  .kreativ-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 8mm;max-width:118mm;margin:2.5mm 0 0;font-size:7.4pt;font-style:normal;line-height:1.15}.kreativ-pdf-contacts a,.kreativ-pdf-contacts span{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:1.2mm;min-width:0;color:inherit;text-decoration:none}.kreativ-pdf-contacts i{font-style:normal;overflow-wrap:anywhere}
+  .kreativ-pdf-photo{display:block;width:28mm;height:29mm;overflow:hidden;border:1.8mm solid rgba(255,255,255,.88);border-radius:1.8mm;background:rgba(255,255,255,.18);object-fit:cover}
+  .kreativ-pdf-header.no-photo{grid-template-columns:minmax(0,1fr)}
+  .kreativ-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1.5mm 4mm;height:auto;min-height:24mm;padding:12mm var(--kreativ-margin) 4mm;color:var(--kreativ-dark);background:#fff;border-bottom:.4mm solid var(--kreativ-divider)}
+  .kreativ-pdf-header.compact .kreativ-pdf-identity{display:contents}.kreativ-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--accent);font-size:7.3pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}.kreativ-pdf-header.compact h1{font-size:15pt}.kreativ-pdf-header.compact h2{margin:0;color:var(--kreativ-muted);font-size:8.7pt}
+  .kreativ-pdf-background{position:absolute;top:49mm;right:-13mm;z-index:1;width:78mm;height:78mm;fill:none;stroke:color-mix(in srgb,var(--accent),transparent 83%);stroke-width:1.2;pointer-events:none}
+  .kreativ-pdf-content{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,58.333%) minmax(0,6.111%) minmax(0,35.556%);align-items:start;padding:8mm var(--kreativ-margin) max(13mm,calc(var(--kreativ-margin) - 2mm))}
+  .kreativ-pdf-content.continuation{display:block;padding-top:7mm}.kreativ-pdf-left{grid-column:1;min-width:0}.kreativ-pdf-right{position:relative;grid-column:3;min-width:0}.kreativ-pdf-right:before{position:absolute;top:0;bottom:0;left:-5.5mm;width:.3mm;background:var(--kreativ-divider);content:""}
+  .kreativ-pdf-section,.kreativ-pdf-right>section{margin:0 0 var(--section-gap);break-inside:avoid;page-break-inside:avoid}
+  .kreativ-pdf-title,.kreativ-pdf-right section>h3,.kreativ-pdf-ats>section>h3,.kreativ-pdf-ats .knowledge-section>h3{margin:0 0 3.5mm;padding-bottom:1.2mm;border-bottom:.65mm solid var(--kreativ-dark);color:var(--kreativ-dark);font-size:11pt;font-weight:750;letter-spacing:.025em;line-height:1;text-transform:uppercase}
+  .kreativ-pdf-summary{margin:0;color:var(--kreativ-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}
+  .kreativ-pdf-list{display:flex;flex-direction:column;gap:4.5mm}.kreativ-pdf-entry{padding-bottom:3mm;border-bottom:.25mm dashed var(--kreativ-light);break-inside:avoid;page-break-inside:avoid}.kreativ-pdf-entry:last-child{padding-bottom:0;border-bottom:0}
+  .kreativ-pdf-entry h4,.kreativ-pdf-entry h5{margin:0;overflow-wrap:anywhere}.kreativ-pdf-entry h4{color:var(--kreativ-dark);font-size:11pt;font-weight:600;line-height:1.15}.kreativ-pdf-entry h5{margin-top:1mm;color:var(--accent);font-size:9.5pt;font-weight:750;line-height:1.2}
+  .kreativ-pdf-entry-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm;color:var(--kreativ-muted);font-size:7.8pt;line-height:1.2}.kreativ-pdf-entry-meta span+span:before{margin-right:1.5mm;color:var(--accent);content:"·"}
+  .kreativ-pdf-entry ul,.kreativ-pdf-right ul,.kreativ-pdf-ats ul{margin:0;padding-left:4.5mm}.kreativ-pdf-entry li,.kreativ-pdf-right li,.kreativ-pdf-ats li{margin:.5mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.kreativ-pdf-entry li::marker,.kreativ-pdf-right li::marker,.kreativ-pdf-ats li::marker{color:var(--accent)}
+  .kreativ-pdf-strengths{display:grid}.kreativ-pdf-strength{display:grid;grid-template-columns:6mm minmax(0,1fr);gap:2mm;margin-bottom:3mm;padding-bottom:3mm;border-bottom:.25mm dashed var(--kreativ-light)}.kreativ-pdf-strength:last-child{margin:0;padding:0;border:0}.kreativ-pdf-strength i{color:var(--accent);font-size:11pt;font-style:normal}.kreativ-pdf-strength span{color:var(--kreativ-dark);font-size:9.4pt;font-weight:750;line-height:1.2;overflow-wrap:anywhere}
+  .kreativ-pdf-languages{display:grid;gap:3mm}.kreativ-pdf-language h4{margin:0;color:var(--kreativ-dark);font-size:8.8pt;font-weight:750;text-transform:uppercase}.kreativ-pdf-language>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2mm;margin-top:1mm;color:var(--kreativ-muted);font-size:7.6pt}.kreativ-pdf-dots{display:flex;gap:.8mm}.kreativ-pdf-dots i{display:block;width:1.6mm;height:1.6mm;border-radius:50%;background:var(--kreativ-inactive)}.kreativ-pdf-dots i.filled{background:var(--accent)}
+  .kreativ-pdf-skills{display:flex;flex-wrap:wrap;gap:2.5mm 4mm}.kreativ-pdf-skill{max-width:100%;padding:0 1.5mm 1.2mm;border-bottom:.3mm solid var(--kreativ-divider);color:var(--kreativ-text);font-size:8.4pt;font-weight:700;overflow-wrap:anywhere}
+  .kreativ-pdf-footer{position:absolute;right:var(--kreativ-margin);bottom:6mm;left:var(--kreativ-margin);z-index:3;display:flex;justify-content:space-between;gap:6mm;color:var(--kreativ-muted);font-size:7.2pt}.kreativ-pdf-footer a{color:var(--kreativ-dark);text-decoration:none}.kreativ-pdf-footer span:last-child{margin-left:auto}
+  .kreativ-pdf-ats{--kreativ-dark:#173b33;--kreativ-text:#303d3a;--kreativ-muted:#687277;--kreativ-divider:#b8c4c0;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--kreativ-text);background:#fff}
+  .kreativ-pdf-ats .kreativ-pdf-header{display:block;height:auto;min-height:auto;padding:0 0 4mm;color:var(--kreativ-dark);background:#fff;border-bottom:.4mm solid var(--kreativ-divider)}.kreativ-pdf-ats .kreativ-pdf-identity h1{font-size:20pt}.kreativ-pdf-ats .kreativ-pdf-identity h2{font-size:10pt}.kreativ-pdf-ats .kreativ-pdf-contacts{color:var(--kreativ-text)}
+  .kreativ-pdf-ats>section,.kreativ-pdf-ats .knowledge-section{margin-top:var(--section-gap)}.kreativ-pdf-ats .knowledge-category h4,.kreativ-pdf-ats .knowledge-subcategory h5{color:var(--kreativ-dark)}
+`;
+
 const pageFitScript = `
   <script>
     (() => {
       const fit = (page) => {
         const content = page.querySelector(".page-content");
         if (!content) return;
+        if (page.dataset.noFit === "true") {
+          content.dataset.fitScale = "1.000";
+          return;
+        }
         content.style.transform = "";
         content.style.width = "100%";
         const heightRatio = page.clientHeight / Math.max(content.scrollHeight, 1);
@@ -398,6 +618,9 @@ export const buildDocumentHtml = (
   const resumePlan = createResumePagePlan(
     paginatedProfile,
     docs.resumeProfile,
+    template.id === "zweispaltig"
+      ? zweispaltigPaginationOptions
+      : undefined,
   );
 
   const renderExperience = (id: string) => {
@@ -423,6 +646,1040 @@ export const buildDocumentHtml = (
           <small>${escapeHtml(item.from)} – ${escapeHtml(item.to)}${item.city ? `<br>${escapeHtml(item.city)}` : ""}</small>
         </div>
       </article>`;
+  };
+
+  const elegantContactMarkup = () => {
+    if (!profile) return "";
+    const location = [
+      profile.postalCode,
+      profile.city,
+      profile.country,
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const contacts = [
+      {
+        label: "Telefon",
+        value: profile.phone,
+        href: profile.phone
+          ? `tel:${profile.phone.replace(/[^\d+]/g, "")}`
+          : "",
+      },
+      {
+        label: "E-Mail",
+        value: profile.email,
+        href: profile.email ? `mailto:${profile.email}` : "",
+      },
+      {
+        label: "LinkedIn",
+        value: profile.linkedin,
+        href: externalHref(profile.linkedin),
+      },
+      {
+        label: "GitHub",
+        value: profile.github,
+        href: externalHref(profile.github),
+      },
+      {
+        label: "Portfolio",
+        value: profile.portfolio,
+        href: externalHref(profile.portfolio),
+      },
+      { label: "Ort", value: location, href: "" },
+    ].filter((contact) => contact.value?.trim());
+
+    if (!contacts.length) return "";
+    return `<address class="elegant-pdf-contacts">${contacts
+      .map((contact) => {
+        const content = `<strong>${escapeHtml(contact.label)}</strong><i>${escapeHtml(contact.value)}</i>`;
+        return contact.href
+          ? `<a href="${escapeHtml(contact.href)}">${content}</a>`
+          : `<span>${content}</span>`;
+      })
+      .join("")}</address>`;
+  };
+
+  const renderElegantHeader = (compact: boolean) => `
+    <header class="elegant-pdf-header${compact ? " elegant-pdf-header-compact" : ""}">
+      <p class="kicker">${compact ? "Lebenslauf · Fortsetzung" : "Lebenslauf"}</p>
+      <h1>${escapeHtml(name)}</h1>
+      ${profile?.title || role ? `<h2>${escapeHtml(profile?.title || role)}</h2>` : ""}
+      ${compact ? "" : elegantContactMarkup()}
+    </header>`;
+
+  const renderElegantCareerEntry = (
+    id: string,
+    kind: "experience" | "education",
+  ) => {
+    const item =
+      kind === "experience"
+        ? (() => {
+            const experience = experienceById.get(id);
+            return experience
+              ? {
+                  from: experience.from,
+                  to: experience.to,
+                  title: experience.role,
+                  organization: experience.company,
+                  city: experience.city,
+                  achievements: experience.achievements.filter(Boolean),
+                }
+              : undefined;
+          })()
+        : (() => {
+            const education = educationById.get(id);
+            return education
+              ? {
+                  from: education.from,
+                  to: education.to,
+                  title: education.degree,
+                  organization: education.institution,
+                  city: education.city,
+                  achievements: [] as string[],
+                }
+              : undefined;
+          })();
+    if (!item) return "";
+    return `
+      <article class="elegant-pdf-entry">
+        <div class="elegant-pdf-entry-head">
+          <div>
+            <h4>${escapeHtml(item.title)}</h4>
+            <p>${escapeHtml(item.organization)}</p>
+          </div>
+          <div class="elegant-pdf-entry-meta">
+            <strong>${escapeHtml(formatDateRange(item.from, item.to))}</strong>
+            ${item.city ? `<span>${escapeHtml(item.city)}</span>` : ""}
+          </div>
+        </div>
+        ${
+          item.achievements.length
+            ? `<ul>${item.achievements
+                .map(
+                  (achievement) =>
+                    `<li>${escapeHtml(achievement)}</li>`,
+                )
+                .join("")}</ul>`
+            : ""
+        }
+      </article>`;
+  };
+
+  const strengths = uniqueValues(profile?.skills ?? []).slice(0, 3);
+  const visualStrengthSection = strengths.length
+    ? `<section><h3>Stärken</h3><div class="elegant-pdf-strengths">${strengths
+        .map(
+          (strength) =>
+            `<div class="elegant-pdf-strength"><i aria-hidden="true">✓</i><span>${escapeHtml(strength)}</span></div>`,
+        )
+        .join("")}</div></section>`
+    : "";
+  const atsStrengthSection = strengths.length
+    ? `<section class="elegant-pdf-section"><h3>Stärken</h3><ul>${strengths
+        .map((strength) => `<li>${escapeHtml(strength)}</li>`)
+        .join("")}</ul></section>`
+    : "";
+  const elegantPortfolio =
+    profile?.portfolio || profile?.github || profile?.linkedin || "";
+
+  const renderElegantResumePage = (plan: ResumePagePlan) => {
+    const experienceItems = plan.items
+      .filter((item) => item.kind === "experience")
+      .map((item) => renderElegantCareerEntry(item.id, "experience"))
+      .join("");
+    const educationItems = plan.items
+      .filter((item) => item.kind === "education")
+      .map((item) => renderElegantCareerEntry(item.id, "education"))
+      .join("");
+    const isContinuation = plan.pageNumber > 1;
+    const isLastPage = plan.pageNumber === resumePlan.length;
+    const careerMarkup = `
+      ${
+        experienceItems
+          ? `<section class="elegant-pdf-section"><h3>Berufserfahrung${isContinuation ? " · Fortsetzung" : ""}</h3><div class="elegant-pdf-list">${experienceItems}</div></section>`
+          : ""
+      }
+      ${
+        educationItems
+          ? `<section class="elegant-pdf-section"><h3>Ausbildung</h3><div class="elegant-pdf-list">${educationItems}</div></section>`
+          : ""
+      }`;
+
+    if (atsMode) {
+      const atsSummary =
+        sections.profile && !isContinuation
+          ? `<section class="elegant-pdf-section"><h3>Zusammenfassung</h3><p>${escapeHtml(docs.resumeProfile || profile?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>`
+          : "";
+      return `
+        <section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="elegant" data-no-fit="true">
+          <div class="page-content elegant-pdf-ats">
+            ${renderElegantHeader(isContinuation)}
+            ${atsSummary}
+            ${careerMarkup}
+            ${isLastPage ? `${skillSection}${languageSection}${atsStrengthSection}${certificationSection}` : ""}
+            <span class="page-number">${plan.pageNumber} / ${resumePlan.length}</span>
+          </div>
+        </section>`;
+    }
+
+    const continuationLink = elegantPortfolio
+      ? `<a href="${escapeHtml(externalHref(elegantPortfolio))}">${escapeHtml(elegantPortfolio)}</a>`
+      : "";
+    const sidebarMarkup = isContinuation
+      ? `<aside class="elegant-pdf-sidebar elegant-pdf-continuation">
+          <p class="kicker">Lebenslauf</p>
+          <h2>${escapeHtml(name)}</h2>
+          ${profile?.title ? `<p>${escapeHtml(profile.title)}</p>` : ""}
+          <hr>
+          <p>Fortsetzung · Seite ${plan.pageNumber} von ${resumePlan.length}</p>
+          ${profile?.email ? `<a href="mailto:${escapeHtml(profile.email)}">${escapeHtml(profile.email)}</a>` : ""}
+          ${profile?.phone ? `<a href="tel:${escapeHtml(profile.phone.replace(/[^\d+]/g, ""))}">${escapeHtml(profile.phone)}</a>` : ""}
+          ${continuationLink}
+        </aside>`
+      : `<aside class="elegant-pdf-sidebar">
+          ${photoSource ? `<img class="elegant-pdf-photo" src="${escapeHtml(photoSource)}" alt="">` : ""}
+          ${summarySection}
+          ${visualStrengthSection}
+          ${skillSection}
+          ${languageSection}
+          ${certificationSection}
+        </aside>`;
+    const footerLink = elegantPortfolio
+      ? `<a href="${escapeHtml(externalHref(elegantPortfolio))}">${escapeHtml(elegantPortfolio)}</a>`
+      : "<span></span>";
+
+    return `
+      <section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="elegant" data-no-fit="true">
+        <div class="page-content elegant-pdf">
+          <main class="elegant-pdf-main">
+            ${renderElegantHeader(isContinuation)}
+            ${careerMarkup}
+            ${
+              !experienceItems && !educationItems && plan.pageNumber === 1
+                ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>"
+                : ""
+            }
+            <footer class="elegant-pdf-footer">${footerLink}<span>Seite ${plan.pageNumber} von ${resumePlan.length}</span></footer>
+          </main>
+          ${sidebarMarkup}
+        </div>
+      </section>`;
+  };
+
+  const zweispaltigContactMarkup = () => {
+    if (!profile) return "";
+    const location = [
+      profile.postalCode,
+      profile.city,
+      profile.country,
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const birth = [profile.birthDate, profile.birthPlace]
+      .filter(Boolean)
+      .join(", ");
+    const contacts = [
+      {
+        label: "Telefon",
+        value: profile.phone,
+        href: profile.phone
+          ? `tel:${profile.phone.replace(/[^\d+]/g, "")}`
+          : "",
+      },
+      {
+        label: "E-Mail",
+        value: profile.email,
+        href: profile.email ? `mailto:${profile.email}` : "",
+      },
+      { label: "Wohnort", value: location, href: "" },
+      {
+        label: "LinkedIn",
+        value: profile.linkedin,
+        href: externalHref(profile.linkedin),
+      },
+      {
+        label: "GitHub",
+        value: profile.github,
+        href: externalHref(profile.github),
+      },
+      {
+        label: "Portfolio",
+        value: profile.portfolio,
+        href: externalHref(profile.portfolio),
+      },
+      { label: "Geboren", value: birth, href: "" },
+    ].filter((contact) => contact.value?.trim());
+
+    if (!contacts.length) return "";
+    return `<address class="zweispaltig-pdf-contacts">${contacts
+      .map((contact) => {
+        const content = `<strong>${escapeHtml(contact.label)}</strong><i>${escapeHtml(contact.value)}</i>`;
+        return contact.href
+          ? `<a href="${escapeHtml(contact.href)}">${content}</a>`
+          : `<span>${content}</span>`;
+      })
+      .join("")}</address>`;
+  };
+
+  const renderZweispaltigHeader = (
+    compact: boolean,
+    showPhoto: boolean,
+  ) => {
+    const specializations = uniqueValues(profile?.skills ?? []).slice(0, 3);
+    return `
+      <header class="zweispaltig-pdf-header${compact ? " compact" : ""}">
+        <div>
+          ${compact ? '<p class="kicker">Lebenslauf · Fortsetzung</p>' : ""}
+          <h1>${escapeHtml(name)}</h1>
+          ${profile?.title || role ? `<h2>${escapeHtml(profile?.title || role)}</h2>` : ""}
+          ${
+            !compact && specializations.length
+              ? `<p class="zweispaltig-pdf-specializations">${specializations
+                  .map(escapeHtml)
+                  .join(" | ")}</p>`
+              : ""
+          }
+          ${compact ? "" : zweispaltigContactMarkup()}
+        </div>
+        ${
+          showPhoto && photoSource
+            ? `<img class="zweispaltig-pdf-photo" src="${escapeHtml(photoSource)}" alt="">`
+            : ""
+        }
+      </header>`;
+  };
+
+  const renderZweispaltigCareerEntry = (
+    id: string,
+    kind: "experience" | "education",
+  ) => {
+    const item =
+      kind === "experience"
+        ? (() => {
+            const experience = experienceById.get(id);
+            return experience
+              ? {
+                  from: experience.from,
+                  to: experience.to,
+                  title: experience.role,
+                  organization: experience.company,
+                  city: experience.city,
+                  achievements: experience.achievements.filter(Boolean),
+                }
+              : undefined;
+          })()
+        : (() => {
+            const education = educationById.get(id);
+            return education
+              ? {
+                  from: education.from,
+                  to: education.to,
+                  title: education.degree,
+                  organization: education.institution,
+                  city: education.city,
+                  achievements: [] as string[],
+                }
+              : undefined;
+          })();
+    if (!item) return "";
+    return `
+      <article class="zweispaltig-pdf-entry">
+        <div class="zweispaltig-pdf-entry-head">
+          <div>
+            <h4>${escapeHtml(item.title)}</h4>
+            <p>${escapeHtml(item.organization)}</p>
+          </div>
+          <div class="zweispaltig-pdf-entry-meta">
+            <strong>${escapeHtml(formatDateRange(item.from, item.to))}</strong>
+            ${item.city ? `<span>${escapeHtml(item.city)}</span>` : ""}
+          </div>
+        </div>
+        ${
+          item.achievements.length
+            ? `<ul>${item.achievements
+                .map(
+                  (achievement) =>
+                    `<li>${escapeHtml(achievement)}</li>`,
+                )
+                .join("")}</ul>`
+            : ""
+        }
+      </article>`;
+  };
+
+  const zweispaltigVisualStrengthSection = strengths.length
+    ? `<section><h3>Stärken</h3><div class="zweispaltig-pdf-strengths">${strengths
+        .map(
+          (strength) =>
+            `<div class="zweispaltig-pdf-strength"><i aria-hidden="true">✓</i><span>${escapeHtml(strength)}</span></div>`,
+        )
+        .join("")}</div></section>`
+    : "";
+  const zweispaltigAtsStrengthSection = strengths.length
+    ? `<section class="zweispaltig-pdf-section"><h3>Stärken</h3><ul>${strengths
+        .map((strength) => `<li>${escapeHtml(strength)}</li>`)
+        .join("")}</ul></section>`
+    : "";
+  const zweispaltigPortfolio =
+    profile?.portfolio || profile?.github || profile?.linkedin || "";
+
+  const renderZweispaltigResumePage = (plan: ResumePagePlan) => {
+    const experienceItems = plan.items
+      .filter((item) => item.kind === "experience")
+      .map((item) =>
+        renderZweispaltigCareerEntry(item.id, "experience"),
+      )
+      .join("");
+    const educationItems = plan.items
+      .filter((item) => item.kind === "education")
+      .map((item) =>
+        renderZweispaltigCareerEntry(item.id, "education"),
+      )
+      .join("");
+    const isContinuation = plan.pageNumber > 1;
+    const isLastPage = plan.pageNumber === resumePlan.length;
+    const careerMarkup = `
+      ${
+        experienceItems
+          ? `<section class="zweispaltig-pdf-section"><h3>Berufserfahrung${isContinuation ? " · Fortsetzung" : ""}</h3><div class="zweispaltig-pdf-list">${experienceItems}</div></section>`
+          : ""
+      }
+      ${
+        educationItems
+          ? `<section class="zweispaltig-pdf-section"><h3>Ausbildung</h3><div class="zweispaltig-pdf-list">${educationItems}</div></section>`
+          : ""
+      }`;
+
+    if (atsMode) {
+      const atsSummary =
+        sections.profile && !isContinuation
+          ? `<section class="zweispaltig-pdf-section"><h3>Berufliches Profil</h3><p class="zweispaltig-pdf-summary">${escapeHtml(docs.resumeProfile || profile?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>`
+          : "";
+      return `
+        <section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="zweispaltig" data-no-fit="true">
+          <div class="page-content zweispaltig-pdf zweispaltig-pdf-ats">
+            ${renderZweispaltigHeader(isContinuation, false)}
+            ${atsSummary}
+            ${careerMarkup}
+            ${isLastPage ? `${skillSection}${languageSection}${zweispaltigAtsStrengthSection}${certificationSection}` : ""}
+            <span class="page-number">${plan.pageNumber} / ${resumePlan.length}</span>
+          </div>
+        </section>`;
+    }
+
+    const summaryMarkup =
+      sections.profile && !isContinuation
+        ? `<section class="zweispaltig-pdf-section"><h3>Zusammenfassung</h3><p class="zweispaltig-pdf-summary">${escapeHtml(docs.resumeProfile || profile?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>`
+        : "";
+    const sidebarMarkup = isContinuation
+      ? ""
+      : `<aside class="zweispaltig-pdf-sidebar">
+          ${zweispaltigVisualStrengthSection}
+          ${skillSection}
+          ${languageSection}
+          ${certificationSection}
+        </aside>`;
+    const footerLink = zweispaltigPortfolio
+      ? `<a href="${escapeHtml(externalHref(zweispaltigPortfolio))}">${escapeHtml(zweispaltigPortfolio)}</a>`
+      : "<span></span>";
+
+    return `
+      <section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="zweispaltig" data-no-fit="true">
+        <div class="page-content zweispaltig-pdf">
+          ${renderZweispaltigHeader(isContinuation, !isContinuation)}
+          <div class="zweispaltig-pdf-columns${isContinuation ? " continuation" : ""}">
+            <main class="zweispaltig-pdf-main">
+              ${summaryMarkup}
+              ${careerMarkup}
+              ${
+                !experienceItems &&
+                !educationItems &&
+                plan.pageNumber === 1
+                  ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>"
+                  : ""
+              }
+            </main>
+            ${sidebarMarkup}
+          </div>
+          <footer class="zweispaltig-pdf-footer">${footerLink}<span>Seite ${plan.pageNumber} von ${resumePlan.length}</span></footer>
+        </div>
+      </section>`;
+  };
+
+  const zeitHeading = (title: string, symbol: string) =>
+    `<header class="zeit-pdf-heading"><i aria-hidden="true">${escapeHtml(symbol)}</i><h3>${escapeHtml(title)}</h3></header>`;
+
+  const zeitContacts = [
+    {
+      label: "Telefon",
+      symbol: "T",
+      value: profile?.phone,
+      href: profile?.phone
+        ? `tel:${profile.phone.replace(/[^\d+]/g, "")}`
+        : "",
+    },
+    {
+      label: "E-Mail",
+      symbol: "@",
+      value: profile?.email,
+      href: profile?.email ? `mailto:${profile.email}` : "",
+    },
+    {
+      label: "Portfolio",
+      symbol: "W",
+      value: profile?.portfolio,
+      href: externalHref(profile?.portfolio),
+    },
+    {
+      label: "LinkedIn",
+      symbol: "in",
+      value: profile?.linkedin,
+      href: externalHref(profile?.linkedin),
+    },
+    {
+      label: "Wohnort",
+      symbol: "⌂",
+      value: [profile?.postalCode, profile?.city, profile?.country]
+        .filter(Boolean)
+        .join(" "),
+      href: "",
+    },
+    {
+      label: "GitHub",
+      symbol: "G",
+      value: profile?.github,
+      href: externalHref(profile?.github),
+    },
+  ].filter((contact) => contact.value?.trim());
+
+  const renderZeitContacts = (ats: boolean) => {
+    if (!zeitContacts.length) return "";
+    if (ats) {
+      return `<address class="zeit-pdf-ats-contacts">${zeitContacts
+        .map((contact) => {
+          const content = `<strong>${escapeHtml(contact.label)}:</strong> ${escapeHtml(contact.value)}`;
+          return contact.href
+            ? `<a href="${escapeHtml(contact.href)}">${content}</a>`
+            : `<span>${content}</span>`;
+        })
+        .join("")}</address>`;
+    }
+    return `<section>${zeitHeading("Kontakte", "@")}<div class="zeit-pdf-contacts">${zeitContacts
+      .map((contact) => {
+        const content = `<i aria-hidden="true">${escapeHtml(contact.symbol)}</i><span>${escapeHtml(contact.value)}</span>`;
+        return contact.href
+          ? `<a class="zeit-pdf-contact" href="${escapeHtml(contact.href)}">${content}</a>`
+          : `<span class="zeit-pdf-contact">${content}</span>`;
+      })
+      .join("")}</div></section>`;
+  };
+
+  const renderZeitHeader = (
+    compact: boolean,
+    ats: boolean,
+  ) => {
+    const photoMarkup =
+      !compact && !ats && photoSource
+        ? `<div class="zeit-pdf-photo-composition">
+            <span class="zeit-pdf-photo-pale"></span>
+            <span class="zeit-pdf-photo-soft"></span>
+            <span class="zeit-pdf-photo-accent"></span>
+            <img class="zeit-pdf-photo" src="${escapeHtml(photoSource)}" alt="">
+          </div>`
+        : "";
+    return `
+      <header class="zeit-pdf-header${compact ? " compact" : ""}${!photoMarkup ? " no-photo" : ""}">
+        ${photoMarkup}
+        <div class="zeit-pdf-identity">
+          ${compact ? '<p class="kicker">Lebenslauf · Fortsetzung</p>' : ""}
+          <h1>${escapeHtml(name)}</h1>
+          ${profile?.title || role ? `<h2>${escapeHtml(profile?.title || role)}</h2>` : ""}
+          ${ats && !compact ? renderZeitContacts(true) : ""}
+        </div>
+      </header>`;
+  };
+
+  const zeitLanguageScore = (level: string) => {
+    const normalized = level.toLocaleLowerCase("de-DE");
+    if (/muttersprache|native|c2/.test(normalized)) return 5;
+    if (/verhandlung|fließ|fliess|c1|b2|versiert/.test(normalized)) {
+      return 4;
+    }
+    if (/b1|gut/.test(normalized)) return 3;
+    if (/a2|grundkennt/.test(normalized)) return 2;
+    if (/a1|anfänger|anfaenger/.test(normalized)) return 1;
+    return 4;
+  };
+  const zeitLanguages = uniqueValues(profile?.languages ?? []).map(
+    (raw) => {
+      const [languageName, ...levelParts] = raw.split(/\s+[–—-]\s+/);
+      const level = levelParts.join(" – ").trim();
+      return {
+        raw,
+        name: languageName.trim() || raw,
+        level,
+        score: zeitLanguageScore(level),
+      };
+    },
+  );
+  const zeitVisualLanguages = zeitLanguages.length
+    ? `<section>${zeitHeading("Sprachen", "A")}<div class="zeit-pdf-languages">${zeitLanguages
+        .map(
+          (language) =>
+            `<article class="zeit-pdf-language"><h4>${escapeHtml(language.name)}</h4><div><span>${escapeHtml(language.level)}</span><span class="zeit-pdf-dots">${Array.from(
+              { length: 5 },
+              (_, index) =>
+                `<i class="${index < language.score ? "filled" : ""}"></i>`,
+            ).join("")}</span></div></article>`,
+        )
+        .join("")}</div></section>`
+    : "";
+  const zeitAtsLanguages = zeitLanguages.length
+    ? `<section class="zeit-pdf-section">${zeitHeading("Sprachen", "A")}<ul>${zeitLanguages
+        .map((language) => `<li>${escapeHtml(language.raw)}</li>`)
+        .join("")}</ul></section>`
+    : "";
+  const zeitVisualStrengths = strengths.length
+    ? `<section>${zeitHeading("Stärken", "◆")}<div class="zeit-pdf-strengths">${strengths
+        .map(
+          (strength) =>
+            `<div class="zeit-pdf-strength"><i aria-hidden="true"></i><span>${escapeHtml(strength)}</span></div>`,
+        )
+        .join("")}</div></section>`
+    : "";
+  const zeitAtsStrengths = strengths.length
+    ? `<section class="zeit-pdf-section">${zeitHeading("Stärken", "◆")}<ul>${strengths
+        .map((strength) => `<li>${escapeHtml(strength)}</li>`)
+        .join("")}</ul></section>`
+    : "";
+  const zeitCertifications = uniqueValues(
+    profile?.certifications ?? [],
+  );
+  const zeitVisualCertifications = zeitCertifications.length
+    ? `<section>${zeitHeading("Zertifikate", "✓")}<ul>${zeitCertifications
+        .map((item) => `<li>${escapeHtml(item)}</li>`)
+        .join("")}</ul></section>`
+    : "";
+  const zeitAtsCertifications = zeitCertifications.length
+    ? `<section class="zeit-pdf-section">${zeitHeading("Zertifikate", "✓")}<ul>${zeitCertifications
+        .map((item) => `<li>${escapeHtml(item)}</li>`)
+        .join("")}</ul></section>`
+    : "";
+
+  const renderZeitCareerEntry = (
+    id: string,
+    kind: "experience" | "education",
+  ) => {
+    const item =
+      kind === "experience"
+        ? (() => {
+            const experience = experienceById.get(id);
+            return experience
+              ? {
+                  from: experience.from,
+                  to: experience.to,
+                  title: experience.role,
+                  organization: experience.company,
+                  city: experience.city,
+                  achievements: experience.achievements.filter(Boolean),
+                }
+              : undefined;
+          })()
+        : (() => {
+            const education = educationById.get(id);
+            return education
+              ? {
+                  from: education.from,
+                  to: education.to,
+                  title: education.degree,
+                  organization: education.institution,
+                  city: education.city,
+                  achievements: [] as string[],
+                }
+              : undefined;
+          })();
+    if (!item) return "";
+    return `
+      <article class="zeit-pdf-entry">
+        <div class="zeit-pdf-entry-top">
+          <h4>${escapeHtml(item.organization)}</h4>
+          <span>${escapeHtml(item.city)}</span>
+        </div>
+        <div class="zeit-pdf-entry-role">
+          <h5>${escapeHtml(item.title)}</h5>
+          <span>${escapeHtml(formatDateRange(item.from, item.to))}</span>
+        </div>
+        ${
+          item.achievements.length
+            ? `<ul>${item.achievements
+                .map(
+                  (achievement) =>
+                    `<li>${escapeHtml(achievement)}</li>`,
+                )
+                .join("")}</ul>`
+            : ""
+        }
+      </article>`;
+  };
+
+  const zeitPortfolio =
+    profile?.portfolio || profile?.github || profile?.linkedin || "";
+
+  const renderZeitgenoessischResumePage = (plan: ResumePagePlan) => {
+    const experienceItems = plan.items
+      .filter((item) => item.kind === "experience")
+      .map((item) => renderZeitCareerEntry(item.id, "experience"))
+      .join("");
+    const educationItems = plan.items
+      .filter((item) => item.kind === "education")
+      .map((item) => renderZeitCareerEntry(item.id, "education"))
+      .join("");
+    const isContinuation = plan.pageNumber > 1;
+    const isLastPage = plan.pageNumber === resumePlan.length;
+    const experienceMarkup = experienceItems
+      ? `<section class="zeit-pdf-section">${zeitHeading(atsMode ? "Berufserfahrung" : "Erfahrung", "▣")}<div class="zeit-pdf-list">${experienceItems}</div></section>`
+      : "";
+    const educationMarkup = educationItems
+      ? `<section class="zeit-pdf-section">${zeitHeading("Ausbildung", "⌂")}<div class="zeit-pdf-list">${educationItems}</div></section>`
+      : "";
+
+    if (atsMode) {
+      const summaryMarkup =
+        sections.profile && !isContinuation
+          ? `<section class="zeit-pdf-section">${zeitHeading("Zusammenfassung", "≡")}<p class="zeit-pdf-summary">${escapeHtml(docs.resumeProfile || profile?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>`
+          : "";
+      return `
+        <section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="zeitgenoessisch" data-no-fit="true">
+          <div class="page-content zeit-pdf zeit-pdf-ats">
+            ${renderZeitHeader(isContinuation, true)}
+            ${summaryMarkup}
+            ${experienceMarkup}
+            ${educationMarkup}
+            ${
+              isLastPage
+                ? `${skillSection}${sections.languages ? zeitAtsLanguages : ""}${sections.skills ? zeitAtsStrengths : ""}${sections.certifications ? zeitAtsCertifications : ""}`
+                : ""
+            }
+            <span class="page-number">${plan.pageNumber} / ${resumePlan.length}</span>
+          </div>
+        </section>`;
+    }
+
+    const summaryMarkup =
+      sections.profile && !isContinuation
+        ? `<section class="zeit-pdf-section">${zeitHeading("Zusammenfassung", "≡")}<p class="zeit-pdf-summary">${escapeHtml(docs.resumeProfile || profile?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>`
+        : "";
+    const leftMarkup = isContinuation
+      ? ""
+      : `<aside class="zeit-pdf-left">
+          ${renderZeitContacts(false)}
+          ${sections.skills ? zeitVisualStrengths : ""}
+          ${sections.languages ? zeitVisualLanguages : ""}
+          ${sections.certifications ? zeitVisualCertifications : ""}
+        </aside>`;
+    const footerLink = zeitPortfolio
+      ? `<a href="${escapeHtml(externalHref(zeitPortfolio))}">${escapeHtml(zeitPortfolio)}</a>`
+      : "<span></span>";
+
+    return `
+      <section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="zeitgenoessisch" data-no-fit="true">
+        <div class="page-content zeit-pdf">
+          ${renderZeitHeader(isContinuation, false)}
+          <div class="zeit-pdf-columns${isContinuation ? " continuation" : ""}">
+            ${leftMarkup}
+            <main class="zeit-pdf-main">
+              ${summaryMarkup}
+              ${experienceMarkup}
+              ${educationMarkup}
+              ${
+                !experienceItems &&
+                !educationItems &&
+                plan.pageNumber === 1
+                  ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>"
+                  : ""
+              }
+            </main>
+          </div>
+          <footer class="zeit-pdf-footer">${footerLink}<span>Seite ${plan.pageNumber} von ${resumePlan.length}</span></footer>
+        </div>
+      </section>`;
+  };
+
+  const kreativContactMarkup = () => {
+    if (!zeitContacts.length) return "";
+    return `<address class="kreativ-pdf-contacts">${zeitContacts
+      .map((contact) => {
+        const content = `<strong>${escapeHtml(contact.label)}</strong><i>${escapeHtml(contact.value)}</i>`;
+        return contact.href
+          ? `<a href="${escapeHtml(contact.href)}">${content}</a>`
+          : `<span>${content}</span>`;
+      })
+      .join("")}</address>`;
+  };
+
+  const renderKreativHeader = (
+    compact: boolean,
+    ats: boolean,
+  ) => {
+    const photoMarkup =
+      !compact && !ats && photoSource
+        ? `<img class="kreativ-pdf-photo" src="${escapeHtml(photoSource)}" alt="">`
+        : "";
+    return `
+      <header class="kreativ-pdf-header${compact ? " compact" : ""}${!photoMarkup ? " no-photo" : ""}">
+        <div class="kreativ-pdf-identity">
+          ${compact ? '<p class="kicker">Lebenslauf · Fortsetzung</p>' : ""}
+          <h1>${escapeHtml(name)}</h1>
+          ${profile?.title || role ? `<h2>${escapeHtml(profile?.title || role)}</h2>` : ""}
+          ${compact ? "" : kreativContactMarkup()}
+        </div>
+        ${photoMarkup}
+      </header>`;
+  };
+
+  const kreativLanguageScore = (level: string) => {
+    const normalized = level.toLocaleLowerCase("de-DE");
+    if (/muttersprache|native|c2/.test(normalized)) return 5;
+    if (/verhandlung|fließ|fliess|c1/.test(normalized)) return 4;
+    if (/b2|fortgeschritten|versiert/.test(normalized)) return 3;
+    if (/b1|a2|grundkennt/.test(normalized)) return 2;
+    if (/a1|anfänger|anfaenger/.test(normalized)) return 1;
+    return 3;
+  };
+  const kreativLanguages = uniqueValues(profile?.languages ?? []).map(
+    (raw) => {
+      const [languageName, ...levelParts] = raw.split(/\s+[–—-]\s+/);
+      const level = levelParts.join(" – ").trim();
+      return {
+        raw,
+        name: languageName.trim() || raw,
+        level,
+        score: kreativLanguageScore(level),
+      };
+    },
+  );
+  const kreativVisualLanguages = kreativLanguages.length
+    ? `<section><h3>Sprachen</h3><div class="kreativ-pdf-languages">${kreativLanguages
+        .map(
+          (language) =>
+            `<article class="kreativ-pdf-language"><h4>${escapeHtml(language.name)}</h4><div><span>${escapeHtml(language.level)}</span><span class="kreativ-pdf-dots">${Array.from(
+              { length: 5 },
+              (_, index) =>
+                `<i class="${index < language.score ? "filled" : ""}"></i>`,
+            ).join("")}</span></div></article>`,
+        )
+        .join("")}</div></section>`
+    : "";
+  const kreativAtsLanguages = kreativLanguages.length
+    ? `<section><h3>Sprachen</h3><ul>${kreativLanguages
+        .map((language) => `<li>${escapeHtml(language.raw)}</li>`)
+        .join("")}</ul></section>`
+    : "";
+  const kreativVisualStrengths = strengths.length
+    ? `<section><h3>Stärken</h3><div class="kreativ-pdf-strengths">${strengths
+        .map(
+          (strength) =>
+            `<div class="kreativ-pdf-strength"><i aria-hidden="true">◆</i><span>${escapeHtml(strength)}</span></div>`,
+        )
+        .join("")}</div></section>`
+    : "";
+  const kreativAtsStrengths = strengths.length
+    ? `<section><h3>Stärken</h3><ul>${strengths
+        .map((strength) => `<li>${escapeHtml(strength)}</li>`)
+        .join("")}</ul></section>`
+    : "";
+  const kreativKnowledge = profile
+    ? ensureKnowledgeSection(profile.knowledgeSection, profile.skills)
+    : undefined;
+  const kreativSkillValues = uniqueValues(
+    (kreativKnowledge?.categories ?? [])
+      .filter((category) => category.isVisible)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+      .flatMap((category) => [
+        ...visibleKnowledgeItems(category.items).map((item) =>
+          formatKnowledgeItem(
+            item,
+            category.showLevels,
+            category.showYearsOfExperience,
+            "comma-separated",
+          ),
+        ),
+        ...category.subcategories
+          .filter((subcategory) => subcategory.isVisible)
+          .sort((left, right) => left.sortOrder - right.sortOrder)
+          .flatMap((subcategory) =>
+            visibleKnowledgeItems(subcategory.items).map((item) =>
+              formatKnowledgeItem(
+                item,
+                category.showLevels,
+                category.showYearsOfExperience,
+                "comma-separated",
+              ),
+            ),
+          ),
+      ]),
+  );
+  const kreativVisualSkills = kreativSkillValues.length
+    ? `<section><h3>Fähigkeiten</h3><div class="kreativ-pdf-skills">${kreativSkillValues
+        .map(
+          (skill) =>
+            `<span class="kreativ-pdf-skill">${escapeHtml(skill)}</span>`,
+        )
+        .join("")}</div></section>`
+    : "";
+  const kreativCertifications = uniqueValues(
+    profile?.certifications ?? [],
+  );
+  const kreativVisualCertifications = kreativCertifications.length
+    ? `<section><h3>Zertifikate</h3><ul>${kreativCertifications
+        .map((item) => `<li>${escapeHtml(item)}</li>`)
+        .join("")}</ul></section>`
+    : "";
+  const kreativAtsCertifications = kreativCertifications.length
+    ? `<section><h3>Zertifikate</h3><ul>${kreativCertifications
+        .map((item) => `<li>${escapeHtml(item)}</li>`)
+        .join("")}</ul></section>`
+    : "";
+
+  const renderKreativCareerEntry = (
+    id: string,
+    kind: "experience" | "education",
+  ) => {
+    const item =
+      kind === "experience"
+        ? (() => {
+            const experience = experienceById.get(id);
+            return experience
+              ? {
+                  from: experience.from,
+                  to: experience.to,
+                  title: experience.role,
+                  organization: experience.company,
+                  city: experience.city,
+                  achievements: experience.achievements.filter(Boolean),
+                }
+              : undefined;
+          })()
+        : (() => {
+            const education = educationById.get(id);
+            return education
+              ? {
+                  from: education.from,
+                  to: education.to,
+                  title: education.degree,
+                  organization: education.institution,
+                  city: education.city,
+                  achievements: [] as string[],
+                }
+              : undefined;
+          })();
+    if (!item) return "";
+    return `
+      <article class="kreativ-pdf-entry">
+        <h4>${escapeHtml(item.title)}</h4>
+        <h5>${escapeHtml(item.organization)}</h5>
+        <p class="kreativ-pdf-entry-meta">
+          <span>${escapeHtml(formatDateRange(item.from, item.to))}</span>
+          ${item.city ? `<span>${escapeHtml(item.city)}</span>` : ""}
+        </p>
+        ${
+          item.achievements.length
+            ? `<ul>${item.achievements
+                .map(
+                  (achievement) =>
+                    `<li>${escapeHtml(achievement)}</li>`,
+                )
+                .join("")}</ul>`
+            : ""
+        }
+      </article>`;
+  };
+
+  const kreativPortfolio =
+    profile?.portfolio || profile?.github || profile?.linkedin || "";
+
+  const renderKreativResumePage = (plan: ResumePagePlan) => {
+    const experienceItems = plan.items
+      .filter((item) => item.kind === "experience")
+      .map((item) => renderKreativCareerEntry(item.id, "experience"))
+      .join("");
+    const educationItems = plan.items
+      .filter((item) => item.kind === "education")
+      .map((item) => renderKreativCareerEntry(item.id, "education"))
+      .join("");
+    const isContinuation = plan.pageNumber > 1;
+    const isLastPage = plan.pageNumber === resumePlan.length;
+    const experienceMarkup = experienceItems
+      ? `<section class="kreativ-pdf-section"><h3 class="kreativ-pdf-title">${atsMode ? "Berufserfahrung" : "Erfahrung"}</h3><div class="kreativ-pdf-list">${experienceItems}</div></section>`
+      : "";
+    const educationMarkup = educationItems
+      ? `<section class="kreativ-pdf-section"><h3 class="kreativ-pdf-title">Ausbildung</h3><div class="kreativ-pdf-list">${educationItems}</div></section>`
+      : "";
+
+    if (atsMode) {
+      const summaryMarkup =
+        sections.profile && !isContinuation
+          ? `<section><h3>Zusammenfassung</h3><p class="kreativ-pdf-summary">${escapeHtml(docs.resumeProfile || profile?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>`
+          : "";
+      return `
+        <section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="kreativ" data-no-fit="true">
+          <div class="page-content kreativ-pdf kreativ-pdf-ats">
+            ${renderKreativHeader(isContinuation, true)}
+            ${summaryMarkup}
+            ${experienceMarkup}
+            ${educationMarkup}
+            ${
+              isLastPage
+                ? `${skillSection}${sections.languages ? kreativAtsLanguages : ""}${sections.skills ? kreativAtsStrengths : ""}${sections.certifications ? kreativAtsCertifications : ""}`
+                : ""
+            }
+            <span class="page-number">${plan.pageNumber} / ${resumePlan.length}</span>
+          </div>
+        </section>`;
+    }
+
+    const summaryMarkup =
+      sections.profile && !isContinuation
+        ? `<section><h3>Zusammenfassung</h3><p class="kreativ-pdf-summary">${escapeHtml(docs.resumeProfile || profile?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>`
+        : "";
+    const backgroundMarkup = isContinuation
+      ? ""
+      : `<svg class="kreativ-pdf-background" viewBox="0 0 100 100" aria-hidden="true"><circle cx="62" cy="45" r="39"/><circle cx="78" cy="53" r="30"/><circle cx="91" cy="62" r="22"/></svg>`;
+    const rightMarkup = isContinuation
+      ? ""
+      : `<aside class="kreativ-pdf-right">
+          ${summaryMarkup}
+          ${sections.skills ? kreativVisualStrengths : ""}
+          ${sections.languages ? kreativVisualLanguages : ""}
+          ${sections.skills ? kreativVisualSkills : ""}
+          ${sections.certifications ? kreativVisualCertifications : ""}
+        </aside>`;
+    const footerLink = kreativPortfolio
+      ? `<a href="${escapeHtml(externalHref(kreativPortfolio))}">${escapeHtml(kreativPortfolio)}</a>`
+      : "<span></span>";
+
+    return `
+      <section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="kreativ" data-no-fit="true">
+        <div class="page-content kreativ-pdf">
+          ${backgroundMarkup}
+          ${renderKreativHeader(isContinuation, false)}
+          <div class="kreativ-pdf-content${isContinuation ? " continuation" : ""}">
+            <main class="kreativ-pdf-left">
+              ${experienceMarkup}
+              ${educationMarkup}
+              ${
+                !experienceItems &&
+                !educationItems &&
+                plan.pageNumber === 1
+                  ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>"
+                  : ""
+              }
+            </main>
+            ${rightMarkup}
+          </div>
+          <footer class="kreativ-pdf-footer">${footerLink}<span>Seite ${plan.pageNumber} / ${resumePlan.length}</span></footer>
+        </div>
+      </section>`;
   };
 
   const renderResumePage = (plan: ResumePagePlan) => {
@@ -472,9 +1729,21 @@ export const buildDocumentHtml = (
         </div>
       </section>`;
   };
-  const resume = resumePlan.map(renderResumePage).join("");
+  const resume = resumePlan
+    .map(
+      template.id === "elegant"
+        ? renderElegantResumePage
+        : template.id === "kreativ"
+          ? renderKreativResumePage
+        : template.id === "zeitgenoessisch"
+          ? renderZeitgenoessischResumePage
+        : template.id === "zweispaltig"
+          ? renderZweispaltigResumePage
+        : renderResumePage,
+    )
+    .join("");
   const selected = target === "mappe" ? [cover, letter, resume] : target === "deckblatt" ? [cover] : target === "anschreiben" ? [letter] : [resume];
-  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
 };
 
 export const buildCoverLetterMarkdown = (

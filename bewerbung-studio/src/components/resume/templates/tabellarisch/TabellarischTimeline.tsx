@@ -8,25 +8,19 @@ import type { TabellarischTimelineProps } from "./tabellarisch.types";
 
 export function TabellarischTimeline({
   items,
-  primaryColor,
-  accentColor,
-  textColor,
+  atsMode,
+  continuesOnNextPage = false,
 }: TabellarischTimelineProps) {
   return (
-    <div className="tabellarisch-timeline">
+    <div
+      className="tabellarisch-timeline"
+      data-continues-next-page={continuesOnNextPage}
+    >
       {items.map((item) => (
         <TabellarischTimelineEntry
           key={item.id}
-          from={item.from}
-          to={item.to}
-          role={item.role}
-          organization={item.organization}
-          city={item.city}
-          summary={item.summary}
-          achievements={item.achievements}
-          primaryColor={primaryColor}
-          accentColor={accentColor}
-          textColor={textColor}
+          {...item}
+          atsMode={atsMode}
         />
       ))}
     </div>

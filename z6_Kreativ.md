@@ -1,3 +1,4 @@
+![Eine kreative Lebenslauf Vorlage, ideal um viele Informationen auf einer einzigen Seite unterzubringen. Mit schwarzem Akzent.](https://cdn.enhancv.com/predefined-examples/Gzn40uHXqRn3GagwIVqPhJiJPy4vTD1otoudCeu8/image.png)
 
 * Konu: Referans görselle yüksek doğrulukta eşleşen “Kreativ” Lebenslauf şablonunun oluşturulması
 * İstenilen çıktı: Referans görseldeki yeşil üst bant, iki sütunlu içerik düzeni, profil fotoğrafı, bölüm başlıkları, dekoratif dairesel arka plan, renkler, tipografi ve boşlukları A4 ölçüsünde yeniden üreten; React, TypeScript, CSS, Electron, PDF, ATS ve Canva benzeri serbest düzenleme sistemiyle uyumlu Lebenslauf şablonu

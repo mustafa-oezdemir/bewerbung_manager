@@ -297,4 +297,278 @@ describe("Lebenslauf-Dokumente", () => {
     expect(letterHtml).toContain("signature-image");
     expect(letterHtml).toContain(imageData);
   });
+
+  it("renders the Elegant PDF with a full-height right sidebar and no empty photo placeholder", () => {
+    const elegantApplication = applicationSchema.parse({
+      ...application,
+      templateId: "elegant",
+      accentColor: "#0788FF",
+      secondaryColor: "#264A68",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "right-sidebar",
+        resumeOutputMode: "visual",
+      },
+    });
+
+    const html = buildDocumentHtml(
+      elegantApplication,
+      profile,
+      "lebenslauf",
+    );
+
+    expect(html).toContain('data-template="elegant"');
+    expect(html).toContain('data-no-fit="true"');
+    expect(html).toContain('<aside class="elegant-pdf-sidebar">');
+    expect(html).toContain(
+      "grid-template-columns:minmax(0,140mm) 70mm",
+    );
+    expect(html).toContain("Zusammenfassung");
+    expect(html).toContain("Stärken");
+    expect(html).not.toContain('<img class="elegant-pdf-photo"');
+    expect(html).not.toContain("elegant-pdf-monogram");
+  });
+
+  it("uses a separate linear Elegant ATS renderer in logical section order", () => {
+    const elegantAtsApplication = applicationSchema.parse({
+      ...application,
+      templateId: "elegant",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "right-sidebar",
+        resumeOutputMode: "ats",
+      },
+    });
+    const mediaProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+    });
+
+    const html = buildDocumentHtml(
+      elegantAtsApplication,
+      mediaProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain('class="page-content elegant-pdf-ats"');
+    expect(body).not.toContain('<aside class="elegant-pdf-sidebar');
+    expect(body).not.toContain('<img class="elegant-pdf-photo"');
+    expect(body.indexOf("Zusammenfassung")).toBeLessThan(
+      body.indexOf("Berufserfahrung"),
+    );
+    expect(body.indexOf("Berufserfahrung")).toBeLessThan(
+      body.indexOf("Kenntnisse"),
+    );
+    expect(body.indexOf("Kenntnisse")).toBeLessThan(
+      body.indexOf("Sprachen"),
+    );
+    expect(body.indexOf("Sprachen")).toBeLessThan(
+      body.indexOf("Stärken"),
+    );
+  });
+
+  it("renders the Zweispaltig PDF with a clean 62/38 composition", () => {
+    const zweispaltigApplication = applicationSchema.parse({
+      ...application,
+      templateId: "zweispaltig",
+      accentColor: "#165DAA",
+      secondaryColor: "#EAF2FA",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "template",
+        resumeOutputMode: "visual",
+      },
+    });
+
+    const html = buildDocumentHtml(
+      zweispaltigApplication,
+      profile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain('data-template="zweispaltig"');
+    expect(body).toContain('data-no-fit="true"');
+    expect(body).toContain('class="zweispaltig-pdf-columns"');
+    expect(body).toContain('<aside class="zweispaltig-pdf-sidebar">');
+    expect(html).toContain(
+      "grid-template-columns:minmax(0,62%) minmax(0,38%)",
+    );
+    expect(body).toContain("Zusammenfassung");
+    expect(body).toContain("Stärken");
+    expect(body).not.toContain('<img class="zweispaltig-pdf-photo"');
+    expect(body).not.toContain("monogram");
+  });
+
+  it("uses a separate linear Zweispaltig ATS renderer in logical order", () => {
+    const zweispaltigAtsApplication = applicationSchema.parse({
+      ...application,
+      templateId: "zweispaltig",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "template",
+        resumeOutputMode: "ats",
+      },
+    });
+    const mediaProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      education: [
+        {
+          id: crypto.randomUUID(),
+          from: "10/2015",
+          to: "09/2019",
+          degree: "B.Sc. Informatik",
+          institution: "Beispiel Universität",
+          city: "Berlin",
+        },
+      ],
+    });
+
+    const html = buildDocumentHtml(
+      zweispaltigAtsApplication,
+      mediaProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain(
+      'class="page-content zweispaltig-pdf zweispaltig-pdf-ats"',
+    );
+    expect(body).not.toContain('<aside class="zweispaltig-pdf-sidebar');
+    expect(body).not.toContain('<img class="zweispaltig-pdf-photo"');
+    expect(body.indexOf("Berufliches Profil")).toBeLessThan(
+      body.indexOf("Berufserfahrung"),
+    );
+    expect(body.indexOf("Berufserfahrung")).toBeLessThan(
+      body.indexOf("Ausbildung"),
+    );
+    expect(body.indexOf("Ausbildung")).toBeLessThan(
+      body.indexOf("Kenntnisse"),
+    );
+    expect(body.indexOf("Kenntnisse")).toBeLessThan(
+      body.indexOf("Sprachen"),
+    );
+    expect(body.indexOf("Sprachen")).toBeLessThan(
+      body.indexOf("Stärken"),
+    );
+  });
+
+  it("renders the Zeitgenössisch PDF with organic photo shapes and left sidebar", () => {
+    const zeitgenoessischApplication = applicationSchema.parse({
+      ...application,
+      templateId: "zeitgenoessisch",
+      accentColor: "#2FB478",
+      secondaryColor: "#CBECDD",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "left-sidebar",
+        resumeOutputMode: "visual",
+      },
+    });
+    const mediaProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+    });
+
+    const html = buildDocumentHtml(
+      zeitgenoessischApplication,
+      mediaProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain('data-template="zeitgenoessisch"');
+    expect(body).toContain('data-no-fit="true"');
+    expect(body).toContain("zeit-pdf-photo-composition");
+    expect(body).toContain("zeit-pdf-photo-pale");
+    expect(body).toContain('<aside class="zeit-pdf-left">');
+    expect(body).toContain("Zusammenfassung");
+    expect(body).toContain("Erfahrung");
+    expect(body).toContain("Stärken");
+    expect(body).not.toContain("monogram");
+  });
+
+  it("removes the Zeitgenössisch photo composition without a photo", () => {
+    const zeitgenoessischApplication = applicationSchema.parse({
+      ...application,
+      templateId: "zeitgenoessisch",
+      accentColor: "#2FB478",
+      secondaryColor: "#CBECDD",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "left-sidebar",
+        resumeOutputMode: "visual",
+      },
+    });
+    const html = buildDocumentHtml(
+      zeitgenoessischApplication,
+      profile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain("zeit-pdf-header no-photo");
+    expect(body).not.toContain("zeit-pdf-photo-composition");
+    expect(body).not.toContain('<img class="zeit-pdf-photo"');
+  });
+
+  it("uses a separate linear Zeitgenössisch ATS renderer in logical order", () => {
+    const zeitgenoessischAtsApplication = applicationSchema.parse({
+      ...application,
+      templateId: "zeitgenoessisch",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "left-sidebar",
+        resumeOutputMode: "ats",
+      },
+    });
+    const mediaProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      certifications: ["Professional Scrum Master I"],
+      education: [
+        {
+          id: crypto.randomUUID(),
+          from: "10/2015",
+          to: "09/2019",
+          degree: "B.Sc. Informatik",
+          institution: "Beispiel Universität",
+          city: "Berlin",
+        },
+      ],
+    });
+
+    const html = buildDocumentHtml(
+      zeitgenoessischAtsApplication,
+      mediaProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain(
+      'class="page-content zeit-pdf zeit-pdf-ats"',
+    );
+    expect(body).not.toContain('<aside class="zeit-pdf-left');
+    expect(body).not.toContain("zeit-pdf-photo-composition");
+    expect(body.indexOf("Zusammenfassung")).toBeLessThan(
+      body.indexOf("Berufserfahrung"),
+    );
+    expect(body.indexOf("Berufserfahrung")).toBeLessThan(
+      body.indexOf("Ausbildung"),
+    );
+    expect(body.indexOf("Ausbildung")).toBeLessThan(
+      body.indexOf("Kenntnisse"),
+    );
+    expect(body.indexOf("Kenntnisse")).toBeLessThan(
+      body.indexOf("Sprachen"),
+    );
+    expect(body.indexOf("Sprachen")).toBeLessThan(
+      body.indexOf("Stärken"),
+    );
+    expect(body.indexOf("Stärken")).toBeLessThan(
+      body.indexOf("Zertifikate"),
+    );
+  });
 });

@@ -1,3 +1,4 @@
+![Grüne moderne Lebenslaufvorlage](https://cdn.enhancv.com/predefined-examples/u4sMqAHXgZiomUwUaeNJd0EbgxV1EUrK3Hc7POOl/image.png)
 
 * Konu: A4 formatında, referans görselle yüksek doğrulukta eşleşen “Zeitgenössisch” Lebenslauf şablonu
 * İstenilen çıktı: Referans görseldeki yeşil renk paleti, iki sütunlu düzen, organik profil fotoğrafı arka planı, bölüm ikonları, tipografi, boşluklar ve içerik hiyerarşisini mümkün olduğunca doğru yeniden üreten; React, TypeScript, CSS, Electron, PDF ve serbest düzenleme sistemiyle uyumlu Lebenslauf şablonu

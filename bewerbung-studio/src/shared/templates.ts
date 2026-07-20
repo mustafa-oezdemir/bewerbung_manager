@@ -1,9 +1,4 @@
-import type {
-  ColumnLayout,
-  DocumentBackgroundId,
-  DocumentFontId,
-  ResumeOutputMode,
-} from "./documentDesign";
+import type { DocumentDesignSettings } from "./documentDesign";
 
 export type TemplateLayout =
   | "centered"
@@ -11,7 +6,8 @@ export type TemplateLayout =
   | "minimal"
   | "split-clean"
   | "sidebar-left"
-  | "bold-grid";
+  | "bold-grid"
+  | "timeline";
 
 export type TemplateCategory =
   | "ats"
@@ -19,15 +15,10 @@ export type TemplateCategory =
   | "creative"
   | "creative-professional"
   | "modern"
+  | "modern-professional"
   | "executive";
 
-export type TemplateDesignDefaults = {
-  columnLayout?: ColumnLayout;
-  resumeOutputMode?: ResumeOutputMode;
-  backgroundId?: DocumentBackgroundId;
-  fontId?: DocumentFontId;
-  headingFontId?: DocumentFontId;
-};
+export type TemplateDesignDefaults = Partial<DocumentDesignSettings>;
 
 export type TemplateDefinition = {
   id: string;
@@ -42,6 +33,7 @@ export type TemplateDefinition = {
   supportsAtsMode?: boolean;
   supportsPhoto?: boolean;
   supportsFreeform?: boolean;
+  supportsMultiplePages?: boolean;
   sidebarWidthRatio?: number;
   atsInfo?: string;
   designDefaults?: TemplateDesignDefaults;
@@ -92,19 +84,94 @@ export const templates: TemplateDefinition[] = [
     id: "zweispaltig",
     name: "Zweispaltig",
     description:
-      "Klar strukturiertes Zweispalten-Layout mit optionaler ATS-Variante.",
-    accent: "#1f4e5f",
-    secondary: "#eaf1f4",
-    font: "Segoe UI",
-    layout: "sidebar-right",
-    features: ["Hauptspalte", "Sidebar", "A4-optimiert"],
+      "Kostenlose, zweispaltige Lebenslauf-Vorlage. Perfekt für jede Branche.",
+    accent: "#165DAA",
+    secondary: "#EAF2FA",
+    font: "Source Sans 3",
+    layout: "split-clean",
+    features: ["Zwei klare Spalten", "A4-optimiert", "ATS-Variante"],
     category: "business",
     supportsAtsMode: true,
     supportsPhoto: true,
     supportsFreeform: true,
-    sidebarWidthRatio: 0.29,
+    supportsMultiplePages: true,
+    sidebarWidthRatio: 0.38,
+    atsInfo:
+      "Zweispaltig unterstützt eine separate, lineare ATS-Ausgabe ohne Foto oder dekorative Spalten.",
     designDefaults: {
+      marginLevel: 3,
+      sectionSpacingLevel: 3,
+      fontSize: "small",
+      lineHeightLevel: 2,
       columnLayout: "template",
+      resumeOutputMode: "visual",
+      backgroundId: "white",
+      fontId: "source-sans",
+      headingFontId: "source-sans",
+    },
+  },
+  {
+    id: "zeitgenoessisch",
+    name: "Zeitgenössisch",
+    description:
+      "Eine saubere, moderne Lebenslaufvorlage, die zentrale Erfolge, Erfahrungen und Fähigkeiten hervorhebt.",
+    accent: "#2FB478",
+    secondary: "#CBECDD",
+    font: "Source Sans 3",
+    layout: "sidebar-left",
+    features: [
+      "Organische Fotofläche",
+      "Zwei Spalten",
+      "ATS-Variante",
+    ],
+    category: "modern-professional",
+    supportsAtsMode: true,
+    supportsPhoto: true,
+    supportsFreeform: true,
+    supportsMultiplePages: true,
+    sidebarWidthRatio: 0.31,
+    atsInfo:
+      "Zeitgenössisch unterstützt eine separate, lineare ATS-Ausgabe ohne Foto, organische Formen oder Abschnittssymbole.",
+    designDefaults: {
+      marginLevel: 3,
+      sectionSpacingLevel: 4,
+      fontSize: "small",
+      lineHeightLevel: 2,
+      columnLayout: "left-sidebar",
+      resumeOutputMode: "visual",
+      backgroundId: "white",
+      fontId: "source-sans",
+      headingFontId: "source-sans",
+    },
+  },
+  {
+    id: "kreativ",
+    name: "Kreativ",
+    description:
+      "Schöne Lebenslauf-Vorlage. Stellen Sie Ihre Qualifikationen auf elegante Weise in den Mittelpunkt.",
+    accent: "#37B978",
+    secondary: "#D9F2E5",
+    font: "Source Sans 3",
+    layout: "bold-grid",
+    features: [
+      "Grüner Profilkopf",
+      "Zwei Spalten",
+      "ATS-Variante",
+    ],
+    category: "creative-professional",
+    supportsAtsMode: true,
+    supportsPhoto: true,
+    supportsFreeform: true,
+    supportsMultiplePages: true,
+    sidebarWidthRatio: 0.38,
+    atsInfo:
+      "Kreativ unterstützt eine separate, lineare ATS-Ausgabe ohne Profilfoto, Farbband oder dekorative Kreise.",
+    designDefaults: {
+      marginLevel: 2,
+      sectionSpacingLevel: 4,
+      fontSize: "small",
+      lineHeightLevel: 2,
+      columnLayout: "two-column-left-wide",
       resumeOutputMode: "visual",
       backgroundId: "white",
       fontId: "source-sans",
@@ -130,6 +197,36 @@ export const templates: TemplateDefinition[] = [
       "Dieses Template wurde mit verbreiteten ATS-Systemen getestet. Dennoch muss der Inhalt in erster Linie klar, relevant und für Personalverantwortliche leicht erfassbar bleiben.",
     designDefaults: {
       columnLayout: "left-sidebar",
+      resumeOutputMode: "visual",
+      backgroundId: "white",
+      fontId: "source-sans",
+      headingFontId: "source-sans",
+    },
+  },
+  {
+    id: "elegant",
+    name: "Elegant",
+    description:
+      "Moderne Lebenslauf-Vorlage. Schönes, stilvolles Design, das Ihren Hintergrund und Ihre Leistungen hervorhebt.",
+    accent: "#0788FF",
+    secondary: "#264A68",
+    font: "Source Sans 3",
+    layout: "sidebar-right",
+    features: ["Rechte Farbfläche", "A4-optimiert", "ATS-Variante"],
+    category: "executive",
+    supportsAtsMode: true,
+    supportsPhoto: true,
+    supportsFreeform: true,
+    supportsMultiplePages: true,
+    sidebarWidthRatio: 0.333,
+    atsInfo:
+      "Elegant unterstützt eine separate, lineare ATS-Ausgabe ohne Foto, Seitenleiste oder dekorative Elemente.",
+    designDefaults: {
+      marginLevel: 3,
+      sectionSpacingLevel: 4,
+      fontSize: "small",
+      lineHeightLevel: 2,
+      columnLayout: "right-sidebar",
       resumeOutputMode: "visual",
       backgroundId: "white",
       fontId: "source-sans",
@@ -221,8 +318,8 @@ export const templates: TemplateDefinition[] = [
     accent: "#c78300",
     secondary: "#17263d",
     font: "Source Sans 3",
-    layout: "split-clean",
-    features: ["Timeline", "Berufserfahrung", "Zeitgenössisch"],
+    layout: "timeline",
+    features: ["Einspaltige Zeitleiste", "A4-optimiert", "ATS-Variante"],
     category: "modern",
     supportsAtsMode: true,
     supportsPhoto: true,
@@ -230,7 +327,7 @@ export const templates: TemplateDefinition[] = [
     atsInfo:
       "Tabellarisch-Template unterstützt ATS-Modus mit einspaltigem Layout und ausgeblendeten Designelementen wie Timeline-Grafiken.",
     designDefaults: {
-      columnLayout: "single",
+      columnLayout: "timeline",
       resumeOutputMode: "visual",
       backgroundId: "white",
       fontId: "source-sans",

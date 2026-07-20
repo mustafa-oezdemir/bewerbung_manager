@@ -4,134 +4,110 @@
  */
 
 import type { ApplicantProfile } from "../../../../shared/schema";
-import { DocumentBackgroundLayer } from "../../../document/DocumentBackgroundLayer";
 import { TabellarischHeader } from "./TabellarischHeader";
 import { TabellarischSummary } from "./TabellarischSummary";
-import { TabellarischStrengths } from "./TabellarischStrengths";
 import { TabellarischTimeline } from "./TabellarischTimeline";
 import { TabellarischContinuationHeader } from "./TabellarischContinuationHeader";
 import { TabellarischFooter } from "./TabellarischFooter";
-import { tabellarischDefaults } from "./tabellarisch.defaults";
+import { TabellarischAdditionalSections } from "./TabellarischAdditionalSections";
+import {
+  createTabellarischPageData,
+  resolveTabellarischSummary,
+} from "./tabellarisch.model";
 import type { TabellarischPageProps } from "./tabellarisch.types";
 
 export function TabellarischPage({
   profile,
   name,
   atsMode,
-  pageNumber,
+  plan,
   totalPages,
-  accentColor,
-  primaryColor,
   photoSource,
-  isContinuation = false,
+  resumeProfile,
+  sections,
 }: TabellarischPageProps) {
-  // Prepare experience items
-  const experienceItems =
-    profile?.experiences?.map((exp) => ({
-      id: exp.id,
-      from: exp.from,
-      to: exp.to,
-      role: exp.role,
-      organization: exp.company,
-      city: exp.city,
-      summary: undefined,
-      achievements: exp.achievements,
-    })) || [];
-
-  // Prepare education items
-  const educationItems =
-    profile?.education?.map((edu) => ({
-      id: edu.id,
-      from: edu.from,
-      to: edu.to,
-      role: edu.degree,
-      organization: edu.institution,
-      city: edu.city,
-      summary: undefined,
-      achievements: undefined,
-    })) || [];
+  const { education, experiences, isContinuation } =
+    createTabellarischPageData(profile, plan);
+  const summary = resolveTabellarischSummary(profile, resumeProfile);
+  const isLastPage = plan.pageNumber === totalPages;
+  const experienceContinues =
+    !isLastPage &&
+    experiences.length > 0 &&
+    experiences.at(-1)?.id !== profile?.experiences.at(-1)?.id;
+  const educationContinues =
+    !isLastPage &&
+    education.length > 0 &&
+    education.at(-1)?.id !== profile?.education.at(-1)?.id;
 
   return (
     <div className="tabellarisch-page__wrapper">
-      {/* Background Layer (hidden in ATS) */}
-      {!atsMode && (
-        <DocumentBackgroundLayer backgroundId="white" atsMode={false} />
-      )}
+      {!atsMode ? (
+        <div className="tabellarisch-decoration" aria-hidden="true" />
+      ) : null}
 
-      {/* Content */}
-      <div className="tabellarisch-page__content">
-        {/* Continuation Header for Page 2+ */}
+      <main className="tabellarisch-page__content">
         {isContinuation && (
           <TabellarischContinuationHeader name={name} title={profile?.title} />
         )}
 
-        {/* Main Header - only on first page */}
         {!isContinuation && (
           <TabellarischHeader
             name={name}
             profile={profile}
-            primaryColor={primaryColor}
-            accentColor={accentColor}
             photoSource={photoSource}
             atsMode={atsMode}
           />
         )}
 
-        {/* Zusammenfassung */}
-        {profile?.summary && !isContinuation && (
-          <section className="tabellarisch-section tabellarisch-summary">
-            <TabellarischSummary profile={profile} textColor="#3f4850" />
-          </section>
-        )}
+        {sections.profile && !isContinuation ? (
+          <TabellarischSummary text={summary} />
+        ) : null}
 
-        {/* Stärken - only on first page */}
-        {profile?.skills && profile.skills.length > 0 && !isContinuation && (
-          <section className="tabellarisch-section">
-            <h2 className="tabellarisch-section__title">Stärken</h2>
-            <TabellarischStrengths
-              profile={profile}
-              primaryColor={primaryColor}
-              accentColor={accentColor}
-              atsMode={atsMode}
-            />
-          </section>
-        )}
-
-        {/* Berufserfahrung */}
-        {experienceItems.length > 0 && (
-          <section className="tabellarisch-section">
-            <h2 className="tabellarisch-section__title">Berufserfahrung</h2>
+        {sections.experience && experiences.length > 0 ? (
+          <section
+            className="tabellarisch-section"
+            data-element-id="tabellarisch.experience"
+          >
+            <h2 className="tabellarisch-section__title">
+              Berufserfahrung
+              {isContinuation ? <small>Fortsetzung</small> : null}
+            </h2>
             <TabellarischTimeline
-              items={experienceItems}
-              primaryColor={primaryColor}
-              accentColor={accentColor}
-              textColor="#3f4850"
+              items={experiences}
+              atsMode={atsMode}
+              continuesOnNextPage={experienceContinues}
             />
           </section>
-        )}
+        ) : null}
 
-        {/* Ausbildung */}
-        {educationItems.length > 0 && (
-          <section className="tabellarisch-section">
+        {sections.education && education.length > 0 ? (
+          <section
+            className="tabellarisch-section"
+            data-element-id="tabellarisch.education"
+          >
             <h2 className="tabellarisch-section__title">Ausbildung</h2>
             <TabellarischTimeline
-              items={educationItems}
-              primaryColor={primaryColor}
-              accentColor={accentColor}
-              textColor="#3f4850"
+              items={education}
+              atsMode={atsMode}
+              continuesOnNextPage={educationContinues}
             />
           </section>
-        )}
-      </div>
+        ) : null}
 
-      {/* Footer */}
+        {isLastPage ? (
+          <TabellarischAdditionalSections
+            profile={profile}
+            sections={sections}
+            atsMode={atsMode}
+          />
+        ) : null}
+      </main>
+
       <TabellarischFooter
         profile={profile}
-        pageNumber={pageNumber}
+        pageNumber={plan.pageNumber}
         totalPages={totalPages}
         atsMode={atsMode}
-        mutedColor="#6d747a"
-        accentColor={accentColor}
       />
     </div>
   );

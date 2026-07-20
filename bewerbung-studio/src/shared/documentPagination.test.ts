@@ -3,6 +3,7 @@ import { profileSchema } from "./schema";
 import {
   createResumePagePlan,
   getLetterPageStatus,
+  zweispaltigPaginationOptions,
 } from "./documentPagination";
 
 const now = new Date("2026-07-19T10:00:00.000Z").toISOString();
@@ -61,6 +62,36 @@ describe("A4 document pagination", () => {
     expect(plan).toHaveLength(2);
     expect(new Set(allIds).size).toBe(profile.experiences.length);
     expect(allIds).toHaveLength(profile.experiences.length);
+  });
+
+  it("supports compact template capacities without changing shared defaults", () => {
+    const profile = profileSchema.parse({
+      id: crypto.randomUUID(),
+      isDefault: true,
+      firstName: "Mina",
+      lastName: "Kaya",
+      experiences: Array.from({ length: 5 }, (_, index) => ({
+        id: crypto.randomUUID(),
+        from: `${2018 + index}`,
+        to: `${2019 + index}`,
+        role: `Position ${index + 1}`,
+        company: `Unternehmen ${index + 1}`,
+        achievements: [
+          "Messbares Ergebnis mit einer klaren Verbesserung.",
+        ],
+      })),
+      education: [],
+      updatedAt: now,
+    });
+
+    expect(createResumePagePlan(profile)).toHaveLength(2);
+    expect(
+      createResumePagePlan(
+        profile,
+        "",
+        zweispaltigPaginationOptions,
+      ),
+    ).toHaveLength(1);
   });
 
   it("marks long cover letters for dense one-page rendering", () => {

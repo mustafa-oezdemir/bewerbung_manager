@@ -13,11 +13,11 @@ export function TabellarischContinuationHeader({
   title,
 }: TabellarischContinuationHeaderProps) {
   return (
-    <div className="tabellarisch-continuation-header">
-      <h2 className="tabellarisch-continuation-header__name">{name}</h2>
+    <header className="tabellarisch-continuation-header">
+      <p className="tabellarisch-continuation-header__name">{name}</p>
       {title && (
         <p className="tabellarisch-continuation-header__title">{title}</p>
       )}
-    </div>
+    </header>
   );
 }
