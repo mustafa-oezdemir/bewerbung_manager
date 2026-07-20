@@ -37,6 +37,7 @@ export const assertAllowedTemplatePath = (
     paths.deckblattTemplates,
     paths.lebenslaufTemplates,
     paths.anschreibenDocuments,
+    paths.systemTemplateCache,
   ];
   if (!allowedRoots.some((root) => isPathInside(root, filePath))) {
     throw new TemplateError("Ungültiger Vorlagenpfad.", "INVALID_PATH");
@@ -84,4 +85,3 @@ export const withOneDriveRetry = async <T>(
   }
   throw toTemplateError(lastError);
 };
-

@@ -8,10 +8,13 @@ export interface ApplicationPaths {
   lebenslaufTemplates: string;
   anschreibenDocuments: string;
   previewCache: string;
+  systemTemplateCache: string;
+  bundledTemplatesRoot?: string;
 }
 
 export const resolveApplicationPaths = (
   documentsPath: string,
+  bundledTemplatesRoot?: string,
 ): ApplicationPaths => {
   const dataRoot = path.join(documentsPath, "BewerbungsManager", "data");
   const musterRoot = path.join(dataRoot, "Muster");
@@ -23,6 +26,7 @@ export const resolveApplicationPaths = (
     lebenslaufTemplates: path.join(musterRoot, "Lebenslauf"),
     anschreibenDocuments: path.join(dataRoot, "Anschreiben"),
     previewCache: path.join(dataRoot, "cache", "template-previews"),
+    systemTemplateCache: path.join(dataRoot, "cache", "system-templates"),
+    bundledTemplatesRoot,
   };
 };
-

@@ -2,7 +2,10 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { ApplicationPaths } from "../../src/config/application-paths";
 import {
+  kreativLebenslaufTemplateConfig,
   maximumTemplateFileSize,
+  zeitgenoessischLebenslaufTemplateConfig,
+  wordMusterTemplateConfig,
 } from "../../src/features/templates/template.constants";
 import type {
   DocumentTemplate,
@@ -34,12 +37,31 @@ const readMetadata = async (filePath: string): Promise<TemplateMetadata> => {
     if (!raw || typeof raw !== "object") return {};
     const value = raw as Record<string, unknown>;
     return {
+      id: typeof value.id === "string" ? value.id : undefined,
       name: typeof value.name === "string" ? value.name : undefined,
       documentType:
         value.documentType === "anschreiben" ||
         value.documentType === "deckblatt" ||
         value.documentType === "lebenslauf"
           ? value.documentType
+          : undefined,
+      format:
+        value.format === "docx" ||
+        value.format === "dotx" ||
+        value.format === "doc"
+          ? value.format
+          : undefined,
+      source:
+        value.source === "muster-folder" ||
+        value.source === "existing-document" ||
+        value.source === "uploaded-word-template" ||
+        value.source === "system-word-template"
+          ? value.source
+          : undefined,
+      sortOrder:
+        typeof value.sortOrder === "number" &&
+        Number.isFinite(value.sortOrder)
+          ? value.sortOrder
           : undefined,
       description:
         typeof value.description === "string"
@@ -55,6 +77,50 @@ const readMetadata = async (filePath: string): Promise<TemplateMetadata> => {
       isSystemTemplate:
         typeof value.isSystemTemplate === "boolean"
           ? value.isSystemTemplate
+          : undefined,
+      supportsPreview:
+        typeof value.supportsPreview === "boolean"
+          ? value.supportsPreview
+          : undefined,
+      supportsPlaceholders:
+        typeof value.supportsPlaceholders === "boolean"
+          ? value.supportsPlaceholders
+          : undefined,
+      editableInWord:
+        typeof value.editableInWord === "boolean"
+          ? value.editableInWord
+          : undefined,
+      isProtected:
+        typeof value.isProtected === "boolean"
+          ? value.isProtected
+          : undefined,
+      category:
+        typeof value.category === "string"
+          ? value.category
+          : undefined,
+      layout:
+        typeof value.layout === "string"
+          ? value.layout
+          : undefined,
+      atsFriendly:
+        typeof value.atsFriendly === "boolean"
+          ? value.atsFriendly
+          : undefined,
+      supportsPhoto:
+        typeof value.supportsPhoto === "boolean"
+          ? value.supportsPhoto
+          : undefined,
+      supportsBackground:
+        typeof value.supportsBackground === "boolean"
+          ? value.supportsBackground
+          : undefined,
+      supportsAtsMode:
+        typeof value.supportsAtsMode === "boolean"
+          ? value.supportsAtsMode
+          : undefined,
+      emphasis:
+        typeof value.emphasis === "string"
+          ? value.emphasis
           : undefined,
     };
   } catch {
@@ -75,6 +141,42 @@ const listFilesRecursive = async (root: string) => {
     }
   }
   return result;
+};
+
+const sortTemplates = (templates: DocumentTemplate[]) => {
+  const sortedWithoutPinned = templates
+    .filter(
+      (template) =>
+        template.id !== wordMusterTemplateConfig.id &&
+        template.id !== zeitgenoessischLebenslaufTemplateConfig.id &&
+        template.id !== kreativLebenslaufTemplateConfig.id,
+    )
+    .sort(
+      (left, right) =>
+        left.sortOrder - right.sortOrder ||
+        left.name.localeCompare(right.name, "de"),
+    );
+  const pinnedTemplates = [
+    {
+      id: wordMusterTemplateConfig.id,
+      index: 1,
+    },
+    {
+      id: zeitgenoessischLebenslaufTemplateConfig.id,
+      index: 2,
+    },
+    {
+      id: kreativLebenslaufTemplateConfig.id,
+      index: 3,
+    },
+  ];
+  const sorted = [...sortedWithoutPinned];
+  for (const pinned of pinnedTemplates) {
+    const template = templates.find((item) => item.id === pinned.id);
+    if (!template) continue;
+    sorted.splice(Math.min(pinned.index, sorted.length), 0, template);
+  }
+  return sorted;
 };
 
 export class TemplateScanner {
@@ -156,11 +258,7 @@ export class TemplateScanner {
       }
     }
     return {
-      templates: templates.sort(
-        (left, right) =>
-          Number(right.isFavorite) - Number(left.isFavorite) ||
-          left.name.localeCompare(right.name, "de"),
-      ),
+      templates: sortTemplates(templates),
       warnings,
     };
   }
@@ -180,5 +278,4 @@ export class TemplateScanner {
   }
 }
 
-export { metadataPathFor };
-
+export { metadataPathFor, sortTemplates };

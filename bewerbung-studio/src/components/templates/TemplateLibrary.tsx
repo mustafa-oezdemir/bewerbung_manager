@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
+  templateSourceLabels,
   templateTypeLabels,
 } from "../../features/templates/template.constants";
 import { useTemplateStore } from "../../features/templates/template.store";
@@ -81,7 +82,8 @@ export function TemplateLibrary() {
         (source === "all" ||
           (source === "system" && template.isSystemTemplate) ||
           (source === "custom" &&
-            template.source === "muster-folder" &&
+            (template.source === "muster-folder" ||
+              template.source === "uploaded-word-template") &&
             !template.isSystemTemplate) ||
           (source === "documents" &&
             template.source === "existing-document"))
@@ -247,8 +249,8 @@ export function TemplateLibrary() {
           template={useTemplate}
           applications={applications}
           onClose={() => setUseTemplate(undefined)}
-          onUse={(applicationId) => {
-            void use(useTemplate.id, applicationId);
+          onUse={(applicationId, atsMode) => {
+            void use(useTemplate.id, applicationId, atsMode);
             setUseTemplate(undefined);
           }}
         />
@@ -283,8 +285,9 @@ function TemplateDetailsDialog({
         ) : null}
         <dl>
           <div><dt>Datei</dt><dd>{template.fileName}</dd></div>
-          <div><dt>Format</dt><dd>{template.extension.toUpperCase()}</dd></div>
-          <div><dt>Quelle</dt><dd>{template.source === "existing-document" ? "Eigene Anschreiben als Vorlage" : "Musterordner"}</dd></div>
+          <div><dt>Format</dt><dd>{template.format.toUpperCase()}</dd></div>
+          <div><dt>Quelle</dt><dd>{templateSourceLabels[template.source]}</dd></div>
+          <div><dt>Vorlagentyp</dt><dd>{templateTypeLabels[template.documentType]}</dd></div>
           <div><dt>Geändert</dt><dd>{template.modifiedAt ? new Intl.DateTimeFormat("de-DE", { dateStyle: "medium", timeStyle: "short" }).format(new Date(template.modifiedAt)) : "Unbekannt"}</dd></div>
         </dl>
         <footer>
@@ -305,11 +308,12 @@ function UseTemplateDialog({
   template: DocumentTemplate;
   applications: ReturnType<typeof useAppStore.getState>["workspace"]["applications"];
   onClose: () => void;
-  onUse: (applicationId: string) => void;
+  onUse: (applicationId: string, atsMode: boolean) => void;
 }) {
   const [applicationId, setApplicationId] = useState(
     applications[0]?.id ?? "",
   );
+  const [atsMode, setAtsMode] = useState(false);
   return (
     <div className="modal-backdrop" role="presentation">
       <section className="modal use-template-dialog" role="dialog" aria-modal="true">
@@ -342,9 +346,23 @@ function UseTemplateDialog({
         {!applications.length ? (
           <small>Erstellen Sie zuerst eine Bewerbung.</small>
         ) : null}
+        {template.supportsAtsMode ? (
+          <label className="template-ats-option">
+            <input
+              type="checkbox"
+              checked={atsMode}
+              onChange={(event) => setAtsMode(event.target.checked)}
+            />
+            <span>
+              <strong>ATS-Modus</strong>
+              Einspaltige, besonders maschinenlesbare Word-Ausgabe ohne
+              Foto und Seitenleiste erstellen.
+            </span>
+          </label>
+        ) : null}
         <footer>
           <button className="button secondary" type="button" onClick={onClose}>Abbrechen</button>
-          <button className="button primary" type="button" disabled={!applicationId} onClick={() => onUse(applicationId)}>
+          <button className="button primary" type="button" disabled={!applicationId} onClick={() => onUse(applicationId, atsMode)}>
             Dokument erstellen
           </button>
         </footer>
@@ -352,4 +370,3 @@ function UseTemplateDialog({
     </div>
   );
 }
-

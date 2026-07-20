@@ -31,6 +31,7 @@ import {
   type Workspace,
 } from "../src/shared/schema";
 import { templates } from "../src/shared/templates";
+import { getDocumentFont } from "../src/shared/documentDesign";
 import { ensureKnowledgeSection } from "../src/features/knowledge/knowledge.service";
 import { formatKnowledgeSectionAsText } from "../src/features/knowledge/knowledge.utils";
 import { buildCoverLetterMarkdown, buildDocumentHtml } from "./documents";
@@ -43,6 +44,60 @@ const terminalStatuses = new Set<ApplicationStatus>([
   "Zurückgezogen",
   "Archiviert",
 ]);
+
+const templateContactLine = (
+  label: string,
+  value: string | undefined,
+) => (value?.trim() ? `${label}: ${value.trim()}` : "");
+
+const languagePoints = (level: string) => {
+  const normalized = level.toLocaleLowerCase("de-DE");
+  const score =
+    /muttersprache|c2|native/.test(normalized)
+      ? 5
+      : /c1|verhandlungssicher|versiert|fließend/.test(normalized)
+        ? 4
+        : /b2|gute kenntnisse/.test(normalized)
+          ? 4
+          : /b1|grundkenntnisse/.test(normalized)
+            ? 3
+            : /a2/.test(normalized)
+              ? 2
+              : /a1/.test(normalized)
+                ? 1
+                : level
+                  ? 3
+                  : 0;
+  return `${"●".repeat(score)}${"○".repeat(5 - score)}`;
+};
+
+const wordFontName = (fontId: Application["designSettings"]["fontId"]) =>
+  getDocumentFont(fontId).family.match(/"([^"]+)"|([^,]+)/)?.[1] ??
+  getDocumentFont(fontId).family.match(/"([^"]+)"|([^,]+)/)?.[2]?.trim() ??
+  "Arial";
+
+const blendHexColor = (
+  foreground: string,
+  background: string,
+  backgroundWeight: number,
+) => {
+  const parse = (value: string) =>
+    [1, 3, 5].map((offset) =>
+      Number.parseInt(value.replace("#", "").slice(offset - 1, offset + 1), 16),
+    );
+  const left = parse(foreground);
+  const right = parse(background);
+  return `#${left
+    .map((channel, index) =>
+      Math.round(
+        channel * (1 - backgroundWeight) +
+          right[index] * backgroundWeight,
+      )
+        .toString(16)
+        .padStart(2, "0"),
+    )
+    .join("")}`;
+};
 
 const eventReminders: Record<CalendarEventType, number[]> = {
   "application-sent": [],
@@ -89,6 +144,21 @@ const addDaysAtNine = (value: string, days: number) => {
   date.setDate(date.getDate() + days);
   date.setHours(9, 0, 0, 0);
   return date.toISOString();
+};
+
+const joinTemplateValues = (
+  values: Array<string | undefined>,
+  separator = " | ",
+) => values.map((value) => value?.trim()).filter(Boolean).join(separator);
+
+const splitLanguage = (value: string) => {
+  const [name, ...levelParts] = value
+    .split(/\s+(?:\||–|—|:)\s+|\s+-\s+/)
+    .map((part) => part.trim());
+  return {
+    name: name ?? "",
+    level: levelParts.join(" – "),
+  };
 };
 
 export class DataStore {
@@ -729,6 +799,254 @@ export class DataStore {
           ? `Sehr geehrte Frau ${application.contact.lastName},`
           : `Guten Tag ${contactName},`
       : "Sehr geehrte Damen und Herren,";
+    const knowledgeSection = ensureKnowledgeSection(
+      profile?.knowledgeSection,
+      profile?.skills ?? [],
+    );
+    const knowledgeText = formatKnowledgeSectionAsText(
+      knowledgeSection,
+      false,
+    );
+    const elegantData: Record<string, string> = {
+      VORNAME: profile?.firstName ?? "",
+      NACHNAME: profile?.lastName ?? "",
+      BERUFSBEZEICHNUNG:
+        profile?.title || application.job.title,
+      FACHGEBIET_1: profile?.skills[0] ?? "",
+      FACHGEBIET_2: profile?.skills[1] ?? "",
+      FACHGEBIETE: (profile?.skills ?? []).slice(0, 3).join(" | "),
+      TELEFON: profile?.phone ?? "",
+      EMAIL: profile?.email ?? "",
+      WEBSITE: profile?.portfolio || profile?.github || "",
+      LINKEDIN: profile?.linkedin ?? "",
+      ORT: profile?.city ?? "",
+      GEBURTSDATUM: profile?.birthDate ?? "",
+      GEBURTSORT: profile?.birthPlace ?? "",
+      KONTAKT_ZEILE_1: joinTemplateValues([
+        profile?.phone,
+        profile?.email,
+      ]),
+      KONTAKT_ZEILE_2: joinTemplateValues([
+        profile?.portfolio || profile?.github,
+        profile?.linkedin,
+      ]),
+      KONTAKT_ZEILE_3: joinTemplateValues([
+        profile?.city,
+        profile?.birthDate,
+        profile?.birthPlace,
+      ]),
+      KONTAKTE_TITEL:
+        profile?.phone ||
+        profile?.email ||
+        profile?.portfolio ||
+        profile?.github ||
+        profile?.linkedin ||
+        profile?.city
+          ? "KONTAKTE"
+          : "",
+      TELEFON_ZEILE: templateContactLine("Telefon", profile?.phone),
+      EMAIL_ZEILE: templateContactLine("E-Mail", profile?.email),
+      WEBSITE_ZEILE: templateContactLine(
+        "Website",
+        profile?.portfolio || profile?.github,
+      ),
+      LINKEDIN_ZEILE: templateContactLine(
+        "LinkedIn",
+        profile?.linkedin,
+      ),
+      ORT_ZEILE: templateContactLine("Ort", profile?.city),
+      HEADER_KONTAKT_1: profile?.phone ?? "",
+      HEADER_KONTAKT_2: profile?.email ?? "",
+      HEADER_KONTAKT_3: profile?.linkedin ?? "",
+      HEADER_KONTAKT_4: joinTemplateValues([
+        profile?.city,
+        profile?.country,
+      ]),
+      HEADER_KONTAKT_5:
+        profile?.birthDate || profile?.birthPlace
+          ? `Geb. ${profile?.birthDate ?? ""}${
+              profile?.birthDate && profile?.birthPlace ? " in " : ""
+            }${profile?.birthPlace ?? ""}`
+          : "",
+      HEADER_KONTAKT_6: profile?.portfolio || profile?.github || "",
+      PROFILFOTO: profile?.photoPath ?? "",
+      ZUSAMMENFASSUNG_TITEL:
+        application.documents.resumeProfile || profile?.summary
+          ? "ZUSAMMENFASSUNG"
+          : "",
+      ZUSAMMENFASSUNG:
+        application.documents.resumeProfile || profile?.summary || "",
+      STAERKEN_TITEL: profile?.skills.length ? "STÄRKEN" : "",
+      KENNTNISSE_TITEL: knowledgeText ? "FÄHIGKEITEN" : "",
+      KENNTNISSE: knowledgeText,
+      SPRACHEN_TITEL: profile?.languages.length ? "SPRACHEN" : "",
+      SPRACHEN_ATS: (profile?.languages ?? []).join("\n"),
+      BERUFSERFAHRUNG_TITEL: profile?.experiences.length
+        ? "BERUFSERFAHRUNG"
+        : "",
+      ERFAHRUNG_TITEL: profile?.experiences.length
+        ? "ERFAHRUNG"
+        : "",
+      AUSBILDUNG_TITEL: profile?.education.length
+        ? "AUSBILDUNG"
+        : "",
+      PROJEKTE_TITEL: "",
+      PROJEKTE: "",
+      WEITERBILDUNGEN_TITEL: "",
+      WEITERBILDUNGEN: "",
+      ZERTIFIKATE_TITEL: profile?.certifications.length
+        ? "ZERTIFIKATE"
+        : "",
+      ZERTIFIKATE: (profile?.certifications ?? []).join("\n"),
+      VEROEFFENTLICHUNGEN_TITEL: "",
+      VEROEFFENTLICHUNGEN: "",
+      EHRENAMT_TITEL: "",
+      EHRENAMT: "",
+      SOFTWARE_TITEL: "",
+      SOFTWARE: "",
+      ZUSATZANGABEN_TITEL: "",
+      ZUSATZANGABEN: "",
+      FUEHRERSCHEIN_TITEL: "",
+      FUEHRERSCHEIN: "",
+      INTERESSEN_TITEL: "",
+      INTERESSEN: "",
+      DESIGN_PRIMARY: application.accentColor,
+      DESIGN_ACCENT: application.secondaryColor,
+      DESIGN_SOFT_ACCENT: blendHexColor(
+        application.accentColor,
+        "#ffffff",
+        0.78,
+      ),
+      DESIGN_TITLE_BACKGROUND: blendHexColor(
+        application.accentColor,
+        "#ffffff",
+        0.62,
+      ),
+      DESIGN_FONT: wordFontName(application.designSettings.fontId),
+      ATS_MODUS:
+        application.designSettings.columnLayout === "compact-ats"
+          ? "true"
+          : "",
+    };
+    const lastExperienceIndex = Math.min(
+      (profile?.experiences.length ?? 0) - 1,
+      5,
+    );
+    for (let index = 0; index < 6; index += 1) {
+      const number = index + 1;
+      const experience = profile?.experiences[index];
+      elegantData[`POSITION_${number}`] = experience?.role ?? "";
+      elegantData[`UNTERNEHMEN_${number}`] =
+        experience?.company ?? "";
+      elegantData[`STARTDATUM_${number}`] = experience?.from ?? "";
+      elegantData[`DATUM_TRENNER_${number}`] =
+        experience?.from && experience.to ? " – " : "";
+      elegantData[`ENDDATUM_${number}`] = experience?.to ?? "";
+      elegantData[`ARBEITSORT_${number}`] = experience?.city ?? "";
+      elegantData[`BESCHREIBUNG_${number}`] = "";
+      elegantData[`METADATA_TRENNER_${number}`] =
+        (experience?.from || experience?.to) && experience?.city
+          ? "·"
+          : "";
+      elegantData[`TECHNOLOGIEN_${number}`] = "";
+      elegantData[`ERFAHRUNG_TRENNER_${number}`] =
+        experience && index < lastExperienceIndex ? "\u200B" : "";
+      for (let achievementIndex = 0; achievementIndex < 5; achievementIndex += 1) {
+        elegantData[`ERFOLG_${number}_${achievementIndex + 1}`] =
+          experience?.achievements[achievementIndex] ?? "";
+      }
+    }
+    for (let index = 0; index < 3; index += 1) {
+      const number = index + 1;
+      const education = profile?.education[index];
+      elegantData[`ABSCHLUSS_${number}`] = education?.degree ?? "";
+      elegantData[`FACHRICHTUNG_${number}`] = "";
+      elegantData[`HOCHSCHULE_${number}`] =
+        education?.institution ?? "";
+      elegantData[`AUSBILDUNG_START_${number}`] =
+        education?.from ?? "";
+      elegantData[`AUSBILDUNG_DATUM_TRENNER_${number}`] =
+        education?.from && education.to ? " – " : "";
+      elegantData[`AUSBILDUNG_ENDE_${number}`] = education?.to ?? "";
+      elegantData[`AUSBILDUNG_ORT_${number}`] = education?.city ?? "";
+      elegantData[`AUSBILDUNG_METADATA_TRENNER_${number}`] =
+        (education?.from || education?.to) && education?.city
+          ? "·"
+          : "";
+
+      const strength = profile?.skills[index] ?? "";
+      elegantData[`STAERKE_${number}_TITEL`] = strength;
+      elegantData[`STAERKE_${number}_BESCHREIBUNG`] = "";
+
+      const language = splitLanguage(profile?.languages[index] ?? "");
+      elegantData[`SPRACHE_${number}`] = language.name;
+      elegantData[`SPRACHNIVEAU_${number}`] = language.level;
+      elegantData[`SPRACHE_${number}_PUNKTE`] = languagePoints(
+        language.level,
+      );
+    }
+    knowledgeSection.categories
+      .filter((category) => category.isVisible)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+      .slice(0, 5)
+      .forEach((category, index) => {
+        const entries = [
+          ...category.items
+            .filter((item) => item.isVisible && item.name.trim())
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((item) => item.name),
+          ...category.subcategories
+            .filter((subcategory) => subcategory.isVisible)
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .flatMap((subcategory) =>
+              subcategory.items
+                .filter((item) => item.isVisible && item.name.trim())
+                .sort((left, right) => left.sortOrder - right.sortOrder)
+                .map((item) => item.name),
+            ),
+        ];
+        elegantData[`KENNTNIS_KATEGORIE_${index + 1}`] =
+          entries.length ? category.title : "";
+        elegantData[`KENNTNIS_EINTRAEGE_${index + 1}`] =
+          entries.join(" · ");
+      });
+    const templateData: Record<string, string> = {
+      BEWERBER_NAME: applicantName,
+      BEWERBER_VORNAME: profile?.firstName ?? "",
+      BEWERBER_NACHNAME: profile?.lastName ?? "",
+      BEWERBER_ADRESSE: profile?.street ?? "",
+      BEWERBER_PLZ: profile?.postalCode ?? "",
+      BEWERBER_ORT: profile?.city ?? "",
+      BEWERBER_TELEFON: profile?.phone ?? "",
+      BEWERBER_EMAIL: profile?.email ?? "",
+      FIRMA_NAME: application.company.name,
+      FIRMA_ADRESSE: application.company.street,
+      FIRMA_PLZ: application.company.postalCode,
+      FIRMA_ORT: application.company.city,
+      ANSPRECHPARTNER: contactName,
+      STELLENBEZEICHNUNG: application.job.title,
+      STELLENNUMMER: "",
+      BEWERBUNGSDATUM: new Intl.DateTimeFormat("de-DE").format(
+        new Date(),
+      ),
+      BETREFF:
+        application.documents.coverSubject ||
+        `Bewerbung als ${application.job.title}`,
+      ANREDE: greeting,
+      EINLEITUNG: application.documents.coverIntroduction,
+      HAUPTTEXT: [
+        application.documents.coverMotivation,
+        application.documents.coverQualification,
+        application.documents.coverCompanyFit,
+      ]
+        .filter(Boolean)
+        .join("\n\n"),
+      SCHLUSSTEXT: application.documents.coverClosing,
+      GRUSSFORMEL: "Mit freundlichen Grüßen",
+      UNTERSCHRIFT: applicantName,
+      KENNTNISSE: knowledgeText,
+      ...elegantData,
+    };
     const targetRoot = this.applicationPath(application);
     return {
       application,
@@ -738,46 +1056,7 @@ export class DataStore {
         lebenslauf: path.join(targetRoot, "Lebenslauf"),
       },
       requestedBaseName: application.company.name,
-      data: {
-        BEWERBER_NAME: applicantName,
-        BEWERBER_VORNAME: profile?.firstName ?? "",
-        BEWERBER_NACHNAME: profile?.lastName ?? "",
-        BEWERBER_ADRESSE: profile?.street ?? "",
-        BEWERBER_PLZ: profile?.postalCode ?? "",
-        BEWERBER_ORT: profile?.city ?? "",
-        BEWERBER_TELEFON: profile?.phone ?? "",
-        BEWERBER_EMAIL: profile?.email ?? "",
-        FIRMA_NAME: application.company.name,
-        FIRMA_ADRESSE: application.company.street,
-        FIRMA_PLZ: application.company.postalCode,
-        FIRMA_ORT: application.company.city,
-        ANSPRECHPARTNER: contactName,
-        STELLENBEZEICHNUNG: application.job.title,
-        STELLENNUMMER: "",
-        BEWERBUNGSDATUM: new Intl.DateTimeFormat("de-DE").format(new Date()),
-        BETREFF:
-          application.documents.coverSubject ||
-          `Bewerbung als ${application.job.title}`,
-        ANREDE: greeting,
-        EINLEITUNG: application.documents.coverIntroduction,
-        HAUPTTEXT: [
-          application.documents.coverMotivation,
-          application.documents.coverQualification,
-          application.documents.coverCompanyFit,
-        ]
-          .filter(Boolean)
-          .join("\n\n"),
-        SCHLUSSTEXT: application.documents.coverClosing,
-        GRUSSFORMEL: "Mit freundlichen Grüßen",
-        UNTERSCHRIFT: applicantName,
-        KENNTNISSE: formatKnowledgeSectionAsText(
-          ensureKnowledgeSection(
-            profile?.knowledgeSection,
-            profile?.skills ?? [],
-          ),
-          false,
-        ),
-      },
+      data: templateData,
     };
   }
 

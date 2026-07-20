@@ -13,7 +13,11 @@ type TemplateStore = {
   notice?: string;
   load: () => Promise<void>;
   add: (documentType: TemplateDocumentType) => Promise<void>;
-  use: (templateId: string, applicationId: string) => Promise<void>;
+  use: (
+    templateId: string,
+    applicationId: string,
+    atsMode?: boolean,
+  ) => Promise<void>;
   duplicate: (templateId: string) => Promise<void>;
   copyToMuster: (templateId: string) => Promise<void>;
   toggleFavorite: (templateId: string) => Promise<void>;
@@ -60,12 +64,13 @@ export const useTemplateStore = create<TemplateStore>((set, get) => ({
       set({ loading: false, error: messageFrom(error) });
     }
   },
-  async use(templateId, applicationId) {
+  async use(templateId, applicationId, atsMode = false) {
     set({ loading: true, error: undefined });
     try {
       const result = await window.bewerbungsManager.templates.use({
         templateId,
         applicationId,
+        atsMode,
       });
       set({
         loading: false,
@@ -143,4 +148,3 @@ export const useTemplateStore = create<TemplateStore>((set, get) => ({
   },
   clearMessage: () => set({ error: undefined, notice: undefined }),
 }));
-

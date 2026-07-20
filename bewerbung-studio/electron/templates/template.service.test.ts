@@ -11,6 +11,12 @@ import path from "node:path";
 import PizZip from "pizzip";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { resolveApplicationPaths } from "../../src/config/application-paths";
+import {
+  elegantLebenslaufTemplateConfig,
+  kreativLebenslaufTemplateConfig,
+  zeitgenoessischLebenslaufTemplateConfig,
+  wordMusterTemplateConfig,
+} from "../../src/features/templates/template.constants";
 import { TemplateError } from "../../src/features/templates/template.errors";
 import { TemplateService } from "./template.service";
 
@@ -131,6 +137,517 @@ describe("Musterverwaltung", () => {
     await expect(stat(second.filePath)).resolves.toBeDefined();
   });
 
+  it("registers Word Muster from the uploaded source and keeps it fixed in second position", async () => {
+    const sourcePath = path.join(
+      paths.anschreibenDocuments,
+      wordMusterTemplateConfig.fileName,
+    );
+    const targetPath = path.join(
+      paths.anschreibenTemplates,
+      wordMusterTemplateConfig.fileName,
+    );
+    await createDocx(sourcePath);
+    const original = await readFile(sourcePath);
+    const firstPath = path.join(paths.anschreibenTemplates, "Erste.docx");
+    const laterPath = path.join(paths.deckblattTemplates, "Spaeter.docx");
+    await createDocx(firstPath);
+    await createDocx(laterPath);
+    await writeFile(
+      path.join(paths.anschreibenTemplates, "Erste.template.json"),
+      JSON.stringify({ sortOrder: 1 }),
+      "utf8",
+    );
+    await writeFile(
+      path.join(paths.deckblattTemplates, "Spaeter.template.json"),
+      JSON.stringify({ sortOrder: 3 }),
+      "utf8",
+    );
+
+    const initialized = await service.initialize();
+    const wordMuster = initialized.templates[1];
+
+    expect(wordMuster).toMatchObject({
+      id: "word-muster-anschreiben",
+      name: "Word Muster",
+      fileName: "Anschreiben_Muster.docx",
+      format: "docx",
+      source: "uploaded-word-template",
+      documentType: "anschreiben",
+      sortOrder: 2,
+      isSystemTemplate: false,
+      supportsPreview: true,
+      supportsPlaceholders: true,
+      editableInWord: true,
+      isProtected: true,
+    });
+    expect(await readFile(targetPath)).toEqual(original);
+    expect(await readFile(sourcePath)).toEqual(original);
+
+    const later = initialized.templates.find(
+      (template) => template.fileName === "Spaeter.docx",
+    )!;
+    const afterFavorite = await service.toggleTemplateFavorite(later.id);
+    expect(afterFavorite.templates[1].id).toBe(
+      wordMusterTemplateConfig.id,
+    );
+    await expect(
+      service.deleteCustomTemplate(wordMuster.id),
+    ).rejects.toMatchObject({ code: "PROTECTED_TEMPLATE" });
+    await expect(stat(targetPath)).resolves.toBeDefined();
+  });
+
+  it("replaces Turkish Word Muster aliases on a new copy and leaves unknown placeholders unchanged", async () => {
+    const templatePath = path.join(
+      paths.anschreibenTemplates,
+      wordMusterTemplateConfig.fileName,
+    );
+    await createDocx(
+      templatePath,
+      [
+        `<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>{{FIRMA_</w:t></w:r><w:r><w:t>ADI}}</w:t></w:r></w:p>`,
+        "{{ANSPRECHPARTNER}}",
+        "{{FIRMA_ADRESI}}",
+        "{{POSTA_KODU}}",
+        "{{SEHIR}}",
+        "{{TARIH}}",
+        "{{STELLE}}",
+        "{{REFERENZNUMMER}}",
+        "{{ANREDE}}",
+        "{{ANSCHREIBEN_METNI}}",
+        "{{KAPANIS}}",
+        "{{UNBEKANNT}}",
+      ]
+        .map((value) =>
+          value.startsWith("<w:p>")
+            ? value
+            : `<w:p><w:r><w:t>${value}</w:t></w:r></w:p>`,
+        )
+        .join(""),
+    );
+    const original = await readFile(templatePath);
+    const initialized = await service.initialize();
+    const wordMuster = initialized.templates.find(
+      (template) => template.id === wordMusterTemplateConfig.id,
+    )!;
+    const targetDirectory = path.join(
+      paths.dataRoot,
+      "Bewerbungen",
+      "Siemens",
+      "Anschreiben",
+    );
+
+    const created = await service.createDocumentFromTemplate(
+      wordMuster.id,
+      targetDirectory,
+      "Siemens AG",
+      {
+        FIRMA_NAME: "Siemens AG",
+        ANSPRECHPARTNER: "Frau Beispiel",
+        FIRMA_ADRESSE: "Werner-von-Siemens-Straße 1",
+        FIRMA_PLZ: "80333",
+        FIRMA_ORT: "München",
+        BEWERBUNGSDATUM: "20.07.2026",
+        STELLENBEZEICHNUNG: "Softwareentwickler",
+        STELLENNUMMER: "REF-42",
+        ANREDE: "Sehr geehrte Frau Beispiel,",
+        HAUPTTEXT: "Mein individueller Anschreibentext.",
+        SCHLUSSTEXT: "Ich freue mich auf Ihre Rückmeldung.",
+      },
+    );
+    const outputZip = new PizZip(await readFile(created.filePath));
+    const documentXml = outputZip.file("word/document.xml")!.asText();
+
+    expect(created.fileName).toMatch(
+      /^Siemens_AG_\d{8}_\d{6}\.docx$/,
+    );
+    expect(created.replacedPlaceholders).toEqual(
+      expect.arrayContaining([
+        "FIRMA_ADI",
+        "FIRMA_ADRESI",
+        "POSTA_KODU",
+        "SEHIR",
+        "TARIH",
+        "STELLE",
+        "REFERENZNUMMER",
+        "ANSCHREIBEN_METNI",
+        "KAPANIS",
+      ]),
+    );
+    expect(documentXml).toContain("Siemens AG");
+    expect(documentXml).toContain("Softwareentwickler");
+    expect(documentXml).toContain("Mein individueller Anschreibentext.");
+    expect(documentXml).toContain("{{UNBEKANNT}}");
+    expect(documentXml).toContain("<w:b/>");
+    expect(await readFile(templatePath)).toEqual(original);
+  });
+
+  it("registers Zeitgenössisch as the third template and creates photo and ATS Lebenslauf copies", async () => {
+    paths = resolveApplicationPaths(
+      root,
+      path.resolve("public", "templates"),
+    );
+    service = new TemplateService(paths);
+    const firstPath = path.join(
+      paths.anschreibenTemplates,
+      "Erste.docx",
+    );
+    await createDocx(firstPath);
+    await writeFile(
+      path.join(paths.anschreibenTemplates, "Erste.template.json"),
+      JSON.stringify({ sortOrder: 1 }),
+      "utf8",
+    );
+    await createDocx(
+      path.join(
+        paths.anschreibenDocuments,
+        wordMusterTemplateConfig.fileName,
+      ),
+    );
+
+    const initialized = await service.initialize();
+    const zeitgenoessisch = initialized.templates[2];
+    expect(initialized.templates[3].id).toBe(
+      kreativLebenslaufTemplateConfig.id,
+    );
+    expect(initialized.templates[4].id).toBe(
+      elegantLebenslaufTemplateConfig.id,
+    );
+    const bundledPath = path.resolve(
+      "public",
+      "templates",
+      zeitgenoessischLebenslaufTemplateConfig.fileName,
+    );
+    const bundledOriginal = await readFile(bundledPath);
+    const onePixelPng =
+      "data:image/png;base64," +
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ" +
+      "AAAADUlEQVR42mNk+M/wHwAEAQH/7Z7uWQAAAABJRU5ErkJggg==";
+    const data = {
+      VORNAME: "Mustafa",
+      NACHNAME: "Özdemir",
+      BERUFSBEZEICHNUNG: "Softwareentwickler",
+      FACHGEBIETE: "Backend | Cloud | DevOps",
+      KONTAKT_ZEILE_1: "+49 170 123456 | mustafa@example.de",
+      KONTAKT_ZEILE_2: "Berlin",
+      KONTAKT_ZEILE_3: "Berlin",
+      KONTAKTE_TITEL: "KONTAKTE",
+      TELEFON_ZEILE: "Telefon: +49 170 123456",
+      EMAIL_ZEILE: "E-Mail: mustafa@example.de",
+      WEBSITE_ZEILE: "Website: mustafa.example",
+      LINKEDIN_ZEILE: "LinkedIn: linkedin.com/in/mustafa",
+      ORT_ZEILE: "Ort: Berlin",
+      PROFILFOTO: onePixelPng,
+      ZUSAMMENFASSUNG_TITEL: "ZUSAMMENFASSUNG",
+      ZUSAMMENFASSUNG: "Erfahrener Entwickler für sichere Plattformen.",
+      BERUFSERFAHRUNG_TITEL: "BERUFSERFAHRUNG",
+      POSITION_1: "Senior Softwareentwickler",
+      UNTERNEHMEN_1: "Beispiel GmbH",
+      STARTDATUM_1: "01/2022",
+      DATUM_TRENNER_1: " – ",
+      ENDDATUM_1: "heute",
+      ARBEITSORT_1: "Berlin",
+      BESCHREIBUNG_1: "Entwicklung geschäftskritischer Anwendungen.",
+      ERFOLG_1_1: "Bereitstellungszeit um 40 Prozent reduziert.",
+      AUSBILDUNG_TITEL: "AUSBILDUNG",
+      ABSCHLUSS_1: "Bachelor of Science",
+      HOCHSCHULE_1: "Technische Hochschule",
+      AUSBILDUNG_START_1: "2014",
+      AUSBILDUNG_DATUM_TRENNER_1: " – ",
+      AUSBILDUNG_ENDE_1: "2018",
+      AUSBILDUNG_ORT_1: "Berlin",
+      STAERKEN_TITEL: "STÄRKEN",
+      STAERKE_1_TITEL: "Zielorientierung",
+      KENNTNISSE_TITEL: "FÄHIGKEITEN",
+      KENNTNIS_KATEGORIE_1: "Backend",
+      KENNTNIS_EINTRAEGE_1: "TypeScript · Node.js · PostgreSQL",
+      SPRACHEN_TITEL: "SPRACHEN",
+      SPRACHE_1: "Deutsch",
+      SPRACHNIVEAU_1: "Muttersprache",
+      SPRACHE_1_PUNKTE: "●●●●●",
+      SPRACHEN_ATS: "Deutsch – Muttersprache",
+      DESIGN_PRIMARY: "#123456",
+      DESIGN_ACCENT: "#36B779",
+      DESIGN_SOFT_ACCENT: "#DDEEEE",
+      DESIGN_TITLE_BACKGROUND: "#CCEEDD",
+      DESIGN_FONT: "Arial",
+    };
+
+    expect(zeitgenoessisch).toMatchObject({
+      id: "word-lebenslauf-zeitgenoessisch",
+      name: "Zeitgenössisch",
+      documentType: "lebenslauf",
+      format: "docx",
+      source: "system-word-template",
+      sortOrder: 3,
+      category: "contemporary",
+      layout: "two-column-left-sidebar",
+      atsFriendly: true,
+      supportsPhoto: true,
+      supportsPlaceholders: true,
+      editableInWord: true,
+      supportsAtsMode: true,
+      isSystemTemplate: true,
+      isProtected: true,
+    });
+
+    const targetDirectory = path.join(
+      paths.dataRoot,
+      "Bewerbungen",
+      "Zeitgenoessisch",
+      "Lebenslauf",
+    );
+    const created = await service.createDocumentFromTemplate(
+      zeitgenoessisch.id,
+      targetDirectory,
+      "ignored",
+      data,
+    );
+    const outputZip = new PizZip(await readFile(created.filePath));
+    const documentXml = outputZip.file("word/document.xml")!.asText();
+    const stylesXml = outputZip.file("word/styles.xml")!.asText();
+    const outputMedia = Object.keys(outputZip.files)
+      .filter((fileName) => /^word\/media\/.*\.png$/i.test(fileName))
+      .map((fileName) => outputZip.file(fileName)!.asNodeBuffer());
+
+    expect(created.fileName).toMatch(
+      /^Lebenslauf_Mustafa_Oezdemir_\d{8}_\d{6}\.docx$/,
+    );
+    expect(documentXml).toContain("Mustafa");
+    expect(documentXml).toContain("Senior Softwareentwickler");
+    expect(stylesXml).toContain('w:color w:val="123456"');
+    expect(documentXml).toContain('w:fill="CCEEDD"');
+    expect(documentXml).toContain('<w:gridCol w:w="3409"/>');
+    expect(documentXml).toContain('<w:gridCol w:w="7589"/>');
+    expect(documentXml).toContain("<w:drawing>");
+    expect(documentXml).not.toContain("{{");
+    expect(outputMedia).toContainEqual(
+      Buffer.from(onePixelPng.split(",")[1], "base64"),
+    );
+    expect(await readFile(bundledPath)).toEqual(bundledOriginal);
+
+    const withoutPhoto = await service.createDocumentFromTemplate(
+      zeitgenoessisch.id,
+      path.join(targetDirectory, "OhneFoto"),
+      "ignored",
+      { ...data, PROFILFOTO: "" },
+    );
+    const withoutPhotoZip = new PizZip(
+      await readFile(withoutPhoto.filePath),
+    );
+    const withoutPhotoXml = withoutPhotoZip
+      .file("word/document.xml")!
+      .asText();
+    expect(withoutPhotoXml).not.toContain('descr="PROFILFOTO"');
+    expect(withoutPhotoXml.match(/<w:drawing>/g)).toHaveLength(1);
+
+    const atsCreated = await service.createDocumentFromTemplate(
+      zeitgenoessisch.id,
+      path.join(targetDirectory, "ATS"),
+      "ignored",
+      data,
+      { atsMode: true },
+    );
+    const atsZip = new PizZip(await readFile(atsCreated.filePath));
+    const atsXml = atsZip.file("word/document.xml")!.asText();
+    expect(atsXml).toContain("Mustafa");
+    expect(atsXml).not.toContain('<w:gridCol w:w="3409"/>');
+    expect(atsXml).not.toContain("<w:drawing>");
+
+    const favorited = await service.toggleTemplateFavorite(
+      zeitgenoessisch.id,
+    );
+    expect(favorited.templates[2].id).toBe(
+      zeitgenoessischLebenslaufTemplateConfig.id,
+    );
+  });
+
+  it("registers Kreativ as the fourth compact template and preserves its banner, background and ATS copy", async () => {
+    paths = resolveApplicationPaths(
+      root,
+      path.resolve("public", "templates"),
+    );
+    service = new TemplateService(paths);
+    const firstPath = path.join(
+      paths.anschreibenTemplates,
+      "Erste.docx",
+    );
+    await createDocx(firstPath);
+    await writeFile(
+      path.join(paths.anschreibenTemplates, "Erste.template.json"),
+      JSON.stringify({ sortOrder: 1 }),
+      "utf8",
+    );
+    await createDocx(
+      path.join(
+        paths.anschreibenDocuments,
+        wordMusterTemplateConfig.fileName,
+      ),
+    );
+
+    const initialized = await service.initialize();
+    const kreativ = initialized.templates[3];
+    expect(kreativ).toMatchObject({
+      id: "word-lebenslauf-kreativ",
+      name: "Kreativ",
+      documentType: "lebenslauf",
+      format: "docx",
+      source: "system-word-template",
+      sortOrder: 4,
+      category: "creative",
+      layout: "two-column-header-banner",
+      atsFriendly: true,
+      supportsPhoto: true,
+      supportsBackground: true,
+      supportsPlaceholders: true,
+      editableInWord: true,
+      supportsAtsMode: true,
+      emphasis: "compact-information",
+      isSystemTemplate: true,
+      isProtected: true,
+    });
+
+    const bundledPath = path.resolve(
+      "public",
+      "templates",
+      kreativLebenslaufTemplateConfig.fileName,
+    );
+    const bundledOriginal = await readFile(bundledPath);
+    const onePixelPng =
+      "data:image/png;base64," +
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ" +
+      "AAAADUlEQVR42mNk+M/wHwAEAQH/7Z7uWQAAAABJRU5ErkJggg==";
+    const data = {
+      VORNAME: "Marie",
+      NACHNAME: "Schröder",
+      BERUFSBEZEICHNUNG: "IT-Projektmanagerin",
+      FACHGEBIETE: "Softwareentwicklung | Prozessmanagement",
+      HEADER_KONTAKT_1: "+49 30 12345678",
+      HEADER_KONTAKT_2: "marie@example.de",
+      HEADER_KONTAKT_3: "linkedin.com/in/marie",
+      HEADER_KONTAKT_4: "Berlin, Deutschland",
+      HEADER_KONTAKT_5: "Geb. 01.03.1990 in München",
+      PROFILFOTO: onePixelPng,
+      ERFAHRUNG_TITEL: "ERFAHRUNG",
+      POSITION_1: "Senior IT-Projektmanagerin",
+      UNTERNEHMEN_1: "TechnologieLösungen AG",
+      STARTDATUM_1: "2018",
+      DATUM_TRENNER_1: "–",
+      ENDDATUM_1: "2023",
+      METADATA_TRENNER_1: "·",
+      ARBEITSORT_1: "München",
+      BESCHREIBUNG_1: "Leitung komplexer IT-Projekte.",
+      ERFOLG_1_1: "Mehr als 15 Projekte erfolgreich umgesetzt.",
+      TECHNOLOGIEN_1: "Jira · TypeScript · React",
+      AUSBILDUNG_TITEL: "AUSBILDUNG",
+      ABSCHLUSS_1: "M.Sc.",
+      FACHRICHTUNG_1: "Wirtschaftsinformatik",
+      HOCHSCHULE_1: "Technische Universität München",
+      AUSBILDUNG_START_1: "2010",
+      AUSBILDUNG_DATUM_TRENNER_1: "–",
+      AUSBILDUNG_ENDE_1: "2012",
+      AUSBILDUNG_METADATA_TRENNER_1: "·",
+      AUSBILDUNG_ORT_1: "München",
+      ZUSAMMENFASSUNG_TITEL: "ZUSAMMENFASSUNG",
+      ZUSAMMENFASSUNG: "Erfahrene Projektmanagerin für digitale Transformation.",
+      STAERKEN_TITEL: "STÄRKEN",
+      STAERKE_1_TITEL: "Projektmanagement",
+      STAERKE_1_BESCHREIBUNG: "Mehrjährige Leitung komplexer Projekte.",
+      SPRACHEN_TITEL: "SPRACHEN",
+      SPRACHE_1: "Deutsch",
+      SPRACHNIVEAU_1: "Muttersprache",
+      SPRACHE_1_PUNKTE: "●●●●●",
+      SPRACHEN_ATS: "Deutsch – Muttersprache",
+      KENNTNISSE_TITEL: "FÄHIGKEITEN",
+      KENNTNISSE: "Jira, TypeScript, React",
+      KENNTNIS_KATEGORIE_1: "Projektmanagement",
+      KENNTNIS_EINTRAEGE_1: "Jira · Asana",
+      DESIGN_PRIMARY: "#111111",
+      DESIGN_SOFT_ACCENT: "#EEEEEE",
+      DESIGN_FONT: "Arial",
+    };
+    const targetDirectory = path.join(
+      paths.dataRoot,
+      "Bewerbungen",
+      "Kreativ",
+      "Lebenslauf",
+    );
+    const created = await service.createDocumentFromTemplate(
+      kreativ.id,
+      targetDirectory,
+      "ignored",
+      data,
+    );
+    const outputZip = new PizZip(await readFile(created.filePath));
+    const documentXml = outputZip.file("word/document.xml")!.asText();
+    const media = Object.keys(outputZip.files)
+      .filter((fileName) => /^word\/media\/.*\.png$/i.test(fileName))
+      .map((fileName) => outputZip.file(fileName)!.asNodeBuffer());
+
+    expect(created.fileName).toMatch(
+      /^Lebenslauf_Marie_Schroeder_\d{8}_\d{6}\.docx$/,
+    );
+    expect(documentXml).toContain('w:fill="111111"');
+    expect(documentXml).toContain('<w:gridCol w:w="8250"/>');
+    expect(documentXml).toContain('<w:gridCol w:w="2748"/>');
+    expect(documentXml).toContain('<w:gridCol w:w="6599"/>');
+    expect(documentXml).toContain('<w:gridCol w:w="4399"/>');
+    expect(documentXml).toContain("Senior IT-Projektmanagerin");
+    expect(documentXml).not.toContain("{{");
+    expect(media).toContainEqual(
+      Buffer.from(onePixelPng.split(",")[1], "base64"),
+    );
+    expect(await readFile(bundledPath)).toEqual(bundledOriginal);
+
+    const withoutPhoto = await service.createDocumentFromTemplate(
+      kreativ.id,
+      path.join(targetDirectory, "OhneFoto"),
+      "ignored",
+      { ...data, PROFILFOTO: "" },
+    );
+    const withoutPhotoXml = new PizZip(
+      await readFile(withoutPhoto.filePath),
+    )
+      .file("word/document.xml")!
+      .asText();
+    expect(withoutPhotoXml).not.toContain('descr="PROFILFOTO"');
+    expect(withoutPhotoXml.match(/<w:drawing>/g)).toHaveLength(1);
+
+    const atsCreated = await service.createDocumentFromTemplate(
+      kreativ.id,
+      path.join(targetDirectory, "ATS"),
+      "ignored",
+      data,
+      { atsMode: true },
+    );
+    const atsXml = new PizZip(await readFile(atsCreated.filePath))
+      .file("word/document.xml")!
+      .asText();
+    expect(atsXml).toContain("Marie");
+    expect(atsXml).not.toContain("<w:drawing>");
+    expect(atsXml).not.toContain('<w:gridCol w:w="6599"/>');
+
+    const denseResult = await service.createDocumentFromTemplate(
+      kreativ.id,
+      path.join(targetDirectory, "Dicht"),
+      "ignored",
+      {
+        ...data,
+        POSITION_2: "Projektmanagerin",
+        POSITION_3: "Projektleiterin",
+        POSITION_4: "Softwareentwicklerin",
+        POSITION_5: "Consultant",
+      },
+    );
+    expect(denseResult.warning).toContain(
+      "Der Inhalt passt möglicherweise nicht vollständig auf eine Seite.",
+    );
+
+    const favorited = await service.toggleTemplateFavorite(kreativ.id);
+    expect(favorited.templates[3].id).toBe(
+      kreativLebenslaufTemplateConfig.id,
+    );
+  });
+
   it("creates a new DOCX, replaces split-run placeholders and preserves run formatting", async () => {
     const templatePath = path.join(
       paths.anschreibenTemplates,
@@ -229,4 +746,3 @@ describe("Musterverwaltung", () => {
     await expect(stat(second.templates[0].previewImagePath!)).resolves.toBeDefined();
   });
 });
-

@@ -4,6 +4,13 @@ import type { TemplateExtension } from "../../src/features/templates/template.ty
 
 export const sanitizeTemplateFileName = (value: string) =>
   value
+    .replaceAll("Ä", "Ae")
+    .replaceAll("Ö", "Oe")
+    .replaceAll("Ü", "Ue")
+    .replaceAll("ä", "ae")
+    .replaceAll("ö", "oe")
+    .replaceAll("ü", "ue")
+    .replaceAll("ß", "ss")
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-")
@@ -52,4 +59,3 @@ export const createUniqueFilePath = async (
     `${baseName}_${templateTimestamp()}${extension}`,
   );
 };
-

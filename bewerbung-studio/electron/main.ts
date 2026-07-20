@@ -6,6 +6,7 @@ import {
   BrowserWindow,
   dialog,
   ipcMain,
+  nativeImage,
   Notification,
   shell,
 } from "electron";
@@ -147,11 +148,20 @@ const registerIpc = () => {
     const template = await templateService.getTemplateById(value.templateId);
     if (!template) throw new Error("Vorlage wurde nicht gefunden.");
     const context = store.getTemplateDocumentContext(value.applicationId);
+    if (template.supportsPhoto && context.data["PROFILFOTO"]) {
+      const photo = nativeImage.createFromDataURL(
+        context.data["PROFILFOTO"],
+      );
+      context.data["PROFILFOTO"] = photo.isEmpty()
+        ? ""
+        : `data:image/png;base64,${photo.toPNG().toString("base64")}`;
+    }
     const result = await templateService.createDocumentFromTemplate(
       template.id,
       context.targetDirectories[template.documentType],
       context.requestedBaseName,
       context.data,
+      { atsMode: value.atsMode === true },
     );
     const openError = await shell.openPath(result.filePath);
     if (openError) throw new Error(openError);
@@ -407,7 +417,13 @@ app.whenReady().then(async () => {
   store = new DataStore(app.getPath("documents"));
   await store.initialize();
   templateService = new TemplateService(
-    resolveApplicationPaths(app.getPath("documents")),
+    resolveApplicationPaths(
+      app.getPath("documents"),
+      path.join(
+        __dirname,
+        isDevelopment ? "../public/templates" : "../dist/templates",
+      ),
+    ),
   );
   await templateService.initialize();
   registerIpc();

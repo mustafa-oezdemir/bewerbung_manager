@@ -7,13 +7,17 @@ export const templateDocumentTypes = [
 export const templateSources = [
   "muster-folder",
   "existing-document",
+  "uploaded-word-template",
+  "system-word-template",
 ] as const;
 
 export const templateExtensions = [".docx", ".dotx", ".doc"] as const;
+export const templateFormats = ["docx", "dotx", "doc"] as const;
 
 export type TemplateDocumentType = (typeof templateDocumentTypes)[number];
 export type TemplateSource = (typeof templateSources)[number];
 export type TemplateExtension = (typeof templateExtensions)[number];
+export type TemplateFormat = (typeof templateFormats)[number];
 
 export interface DocumentTemplate {
   id: string;
@@ -21,8 +25,10 @@ export interface DocumentTemplate {
   fileName: string;
   filePath: string;
   extension: TemplateExtension;
+  format: TemplateFormat;
   documentType: TemplateDocumentType;
   source: TemplateSource;
+  sortOrder: number;
   createdAt?: string;
   modifiedAt?: string;
   fileSize: number;
@@ -32,6 +38,17 @@ export interface DocumentTemplate {
   tags: string[];
   isFavorite: boolean;
   isSystemTemplate: boolean;
+  supportsPreview: boolean;
+  supportsPlaceholders: boolean;
+  editableInWord: boolean;
+  isProtected: boolean;
+  category?: string;
+  layout?: string;
+  atsFriendly: boolean;
+  supportsPhoto: boolean;
+  supportsBackground: boolean;
+  supportsAtsMode: boolean;
+  emphasis?: string;
 }
 
 export interface CreatedDocumentResult {
@@ -57,14 +74,29 @@ export interface AddTemplateInput {
 export interface UseTemplateInput {
   templateId: string;
   applicationId: string;
+  atsMode?: boolean;
 }
 
 export interface TemplateMetadata {
+  id?: string;
   name?: string;
   documentType?: TemplateDocumentType;
+  format?: TemplateFormat;
+  source?: TemplateSource;
+  sortOrder?: number;
   description?: string;
   tags?: string[];
   isFavorite?: boolean;
   isSystemTemplate?: boolean;
+  supportsPreview?: boolean;
+  supportsPlaceholders?: boolean;
+  editableInWord?: boolean;
+  isProtected?: boolean;
+  category?: string;
+  layout?: string;
+  atsFriendly?: boolean;
+  supportsPhoto?: boolean;
+  supportsBackground?: boolean;
+  supportsAtsMode?: boolean;
+  emphasis?: string;
 }
-

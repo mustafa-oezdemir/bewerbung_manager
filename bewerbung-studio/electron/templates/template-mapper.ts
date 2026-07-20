@@ -7,6 +7,7 @@ import type {
   TemplateMetadata,
   TemplateSource,
 } from "../../src/features/templates/template.types";
+import { defaultTemplateSortOrder } from "../../src/features/templates/template.constants";
 
 export const createTemplateId = (filePath: string) =>
   createHash("sha256")
@@ -38,13 +39,17 @@ export const mapTemplateFile = ({
     .replaceAll("_", " ")
     .replaceAll("-", " ");
   return {
-    id: createTemplateId(filePath),
+    id: metadata.id?.trim() || createTemplateId(filePath),
     name: metadata.name?.trim() || fallbackName,
     fileName,
     filePath,
     extension,
+    format:
+      metadata.format ??
+      (extension.slice(1) as DocumentTemplate["format"]),
     documentType: metadata.documentType ?? documentType,
-    source,
+    source: metadata.source ?? source,
+    sortOrder: metadata.sortOrder ?? defaultTemplateSortOrder,
     createdAt,
     modifiedAt,
     fileSize,
@@ -54,6 +59,17 @@ export const mapTemplateFile = ({
     ),
     isFavorite: metadata.isFavorite ?? false,
     isSystemTemplate: metadata.isSystemTemplate ?? false,
+    supportsPreview: metadata.supportsPreview ?? true,
+    supportsPlaceholders:
+      metadata.supportsPlaceholders ?? extension !== ".doc",
+    editableInWord: metadata.editableInWord ?? true,
+    isProtected: metadata.isProtected ?? false,
+    category: metadata.category?.trim() || undefined,
+    layout: metadata.layout?.trim() || undefined,
+    atsFriendly: metadata.atsFriendly ?? false,
+    supportsPhoto: metadata.supportsPhoto ?? false,
+    supportsBackground: metadata.supportsBackground ?? false,
+    supportsAtsMode: metadata.supportsAtsMode ?? false,
+    emphasis: metadata.emphasis?.trim() || undefined,
   };
 };
-

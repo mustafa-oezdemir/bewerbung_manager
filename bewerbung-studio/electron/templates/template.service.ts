@@ -7,7 +7,11 @@ import {
 import path from "node:path";
 import type { ApplicationPaths } from "../../src/config/application-paths";
 import {
+  defaultTemplateSortOrder,
+  elegantLebenslaufTemplateConfig,
+  kreativLebenslaufTemplateConfig,
   maximumTemplateFileSize,
+  zeitgenoessischLebenslaufTemplateConfig,
 } from "../../src/features/templates/template.constants";
 import type {
   CreatedDocumentResult,
@@ -98,6 +102,11 @@ export class TemplateService {
       tags: [],
       isFavorite: false,
       isSystemTemplate: false,
+      sortOrder: defaultTemplateSortOrder,
+      supportsPreview: true,
+      supportsPlaceholders: extension !== ".doc",
+      editableInWord: true,
+      isProtected: false,
     });
     await this.repository.refresh();
     const created = this.repository
@@ -162,11 +171,15 @@ export class TemplateService {
       template.extension,
     );
     await withOneDriveRetry(() => copyFile(template.filePath, targetPath));
-    if (template.source === "muster-folder") {
+    if (template.source !== "existing-document") {
       await this.repository.writeMetadata(targetPath, {
         ...(await this.repository.readMetadata(template.filePath)),
+        id: undefined,
         name: `${template.name} Kopie`,
+        source: "muster-folder",
+        sortOrder: defaultTemplateSortOrder,
         isSystemTemplate: false,
+        isProtected: false,
       });
     }
     await this.repository.refresh();
@@ -182,6 +195,7 @@ export class TemplateService {
     targetDirectory: string,
     requestedBaseName: string,
     data: Record<string, string>,
+    options: { atsMode?: boolean } = {},
   ): Promise<CreatedDocumentResult> {
     const template = await this.requireTemplate(templateId);
     if (
@@ -189,18 +203,72 @@ export class TemplateService {
     ) {
       throw new TemplateError("Ungültiger Zielordner.", "INVALID_PATH");
     }
-    await validateTemplateFile(this.paths, template.filePath);
+    let sourceTemplate = template;
+    let warning: string | undefined;
+    const managedResumeConfig =
+      template.id === elegantLebenslaufTemplateConfig.id
+        ? elegantLebenslaufTemplateConfig
+        : template.id === zeitgenoessischLebenslaufTemplateConfig.id
+          ? zeitgenoessischLebenslaufTemplateConfig
+          : template.id === kreativLebenslaufTemplateConfig.id
+            ? kreativLebenslaufTemplateConfig
+          : undefined;
+    if (managedResumeConfig && options.atsMode) {
+      const atsPath = path.join(
+        this.paths.systemTemplateCache,
+        managedResumeConfig.atsFileName,
+      );
+      try {
+        await validateTemplateFile(this.paths, atsPath);
+        sourceTemplate = { ...template, filePath: atsPath };
+      } catch {
+        warning = `Die ATS-Variante war nicht verfügbar. Die Standardvorlage „${managedResumeConfig.name}“ wurde verwendet.`;
+      }
+    }
+    await validateTemplateFile(this.paths, sourceTemplate.filePath);
     await mkdir(targetDirectory, { recursive: true });
     const outputExtension =
       template.extension === ".doc" ? ".doc" : ".docx";
+    const outputBaseName =
+      managedResumeConfig
+        ? `Lebenslauf_${data.VORNAME ?? ""}_${data.NACHNAME ?? ""}`
+        : requestedBaseName;
     const targetPath = await createUniqueFilePath(
       targetDirectory,
-      `${sanitizeTemplateFileName(requestedBaseName)}_${templateTimestamp()}`,
+      `${sanitizeTemplateFileName(outputBaseName)}_${templateTimestamp()}`,
       outputExtension,
     );
-    return withOneDriveRetry(() =>
-      this.placeholderService.createDocument(template, targetPath, data),
+    const result = await withOneDriveRetry(() =>
+      this.placeholderService.createDocument(
+        sourceTemplate,
+        targetPath,
+        data,
+      ),
     );
+    const creativeContentLength = Object.entries(data)
+      .filter(([key]) =>
+        /^(ZUSAMMENFASSUNG|BESCHREIBUNG_\d+|ERFOLG_\d+_\d+|STAERKE_\d+_BESCHREIBUNG|KENNTNIS_EINTRAEGE_\d+)$/.test(
+          key,
+        ),
+      )
+      .reduce((length, [, value]) => length + value.trim().length, 0);
+    const filledCreativeExperiences = Array.from(
+      { length: 6 },
+      (_, index) => data[`POSITION_${index + 1}`]?.trim() ?? "",
+    ).filter(Boolean).length;
+    const singlePageWarning =
+      template.id === kreativLebenslaufTemplateConfig.id &&
+      !options.atsMode &&
+      (creativeContentLength > 3_200 ||
+        filledCreativeExperiences > 4)
+        ? "Der Inhalt passt möglicherweise nicht vollständig auf eine Seite. Bitte kürzen Sie einzelne Beschreibungen oder erlauben Sie eine zweite Seite."
+        : undefined;
+    const combinedWarning = [warning, singlePageWarning]
+      .filter((value): value is string => Boolean(value))
+      .join(" ");
+    return combinedWarning
+      ? { ...result, warning: combinedWarning }
+      : result;
   }
 
   async toggleTemplateFavorite(templateId: string) {
@@ -213,6 +281,12 @@ export class TemplateService {
 
   async deleteCustomTemplate(templateId: string) {
     const template = await this.requireTemplate(templateId);
+    if (template.isProtected) {
+      throw new TemplateError(
+        "Diese Word-Vorlage ist geschützt und kann nicht gelöscht werden.",
+        "PROTECTED_TEMPLATE",
+      );
+    }
     if (template.isSystemTemplate) {
       throw new TemplateError(
         "Systemvorlagen können nicht gelöscht werden.",

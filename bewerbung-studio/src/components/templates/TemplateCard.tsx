@@ -1,13 +1,21 @@
 import {
   Copy,
+  Eye,
   FileOutput,
+  FileText,
   FolderOpen,
   Heart,
-  Info,
   LibraryBig,
   Trash2,
 } from "lucide-react";
-import { templateTypeLabels } from "../../features/templates/template.constants";
+import {
+  elegantLebenslaufTemplateConfig,
+  kreativLebenslaufTemplateConfig,
+  templateSourceLabels,
+  templateTypeLabels,
+  zeitgenoessischLebenslaufTemplateConfig,
+  wordMusterTemplateConfig,
+} from "../../features/templates/template.constants";
 import type { DocumentTemplate } from "../../features/templates/template.types";
 
 const fileSize = (bytes: number) =>
@@ -36,6 +44,23 @@ export function TemplateCard({
   onCopyToMuster: () => void;
   onRemove: () => void;
 }) {
+  const sourceLabel = templateSourceLabels[template.source];
+  const isWordMuster = template.id === wordMusterTemplateConfig.id;
+  const isElegant =
+    template.id === elegantLebenslaufTemplateConfig.id;
+  const isZeitgenoessisch =
+    template.id === zeitgenoessischLebenslaufTemplateConfig.id;
+  const isKreativ =
+    template.id === kreativLebenslaufTemplateConfig.id;
+  const showsManagedFacts =
+    isWordMuster || isElegant || isZeitgenoessisch || isKreativ;
+  const modifiedLabel = template.modifiedAt
+    ? new Intl.DateTimeFormat("de-DE", {
+        dateStyle: "short",
+        timeStyle: "short",
+      }).format(new Date(template.modifiedAt))
+    : "Unbekannt";
+
   return (
     <article className="surface managed-template-card">
       <button
@@ -47,18 +72,21 @@ export function TemplateCard({
         {template.previewDataUrl ? (
           <img src={template.previewDataUrl} alt={`${template.name} Vorschau`} />
         ) : (
-          <FileOutput size={38} />
+          <span className="managed-template-preview-fallback">
+            <FileOutput size={38} />
+            <strong>{template.name}</strong>
+            <small>
+              {template.format.toUpperCase()} · {modifiedLabel}
+            </small>
+          </span>
         )}
-        <span>{template.extension.slice(1).toUpperCase()}</span>
+        <span>{template.format.toUpperCase()}</span>
       </button>
       <div className="managed-template-body">
         <header>
           <div>
             <small>
-              {templateTypeLabels[template.documentType]} ·{" "}
-              {template.source === "existing-document"
-                ? "Eigenes Dokument"
-                : "Muster"}
+              {templateTypeLabels[template.documentType]} · {sourceLabel}
             </small>
             <h3>{template.name}</h3>
           </div>
@@ -79,6 +107,49 @@ export function TemplateCard({
           {template.description ||
             `${template.extension.toUpperCase()} · ${fileSize(template.fileSize)}`}
         </p>
+        {showsManagedFacts ? (
+          <dl className="managed-template-facts">
+            <div>
+              <dt>Format</dt>
+              <dd>{template.format.toUpperCase()}</dd>
+            </div>
+            <div>
+              <dt>Quelle</dt>
+              <dd>{sourceLabel}</dd>
+            </div>
+            <div>
+              <dt>Vorlagentyp</dt>
+              <dd>{templateTypeLabels[template.documentType]}</dd>
+            </div>
+          </dl>
+        ) : null}
+        {isElegant ? (
+          <ul className="managed-template-highlights">
+            {elegantLebenslaufTemplateConfig.cardHighlights.map(
+              (highlight) => (
+                <li key={highlight}>{highlight}</li>
+              ),
+            )}
+          </ul>
+        ) : null}
+        {isZeitgenoessisch ? (
+          <ul className="managed-template-highlights contemporary">
+            {zeitgenoessischLebenslaufTemplateConfig.cardHighlights.map(
+              (highlight) => (
+                <li key={highlight}>{highlight}</li>
+              ),
+            )}
+          </ul>
+        ) : null}
+        {isKreativ ? (
+          <ul className="managed-template-highlights creative">
+            {kreativLebenslaufTemplateConfig.cardHighlights.map(
+              (highlight) => (
+                <li key={highlight}>{highlight}</li>
+              ),
+            )}
+          </ul>
+        ) : null}
         {template.tags.length ? (
           <div className="managed-template-tags">
             {template.tags.map((tag) => (
@@ -90,26 +161,29 @@ export function TemplateCard({
           <button className="button primary small-button" type="button" onClick={onUse}>
             <FileOutput size={15} /> Vorlage verwenden
           </button>
-          <button className="button secondary small-button" type="button" onClick={onOpen}>
-            Öffnen
-          </button>
         </div>
         <div className="managed-template-secondary-actions">
+          <button type="button" onClick={onDetails}>
+            <Eye size={14} /> Vorschau
+          </button>
+          <button type="button" onClick={onOpen}>
+            <FileText size={14} />{" "}
+            {template.editableInWord ? "In Word öffnen" : "Öffnen"}
+          </button>
           <button type="button" onClick={onDuplicate}>
             <Copy size={14} /> Duplizieren
           </button>
           <button type="button" onClick={onOpenFolder}>
             <FolderOpen size={14} /> Dateipfad öffnen
           </button>
-          <button type="button" onClick={onDetails}>
-            <Info size={14} /> Details
-          </button>
           {template.source === "existing-document" ? (
             <button type="button" onClick={onCopyToMuster}>
               <LibraryBig size={14} /> Zu Muster hinzufügen
             </button>
           ) : null}
-          {template.source === "muster-folder" && !template.isSystemTemplate ? (
+          {template.source === "muster-folder" &&
+          !template.isSystemTemplate &&
+          !template.isProtected ? (
             <button className="danger-link" type="button" onClick={onRemove}>
               <Trash2 size={14} /> Löschen
             </button>

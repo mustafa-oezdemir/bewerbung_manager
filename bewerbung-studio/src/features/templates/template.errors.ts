@@ -9,7 +9,8 @@ export class TemplateError extends Error {
       | "INVALID_FORMAT"
       | "FILE_TOO_LARGE"
       | "CORRUPT"
-      | "SYSTEM_TEMPLATE",
+      | "SYSTEM_TEMPLATE"
+      | "PROTECTED_TEMPLATE",
   ) {
     super(message);
     this.name = "TemplateError";
@@ -39,4 +40,3 @@ export const toTemplateError = (error: unknown) => {
     "CORRUPT",
   );
 };
-
