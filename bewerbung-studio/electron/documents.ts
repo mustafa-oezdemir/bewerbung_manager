@@ -471,6 +471,22 @@ const kreativDocumentCss = `
   .kreativ-pdf-ats>section,.kreativ-pdf-ats .knowledge-section{margin-top:var(--section-gap)}.kreativ-pdf-ats .knowledge-category h4,.kreativ-pdf-ats .knowledge-subcategory h5{color:var(--kreativ-dark)}
 `;
 
+const ivyLeagueDocumentCss = `
+  .ivy-pdf{--ivy-heading:var(--accent);--ivy-accent:var(--secondary);--ivy-text:#3f4b50;--ivy-muted:#667177;--ivy-divider:color-mix(in srgb,var(--accent),#0b459a 38%);--ivy-inactive:#dce9e8;--ivy-margin:var(--doc-margin);position:relative;width:100%;height:100%;overflow:hidden;color:var(--ivy-text);background:transparent;font-family:var(--body-font)}
+  .ivy-pdf *{box-sizing:border-box}.ivy-pdf-watercolor{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none}.ivy-pdf-content{position:relative;z-index:2;height:100%;padding:max(11mm,calc(var(--ivy-margin) - 1mm)) var(--ivy-margin) max(13mm,calc(var(--ivy-margin) + 1mm))}
+  .ivy-pdf-header{min-height:19mm;margin:0 0 5.5mm;text-align:center}.ivy-pdf-header .kicker{margin:0 0 1.2mm;color:var(--ivy-muted);font-size:7.2pt}.ivy-pdf-header h1{margin:0;color:var(--ivy-heading);font-family:Georgia,"Times New Roman",serif;font-size:17.5pt;font-weight:700;letter-spacing:.015em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.ivy-pdf-header h2{margin:1.5mm 0 1.3mm;color:var(--ivy-accent);font-size:11.5pt;font-weight:400;line-height:1.2;overflow-wrap:anywhere}
+  .ivy-pdf-contacts{display:flex;flex-wrap:wrap;justify-content:center;gap:.7mm 2.3mm;margin:0;color:var(--ivy-text);font-size:7.8pt;font-style:normal;line-height:1.25}.ivy-pdf-contacts a,.ivy-pdf-contacts span{color:inherit;text-decoration:none;overflow-wrap:anywhere}.ivy-pdf-contacts i{color:var(--ivy-text);font-style:normal}.ivy-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;min-height:auto;margin-bottom:5mm;padding-bottom:2.5mm;border-bottom:.3mm solid var(--ivy-divider);text-align:left}.ivy-pdf-header.compact .kicker{flex-basis:100%}.ivy-pdf-header.compact h1{font-size:14pt}.ivy-pdf-header.compact h2{max-width:96mm;margin:0;font-size:8.5pt;text-align:right}
+  .ivy-pdf-section,.ivy-pdf>.ivy-pdf-content>.knowledge-section{position:relative;z-index:2;min-width:0;margin:0 0 var(--section-gap)}.ivy-pdf-title,.ivy-pdf .knowledge-section>h3{position:relative;margin:0 0 2.5mm;padding:0 0 1.5mm;border-bottom:.3mm solid var(--ivy-divider);color:var(--ivy-heading);font-family:Georgia,"Times New Roman",serif;font-size:13.5pt;font-weight:700;line-height:1.05;text-align:center;text-transform:none;break-after:avoid;page-break-after:avoid}.ivy-pdf-summary{margin:0;color:var(--ivy-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}
+  .ivy-pdf-strengths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3.5mm 8mm}.ivy-pdf-strength{display:grid;grid-template-columns:5.5mm minmax(0,1fr);gap:1.5mm;min-width:0;break-inside:avoid}.ivy-pdf-strength i{color:var(--ivy-accent);font-size:13pt;font-style:normal;line-height:1}.ivy-pdf-strength h3{margin:0 0 .8mm;color:var(--ivy-heading);font-size:9.5pt;font-weight:600;line-height:1.15;overflow-wrap:anywhere}.ivy-pdf-strength p{margin:0;font-size:var(--body-size);line-height:var(--body-line)}
+  .ivy-pdf-list{display:flex;flex-direction:column;gap:4.5mm}.ivy-pdf-entry{min-width:0;break-inside:avoid;page-break-inside:avoid}.ivy-pdf-entry-top,.ivy-pdf-entry-role{display:grid;grid-template-columns:minmax(0,1fr) minmax(32mm,auto);gap:8mm;align-items:baseline}.ivy-pdf-entry h3,.ivy-pdf-entry h4{margin:0;overflow-wrap:anywhere}.ivy-pdf-entry-top h3{color:var(--ivy-accent);font-size:10.5pt;font-weight:500;line-height:1.15}.ivy-pdf-entry-top span,.ivy-pdf-entry-role span{color:var(--ivy-text);font-size:var(--body-size);line-height:1.2;text-align:right;overflow-wrap:anywhere}.ivy-pdf-entry-role{margin-top:.7mm}.ivy-pdf-entry-role h4{color:var(--ivy-heading);font-size:9.7pt;font-weight:500;line-height:1.18}.ivy-pdf-entry-role span{white-space:nowrap}
+  .ivy-pdf-entry ul,.ivy-pdf-certifications ul,.ivy-pdf-ats ul{margin:1.3mm 0 0;padding-left:4.5mm}.ivy-pdf-entry li,.ivy-pdf-certifications li,.ivy-pdf-ats li{margin:.35mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word}.ivy-pdf-entry li::marker,.ivy-pdf-certifications li::marker{color:var(--ivy-heading)}.ivy-pdf-education .ivy-pdf-list{gap:3.2mm}.ivy-pdf-knowledge{margin:0;overflow-wrap:anywhere}
+  .ivy-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 20mm}.ivy-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2mm;align-items:center;min-width:0}.ivy-pdf-language strong{color:var(--ivy-heading);font-weight:600}.ivy-pdf-language>span:not(.ivy-pdf-dots){overflow-wrap:anywhere}.ivy-pdf-dots{display:flex;gap:1mm}.ivy-pdf-dots i{display:block;width:2.1mm;height:2.1mm;border-radius:50%;background:var(--ivy-inactive)}.ivy-pdf-dots i.filled{background:var(--ivy-heading)}
+  .ivy-pdf-footer{position:absolute;right:var(--ivy-margin);bottom:6mm;left:var(--ivy-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--ivy-muted);font-size:7.1pt}.ivy-pdf-footer a{color:var(--ivy-heading);text-decoration:none}.ivy-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}
+  .ivy-pdf-ats{--ivy-heading:#173b63;--ivy-accent:#173b63;--ivy-text:#303b42;--ivy-divider:#aeb8bf;padding:max(11mm,calc(var(--doc-margin) - 1mm)) var(--doc-margin) 13mm;background:#fff;font-family:Arial,sans-serif}.ivy-pdf-ats .ivy-pdf-header{padding-bottom:3.5mm;border-bottom:.3mm solid var(--ivy-divider)}.ivy-pdf-ats .ivy-pdf-header h1{font-family:Arial,sans-serif;font-size:19pt}.ivy-pdf-ats .ivy-pdf-header h2{color:var(--ivy-heading);font-size:10pt}.ivy-pdf-ats .ivy-pdf-title,.ivy-pdf-ats .knowledge-section>h3{font-family:Arial,sans-serif;font-size:11pt;text-align:left}.ivy-pdf-ats .knowledge-category h4,.ivy-pdf-ats .knowledge-subcategory h5{color:var(--ivy-heading)}
+  .ivy-pdf[data-density="compact"]{--section-gap:max(4.5mm,calc(var(--doc-section-gap) - 1mm))}.ivy-pdf[data-density="compact"] .ivy-pdf-list{gap:3.6mm}.ivy-pdf[data-density="dense"]{--section-gap:max(3.8mm,calc(var(--doc-section-gap) - 2mm))}.ivy-pdf[data-density="dense"] .ivy-pdf-list{gap:3mm}.ivy-pdf[data-density="dense"] .ivy-pdf-title{margin-bottom:2mm;font-size:12.5pt}
+  @media print{.no-print-background .ivy-pdf-watercolor{display:none!important}}
+`;
+
 const pageFitScript = `
   <script>
     (() => {
@@ -1682,6 +1698,214 @@ export const buildDocumentHtml = (
       </section>`;
   };
 
+  const ivyContactValues = [
+    {
+      value: profile?.phone || "",
+      href: profile?.phone
+        ? `tel:${profile.phone.replace(/[^\d+]/g, "")}`
+        : "",
+    },
+    {
+      value: profile?.email || "",
+      href: profile?.email ? `mailto:${profile.email}` : "",
+    },
+    {
+      value: profile?.linkedin || "",
+      href: profile?.linkedin ? externalHref(profile.linkedin) : "",
+    },
+    {
+      value: profile?.portfolio || profile?.github || "",
+      href:
+        profile?.portfolio || profile?.github
+          ? externalHref(profile?.portfolio || profile?.github || "")
+          : "",
+    },
+    {
+      value: [profile?.city, profile?.country].filter(Boolean).join(", "),
+      href: "",
+    },
+    {
+      value:
+        profile?.birthDate || profile?.birthPlace
+          ? `Geb. ${profile?.birthDate || ""}${profile?.birthPlace ? ` in ${profile.birthPlace}` : ""}`.trim()
+          : "",
+      href: "",
+    },
+  ].filter((contact) => contact.value.trim());
+  const ivySpecializations = uniqueValues(profile?.skills ?? [])
+    .slice(0, 3)
+    .map((value) => value.split(/\s+(?:–|—|:)\s+/)[0])
+    .join(" | ");
+  const ivyProfession = [profile?.title || role, ivySpecializations]
+    .filter(Boolean)
+    .join(" | ");
+  const ivyContacts = ivyContactValues.length
+    ? `<address class="ivy-pdf-contacts">${ivyContactValues
+        .map((contact, index) => {
+          const value = contact.href
+            ? `<a href="${escapeHtml(contact.href)}">${escapeHtml(contact.value)}</a>`
+            : `<span>${escapeHtml(contact.value)}</span>`;
+          return `${index ? '<i aria-hidden="true">•</i>' : ""}${value}`;
+        })
+        .join("")}</address>`
+    : "";
+  const renderIvyHeader = (compact: boolean) => `
+    <header class="ivy-pdf-header${compact ? " compact" : ""}">
+      ${compact ? '<p class="kicker">Lebenslauf · Fortsetzung</p>' : ""}
+      <h1>${escapeHtml(name)}</h1>
+      ${ivyProfession ? `<h2>${escapeHtml(ivyProfession)}</h2>` : ""}
+      ${compact ? "" : ivyContacts}
+    </header>`;
+  const ivyStrengths = uniqueValues(profile?.skills ?? [])
+    .slice(0, 6)
+    .map((value) => {
+      const [strengthTitle, ...descriptionParts] = value.split(
+        /\s+(?:–|—|:)\s+/,
+      );
+      return {
+        title: strengthTitle.trim(),
+        description: descriptionParts.join(" – ").trim(),
+      };
+    });
+  const ivyVisualStrengths = ivyStrengths.length
+    ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Stärken</h3><div class="ivy-pdf-strengths">${ivyStrengths
+        .map(
+          (strength, index) =>
+            `<article class="ivy-pdf-strength"><i aria-hidden="true">${["♥", "✦", "⚑", "◆", "★", "✣"][index]}</i><div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+        )
+        .join("")}</div></section>`
+    : "";
+  const ivyAtsStrengths = ivyStrengths.length
+    ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Stärken</h3><ul>${ivyStrengths
+        .map(
+          (strength) =>
+            `<li><strong>${escapeHtml(strength.title)}</strong>${strength.description ? ` – ${escapeHtml(strength.description)}` : ""}</li>`,
+        )
+        .join("")}</ul></section>`
+    : "";
+  const ivyVisualLanguages = kreativLanguages.length
+    ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Sprachen</h3><div class="ivy-pdf-languages">${kreativLanguages
+        .map(
+          (language) =>
+            `<article class="ivy-pdf-language"><strong>${escapeHtml(language.name)}</strong><span>${escapeHtml(language.level)}</span><span class="ivy-pdf-dots">${Array.from(
+              { length: 5 },
+              (_, index) =>
+                `<i class="${index < language.score ? "filled" : ""}"></i>`,
+            ).join("")}</span></article>`,
+        )
+        .join("")}</div></section>`
+    : "";
+  const ivyAtsLanguages = kreativLanguages.length
+    ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Sprachen</h3><ul>${kreativLanguages
+        .map((language) => `<li>${escapeHtml(language.raw)}</li>`)
+        .join("")}</ul></section>`
+    : "";
+  const ivyKnowledge = kreativSkillValues.length
+    ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Kenntnisse</h3><p class="ivy-pdf-knowledge">${kreativSkillValues
+        .map(escapeHtml)
+        .join(" · ")}</p></section>`
+    : "";
+  const ivyCertifications = kreativCertifications.length
+    ? `<section class="ivy-pdf-section ivy-pdf-certifications"><h3 class="ivy-pdf-title">Zertifikate</h3><ul>${kreativCertifications
+        .map((item) => `<li>${escapeHtml(item)}</li>`)
+        .join("")}</ul></section>`
+    : "";
+  const ivyWatercolor = `
+    <svg class="ivy-pdf-watercolor" viewBox="0 0 210 297" preserveAspectRatio="none" aria-hidden="true">
+      <defs><filter id="ivy-pdf-blur"><feGaussianBlur stdDeviation="5"/></filter><linearGradient id="ivy-pdf-paper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eef9f8"/><stop offset=".48" stop-color="#fbfdf9"/><stop offset="1" stop-color="#fff8e9"/></linearGradient></defs>
+      <rect width="210" height="297" fill="url(#ivy-pdf-paper)"/>
+      <g filter="url(#ivy-pdf-blur)" opacity=".62">
+        <path d="M-18 4C18-9 48 1 73 24c16 15 15 38-4 55-25 23-63 30-91 12z" fill="#d9f1f4"/>
+        <path d="M123-15c34 4 78 1 106 30v59c-34 7-79-8-97-31-13-17-15-38-9-58z" fill="#fff1d8"/>
+        <path d="M-12 93c38-20 81-12 101 17 20 28-3 56-42 62-28 5-52-2-66-20z" fill="#e3f5ed"/>
+        <path d="M133 85c31-12 74 1 91 28v67c-23 14-68 4-89-24-19-25-18-56-2-71z" fill="#e4f3f3"/>
+        <path d="M-20 191c28-18 65-18 89 7 24 26 19 58-8 78-22 16-55 15-81 3z" fill="#e9f6f4"/>
+        <path d="M93 185c34-24 83-20 118 6 29 22 31 69 10 102H116c-24-22-42-78-23-108z" fill="#fff1d4"/>
+        <path d="M144 247c29-13 67 1 84 25v36h-89c-10-22-7-48 5-61z" fill="#d8f1f2"/>
+      </g>
+    </svg>`;
+  const renderIvyCareerEntry = (
+    id: string,
+    kind: "experience" | "education",
+  ) => {
+    const item =
+      kind === "experience"
+        ? (() => {
+            const experience = experienceById.get(id);
+            return experience
+              ? {
+                  from: experience.from,
+                  to: experience.to,
+                  title: experience.role,
+                  organization: experience.company,
+                  city: experience.city,
+                  achievements: experience.achievements.filter(Boolean),
+                }
+              : undefined;
+          })()
+        : (() => {
+            const education = educationById.get(id);
+            return education
+              ? {
+                  from: education.from,
+                  to: education.to,
+                  title: education.degree,
+                  organization: education.institution,
+                  city: education.city,
+                  achievements: [] as string[],
+                }
+              : undefined;
+          })();
+    if (!item) return "";
+    return `<article class="ivy-pdf-entry">
+      <div class="ivy-pdf-entry-top"><h3>${escapeHtml(item.organization)}</h3>${item.city ? `<span>${escapeHtml(item.city)}</span>` : "<span></span>"}</div>
+      <div class="ivy-pdf-entry-role"><h4>${escapeHtml(item.title)}</h4><span>${escapeHtml(formatDateRange(item.from, item.to))}</span></div>
+      ${item.achievements.length ? `<ul>${item.achievements.map((achievement) => `<li>${escapeHtml(achievement)}</li>`).join("")}</ul>` : ""}
+    </article>`;
+  };
+  const ivyPortfolio =
+    profile?.portfolio || profile?.github || profile?.linkedin || "";
+  const renderIvyLeagueResumePage = (plan: ResumePagePlan) => {
+    const experienceItems = plan.items
+      .filter((item) => item.kind === "experience")
+      .map((item) => renderIvyCareerEntry(item.id, "experience"))
+      .join("");
+    const educationItems = plan.items
+      .filter((item) => item.kind === "education")
+      .map((item) => renderIvyCareerEntry(item.id, "education"))
+      .join("");
+    const isContinuation = plan.pageNumber > 1;
+    const isLastPage = plan.pageNumber === resumePlan.length;
+    const experienceMarkup = experienceItems
+      ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">${atsMode ? "Berufserfahrung" : "Erfahrung"}${isContinuation ? '<small class="muted"> · Fortsetzung</small>' : ""}</h3><div class="ivy-pdf-list">${experienceItems}</div></section>`
+      : "";
+    const educationMarkup = educationItems
+      ? `<section class="ivy-pdf-section ivy-pdf-education"><h3 class="ivy-pdf-title">Ausbildung</h3><div class="ivy-pdf-list">${educationItems}</div></section>`
+      : "";
+    const summaryMarkup =
+      sections.profile && !isContinuation
+        ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Zusammenfassung</h3><p class="ivy-pdf-summary">${escapeHtml(docs.resumeProfile || profile?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>`
+        : "";
+    const footerLink = ivyPortfolio
+      ? `<a href="${escapeHtml(externalHref(ivyPortfolio))}">${escapeHtml(ivyPortfolio)}</a>`
+      : "<span></span>";
+    return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="ivy-league" data-no-fit="true">
+      <div class="page-content ivy-pdf${atsMode ? " ivy-pdf-ats" : ""}" data-density="${plan.density}">
+        ${!atsMode && designSettings.backgroundId === "pastel-gradient" ? ivyWatercolor : ""}
+        <div class="ivy-pdf-content">
+          ${renderIvyHeader(isContinuation)}
+          ${summaryMarkup}
+          ${!atsMode && !isContinuation && sections.skills ? ivyVisualStrengths : ""}
+          ${experienceMarkup}
+          ${educationMarkup}
+          ${isLastPage ? `${sections.skills ? ivyKnowledge : ""}${sections.languages ? (atsMode ? ivyAtsLanguages : ivyVisualLanguages) : ""}${atsMode && sections.skills ? ivyAtsStrengths : ""}${sections.certifications ? ivyCertifications : ""}` : ""}
+          ${!experienceItems && !educationItems && plan.pageNumber === 1 ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}
+        </div>
+        <footer class="ivy-pdf-footer">${footerLink}<span>Seite ${plan.pageNumber} / ${resumePlan.length}</span></footer>
+      </div>
+    </section>`;
+  };
+
   const renderResumePage = (plan: ResumePagePlan) => {
     const experienceItems = plan.items
       .filter((item) => item.kind === "experience")
@@ -1733,6 +1957,8 @@ export const buildDocumentHtml = (
     .map(
       template.id === "elegant"
         ? renderElegantResumePage
+        : template.id === "ivy-league"
+          ? renderIvyLeagueResumePage
         : template.id === "kreativ"
           ? renderKreativResumePage
         : template.id === "zeitgenoessisch"
@@ -1743,7 +1969,7 @@ export const buildDocumentHtml = (
     )
     .join("");
   const selected = target === "mappe" ? [cover, letter, resume] : target === "deckblatt" ? [cover] : target === "anschreiben" ? [letter] : [resume];
-  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}${ivyLeagueDocumentCss}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
 };
 
 export const buildCoverLetterMarkdown = (

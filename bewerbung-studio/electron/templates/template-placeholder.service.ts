@@ -4,6 +4,7 @@ import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import {
   gepflegtLebenslaufTemplateConfig,
+  ivyLeagueLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   templatePlaceholderAliases,
@@ -78,7 +79,18 @@ const applyManagedResumeDesignTokens = (
   data: Record<string, string>,
 ) => {
   const replacements =
-    templateId === kompaktLebenslaufTemplateConfig.id
+    templateId === ivyLeagueLebenslaufTemplateConfig.id
+      ? new Map([
+          [
+            "073C8C",
+            normalizedHex(data.DESIGN_PRIMARY, "073C8C"),
+          ],
+          [
+            "FF6A00",
+            normalizedHex(data.DESIGN_ACCENT, "FF6A00"),
+          ],
+        ])
+      : templateId === kompaktLebenslaufTemplateConfig.id
       ? new Map([
           [
             "0A3485",
@@ -400,6 +412,7 @@ export class TemplatePlaceholderService {
       if (
         template.id === zeitgenoessischLebenslaufTemplateConfig.id ||
         template.id === kreativLebenslaufTemplateConfig.id ||
+        template.id === ivyLeagueLebenslaufTemplateConfig.id ||
         template.id === kompaktLebenslaufTemplateConfig.id ||
         template.id === gepflegtLebenslaufTemplateConfig.id
       ) {

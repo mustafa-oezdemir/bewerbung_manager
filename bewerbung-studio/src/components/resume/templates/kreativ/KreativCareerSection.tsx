@@ -6,6 +6,7 @@ export function KreativCareerSection({
   title,
   items,
   continuation = false,
+  atsMode = false,
 }: KreativCareerSectionProps) {
   if (!items.length) return null;
 
@@ -15,7 +16,9 @@ export function KreativCareerSection({
       data-element-id={`kreativ.${title === "Ausbildung" ? "education" : "experience"}`}
     >
       <KreativSectionHeading
-        title={title === "Berufserfahrung" ? "Erfahrung" : title}
+        title={
+          title === "Berufserfahrung" && !atsMode ? "Erfahrung" : title
+        }
         continuation={continuation}
       />
       <div className="kreativ-career__list">

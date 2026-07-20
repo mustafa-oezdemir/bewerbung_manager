@@ -10,6 +10,7 @@ import {
   defaultTemplateSortOrder,
   elegantLebenslaufTemplateConfig,
   gepflegtLebenslaufTemplateConfig,
+  ivyLeagueLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   maximumTemplateFileSize,
@@ -214,6 +215,8 @@ export class TemplateService {
           ? zeitgenoessischLebenslaufTemplateConfig
           : template.id === kreativLebenslaufTemplateConfig.id
             ? kreativLebenslaufTemplateConfig
+            : template.id === ivyLeagueLebenslaufTemplateConfig.id
+              ? ivyLeagueLebenslaufTemplateConfig
             : template.id === kompaktLebenslaufTemplateConfig.id
               ? kompaktLebenslaufTemplateConfig
               : template.id === gepflegtLebenslaufTemplateConfig.id

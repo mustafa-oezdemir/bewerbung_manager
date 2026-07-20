@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { resolveApplicationPaths } from "../../src/config/application-paths";
 import {
   elegantLebenslaufTemplateConfig,
+  ivyLeagueLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   zeitgenoessischLebenslaufTemplateConfig,
@@ -934,6 +935,135 @@ describe("Musterverwaltung", () => {
       }),
     );
     await expect(stat(templatePath)).resolves.toBeDefined();
+  });
+
+  it("registers Ivy League with its watercolor Muster, preview, and linear ATS copy", async () => {
+    paths = resolveApplicationPaths(
+      root,
+      path.resolve("public", "templates"),
+    );
+    service = new TemplateService(paths);
+    await createDocx(
+      path.join(
+        paths.anschreibenDocuments,
+        wordMusterTemplateConfig.fileName,
+      ),
+    );
+
+    const initialized = await service.initialize();
+    const ivy = initialized.templates.find(
+      (template) => template.id === ivyLeagueLebenslaufTemplateConfig.id,
+    );
+
+    expect(ivy).toMatchObject({
+      id: "word-lebenslauf-ivy-league",
+      name: "Ivy League",
+      documentType: "lebenslauf",
+      format: "docx",
+      source: "system-word-template",
+      category: "classic-professional",
+      layout: "single-column-watercolor",
+      atsFriendly: true,
+      supportsPhoto: false,
+      supportsBackground: true,
+      supportsAtsMode: true,
+      supportsPlaceholders: true,
+      isSystemTemplate: true,
+      isProtected: true,
+    });
+    expect(ivy?.previewDataUrl).toMatch(/^data:image\/png;base64,/);
+
+    const data = {
+      VORNAME: "Lena",
+      NACHNAME: "Hoffmann",
+      BERUFSBEZEICHNUNG: "Ingenieurin",
+      FACHGEBIETE: "Maschinenbau | FEM",
+      KONTAKT_ZEILE_1: "+49 30 12345678",
+      KONTAKT_ZEILE_2: "lena@example.de",
+      KONTAKT_ZEILE_3: "linkedin.com/in/lena",
+      HEADER_KONTAKT_4: "München, Deutschland",
+      HEADER_KONTAKT_5: "Geb. 01.03.1990 in München",
+      HEADER_KONTAKT_6: "lena.example.com",
+      ZUSAMMENFASSUNG_TITEL: "ZUSAMMENFASSUNG",
+      ZUSAMMENFASSUNG: "Erfahrene Ingenieurin für sichere Systeme.",
+      STAERKEN_TITEL: "STÄRKEN",
+      STAERKEN_ATS: "Analysefähigkeit\nTeamführung",
+      STAERKE_1_TITEL: "Analysefähigkeit",
+      STAERKE_1_BESCHREIBUNG: "Präzise Bewertung komplexer Systeme.",
+      ERFAHRUNG_TITEL: "ERFAHRUNG",
+      BERUFSERFAHRUNG_TITEL: "BERUFSERFAHRUNG",
+      UNTERNEHMEN_1: "Siemens AG",
+      ARBEITSORT_1: "Berlin",
+      POSITION_1: "Senior Maschinenbauingenieurin",
+      STARTDATUM_1: "2019",
+      DATUM_TRENNER_1: " – ",
+      ENDDATUM_1: "2023",
+      ERFOLG_1_1: "Projekteffizienz um 15 % gesteigert.",
+      AUSBILDUNG_TITEL: "AUSBILDUNG",
+      HOCHSCHULE_1: "Technische Universität München",
+      AUSBILDUNG_ORT_1: "München",
+      ABSCHLUSS_1: "M.Sc.",
+      FACHRICHTUNG_1: "Maschinenbau",
+      AUSBILDUNG_START_1: "2011",
+      AUSBILDUNG_DATUM_TRENNER_1: " – ",
+      AUSBILDUNG_ENDE_1: "2013",
+      KENNTNISSE_TITEL: "KENNTNISSE",
+      KENNTNISSE: "FEM · ANSYS",
+      SPRACHEN_TITEL: "SPRACHEN",
+      SPRACHEN_ATS: "Deutsch – Muttersprache",
+      SPRACHE_1: "Deutsch",
+      SPRACHNIVEAU_1: "Muttersprache",
+      SPRACHE_1_PUNKTE: "●●●●●",
+      ZERTIFIKATE_TITEL: "ZERTIFIKATE",
+      ZERTIFIKATE: "TÜV Functional Safety Engineer",
+      WEBSITE: "lena.example.com",
+      DESIGN_PRIMARY: "#123456",
+      DESIGN_ACCENT: "#F05A00",
+      DESIGN_FONT: "Arial",
+    };
+    const targetDirectory = path.join(
+      paths.dataRoot,
+      "Bewerbungen",
+      "IvyLeague",
+      "Lebenslauf",
+    );
+    const visual = await service.createDocumentFromTemplate(
+      ivy!.id,
+      targetDirectory,
+      "ignored",
+      data,
+    );
+    const visualZip = new PizZip(await readFile(visual.filePath));
+    const visualXml = visualZip.file("word/document.xml")!.asText();
+    const stylesXml = visualZip.file("word/styles.xml")!.asText();
+    const headerXml = visualZip.file("word/header1.xml")!.asText();
+
+    expect(visual.fileName).toMatch(
+      /^Lebenslauf_Lena_Hoffmann_\d{8}_\d{6}\.docx$/,
+    );
+    expect(visualXml).toContain("Senior Maschinenbauingenieurin");
+    expect(visualXml).not.toContain("{{");
+    expect(stylesXml).toContain('w:val="123456"');
+    expect(stylesXml).toContain('w:val="F05A00"');
+    expect(headerXml).toContain('behindDoc="1"');
+    expect(headerXml).toContain("<w:drawing>");
+
+    const ats = await service.createDocumentFromTemplate(
+      ivy!.id,
+      path.join(targetDirectory, "ATS"),
+      "ignored",
+      data,
+      { atsMode: true },
+    );
+    const atsZip = new PizZip(await readFile(ats.filePath));
+    const atsXml = atsZip.file("word/document.xml")!.asText();
+    expect(atsXml).toContain("BERUFSERFAHRUNG");
+    expect(atsXml).not.toContain("{{");
+    expect(
+      Object.keys(atsZip.files).some((name) =>
+        /^word\/media\//.test(name),
+      ),
+    ).toBe(false);
   });
 
   it("invalidates the preview cache when the source modification time changes", async () => {

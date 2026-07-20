@@ -11,6 +11,7 @@ import {
 import {
   elegantLebenslaufTemplateConfig,
   gepflegtLebenslaufTemplateConfig,
+  ivyLeagueLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   templateSourceLabels,
@@ -54,6 +55,8 @@ export function TemplateCard({
     template.id === zeitgenoessischLebenslaufTemplateConfig.id;
   const isKreativ =
     template.id === kreativLebenslaufTemplateConfig.id;
+  const isIvyLeague =
+    template.id === ivyLeagueLebenslaufTemplateConfig.id;
   const isKompakt =
     template.id === kompaktLebenslaufTemplateConfig.id;
   const isGepflegt = template.id === gepflegtLebenslaufTemplateConfig.id;
@@ -62,6 +65,7 @@ export function TemplateCard({
     isElegant ||
     isZeitgenoessisch ||
     isKreativ ||
+    isIvyLeague ||
     isKompakt ||
     isGepflegt;
   const modifiedLabel = template.modifiedAt
@@ -158,6 +162,15 @@ export function TemplateCard({
             {kreativLebenslaufTemplateConfig.cardHighlights.map((highlight) => (
               <li key={highlight}>{highlight}</li>
             ))}
+          </ul>
+        ) : null}
+        {isIvyLeague ? (
+          <ul className="managed-template-highlights contemporary">
+            {ivyLeagueLebenslaufTemplateConfig.cardHighlights.map(
+              (highlight) => (
+                <li key={highlight}>{highlight}</li>
+              ),
+            )}
           </ul>
         ) : null}
         {isKompakt ? (

@@ -12,6 +12,7 @@ export type TemplateLayout =
 export type TemplateCategory =
   | "ats"
   | "business"
+  | "classic-professional"
   | "creative"
   | "creative-professional"
   | "modern"
@@ -176,6 +177,40 @@ export const templates: TemplateDefinition[] = [
       backgroundId: "white",
       fontId: "source-sans",
       headingFontId: "source-sans",
+    },
+  },
+  {
+    id: "ivy-league",
+    name: "Ivy League",
+    description:
+      "Klassische einspaltige Lebenslaufvorlage mit eleganter Typografie und ATS-freundlicher Struktur.",
+    accent: "#073C8C",
+    secondary: "#FF6A00",
+    font: "Georgia",
+    layout: "centered",
+    features: [
+      "Klassische Serifentypografie",
+      "Pastell-Suluboya",
+      "ATS-Variante",
+    ],
+    category: "classic-professional",
+    supportsAtsMode: true,
+    supportsPhoto: false,
+    supportsFreeform: true,
+    supportsMultiplePages: true,
+    atsInfo:
+      "Ivy League unterstützt eine separate lineare ATS-Ausgabe ohne Suluboya-Hintergrund, Symbole oder Sprachniveau-Punkte.",
+    designDefaults: {
+      marginLevel: 2,
+      sectionSpacingLevel: 4,
+      fontSize: "small",
+      lineHeightLevel: 2,
+      columnLayout: "single",
+      resumeOutputMode: "visual",
+      backgroundId: "pastel-gradient",
+      showBackgroundInPrint: true,
+      fontId: "source-sans",
+      headingFontId: "georgia",
     },
   },
   {

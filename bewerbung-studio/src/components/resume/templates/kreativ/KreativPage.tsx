@@ -51,10 +51,15 @@ export function KreativPage({
             title="Berufserfahrung"
             items={experiences}
             continuation={isContinuation}
+            atsMode
           />
         ) : null}
         {sections.education ? (
-          <KreativCareerSection title="Ausbildung" items={education} />
+          <KreativCareerSection
+            title="Ausbildung"
+            items={education}
+            atsMode
+          />
         ) : null}
         {isLastPage ? (
           <KreativAdditionalSections

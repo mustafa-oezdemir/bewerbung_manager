@@ -48,6 +48,7 @@ export type KreativCareerSectionProps = {
   title: "Berufserfahrung" | "Ausbildung";
   items: KreativCareerItem[];
   continuation?: boolean;
+  atsMode?: boolean;
 };
 
 export type KreativColumnProps = {

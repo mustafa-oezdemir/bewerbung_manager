@@ -22,6 +22,7 @@ import { DocumentBackgroundLayer } from "../components/document/DocumentBackgrou
 import { ElegantResume } from "../components/resume/templates/elegant";
 import { GepflegtResume } from "../components/resume/templates/gepflegt";
 import { KreativResume } from "../components/resume/templates/kreativ";
+import { IvyLeagueResume } from "../components/resume/templates/ivy-league";
 import { ModernResume } from "../components/resume/templates/modern";
 import { TabellarischResume } from "../components/resume/templates/tabellarisch";
 import { ZeitgenoessischResume } from "../components/resume/templates/zeitgenoessisch";
@@ -1181,7 +1182,20 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                   backgroundId={design.settings.backgroundId}
                   atsMode={isAtsMode}
                 />
-                {template.id === "kreativ" ? (
+                {template.id === "ivy-league" ? (
+                  <IvyLeagueResume
+                    profile={profile}
+                    name={name}
+                    atsMode={isAtsMode}
+                    plan={plan}
+                    totalPages={resumePlan.length}
+                    accentColor={design.accentColor}
+                    secondaryColor={design.secondaryColor}
+                    backgroundId={design.settings.backgroundId}
+                    resumeProfile={docs.resumeProfile}
+                    sections={sections}
+                  />
+                ) : template.id === "kreativ" ? (
                   <KreativResume
                     profile={profile}
                     name={name}

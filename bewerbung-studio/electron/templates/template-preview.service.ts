@@ -4,6 +4,7 @@ import type { ApplicationPaths } from "../../src/config/application-paths";
 import {
   elegantLebenslaufTemplateConfig,
   gepflegtLebenslaufTemplateConfig,
+  ivyLeagueLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   templateSourceLabels,
@@ -31,6 +32,8 @@ export class TemplatePreviewService {
           ? zeitgenoessischLebenslaufTemplateConfig
           : template.id === kreativLebenslaufTemplateConfig.id
             ? kreativLebenslaufTemplateConfig
+            : template.id === ivyLeagueLebenslaufTemplateConfig.id
+              ? ivyLeagueLebenslaufTemplateConfig
             : template.id === kompaktLebenslaufTemplateConfig.id
               ? kompaktLebenslaufTemplateConfig
               : template.id === gepflegtLebenslaufTemplateConfig.id

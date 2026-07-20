@@ -571,4 +571,262 @@ describe("Lebenslauf-Dokumente", () => {
       body.indexOf("Zertifikate"),
     );
   });
+
+  it("renders the Kreativ PDF with green banner, photo, circles, and two columns", () => {
+    const kreativApplication = applicationSchema.parse({
+      ...application,
+      templateId: "kreativ",
+      accentColor: "#37B978",
+      secondaryColor: "#D9F2E5",
+      designSettings: {
+        ...application.designSettings,
+        marginLevel: 2,
+        columnLayout: "two-column-left-wide",
+        resumeOutputMode: "visual",
+      },
+    });
+    const mediaProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+    });
+
+    const html = buildDocumentHtml(
+      kreativApplication,
+      mediaProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain('data-template="kreativ"');
+    expect(body).toContain('data-no-fit="true"');
+    expect(body).toContain('<img class="kreativ-pdf-photo"');
+    expect(body).toContain("kreativ-pdf-background");
+    expect(body).toContain('<main class="kreativ-pdf-left">');
+    expect(body).toContain('<aside class="kreativ-pdf-right">');
+    expect(body).toContain("Zusammenfassung");
+    expect(body).toContain("Erfahrung");
+    expect(body).toContain("Fähigkeiten");
+  });
+
+  it("removes the Kreativ PDF photo placeholder when no photo exists", () => {
+    const kreativApplication = applicationSchema.parse({
+      ...application,
+      templateId: "kreativ",
+      accentColor: "#37B978",
+      secondaryColor: "#D9F2E5",
+      designSettings: {
+        ...application.designSettings,
+        marginLevel: 2,
+        columnLayout: "two-column-left-wide",
+        resumeOutputMode: "visual",
+      },
+    });
+    const html = buildDocumentHtml(
+      kreativApplication,
+      profile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain("kreativ-pdf-header no-photo");
+    expect(body).not.toContain('<img class="kreativ-pdf-photo"');
+    expect(body).not.toContain("monogram");
+  });
+
+  it("uses a separate linear Kreativ ATS renderer in logical order", () => {
+    const kreativAtsApplication = applicationSchema.parse({
+      ...application,
+      templateId: "kreativ",
+      designSettings: {
+        ...application.designSettings,
+        marginLevel: 2,
+        columnLayout: "two-column-left-wide",
+        resumeOutputMode: "ats",
+      },
+    });
+    const mediaProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      certifications: ["Professional Scrum Master I"],
+      education: [
+        {
+          id: crypto.randomUUID(),
+          from: "10/2015",
+          to: "09/2019",
+          degree: "B.Sc. Informatik",
+          institution: "Beispiel Universität",
+          city: "Berlin",
+        },
+      ],
+    });
+
+    const html = buildDocumentHtml(
+      kreativAtsApplication,
+      mediaProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain(
+      'class="page-content kreativ-pdf kreativ-pdf-ats"',
+    );
+    expect(body).not.toContain("kreativ-pdf-background");
+    expect(body).not.toContain('<img class="kreativ-pdf-photo"');
+    expect(body).not.toContain('<aside class="kreativ-pdf-right');
+    expect(body.indexOf("Zusammenfassung")).toBeLessThan(
+      body.indexOf("Berufserfahrung"),
+    );
+    expect(body.indexOf("Berufserfahrung")).toBeLessThan(
+      body.indexOf("Ausbildung"),
+    );
+    expect(body.indexOf("Ausbildung")).toBeLessThan(
+      body.indexOf("Kenntnisse"),
+    );
+    expect(body.indexOf("Kenntnisse")).toBeLessThan(
+      body.indexOf("Sprachen"),
+    );
+    expect(body.indexOf("Sprachen")).toBeLessThan(
+      body.indexOf("Stärken"),
+    );
+    expect(body.indexOf("Stärken")).toBeLessThan(
+      body.indexOf("Zertifikate"),
+    );
+  });
+
+  it("renders Ivy League PDF as a centered watercolor single column", () => {
+    const ivyApplication = applicationSchema.parse({
+      ...application,
+      templateId: "ivy-league",
+      accentColor: "#073C8C",
+      secondaryColor: "#FF6A00",
+      designSettings: {
+        ...application.designSettings,
+        marginLevel: 2,
+        sectionSpacingLevel: 4,
+        columnLayout: "single",
+        resumeOutputMode: "visual",
+        backgroundId: "pastel-gradient",
+        showBackgroundInPrint: true,
+      },
+    });
+    const ivyProfile = profileSchema.parse({
+      ...profile,
+      skills: [
+        "Analysefähigkeit – Präzise Bewertung komplexer Systeme",
+        "Teamführung – Führung interdisziplinärer Teams",
+        "Kundenbetreuung – Verlässliche Beratung",
+      ],
+      education: [
+        {
+          id: crypto.randomUUID(),
+          from: "2012",
+          to: "2016",
+          degree: "M.Sc. Maschinenbau",
+          institution: "Technische Universität München",
+          city: "München",
+        },
+      ],
+      certifications: ["TÜV Functional Safety Engineer"],
+    });
+    const html = buildDocumentHtml(
+      ivyApplication,
+      ivyProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain('data-template="ivy-league"');
+    expect(body).toContain('data-no-fit="true"');
+    expect(body).toContain("ivy-pdf-watercolor");
+    expect(body).toContain("ivy-pdf-strengths");
+    expect(body).toContain("ivy-pdf-languages");
+    expect(body).toContain("Erfahrung");
+    expect(body).not.toContain("Powered by");
+    expect(body).not.toContain("<img");
+  });
+
+  it("removes the Ivy League watercolor with the white background option", () => {
+    const ivyApplication = applicationSchema.parse({
+      ...application,
+      templateId: "ivy-league",
+      accentColor: "#073C8C",
+      secondaryColor: "#FF6A00",
+      designSettings: {
+        ...application.designSettings,
+        marginLevel: 2,
+        columnLayout: "single",
+        resumeOutputMode: "visual",
+        backgroundId: "white",
+      },
+    });
+    const html = buildDocumentHtml(
+      ivyApplication,
+      profile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain('data-template="ivy-league"');
+    expect(body).not.toContain("ivy-pdf-watercolor");
+  });
+
+  it("uses a separate linear Ivy League ATS renderer in logical order", () => {
+    const ivyAtsApplication = applicationSchema.parse({
+      ...application,
+      templateId: "ivy-league",
+      accentColor: "#073C8C",
+      secondaryColor: "#FF6A00",
+      designSettings: {
+        ...application.designSettings,
+        marginLevel: 2,
+        columnLayout: "single",
+        resumeOutputMode: "ats",
+        backgroundId: "pastel-gradient",
+      },
+    });
+    const ivyProfile = profileSchema.parse({
+      ...profile,
+      education: [
+        {
+          id: crypto.randomUUID(),
+          from: "2012",
+          to: "2016",
+          degree: "M.Sc. Maschinenbau",
+          institution: "Technische Universität München",
+          city: "München",
+        },
+      ],
+      certifications: ["TÜV Functional Safety Engineer"],
+    });
+    const html = buildDocumentHtml(
+      ivyAtsApplication,
+      ivyProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain(
+      'class="page-content ivy-pdf ivy-pdf-ats"',
+    );
+    expect(body).not.toContain("ivy-pdf-watercolor");
+    expect(body).not.toContain("ivy-pdf-dots");
+    expect(body.indexOf("Zusammenfassung")).toBeLessThan(
+      body.indexOf("Berufserfahrung"),
+    );
+    expect(body.indexOf("Berufserfahrung")).toBeLessThan(
+      body.indexOf("Ausbildung"),
+    );
+    expect(body.indexOf("Ausbildung")).toBeLessThan(
+      body.indexOf("Kenntnisse"),
+    );
+    expect(body.indexOf("Kenntnisse")).toBeLessThan(
+      body.indexOf("Sprachen"),
+    );
+    expect(body.indexOf("Sprachen")).toBeLessThan(
+      body.indexOf("Stärken"),
+    );
+    expect(body.indexOf("Stärken")).toBeLessThan(
+      body.indexOf("Zertifikate"),
+    );
+  });
 });

@@ -234,6 +234,46 @@ export const kreativLebenslaufTemplateConfig = {
   ],
 } as const;
 
+export const ivyLeagueLebenslaufTemplateConfig = {
+  id: "word-lebenslauf-ivy-league",
+  fileName: "Ivy_League_Lebenslauf_Muster.docx",
+  atsFileName: "Ivy_League_Lebenslauf_ATS.docx",
+  previewFileName: "Ivy_League_Lebenslauf_Muster.preview.png",
+  name: "Ivy League",
+  documentType: "lebenslauf",
+  format: "docx",
+  source: "system-word-template",
+  sortOrder: 9,
+  category: "classic-professional",
+  layout: "single-column-watercolor",
+  atsFriendly: true,
+  supportsPhoto: false,
+  supportsBackground: true,
+  supportsPlaceholders: true,
+  supportsPreview: true,
+  supportsAtsMode: true,
+  editableInWord: true,
+  isSystemTemplate: true,
+  isProtected: true,
+  emphasis: "classic-single-column",
+  description:
+    "Die klassische Harvard-Lebenslaufvorlage, aktualisiert für das 21. Jahrhundert mit einem raffinierten, ATS-freundlichen Design.",
+  tags: [
+    "Ivy League",
+    "Word",
+    "DOCX",
+    "Lebenslauf",
+    "ATS",
+    "Ohne Foto",
+    "Einspaltig",
+    "Klassisch",
+  ],
+  cardHighlights: [
+    "Klassische Serifentypografie mit ruhiger Einspaltenstruktur",
+    "Pastell-Hintergrund · Ohne Foto · ATS-freundlich",
+  ],
+} as const;
+
 export const kompaktLebenslaufTemplateConfig = {
   id: "word-lebenslauf-kompakt",
   fileName: "Kompakt_Lebenslauf_Muster.docx",
