@@ -10,8 +10,10 @@ import path from "node:path";
 import type { ApplicationPaths } from "../../src/config/application-paths";
 import {
   elegantLebenslaufTemplateConfig,
+  gepflegtLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
+  modernLebenslaufTemplateConfig,
   zeitgenoessischLebenslaufTemplateConfig,
   wordMusterTemplateConfig,
 } from "../../src/features/templates/template.constants";
@@ -57,6 +59,8 @@ export class TemplateRepository {
     await this.ensureKreativLebenslaufTemplate();
     await this.ensureKompaktLebenslaufTemplate();
     await this.ensureElegantLebenslaufTemplate();
+    await this.ensureGepflegtLebenslaufTemplate();
+    await this.ensureModernLebenslaufTemplate();
     return this.refresh();
   }
 
@@ -77,9 +81,7 @@ export class TemplateRepository {
       } catch {
         return;
       }
-      await withOneDriveRetry(() =>
-        copyFile(uploadedSourcePath, targetPath),
-      );
+      await withOneDriveRetry(() => copyFile(uploadedSourcePath, targetPath));
     }
     await this.writeMetadata(targetPath, {
       id: wordMusterTemplateConfig.id,
@@ -110,10 +112,7 @@ export class TemplateRepository {
     }
 
     if (!this.paths.bundledTemplatesRoot) return false;
-    const bundledPath = path.join(
-      this.paths.bundledTemplatesRoot,
-      fileName,
-    );
+    const bundledPath = path.join(this.paths.bundledTemplatesRoot, fileName);
     try {
       await access(bundledPath);
     } catch (error) {
@@ -122,11 +121,7 @@ export class TemplateRepository {
     }
     await withOneDriveRetry(async () => {
       try {
-        await copyFile(
-          bundledPath,
-          targetPath,
-          fsConstants.COPYFILE_EXCL,
-        );
+        await copyFile(bundledPath, targetPath, fsConstants.COPYFILE_EXCL);
       } catch (error) {
         if (errorCode(error) !== "EEXIST") throw error;
       }
@@ -161,21 +156,17 @@ export class TemplateRepository {
       sortOrder: elegantLebenslaufTemplateConfig.sortOrder,
       description: elegantLebenslaufTemplateConfig.description,
       tags: [...elegantLebenslaufTemplateConfig.tags],
-      isSystemTemplate:
-        elegantLebenslaufTemplateConfig.isSystemTemplate,
-      supportsPreview:
-        elegantLebenslaufTemplateConfig.supportsPreview,
+      isSystemTemplate: elegantLebenslaufTemplateConfig.isSystemTemplate,
+      supportsPreview: elegantLebenslaufTemplateConfig.supportsPreview,
       supportsPlaceholders:
         elegantLebenslaufTemplateConfig.supportsPlaceholders,
-      editableInWord:
-        elegantLebenslaufTemplateConfig.editableInWord,
+      editableInWord: elegantLebenslaufTemplateConfig.editableInWord,
       isProtected: elegantLebenslaufTemplateConfig.isProtected,
       category: elegantLebenslaufTemplateConfig.category,
       layout: elegantLebenslaufTemplateConfig.layout,
       atsFriendly: elegantLebenslaufTemplateConfig.atsFriendly,
       supportsPhoto: elegantLebenslaufTemplateConfig.supportsPhoto,
-      supportsAtsMode:
-        elegantLebenslaufTemplateConfig.supportsAtsMode,
+      supportsAtsMode: elegantLebenslaufTemplateConfig.supportsAtsMode,
     });
   }
 
@@ -297,6 +288,82 @@ export class TemplateRepository {
     });
   }
 
+  private async ensureGepflegtLebenslaufTemplate() {
+    const config = gepflegtLebenslaufTemplateConfig;
+    const targetPath = path.join(
+      this.paths.lebenslaufTemplates,
+      config.fileName,
+    );
+    const available = await this.copyBundledTemplateIfMissing(
+      config.fileName,
+      targetPath,
+    );
+    if (!available) return;
+
+    await this.copyBundledTemplateIfMissing(
+      config.atsFileName,
+      path.join(this.paths.systemTemplateCache, config.atsFileName),
+    );
+    await this.writeMetadata(targetPath, {
+      id: config.id,
+      name: config.name,
+      documentType: config.documentType,
+      format: config.format,
+      source: config.source,
+      sortOrder: config.sortOrder,
+      description: config.description,
+      tags: [...config.tags],
+      isSystemTemplate: config.isSystemTemplate,
+      supportsPreview: config.supportsPreview,
+      supportsPlaceholders: config.supportsPlaceholders,
+      editableInWord: config.editableInWord,
+      isProtected: config.isProtected,
+      category: config.category,
+      layout: config.layout,
+      atsFriendly: config.atsFriendly,
+      supportsPhoto: config.supportsPhoto,
+      supportsAtsMode: config.supportsAtsMode,
+    });
+  }
+
+  private async ensureModernLebenslaufTemplate() {
+    const config = modernLebenslaufTemplateConfig;
+    const targetPath = path.join(
+      this.paths.lebenslaufTemplates,
+      config.fileName,
+    );
+    const available = await this.copyBundledTemplateIfMissing(
+      config.fileName,
+      targetPath,
+    );
+    if (!available) return;
+
+    await this.copyBundledTemplateIfMissing(
+      config.atsFileName,
+      path.join(this.paths.systemTemplateCache, config.atsFileName),
+    );
+    await this.writeMetadata(targetPath, {
+      id: config.id,
+      name: config.name,
+      documentType: config.documentType,
+      format: config.format,
+      source: config.source,
+      sortOrder: config.sortOrder,
+      description: config.description,
+      tags: [...config.tags],
+      isSystemTemplate: config.isSystemTemplate,
+      supportsPreview: config.supportsPreview,
+      supportsPlaceholders: config.supportsPlaceholders,
+      editableInWord: config.editableInWord,
+      isProtected: config.isProtected,
+      category: config.category,
+      layout: config.layout,
+      atsFriendly: config.atsFriendly,
+      supportsPhoto: config.supportsPhoto,
+      supportsAtsMode: config.supportsAtsMode,
+    });
+  }
+
   async refresh(): Promise<TemplateScanResult> {
     const result = await this.scanner.scanAllTemplates();
     this.templates = await Promise.all(
@@ -353,10 +420,7 @@ export class TemplateRepository {
     }
   }
 
-  async writeMetadata(
-    filePath: string,
-    changes: TemplateMetadata,
-  ) {
+  async writeMetadata(filePath: string, changes: TemplateMetadata) {
     const metadata = {
       ...(await this.readMetadata(filePath)),
       ...changes,

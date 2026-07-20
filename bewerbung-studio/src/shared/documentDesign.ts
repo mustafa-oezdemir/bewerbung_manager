@@ -21,6 +21,8 @@ export const documentFontIds = [
 
 export const fontSizeIds = ["small", "medium", "large"] as const;
 
+export const resumeOutputModes = ["visual", "ats"] as const;
+
 export const columnLayoutIds = [
   "template",
   "single",
@@ -52,6 +54,7 @@ export const documentBackgroundIds = [
 
 export type DocumentFontId = (typeof documentFontIds)[number];
 export type DocumentFontSize = (typeof fontSizeIds)[number];
+export type ResumeOutputMode = (typeof resumeOutputModes)[number];
 export type ColumnLayout = (typeof columnLayoutIds)[number];
 export type DocumentBackgroundId = (typeof documentBackgroundIds)[number];
 export type DesignLevel = 1 | 2 | 3 | 4 | 5;
@@ -64,6 +67,7 @@ export type DocumentDesignSettings = {
   fontId: DocumentFontId;
   headingFontId: DocumentFontId;
   columnLayout: ColumnLayout;
+  resumeOutputMode: ResumeOutputMode;
   backgroundId: DocumentBackgroundId;
   showBackgroundInPrint: boolean;
 };
@@ -102,6 +106,7 @@ export const defaultDocumentDesign: DocumentDesignSettings = {
   fontId: "source-sans",
   headingFontId: "source-sans",
   columnLayout: "template",
+  resumeOutputMode: "visual",
   backgroundId: "white",
   showBackgroundInPrint: true,
 };

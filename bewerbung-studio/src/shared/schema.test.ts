@@ -44,6 +44,7 @@ describe("BewerbungsManager schemas", () => {
     if (result.success) {
       expect(result.data.secondaryColor).toBe("#244766");
       expect(result.data.designSettings.columnLayout).toBe("template");
+      expect(result.data.designSettings.resumeOutputMode).toBe("visual");
       expect(result.data.designSettings.marginLevel).toBe(3);
     }
   });

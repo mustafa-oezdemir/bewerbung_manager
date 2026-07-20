@@ -19,6 +19,9 @@ import {
 import { TemplateThumbnail } from "../components/TemplateThumbnail";
 import { KnowledgeSectionRenderer } from "../components/document/KnowledgeSectionRenderer";
 import { DocumentBackgroundLayer } from "../components/document/DocumentBackgroundLayer";
+import { GepflegtResume } from "../components/resume/templates/gepflegt";
+import { ModernResume } from "../components/resume/templates/modern";
+import { TabellarischResume } from "../components/resume/templates/tabellarisch";
 import { analyzeKeywordMatch } from "../lib/keywordMatch";
 import {
   createResumePagePlan,
@@ -96,6 +99,7 @@ function ResumePreviewPage({
     ? `${profile.firstName[0] ?? ""}${profile.lastName[0] ?? ""}`
     : "VN";
   const photoSource = getProfileMediaSource(profile?.photoPath);
+  const showResumeAvatar = !atsMode;
   const avatar = (
     <span className={`cv-avatar ${photoSource ? "has-image" : ""}`}>
       {photoSource ? (
@@ -109,8 +113,7 @@ function ResumePreviewPage({
   return (
     <div
       className={`resume-preview cv-${plan.density} ${isContinuation ? "cv-continuation" : ""}`}
-      data-resume-page={plan.pageNumber}
-    >
+      data-resume-page={plan.pageNumber}>
       <header className="cv-preview-header">
         <div>
           <p className="paper-kicker">
@@ -124,14 +127,55 @@ function ResumePreviewPage({
             {profile?.linkedin ? ` · ${profile.linkedin}` : ""}
           </p>
         </div>
-        {avatar}
+        {showResumeAvatar ? avatar : null}
       </header>
+      {atsMode && !isContinuation ? (
+        <aside className="cv-preview-side">
+          {sections.profile && (
+            <section>
+              <h3>Zusammenfassung</h3>
+              <p>
+                {documents.resumeProfile ||
+                  profile?.summary ||
+                  "Kurzprofil ergänzen …"}
+              </p>
+            </section>
+          )}
+          {sections.skills && (
+            <KnowledgeSectionRenderer
+              section={profile?.knowledgeSection}
+              legacySkills={profile?.skills}
+              atsMode={atsMode}
+            />
+          )}
+          {sections.languages && profile?.languages.length ? (
+            <section>
+              <h3>Sprachen</h3>
+              <div className="language-list">
+                {profile.languages.map((language) => (
+                  <p className="language-plain" key={language}>
+                    <span>{language}</span>
+                  </p>
+                ))}
+              </div>
+            </section>
+          ) : null}
+          {sections.certifications && profile?.certifications.length ? (
+            <section>
+              <h3>Zertifikate</h3>
+              <ul>
+                {profile.certifications.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+        </aside>
+      ) : null}
       <main className="cv-preview-main">
         {sections.experience && experiences.length ? (
           <section>
-            <h3>
-              Berufserfahrung{isContinuation ? " · Fortsetzung" : ""}
-            </h3>
+            <h3>Berufserfahrung{isContinuation ? " · Fortsetzung" : ""}</h3>
             {experiences.map((entry) => (
               <article className="resume-entry" key={entry.id}>
                 <div className="resume-entry-title">
@@ -146,11 +190,9 @@ function ResumePreviewPage({
                   </small>
                 </div>
                 <ul>
-                  {entry.achievements
-                    .filter(Boolean)
-                    .map((achievement) => (
-                      <li key={achievement}>{achievement}</li>
-                    ))}
+                  {entry.achievements.filter(Boolean).map((achievement) => (
+                    <li key={achievement}>{achievement}</li>
+                  ))}
                 </ul>
               </article>
             ))}
@@ -160,10 +202,7 @@ function ResumePreviewPage({
           <section>
             <h3>Ausbildung</h3>
             {education.map((entry) => (
-              <article
-                className="resume-entry education-entry"
-                key={entry.id}
-              >
+              <article className="resume-entry education-entry" key={entry.id}>
                 <div className="resume-entry-title">
                   <div>
                     <strong>{entry.degree}</strong>
@@ -185,11 +224,10 @@ function ResumePreviewPage({
           </p>
         ) : null}
       </main>
-      {!isContinuation ? (
+      {!isContinuation && !atsMode ? (
         <aside className="cv-preview-side">
           <span
-            className={`side-avatar cv-avatar ${photoSource ? "has-image" : ""}`}
-          >
+            className={`side-avatar cv-avatar ${photoSource ? "has-image" : ""}`}>
             {photoSource ? (
               <img src={photoSource} alt={`Bewerbungsfoto von ${name}`} />
             ) : (
@@ -220,7 +258,7 @@ function ResumePreviewPage({
                 {profile.languages.map((language) => (
                   <p key={language}>
                     <span>{language}</span>
-                    <i>●●●●○</i>
+                    {atsMode ? null : <i>●●●●○</i>}
                   </p>
                 ))}
               </div>
@@ -316,13 +354,19 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
     docs.resumeProfile,
   );
   const letterStatus = getLetterPageStatus(docs);
+  const isAtsMode =
+    design.settings.resumeOutputMode === "ats" ||
+    design.settings.columnLayout === "compact-ats";
+  const effectiveColumnLayout = isAtsMode
+    ? "compact-ats"
+    : design.settings.columnLayout;
   const paperStyle = {
     "--doc-accent": design.accentColor,
     "--doc-secondary": design.secondaryColor,
     "--doc-on-secondary": getReadableTextColor(design.secondaryColor),
     ...getDocumentDesignVariables(design.settings),
   } as CSSProperties;
-  const designClassName = `column-${design.settings.columnLayout} background-${design.settings.backgroundId} ${
+  const designClassName = `column-${effectiveColumnLayout} background-${design.settings.backgroundId} ${
     design.settings.showBackgroundInPrint
       ? "print-background"
       : "no-print-background"
@@ -425,16 +469,30 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
         <div>
           <p className="eyebrow">Synchronisiertes Bewerbungsset</p>
           <h2>{application.company.name}</h2>
-          <p>{template.name} · {application.job.title}</p>
+          <p>
+            {template.name} · {application.job.title}
+          </p>
         </div>
         <div className="toolbar-buttons">
-          <button className="button secondary" onClick={() => void openFolder(application.id)}>
+          <button
+            className="button secondary"
+            onClick={() => void openFolder(application.id)}>
             <FolderOpen size={17} /> Ordner
           </button>
-          <button className="button secondary" onClick={() => void exportCurrentPdf(tab)}>
-            <FileDown size={17} /> {tab === "deckblatt" ? "Deckblatt" : tab === "anschreiben" ? "Anschreiben" : "Lebenslauf"} PDF
+          <button
+            className="button secondary"
+            onClick={() => void exportCurrentPdf(tab)}>
+            <FileDown size={17} />{" "}
+            {tab === "deckblatt"
+              ? "Deckblatt"
+              : tab === "anschreiben"
+                ? "Anschreiben"
+                : "Lebenslauf"}{" "}
+            PDF
           </button>
-          <button className="button primary" onClick={() => void exportCurrentPdf("mappe")}>
+          <button
+            className="button primary"
+            onClick={() => void exportCurrentPdf("mappe")}>
             <Download size={17} /> Bewerbungsmappe
           </button>
         </div>
@@ -442,25 +500,80 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
       <section className="document-layout">
         <aside className="document-editor surface">
           <div className="document-tabs">
-            <button className={tab === "deckblatt" ? "active" : ""} onClick={() => setTab("deckblatt")}>Deckblatt</button>
-            <button className={tab === "anschreiben" ? "active" : ""} onClick={() => setTab("anschreiben")}>Anschreiben</button>
-            <button className={tab === "lebenslauf" ? "active" : ""} onClick={() => setTab("lebenslauf")}>Lebenslauf</button>
+            <button
+              className={tab === "deckblatt" ? "active" : ""}
+              onClick={() => setTab("deckblatt")}>
+              Deckblatt
+            </button>
+            <button
+              className={tab === "anschreiben" ? "active" : ""}
+              onClick={() => setTab("anschreiben")}>
+              Anschreiben
+            </button>
+            <button
+              className={tab === "lebenslauf" ? "active" : ""}
+              onClick={() => setTab("lebenslauf")}>
+              Lebenslauf
+            </button>
           </div>
           <form ref={formRef} onSubmit={(event) => void save(event)}>
             {tab === "deckblatt" && (
               <label className="field">
                 <span>Kurzprofil auf dem Deckblatt</span>
-                <textarea name="deckblattStatement" rows={8} defaultValue={docs.deckblattStatement} placeholder="Prägnante Positionierung in zwei bis drei Sätzen …" />
+                <textarea
+                  name="deckblattStatement"
+                  rows={8}
+                  defaultValue={docs.deckblattStatement}
+                  placeholder="Prägnante Positionierung in zwei bis drei Sätzen …"
+                />
               </label>
             )}
             {tab === "anschreiben" && (
               <>
-                <label className="field"><span>Betreff</span><input name="coverSubject" defaultValue={docs.coverSubject} /></label>
-                <label className="field"><span>Einleitung</span><textarea name="coverIntroduction" rows={4} defaultValue={docs.coverIntroduction} /></label>
-                <label className="field"><span>Motivation</span><textarea name="coverMotivation" rows={5} defaultValue={docs.coverMotivation} /></label>
-                <label className="field"><span>Fachliche Eignung</span><textarea name="coverQualification" rows={5} defaultValue={docs.coverQualification} /></label>
-                <label className="field"><span>Unternehmensbezug</span><textarea name="coverCompanyFit" rows={5} defaultValue={docs.coverCompanyFit} /></label>
-                <label className="field"><span>Schluss</span><textarea name="coverClosing" rows={5} defaultValue={docs.coverClosing} /></label>
+                <label className="field">
+                  <span>Betreff</span>
+                  <input name="coverSubject" defaultValue={docs.coverSubject} />
+                </label>
+                <label className="field">
+                  <span>Einleitung</span>
+                  <textarea
+                    name="coverIntroduction"
+                    rows={4}
+                    defaultValue={docs.coverIntroduction}
+                  />
+                </label>
+                <label className="field">
+                  <span>Motivation</span>
+                  <textarea
+                    name="coverMotivation"
+                    rows={5}
+                    defaultValue={docs.coverMotivation}
+                  />
+                </label>
+                <label className="field">
+                  <span>Fachliche Eignung</span>
+                  <textarea
+                    name="coverQualification"
+                    rows={5}
+                    defaultValue={docs.coverQualification}
+                  />
+                </label>
+                <label className="field">
+                  <span>Unternehmensbezug</span>
+                  <textarea
+                    name="coverCompanyFit"
+                    rows={5}
+                    defaultValue={docs.coverCompanyFit}
+                  />
+                </label>
+                <label className="field">
+                  <span>Schluss</span>
+                  <textarea
+                    name="coverClosing"
+                    rows={5}
+                    defaultValue={docs.coverClosing}
+                  />
+                </label>
                 <div className="document-media-inline">
                   <span>Unterschrift</span>
                   <DocumentMediaCard
@@ -473,8 +586,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                   />
                 </div>
                 <section
-                  className={`page-limit-status ${letterStatus.isOverRecommendedLength ? "warning" : "ok"}`}
-                >
+                  className={`page-limit-status ${letterStatus.isOverRecommendedLength ? "warning" : "ok"}`}>
                   <strong>Anschreiben: 1 A4-Seite</strong>
                   <span>
                     {letterStatus.characterCount.toLocaleString("de-DE")} /{" "}
@@ -492,9 +604,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
             {tab === "lebenslauf" && (
               <>
                 <section className="page-limit-status ok">
-                  <strong>
-                    Lebenslauf: {resumePlan.length} / 2 A4-Seiten
-                  </strong>
+                  <strong>Lebenslauf: {resumePlan.length} / 2 A4-Seiten</strong>
                   <span>
                     Einträge werden vollständig und ohne mitten im Eintrag
                     umzubrechen verteilt.
@@ -504,21 +614,23 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                   className="design-panel-trigger"
                   type="button"
                   aria-expanded={designPanelOpen}
-                  onClick={() => setDesignPanelOpen((current) => !current)}
-                >
+                  onClick={() => setDesignPanelOpen((current) => !current)}>
                   <Palette size={18} />
                   <span>
                     <strong>Design und Schriftart</strong>
-                    <small>Farben, Abstände, Schrift, Spalten und Hintergrund</small>
+                    <small>
+                      Farben, Abstände, Schrift, Spalten und Hintergrund
+                    </small>
                   </span>
                 </button>
                 <section
-                  className={`document-design-panel ${designPanelOpen ? "" : "collapsed"}`}
-                >
+                  className={`document-design-panel ${designPanelOpen ? "" : "collapsed"}`}>
                   <div className="design-panel-heading">
                     <div>
                       <span>Design und Schriftart</span>
-                      <small>Modell und Farben gelten auch für den PDF-Export.</small>
+                      <small>
+                        Modell und Farben gelten auch für den PDF-Export.
+                      </small>
                     </div>
                     <div className="design-panel-heading-actions">
                       <strong>{template.name}</strong>
@@ -526,8 +638,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                         className="icon-button"
                         type="button"
                         aria-label="Designpanel schließen"
-                        onClick={() => setDesignPanelOpen(false)}
-                      >
+                        onClick={() => setDesignPanelOpen(false)}>
                         <X size={17} />
                       </button>
                     </div>
@@ -544,13 +655,24 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                             templateId: item.id,
                             accentColor: item.accent,
                             secondaryColor: item.secondary,
+                            settings: {
+                              ...current.settings,
+                              ...(item.designDefaults ?? {}),
+                            },
                           }))
-                        }
-                      >
+                        }>
                         <TemplateThumbnail
                           template={item}
-                          accent={item.id === template.id ? design.accentColor : item.accent}
-                          secondary={item.id === template.id ? design.secondaryColor : item.secondary}
+                          accent={
+                            item.id === template.id
+                              ? design.accentColor
+                              : item.accent
+                          }
+                          secondary={
+                            item.id === template.id
+                              ? design.secondaryColor
+                              : item.secondary
+                          }
                         />
                         <span>{item.name}</span>
                       </button>
@@ -623,11 +745,16 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                         onChange={(event) =>
                           updateDesignSetting(
                             "marginLevel",
-                            Number(event.target.value) as DocumentDesignSettings["marginLevel"],
+                            Number(
+                              event.target.value,
+                            ) as DocumentDesignSettings["marginLevel"],
                           )
                         }
                       />
-                      <small><i>schmal</i><i>breit</i></small>
+                      <small>
+                        <i>schmal</i>
+                        <i>breit</i>
+                      </small>
                     </label>
                     <label className="design-range">
                       <span>
@@ -644,11 +771,16 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                         onChange={(event) =>
                           updateDesignSetting(
                             "sectionSpacingLevel",
-                            Number(event.target.value) as DocumentDesignSettings["sectionSpacingLevel"],
+                            Number(
+                              event.target.value,
+                            ) as DocumentDesignSettings["sectionSpacingLevel"],
                           )
                         }
                       />
-                      <small><i>kompakt</i><i>mehr Platz</i></small>
+                      <small>
+                        <i>kompakt</i>
+                        <i>mehr Platz</i>
+                      </small>
                     </label>
                     <label className="design-range">
                       <span>
@@ -665,11 +797,16 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                         onChange={(event) =>
                           updateDesignSetting(
                             "lineHeightLevel",
-                            Number(event.target.value) as DocumentDesignSettings["lineHeightLevel"],
+                            Number(
+                              event.target.value,
+                            ) as DocumentDesignSettings["lineHeightLevel"],
                           )
                         }
                       />
-                      <small><i>komprimiert</i><i>geräumig</i></small>
+                      <small>
+                        <i>komprimiert</i>
+                        <i>geräumig</i>
+                      </small>
                     </label>
                   </div>
                   <div className="design-option-group">
@@ -677,12 +814,17 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                     <div className="segmented-design-control">
                       {(["small", "medium", "large"] as const).map((size) => (
                         <button
-                          className={design.settings.fontSize === size ? "selected" : ""}
+                          className={
+                            design.settings.fontSize === size ? "selected" : ""
+                          }
                           key={size}
                           type="button"
-                          onClick={() => updateDesignSetting("fontSize", size)}
-                        >
-                          {size === "small" ? "Small" : size === "medium" ? "Medium" : "Large"}
+                          onClick={() => updateDesignSetting("fontSize", size)}>
+                          {size === "small"
+                            ? "Small"
+                            : size === "medium"
+                              ? "Medium"
+                              : "Large"}
                         </button>
                       ))}
                     </div>
@@ -695,12 +837,14 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                         onChange={(event) =>
                           updateDesignSetting(
                             "fontId",
-                            event.target.value as DocumentDesignSettings["fontId"],
+                            event.target
+                              .value as DocumentDesignSettings["fontId"],
                           )
-                        }
-                      >
+                        }>
                         {documentFonts.map((font) => (
-                          <option key={font.id} value={font.id}>{font.name}</option>
+                          <option key={font.id} value={font.id}>
+                            {font.name}
+                          </option>
                         ))}
                       </select>
                     </label>
@@ -711,28 +855,63 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                         onChange={(event) =>
                           updateDesignSetting(
                             "headingFontId",
-                            event.target.value as DocumentDesignSettings["headingFontId"],
+                            event.target
+                              .value as DocumentDesignSettings["headingFontId"],
                           )
-                        }
-                      >
+                        }>
                         {documentFonts.map((font) => (
-                          <option key={font.id} value={font.id}>{font.name}</option>
+                          <option key={font.id} value={font.id}>
+                            {font.name}
+                          </option>
                         ))}
                       </select>
                     </label>
+                  </div>
+                  <div className="design-option-group">
+                    <span>Ausgabemodus</span>
+                    <div className="segmented-design-control">
+                      {(["visual", "ats"] as const).map((mode) => (
+                        <button
+                          className={
+                            design.settings.resumeOutputMode === mode
+                              ? "selected"
+                              : ""
+                          }
+                          key={mode}
+                          type="button"
+                          onClick={() =>
+                            updateDesignSetting("resumeOutputMode", mode)
+                          }>
+                          {mode === "visual" ? "Visual" : "ATS optimiert"}
+                        </button>
+                      ))}
+                    </div>
+                    {isAtsMode ? (
+                      <p className="design-ats-background-note">
+                        ATS-Modus nutzt automatisch ein lineares, einspaltiges
+                        Layout mit reduzierter Visualisierung.
+                      </p>
+                    ) : null}
                   </div>
                   <div className="design-option-group">
                     <span>Spaltenanordnung</span>
                     <div className="column-layout-picker">
                       {columnLayoutOptions.map((option) => (
                         <button
-                          className={design.settings.columnLayout === option.id ? "selected" : ""}
+                          className={
+                            design.settings.columnLayout === option.id
+                              ? "selected"
+                              : ""
+                          }
                           key={option.id}
                           title={option.description}
                           type="button"
-                          onClick={() => updateDesignSetting("columnLayout", option.id)}
-                        >
-                          <i className={`column-icon column-icon-${option.id}`} />
+                          onClick={() =>
+                            updateDesignSetting("columnLayout", option.id)
+                          }>
+                          <i
+                            className={`column-icon column-icon-${option.id}`}
+                          />
                           <b>{option.name}</b>
                         </button>
                       ))}
@@ -747,11 +926,11 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                           key={background.id}
                           title={background.description}
                           type="button"
-                          onClick={() => updateDesignSetting("backgroundId", background.id)}
-                        >
+                          onClick={() =>
+                            updateDesignSetting("backgroundId", background.id)
+                          }>
                           <i>
-                            {background.id ===
-                            "programming-languages-bg"
+                            {background.id === "programming-languages-bg"
                               ? programmingLanguageBackgroundTokens
                                   .slice(0, 5)
                                   .map((token) => (
@@ -765,11 +944,15 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                     </div>
                   </div>
                   {design.settings.backgroundId ===
-                    "programming-languages-bg" &&
-                  design.settings.columnLayout === "compact-ats" ? (
+                    "programming-languages-bg" && isAtsMode ? (
                     <p className="design-ats-background-note">
                       Im kompakten ATS-Modus wird dieser dekorative Hintergrund
                       automatisch ausgeblendet.
+                    </p>
+                  ) : null}
+                  {template.atsInfo ? (
+                    <p className="design-ats-background-note">
+                      {template.atsInfo}
                     </p>
                   ) : null}
                   <label className="design-print-toggle">
@@ -818,14 +1001,18 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                         ...current,
                         settings: defaultDocumentDesign,
                       }))
-                    }
-                  >
+                    }>
                     Designwerte zurücksetzen
                   </button>
                 </section>
                 <label className="field">
                   <span>Kurzprofil</span>
-                  <textarea name="resumeProfile" rows={9} defaultValue={docs.resumeProfile} placeholder="Rolle, Erfahrungsschwerpunkt und konkreter Mehrwert …" />
+                  <textarea
+                    name="resumeProfile"
+                    rows={9}
+                    defaultValue={docs.resumeProfile}
+                    placeholder="Rolle, Erfahrungsschwerpunkt und konkreter Mehrwert …"
+                  />
                 </label>
                 <section className="match-analysis">
                   <header>
@@ -833,44 +1020,64 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                       <span>Stellenanzeigen-Match</span>
                       <strong>{keywordMatch.score}%</strong>
                     </div>
-                    <i><b style={{ width: `${keywordMatch.score}%` }} /></i>
+                    <i>
+                      <b style={{ width: `${keywordMatch.score}%` }} />
+                    </i>
                   </header>
                   <div>
                     <p>Gefundene Kenntnisse</p>
                     <div className="match-chips positive">
-                      {keywordMatch.matchedSkills.length
-                        ? keywordMatch.matchedSkills.map((skill) => <span key={skill}>{skill}</span>)
-                        : <small>Noch keine Profil-Kenntnis gefunden.</small>}
+                      {keywordMatch.matchedSkills.length ? (
+                        keywordMatch.matchedSkills.map((skill) => (
+                          <span key={skill}>{skill}</span>
+                        ))
+                      ) : (
+                        <small>Noch keine Profil-Kenntnis gefunden.</small>
+                      )}
                     </div>
                   </div>
                   <div>
                     <p>Begriffe aus der Stellenanzeige prüfen</p>
                     <div className="match-chips suggestions">
-                      {keywordMatch.suggestions.length
-                        ? keywordMatch.suggestions.map((keyword) => <span key={keyword}>{keyword}</span>)
-                        : <small>Stellenanzeigentext für Vorschläge ergänzen.</small>}
+                      {keywordMatch.suggestions.length ? (
+                        keywordMatch.suggestions.map((keyword) => (
+                          <span key={keyword}>{keyword}</span>
+                        ))
+                      ) : (
+                        <small>
+                          Stellenanzeigentext für Vorschläge ergänzen.
+                        </small>
+                      )}
                     </div>
                   </div>
-                  <small>Vorschläge werden niemals automatisch in Ihren Lebenslauf übernommen.</small>
+                  <small>
+                    Vorschläge werden niemals automatisch in Ihren Lebenslauf
+                    übernommen.
+                  </small>
                 </section>
               </>
             )}
             <div className="editor-note">
               <UserRound size={17} />
-              <p>Berufserfahrung, Ausbildung und Kenntnisse kommen aus dem ausgewählten Profil. Eigene Fähigkeiten werden niemals automatisch erfunden.</p>
+              <p>
+                Berufserfahrung, Ausbildung und Kenntnisse kommen aus dem
+                ausgewählten Profil. Eigene Fähigkeiten werden niemals
+                automatisch erfunden.
+              </p>
             </div>
-            <button className="button primary full-button" type="submit"><Save size={17} /> Texte speichern</button>
+            <button className="button primary full-button" type="submit">
+              <Save size={17} /> Texte speichern
+            </button>
           </form>
         </aside>
         <main className="paper-stage">
           {tab === "deckblatt" && (
             <div
               className={`document-paper document-deckblatt layout-${template.layout} ${designClassName}`}
-              style={paperStyle}
-            >
+              style={paperStyle}>
               <DocumentBackgroundLayer
                 backgroundId={design.settings.backgroundId}
-                atsMode={design.settings.columnLayout === "compact-ats"}
+                atsMode={isAtsMode}
               />
               <i className="paper-rule" />
               <div className="deckblatt-preview">
@@ -884,8 +1091,8 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                     "Kurzprofil im Editor ergänzen."}
                 </p>
                 <footer>
-                  {profile?.email || "E-Mail"} ·{" "}
-                  {profile?.phone || "Telefon"} · {profile?.city || "Ort"}
+                  {profile?.email || "E-Mail"} · {profile?.phone || "Telefon"} ·{" "}
+                  {profile?.city || "Ort"}
                 </footer>
               </div>
             </div>
@@ -893,11 +1100,10 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
           {tab === "anschreiben" && (
             <div
               className={`document-paper document-anschreiben letter-${letterStatus.density} layout-${template.layout} ${designClassName}`}
-              style={paperStyle}
-            >
+              style={paperStyle}>
               <DocumentBackgroundLayer
                 backgroundId={design.settings.backgroundId}
-                atsMode={design.settings.columnLayout === "compact-ats"}
+                atsMode={isAtsMode}
               />
               <i className="paper-rule" />
               <div className="letter-preview">
@@ -908,10 +1114,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                 <address>
                   {application.company.name}
                   <br />
-                  {[
-                    application.contact.firstName,
-                    application.contact.lastName,
-                  ]
+                  {[application.contact.firstName, application.contact.lastName]
                     .filter(Boolean)
                     .join(" ")}
                   <br />
@@ -940,10 +1143,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                     profile?.summary ||
                     "Fachliche Eignung ergänzen …"}
                 </p>
-                <p>
-                  {docs.coverCompanyFit ||
-                    "Unternehmensbezug ergänzen …"}
-                </p>
+                <p>{docs.coverCompanyFit || "Unternehmensbezug ergänzen …"}</p>
                 <p>{docs.coverClosing}</p>
                 <p className="letter-signature">
                   Mit freundlichen Grüßen
@@ -968,24 +1168,57 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
               <div
                 className={`document-paper document-lebenslauf layout-${template.layout} ${designClassName}`}
                 key={plan.pageNumber}
-                style={paperStyle}
-              >
+                style={paperStyle}>
                 <DocumentBackgroundLayer
                   backgroundId={design.settings.backgroundId}
-                  atsMode={design.settings.columnLayout === "compact-ats"}
+                  atsMode={isAtsMode}
                 />
-                <ResumePreviewPage
-                  application={application}
-                  atsMode={
-                    design.settings.columnLayout === "compact-ats"
-                  }
-                  documents={docs}
-                  name={name}
-                  plan={plan}
-                  profile={profile}
-                  sections={sections}
-                  totalPages={resumePlan.length}
-                />
+                {template.id === "gepflegt" ? (
+                  <GepflegtResume
+                    profile={profile}
+                    name={name}
+                    atsMode={isAtsMode}
+                    pageNumber={plan.pageNumber}
+                    totalPages={resumePlan.length}
+                    accentColor={design.accentColor}
+                    secondaryColor={design.secondaryColor}
+                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                  />
+                ) : template.id === "tabellarisch" ? (
+                  <TabellarischResume
+                    profile={profile}
+                    name={name}
+                    atsMode={isAtsMode}
+                    pageNumber={plan.pageNumber}
+                    totalPages={resumePlan.length}
+                    accentColor={design.accentColor}
+                    secondaryColor={design.secondaryColor}
+                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                  />
+                ) : template.id === "modern" ? (
+                  <ModernResume
+                    profile={profile}
+                    name={name}
+                    atsMode={isAtsMode}
+                    pageNumber={plan.pageNumber}
+                    totalPages={resumePlan.length}
+                    accentColor={design.accentColor}
+                    secondaryColor={design.secondaryColor}
+                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    isContinuation={plan.pageNumber === 2}
+                  />
+                ) : (
+                  <ResumePreviewPage
+                    application={application}
+                    atsMode={isAtsMode}
+                    documents={docs}
+                    name={name}
+                    plan={plan}
+                    profile={profile}
+                    sections={sections}
+                    totalPages={resumePlan.length}
+                  />
+                )}
               </div>
             ))}
         </main>

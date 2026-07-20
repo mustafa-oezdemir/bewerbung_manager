@@ -9,6 +9,7 @@ import type { ApplicationPaths } from "../../src/config/application-paths";
 import {
   defaultTemplateSortOrder,
   elegantLebenslaufTemplateConfig,
+  gepflegtLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   maximumTemplateFileSize,
@@ -215,7 +216,9 @@ export class TemplateService {
             ? kreativLebenslaufTemplateConfig
             : template.id === kompaktLebenslaufTemplateConfig.id
               ? kompaktLebenslaufTemplateConfig
-              : undefined;
+              : template.id === gepflegtLebenslaufTemplateConfig.id
+                ? gepflegtLebenslaufTemplateConfig
+                : undefined;
     if (managedResumeConfig && options.atsMode) {
       const atsPath = path.join(
         this.paths.systemTemplateCache,

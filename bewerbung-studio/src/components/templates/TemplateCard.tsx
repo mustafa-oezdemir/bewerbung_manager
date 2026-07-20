@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import {
   elegantLebenslaufTemplateConfig,
+  gepflegtLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   templateSourceLabels,
@@ -55,12 +56,14 @@ export function TemplateCard({
     template.id === kreativLebenslaufTemplateConfig.id;
   const isKompakt =
     template.id === kompaktLebenslaufTemplateConfig.id;
+  const isGepflegt = template.id === gepflegtLebenslaufTemplateConfig.id;
   const showsManagedFacts =
     isWordMuster ||
     isElegant ||
     isZeitgenoessisch ||
     isKreativ ||
-    isKompakt;
+    isKompakt ||
+    isGepflegt;
   const modifiedLabel = template.modifiedAt
     ? new Intl.DateTimeFormat("de-DE", {
         dateStyle: "short",
@@ -74,10 +77,12 @@ export function TemplateCard({
         className="managed-template-preview"
         type="button"
         aria-label={`${template.name} Vorschau öffnen`}
-        onClick={onDetails}
-      >
+        onClick={onDetails}>
         {template.previewDataUrl ? (
-          <img src={template.previewDataUrl} alt={`${template.name} Vorschau`} />
+          <img
+            src={template.previewDataUrl}
+            alt={`${template.name} Vorschau`}
+          />
         ) : (
           <span className="managed-template-preview-fallback">
             <FileOutput size={38} />
@@ -105,9 +110,11 @@ export function TemplateCard({
                 ? "Aus Favoriten entfernen"
                 : "Als Favorit markieren"
             }
-            onClick={onFavorite}
-          >
-            <Heart size={17} fill={template.isFavorite ? "currentColor" : "none"} />
+            onClick={onFavorite}>
+            <Heart
+              size={17}
+              fill={template.isFavorite ? "currentColor" : "none"}
+            />
           </button>
         </header>
         <p>
@@ -132,11 +139,9 @@ export function TemplateCard({
         ) : null}
         {isElegant ? (
           <ul className="managed-template-highlights">
-            {elegantLebenslaufTemplateConfig.cardHighlights.map(
-              (highlight) => (
-                <li key={highlight}>{highlight}</li>
-              ),
-            )}
+            {elegantLebenslaufTemplateConfig.cardHighlights.map((highlight) => (
+              <li key={highlight}>{highlight}</li>
+            ))}
           </ul>
         ) : null}
         {isZeitgenoessisch ? (
@@ -150,16 +155,21 @@ export function TemplateCard({
         ) : null}
         {isKreativ ? (
           <ul className="managed-template-highlights creative">
-            {kreativLebenslaufTemplateConfig.cardHighlights.map(
-              (highlight) => (
-                <li key={highlight}>{highlight}</li>
-              ),
-            )}
+            {kreativLebenslaufTemplateConfig.cardHighlights.map((highlight) => (
+              <li key={highlight}>{highlight}</li>
+            ))}
           </ul>
         ) : null}
         {isKompakt ? (
           <ul className="managed-template-highlights compact">
-            {kompaktLebenslaufTemplateConfig.cardHighlights.map(
+            {kompaktLebenslaufTemplateConfig.cardHighlights.map((highlight) => (
+              <li key={highlight}>{highlight}</li>
+            ))}
+          </ul>
+        ) : null}
+        {isGepflegt ? (
+          <ul className="managed-template-highlights contemporary">
+            {gepflegtLebenslaufTemplateConfig.cardHighlights.map(
               (highlight) => (
                 <li key={highlight}>{highlight}</li>
               ),
@@ -174,7 +184,10 @@ export function TemplateCard({
           </div>
         ) : null}
         <div className="managed-template-primary-actions">
-          <button className="button primary small-button" type="button" onClick={onUse}>
+          <button
+            className="button primary small-button"
+            type="button"
+            onClick={onUse}>
             <FileOutput size={15} /> Vorlage verwenden
           </button>
         </div>

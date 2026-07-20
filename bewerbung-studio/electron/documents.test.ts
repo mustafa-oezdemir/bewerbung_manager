@@ -249,6 +249,30 @@ describe("Lebenslauf-Dokumente", () => {
     );
   });
 
+  it("forces ATS rendering even when a visual column layout is selected", () => {
+    const atsApplication = applicationSchema.parse({
+      ...application,
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "right-sidebar",
+        resumeOutputMode: "ats",
+        backgroundId: "programming-languages-bg",
+      },
+    });
+    const html = buildDocumentHtml(atsApplication, profile, "lebenslauf");
+
+    expect(html).toContain("column-compact-ats");
+    expect(html).not.toContain(
+      'class="document-background-layer programming-languages-layer"',
+    );
+    expect(html).toContain("knowledge-comma");
+    expect(html).toContain("<h3>Kenntnisse</h3>");
+    expect(html).not.toContain("●●●●○");
+    expect(html.indexOf("Zusammenfassung")).toBeLessThan(
+      html.indexOf("Berufserfahrung"),
+    );
+  });
+
   it("renders the selected profile photo and signature in exported documents", () => {
     const imageData = "data:image/png;base64,iVBORw0KGgo=";
     const mediaProfile = profileSchema.parse({

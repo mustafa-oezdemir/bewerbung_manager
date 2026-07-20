@@ -130,9 +130,10 @@ export function KnowledgeSectionRenderer({
     .filter((category) => category.isVisible)
     .sort((left, right) => left.sortOrder - right.sortOrder);
   if (!categories.length) return null;
+  const sectionTitle = atsMode ? "Kenntnisse" : normalized.title;
   return (
     <section className="knowledge-section-renderer">
-      <h3>{normalized.title}</h3>
+      <h3>{sectionTitle}</h3>
       {categories.map((category) => {
         const mode = atsMode ? "comma-separated" : category.displayMode;
         return (
@@ -144,7 +145,9 @@ export function KnowledgeSectionRenderer({
               .filter((subcategory) => subcategory.isVisible)
               .sort((left, right) => left.sortOrder - right.sortOrder)
               .map((subcategory) => (
-                <div className="knowledge-subcategory-output" key={subcategory.id}>
+                <div
+                  className="knowledge-subcategory-output"
+                  key={subcategory.id}>
                   <h5>{subcategory.title}</h5>
                   <ItemList
                     items={subcategory.items}
@@ -152,7 +155,7 @@ export function KnowledgeSectionRenderer({
                     mode={
                       atsMode
                         ? "comma-separated"
-                        : subcategory.displayMode ?? mode
+                        : (subcategory.displayMode ?? mode)
                     }
                   />
                 </div>

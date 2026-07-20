@@ -2040,6 +2040,10 @@ kbd {
   white-space: nowrap;
 }
 
+.language-list .language-plain {
+  justify-content: flex-start;
+}
+
 .side-avatar {
   display: none;
   margin: 0 auto 8mm;

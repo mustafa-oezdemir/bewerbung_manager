@@ -3,6 +3,7 @@ import path from "node:path";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import {
+  gepflegtLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   templatePlaceholderAliases,
@@ -399,13 +400,10 @@ export class TemplatePlaceholderService {
       if (
         template.id === zeitgenoessischLebenslaufTemplateConfig.id ||
         template.id === kreativLebenslaufTemplateConfig.id ||
-        template.id === kompaktLebenslaufTemplateConfig.id
+        template.id === kompaktLebenslaufTemplateConfig.id ||
+        template.id === gepflegtLebenslaufTemplateConfig.id
       ) {
-        applyManagedResumeDesignTokens(
-          template.id,
-          renderedZip,
-          data,
-        );
+        applyManagedResumeDesignTokens(template.id, renderedZip, data);
       }
       if (template.id === kompaktLebenslaufTemplateConfig.id) {
         applyKompaktDocumentOptions(renderedZip, data);

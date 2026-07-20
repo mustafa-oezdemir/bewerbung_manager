@@ -3,6 +3,7 @@ import path from "node:path";
 import type { ApplicationPaths } from "../../src/config/application-paths";
 import {
   elegantLebenslaufTemplateConfig,
+  gepflegtLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   templateSourceLabels,
@@ -32,7 +33,9 @@ export class TemplatePreviewService {
             ? kreativLebenslaufTemplateConfig
             : template.id === kompaktLebenslaufTemplateConfig.id
               ? kompaktLebenslaufTemplateConfig
-              : undefined;
+              : template.id === gepflegtLebenslaufTemplateConfig.id
+                ? gepflegtLebenslaufTemplateConfig
+                : undefined;
     if (managedPreviewConfig && this.paths.bundledTemplatesRoot) {
       try {
         const preview = await readFile(

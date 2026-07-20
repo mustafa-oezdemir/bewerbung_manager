@@ -5,6 +5,7 @@ import {
   documentBackgroundIds,
   documentFontIds,
   fontSizeIds,
+  resumeOutputModes,
 } from "./documentDesign";
 import { defaultKnowledgeSection } from "../features/knowledge/knowledge.constants";
 import { knowledgeSectionSchema } from "../features/knowledge/knowledge.validation";
@@ -136,6 +137,9 @@ export const documentDesignSchema = z.object({
   fontId: z.enum(documentFontIds),
   headingFontId: z.enum(documentFontIds),
   columnLayout: z.enum(columnLayoutIds),
+  resumeOutputMode: z
+    .enum(resumeOutputModes)
+    .default(defaultDocumentDesign.resumeOutputMode),
   backgroundId: z.enum(documentBackgroundIds),
   showBackgroundInPrint: z.boolean(),
 });

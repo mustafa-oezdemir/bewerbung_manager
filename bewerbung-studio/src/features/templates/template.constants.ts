@@ -111,6 +111,81 @@ export const zeitgenoessischLebenslaufTemplateConfig = {
   ],
 } as const;
 
+export const gepflegtLebenslaufTemplateConfig = {
+  id: "word-lebenslauf-gepflegt",
+  fileName: "Gepflegt_Lebenslauf_Muster.docx",
+  atsFileName: "Gepflegt_Lebenslauf_ATS.docx",
+  previewFileName: "Gepflegt_Lebenslauf_Muster.preview.png",
+  name: "Gepflegt",
+  documentType: "lebenslauf",
+  format: "docx",
+  source: "system-word-template",
+  sortOrder: 7,
+  category: "business",
+  layout: "two-column-left-sidebar",
+  atsFriendly: true,
+  supportsPhoto: true,
+  supportsPlaceholders: true,
+  supportsPreview: true,
+  supportsAtsMode: true,
+  editableInWord: true,
+  isSystemTemplate: true,
+  isProtected: true,
+  description:
+    "Raffinierte Business-Lebenslaufvorlage mit linker Farbfläche und klarer Informationshierarchie.",
+  tags: [
+    "Gepflegt",
+    "Word",
+    "DOCX",
+    "Lebenslauf",
+    "ATS",
+    "Business",
+    "Kundenorientiert",
+  ],
+  cardHighlights: [
+    "Linke Farbfläche für Profil und Kernkompetenzen",
+    "Klare Business-Hierarchie für kundenorientierte Rollen",
+  ],
+} as const;
+
+export const modernLebenslaufTemplateConfig = {
+  id: "word-lebenslauf-modern",
+  fileName: "Modern_Lebenslauf_Muster.docx",
+  atsFileName: "Modern_Lebenslauf_ATS.docx",
+  previewFileName: "Modern_Lebenslauf_Muster.preview.png",
+  name: "Modern",
+  documentType: "lebenslauf",
+  format: "docx",
+  source: "system-word-template",
+  sortOrder: 8,
+  category: "creative-professional",
+  layout: "two-column-equal",
+  atsFriendly: true,
+  supportsPhoto: true,
+  supportsPlaceholders: true,
+  supportsPreview: true,
+  supportsAtsMode: true,
+  editableInWord: true,
+  isSystemTemplate: true,
+  isProtected: true,
+  description:
+    "Perfekte Lebenslauf-Vorlage mit kreativen Elementen, die Berufserfahrung und Qualifikationen übersichtlich zur Geltung bringt.",
+  tags: [
+    "Modern",
+    "Word",
+    "DOCX",
+    "Lebenslauf",
+    "ATS",
+    "Türkis",
+    "Kreativ",
+    "Professionell",
+  ],
+  cardHighlights: [
+    "Türkise Wellenmuster für professionelle Ausstrahlung",
+    "Zwei Spalten mit separaten Kontakt- und Erfahrungsbereichen",
+  ],
+} as const;
+
 export const kreativLebenslaufTemplateConfig = {
   id: "word-lebenslauf-kreativ",
   fileName: "Kreativ_Lebenslauf_Muster.docx",

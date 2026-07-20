@@ -2,9 +2,11 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { ApplicationPaths } from "../../src/config/application-paths";
 import {
+  gepflegtLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   maximumTemplateFileSize,
+  modernLebenslaufTemplateConfig,
   zeitgenoessischLebenslaufTemplateConfig,
   wordMusterTemplateConfig,
 } from "../../src/features/templates/template.constants";
@@ -151,7 +153,9 @@ const sortTemplates = (templates: DocumentTemplate[]) => {
         template.id !== wordMusterTemplateConfig.id &&
         template.id !== zeitgenoessischLebenslaufTemplateConfig.id &&
         template.id !== kreativLebenslaufTemplateConfig.id &&
-        template.id !== kompaktLebenslaufTemplateConfig.id,
+        template.id !== kompaktLebenslaufTemplateConfig.id &&
+        template.id !== gepflegtLebenslaufTemplateConfig.id &&
+        template.id !== modernLebenslaufTemplateConfig.id,
     )
     .sort(
       (left, right) =>
@@ -174,6 +178,14 @@ const sortTemplates = (templates: DocumentTemplate[]) => {
     {
       id: kompaktLebenslaufTemplateConfig.id,
       index: 4,
+    },
+    {
+      id: gepflegtLebenslaufTemplateConfig.id,
+      index: 5,
+    },
+    {
+      id: modernLebenslaufTemplateConfig.id,
+      index: 6,
     },
   ];
   const sorted = [...sortedWithoutPinned];

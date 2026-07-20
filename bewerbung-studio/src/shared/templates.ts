@@ -1,3 +1,10 @@
+import type {
+  ColumnLayout,
+  DocumentBackgroundId,
+  DocumentFontId,
+  ResumeOutputMode,
+} from "./documentDesign";
+
 export type TemplateLayout =
   | "centered"
   | "sidebar-right"
@@ -5,6 +12,22 @@ export type TemplateLayout =
   | "split-clean"
   | "sidebar-left"
   | "bold-grid";
+
+export type TemplateCategory =
+  | "ats"
+  | "business"
+  | "creative"
+  | "creative-professional"
+  | "modern"
+  | "executive";
+
+export type TemplateDesignDefaults = {
+  columnLayout?: ColumnLayout;
+  resumeOutputMode?: ResumeOutputMode;
+  backgroundId?: DocumentBackgroundId;
+  fontId?: DocumentFontId;
+  headingFontId?: DocumentFontId;
+};
 
 export type TemplateDefinition = {
   id: string;
@@ -15,6 +38,13 @@ export type TemplateDefinition = {
   font: string;
   layout: TemplateLayout;
   features: string[];
+  category?: TemplateCategory;
+  supportsAtsMode?: boolean;
+  supportsPhoto?: boolean;
+  supportsFreeform?: boolean;
+  sidebarWidthRatio?: number;
+  atsInfo?: string;
+  designDefaults?: TemplateDesignDefaults;
 };
 
 export const templates: TemplateDefinition[] = [
@@ -27,6 +57,16 @@ export const templates: TemplateDefinition[] = [
     font: "Segoe UI",
     layout: "centered",
     features: ["Zentrierter Kopf", "Einspaltig", "ATS-freundlich"],
+    category: "ats",
+    supportsAtsMode: true,
+    supportsPhoto: true,
+    designDefaults: {
+      columnLayout: "single",
+      resumeOutputMode: "visual",
+      backgroundId: "white",
+      fontId: "source-sans",
+      headingFontId: "source-sans",
+    },
   },
   {
     id: "modern-sidebar",
@@ -37,6 +77,88 @@ export const templates: TemplateDefinition[] = [
     font: "Segoe UI",
     layout: "sidebar-right",
     features: ["Rechte Seitenleiste", "Profilfokus", "Kompakt"],
+    category: "modern",
+    supportsAtsMode: true,
+    supportsPhoto: true,
+    designDefaults: {
+      columnLayout: "right-sidebar",
+      resumeOutputMode: "visual",
+      backgroundId: "white",
+      fontId: "source-sans",
+      headingFontId: "source-sans",
+    },
+  },
+  {
+    id: "zweispaltig",
+    name: "Zweispaltig",
+    description:
+      "Klar strukturiertes Zweispalten-Layout mit optionaler ATS-Variante.",
+    accent: "#1f4e5f",
+    secondary: "#eaf1f4",
+    font: "Segoe UI",
+    layout: "sidebar-right",
+    features: ["Hauptspalte", "Sidebar", "A4-optimiert"],
+    category: "business",
+    supportsAtsMode: true,
+    supportsPhoto: true,
+    supportsFreeform: true,
+    sidebarWidthRatio: 0.29,
+    designDefaults: {
+      columnLayout: "template",
+      resumeOutputMode: "visual",
+      backgroundId: "white",
+      fontId: "source-sans",
+      headingFontId: "source-sans",
+    },
+  },
+  {
+    id: "gepflegt",
+    name: "Gepflegt",
+    description:
+      "Eine raffinierte Lebenslaufvorlage, perfekt für Business Development Manager, Vertriebsleiter und andere kundenorientierte Positionen.",
+    accent: "#00B8B5",
+    secondary: "#087875",
+    font: "Source Sans 3",
+    layout: "sidebar-left",
+    features: ["Linke Farbfläche", "Business-fokussiert", "ATS-Variante"],
+    category: "business",
+    supportsAtsMode: true,
+    supportsPhoto: true,
+    supportsFreeform: true,
+    sidebarWidthRatio: 0.3,
+    atsInfo:
+      "Dieses Template wurde mit verbreiteten ATS-Systemen getestet. Dennoch muss der Inhalt in erster Linie klar, relevant und für Personalverantwortliche leicht erfassbar bleiben.",
+    designDefaults: {
+      columnLayout: "left-sidebar",
+      resumeOutputMode: "visual",
+      backgroundId: "white",
+      fontId: "source-sans",
+      headingFontId: "source-sans",
+    },
+  },
+  {
+    id: "modern",
+    name: "Modern",
+    description:
+      "Perfekte Lebenslauf-Vorlage mit kreativen Elementen, die Berufserfahrung und Qualifikationen übersichtlich zur Geltung bringt.",
+    accent: "#06B6C9",
+    secondary: "#C7F1F5",
+    font: "Source Sans 3",
+    layout: "split-clean",
+    features: ["Zwei Spalten", "Türkise Wellen", "Professionell"],
+    category: "creative-professional",
+    supportsAtsMode: true,
+    supportsPhoto: true,
+    supportsFreeform: true,
+    atsInfo:
+      "Modern-Template unterstützt ATS-freundliche Ausgabe mit einspaltigem Layout und entfernten visuellen Elementen.",
+    designDefaults: {
+      columnLayout: "two-column-equal",
+      resumeOutputMode: "visual",
+      backgroundId: "white",
+      fontId: "source-sans",
+      headingFontId: "source-sans",
+    },
   },
   {
     id: "minimal-clean",
@@ -47,6 +169,9 @@ export const templates: TemplateDefinition[] = [
     font: "Arial",
     layout: "minimal",
     features: ["Viel Weißraum", "Dezente Linien", "Zeitlos"],
+    category: "executive",
+    supportsAtsMode: true,
+    supportsPhoto: true,
   },
   {
     id: "technical-developer",
@@ -57,6 +182,9 @@ export const templates: TemplateDefinition[] = [
     font: "Segoe UI",
     layout: "split-clean",
     features: ["Zwei Spalten", "Skill-Chips", "Modern"],
+    category: "modern",
+    supportsAtsMode: true,
+    supportsPhoto: true,
   },
   {
     id: "executive-dark",
@@ -67,16 +195,47 @@ export const templates: TemplateDefinition[] = [
     font: "Segoe UI",
     layout: "sidebar-left",
     features: ["Linke Seitenleiste", "Starke Farbe", "Foto-Platzhalter"],
+    category: "executive",
+    supportsAtsMode: true,
+    supportsPhoto: true,
   },
   {
     id: "creative-accent",
     name: "Bold Grid",
-    description: "Kräftige Überschriften und ein strukturiertes Zweispaltenraster.",
+    description:
+      "Kräftige Überschriften und ein strukturiertes Zweispaltenraster.",
     accent: "#0d3e91",
     secondary: "#edf4ff",
     font: "Arial",
     layout: "bold-grid",
     features: ["Kräftige Titel", "Zweispaltenraster", "Dynamisch"],
+    category: "creative",
+    supportsAtsMode: true,
+    supportsPhoto: true,
+  },
+  {
+    id: "tabellarisch",
+    name: "Tabellarisch",
+    description:
+      "Modernes Timeline-Design für erfahrene Profis mit vertikalen Erfahrungs- und Ausbildungs-Zeitleisten.",
+    accent: "#c78300",
+    secondary: "#17263d",
+    font: "Source Sans 3",
+    layout: "split-clean",
+    features: ["Timeline", "Berufserfahrung", "Zeitgenössisch"],
+    category: "modern",
+    supportsAtsMode: true,
+    supportsPhoto: true,
+    supportsFreeform: true,
+    atsInfo:
+      "Tabellarisch-Template unterstützt ATS-Modus mit einspaltigem Layout und ausgeblendeten Designelementen wie Timeline-Grafiken.",
+    designDefaults: {
+      columnLayout: "single",
+      resumeOutputMode: "visual",
+      backgroundId: "white",
+      fontId: "source-sans",
+      headingFontId: "source-sans",
+    },
   },
 ];
 
@@ -102,7 +261,9 @@ export const getReadableTextColor = (hex: string) => {
     return "#ffffff";
   }
 
-  const channels = [0, 2, 4].map((offset) => Number.parseInt(normalized.slice(offset, offset + 2), 16) / 255);
+  const channels = [0, 2, 4].map(
+    (offset) => Number.parseInt(normalized.slice(offset, offset + 2), 16) / 255,
+  );
   const [red, green, blue] = channels.map((channel) =>
     channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
   );

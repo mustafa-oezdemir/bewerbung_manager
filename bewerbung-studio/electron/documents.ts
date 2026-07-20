@@ -40,9 +40,9 @@ const escapeHtml = (value = "") =>
 
 const programmingBackgroundMarkup = (
   settings: DocumentDesignSettings,
+  atsMode: boolean,
 ) =>
-  settings.backgroundId === "programming-languages-bg" &&
-  settings.columnLayout !== "compact-ats"
+  settings.backgroundId === "programming-languages-bg" && !atsMode
     ? `<div class="document-background-layer programming-languages-layer" aria-hidden="true">${programmingLanguageBackgroundTokens
         .map((token) => `<span>${escapeHtml(token)}</span>`)
         .join("")}</div>`
@@ -132,8 +132,9 @@ const renderKnowledgeSection = (
       return `<div class="knowledge-category"><h4>${escapeHtml(category.title)}</h4>${category.subtitle ? `<small>${escapeHtml(category.subtitle)}</small>` : ""}${direct}${subcategories}</div>`;
     })
     .join("");
+  const sectionTitle = atsMode ? "Kenntnisse" : section.title;
   return categories
-    ? `<section class="knowledge-section"><h3>${escapeHtml(section.title)}</h3>${categories}</section>`
+    ? `<section class="knowledge-section"><h3>${escapeHtml(sectionTitle)}</h3>${categories}</section>`
     : "";
 };
 
@@ -223,7 +224,7 @@ const documentCss = (
   .cv-entry-head small{flex:0 0 31mm;color:var(--muted);font-size:8pt;line-height:1.35;text-align:right}.cv-entry ul,.cv-secondary ul{margin:1mm 0;padding-left:5mm}
   .skills,.knowledge-tags{display:flex;flex-wrap:wrap;gap:1.5mm}.chip,.knowledge-tags span{padding:1mm 2mm;border-bottom:1px solid #b6bdbc;color:color-mix(in srgb,var(--accent),#202827 25%);font-size:8.2pt}
   .knowledge-category{margin-bottom:3mm}.knowledge-category h4,.knowledge-subcategory h5{font-size:9pt;margin:0 0 1mm;color:var(--accent)}.knowledge-category>small{display:block;margin:-.5mm 0 1mm}.knowledge-comma,.knowledge-lines p{margin:0 0 1mm}.knowledge-lines{margin:0;padding-left:4mm}.knowledge-subcategory{margin-top:1.5mm}.knowledge-level-row{display:grid;grid-template-columns:minmax(20mm,1fr) 18mm;gap:.8mm 2mm;margin-bottom:1mm}.knowledge-level-row small{grid-column:1/-1;font-size:7pt}.knowledge-level-bar{height:1.4mm;background:#dfe5e4;align-self:center}.knowledge-level-bar b{display:block;height:100%;background:var(--accent)}.knowledge-level-dots{font-style:normal;color:var(--accent);letter-spacing:.4mm}.knowledge-level-dots em{font-style:normal;color:#c9cfce}
-  .language{display:flex;justify-content:space-between;gap:4mm;margin:2mm 0}.language i{color:var(--accent);font-size:7pt;font-style:normal;letter-spacing:1px;white-space:nowrap}
+  .language{display:flex;justify-content:space-between;gap:4mm;margin:2mm 0}.language i{color:var(--accent);font-size:7pt;font-style:normal;letter-spacing:1px;white-space:nowrap}.language-plain{justify-content:flex-start}
   .side-avatar{display:none;margin:0 auto 8mm}
   .cv-sidebar-right{grid-template:"header side" auto "main side" 1fr/66% 34%}.cv-sidebar-left{grid-template:"side header" auto "side main" 1fr/35% 65%}
   .cv-sidebar-right .cv-secondary,.cv-sidebar-left .cv-secondary{padding:17mm 10mm 14mm;color:var(--on-secondary);background:var(--secondary)}
@@ -287,12 +288,18 @@ export const buildDocumentHtml = (
   const secondary = application.secondaryColor || template.secondary;
   const onSecondary = getReadableTextColor(secondary);
   const designSettings = application.designSettings;
+  const atsMode =
+    designSettings.resumeOutputMode === "ats" ||
+    designSettings.columnLayout === "compact-ats";
+  const effectiveColumnLayout = atsMode
+    ? "compact-ats"
+    : designSettings.columnLayout;
   const designClasses = `background-${designSettings.backgroundId} ${
     designSettings.showBackgroundInPrint
       ? "print-background"
       : "no-print-background"
   }`;
-  const backgroundLayer = programmingBackgroundMarkup(designSettings);
+  const backgroundLayer = programmingBackgroundMarkup(designSettings, atsMode);
   const docs = application.documents;
   const sections = profile?.resumeSections ?? {
     profile: true,
@@ -311,9 +318,11 @@ export const buildDocumentHtml = (
   const photoSource = getProfileMediaSource(profile?.photoPath);
   const signatureSource = getProfileMediaSource(profile?.signaturePath);
   const avatarMarkup = (side = false) =>
-    photoSource
-      ? `<span class="cv-avatar${side ? " side-avatar" : ""} has-image"><img class="cv-avatar-image" src="${escapeHtml(photoSource)}" alt=""></span>`
-      : `<span class="cv-avatar${side ? " side-avatar" : ""}">${escapeHtml(initials)}</span>`;
+    atsMode
+      ? ""
+      : photoSource
+        ? `<span class="cv-avatar${side ? " side-avatar" : ""} has-image"><img class="cv-avatar-image" src="${escapeHtml(photoSource)}" alt=""></span>`
+        : `<span class="cv-avatar${side ? " side-avatar" : ""}">${escapeHtml(initials)}</span>`;
   const resumeContacts = profile
     ? [profile.phone, profile.email, profile.city, profile.linkedin]
         .filter(Boolean)
@@ -363,14 +372,17 @@ export const buildDocumentHtml = (
     ? `<section><h3>Zusammenfassung</h3><p>${escapeHtml(docs.resumeProfile || profile?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>`
     : "";
   const skillSection = sections.skills
-    ? renderKnowledgeSection(
-        profile,
-        designSettings.columnLayout === "compact-ats",
-      )
+    ? renderKnowledgeSection(profile, atsMode)
     : "";
   const languageSection =
     sections.languages && profile?.languages.length
-      ? `<section><h3>Sprachen</h3>${profile.languages.map((language) => `<p class="language"><span>${escapeHtml(language)}</span><i>●●●●○</i></p>`).join("")}</section>`
+      ? `<section><h3>Sprachen</h3>${profile.languages
+          .map((language) =>
+            atsMode
+              ? `<p class="language language-plain"><span>${escapeHtml(language)}</span></p>`
+              : `<p class="language"><span>${escapeHtml(language)}</span><i>●●●●○</i></p>`,
+          )
+          .join("")}</section>`
       : "";
   const certificationSection =
     sections.certifications && profile?.certifications.length
@@ -426,10 +438,26 @@ export const buildDocumentHtml = (
     const densityClass =
       plan.density === "standard" ? "" : ` cv-${plan.density}`;
 
+    const mainMarkup = `
+          <main class="cv-primary">
+            ${experienceItems ? `<section><h3>Berufserfahrung${isContinuation ? " · Fortsetzung" : ""}</h3>${experienceItems}</section>` : ""}
+            ${educationItems ? `<section><h3>Ausbildung</h3>${educationItems}</section>` : ""}
+            ${!experienceItems && !educationItems && plan.pageNumber === 1 ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}
+          </main>`;
+    const sideMarkup = isContinuation
+      ? ""
+      : `<aside class="cv-secondary">
+                  ${avatarMarkup(true)}
+                  ${summarySection}
+                  ${skillSection}
+                  ${languageSection}
+                  ${certificationSection}
+                </aside>`;
+
     return `
       <section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}">
         ${backgroundLayer}
-        <div class="page-content cv-page cv-${template.layout} column-${designSettings.columnLayout}${isContinuation ? " cv-continuation" : ""}${densityClass}">
+        <div class="page-content cv-page cv-${template.layout} column-${effectiveColumnLayout}${isContinuation ? " cv-continuation" : ""}${densityClass}">
           <header class="cv-header">
             <div>
               <p class="kicker">${isContinuation ? "Lebenslauf · Fortsetzung" : "Lebenslauf"}</p>
@@ -439,22 +467,7 @@ export const buildDocumentHtml = (
             </div>
             ${avatarMarkup()}
           </header>
-          <main class="cv-primary">
-            ${experienceItems ? `<section><h3>Berufserfahrung${isContinuation ? " · Fortsetzung" : ""}</h3>${experienceItems}</section>` : ""}
-            ${educationItems ? `<section><h3>Ausbildung</h3>${educationItems}</section>` : ""}
-            ${!experienceItems && !educationItems && plan.pageNumber === 1 ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}
-          </main>
-          ${
-            isContinuation
-              ? ""
-              : `<aside class="cv-secondary">
-                  ${avatarMarkup(true)}
-                  ${summarySection}
-                  ${skillSection}
-                  ${languageSection}
-                  ${certificationSection}
-                </aside>`
-          }
+          ${atsMode ? `${sideMarkup}${mainMarkup}` : `${mainMarkup}${sideMarkup}`}
           <span class="page-number">${plan.pageNumber} / ${resumePlan.length}</span>
         </div>
       </section>`;
