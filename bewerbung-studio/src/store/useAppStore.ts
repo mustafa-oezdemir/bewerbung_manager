@@ -54,6 +54,7 @@ type StoreState = {
   exportPdf: (
     applicationId: string,
     target: "deckblatt" | "anschreiben" | "lebenslauf" | "mappe",
+    application?: Application,
   ) => Promise<void>;
   exportBackup: () => Promise<void>;
   importBackup: () => Promise<void>;
@@ -222,13 +223,14 @@ export const useAppStore = create<StoreState>((set, get) => {
         });
       }
     },
-    async exportPdf(applicationId, target) {
+    async exportPdf(applicationId, target, application) {
       if (!apiAvailable()) return;
       set({ loading: true, error: undefined });
       try {
         const result = await window.bewerbungsManager.export.pdf(
           applicationId,
           target,
+          application,
         );
         set({
           loading: false,

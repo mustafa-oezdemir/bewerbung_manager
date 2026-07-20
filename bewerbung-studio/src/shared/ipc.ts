@@ -75,7 +75,11 @@ export interface BewerbungsManagerApi {
     open: (id: string) => Promise<void>;
   };
   export: {
-    pdf: (applicationId: string, target: ExportTarget) => Promise<string | null>;
+    pdf: (
+      applicationId: string,
+      target: ExportTarget,
+      application?: Application,
+    ) => Promise<string | null>;
     backup: () => Promise<string | null>;
     importBackup: () => Promise<Workspace | null>;
     settings: () => Promise<string | null>;

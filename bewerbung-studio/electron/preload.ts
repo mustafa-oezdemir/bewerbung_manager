@@ -53,8 +53,13 @@ const api: BewerbungsManagerApi = {
     open: (id) => ipcRenderer.invoke("attachments:open", id),
   },
   export: {
-    pdf: (applicationId, target) =>
-      ipcRenderer.invoke("export:pdf", applicationId, target),
+    pdf: (applicationId, target, application) =>
+      ipcRenderer.invoke(
+        "export:pdf",
+        applicationId,
+        target,
+        application,
+      ),
     backup: () => ipcRenderer.invoke("export:backup"),
     importBackup: () => ipcRenderer.invoke("export:import-backup"),
     settings: () => ipcRenderer.invoke("export:settings"),

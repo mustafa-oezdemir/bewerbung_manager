@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import {
   elegantLebenslaufTemplateConfig,
+  kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   templateSourceLabels,
   templateTypeLabels,
@@ -52,8 +53,14 @@ export function TemplateCard({
     template.id === zeitgenoessischLebenslaufTemplateConfig.id;
   const isKreativ =
     template.id === kreativLebenslaufTemplateConfig.id;
+  const isKompakt =
+    template.id === kompaktLebenslaufTemplateConfig.id;
   const showsManagedFacts =
-    isWordMuster || isElegant || isZeitgenoessisch || isKreativ;
+    isWordMuster ||
+    isElegant ||
+    isZeitgenoessisch ||
+    isKreativ ||
+    isKompakt;
   const modifiedLabel = template.modifiedAt
     ? new Intl.DateTimeFormat("de-DE", {
         dateStyle: "short",
@@ -144,6 +151,15 @@ export function TemplateCard({
         {isKreativ ? (
           <ul className="managed-template-highlights creative">
             {kreativLebenslaufTemplateConfig.cardHighlights.map(
+              (highlight) => (
+                <li key={highlight}>{highlight}</li>
+              ),
+            )}
+          </ul>
+        ) : null}
+        {isKompakt ? (
+          <ul className="managed-template-highlights compact">
+            {kompaktLebenslaufTemplateConfig.cardHighlights.map(
               (highlight) => (
                 <li key={highlight}>{highlight}</li>
               ),

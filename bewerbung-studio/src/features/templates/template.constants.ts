@@ -54,7 +54,7 @@ export const elegantLebenslaufTemplateConfig = {
   documentType: "lebenslauf",
   format: "docx",
   source: "system-word-template",
-  sortOrder: 5,
+  sortOrder: 6,
   category: "elegant",
   layout: "two-column-right-sidebar",
   atsFriendly: true,
@@ -159,6 +159,53 @@ export const kreativLebenslaufTemplateConfig = {
   ],
 } as const;
 
+export const kompaktLebenslaufTemplateConfig = {
+  id: "word-lebenslauf-kompakt",
+  fileName: "Kompakt_Lebenslauf_Muster.docx",
+  atsFileName: "Kompakt_Lebenslauf_ATS.docx",
+  previewFileName: "Kompakt_Lebenslauf_Muster.preview.png",
+  name: "Kompakt",
+  documentType: "lebenslauf",
+  format: "docx",
+  source: "system-word-template",
+  sortOrder: 5,
+  category: "compact",
+  layout: "two-column-compact",
+  atsFriendly: true,
+  supportsPhoto: false,
+  supportsBackground: true,
+  supportsPlaceholders: true,
+  supportsPreview: true,
+  supportsAtsMode: true,
+  editableInWord: true,
+  isSystemTemplate: true,
+  isProtected: true,
+  emphasis: "single-page-high-density",
+  description:
+    "Einseitige Word-Lebenslaufvorlage mit kleineren Seitenrändern und hoher Informationsdichte.",
+  tags: [
+    "Kompakt",
+    "Word",
+    "DOCX",
+    "Lebenslauf",
+    "ATS",
+    "Ohne Foto",
+    "Zweispaltig",
+    "Einseitig",
+  ],
+  colorVariants: {
+    dunkelblau: "#0A3485",
+    schwarz: "#111111",
+    petrol: "#145B63",
+    violett: "#5B3F91",
+    dunkelgruen: "#185D47",
+  },
+  cardHighlights: [
+    "Einseitig · Hohe Informationsdichte",
+    "Zweispaltig · Ohne Foto · ATS-freundlich · DOCX",
+  ],
+} as const;
+
 const coreTemplatePlaceholderKeys = [
   "BEWERBER_NAME",
   "BEWERBER_VORNAME",
@@ -215,6 +262,9 @@ const elegantStaticPlaceholderKeys = [
   "ORT",
   "GEBURTSDATUM",
   "GEBURTSORT",
+  "GEBURTSZEILE",
+  "GITHUB",
+  "KONTAKTDATEN_TITEL",
   "KONTAKT_ZEILE_1",
   "KONTAKT_ZEILE_2",
   "KONTAKT_ZEILE_3",
@@ -234,6 +284,13 @@ const elegantStaticPlaceholderKeys = [
   "ZUSAMMENFASSUNG_TITEL",
   "ZUSAMMENFASSUNG",
   "STAERKEN_TITEL",
+  "STAERKEN_ATS",
+  "ERFOLGE_TITEL",
+  "ERFOLGE_ATS",
+  "ERFOLG_HIGHLIGHT_1_TITEL",
+  "ERFOLG_HIGHLIGHT_1_BESCHREIBUNG",
+  "ERFOLG_HIGHLIGHT_2_TITEL",
+  "ERFOLG_HIGHLIGHT_2_BESCHREIBUNG",
   "KENNTNISSE_TITEL",
   "SPRACHEN_TITEL",
   "SPRACHEN_ATS",
@@ -271,7 +328,7 @@ const numberedPlaceholderKeys = (
 
 export const elegantTemplatePlaceholderKeys: readonly string[] = [
   ...elegantStaticPlaceholderKeys,
-  ...numberedPlaceholderKeys(6, [
+  ...numberedPlaceholderKeys(8, [
     "POSITION",
     "UNTERNEHMEN",
     "STARTDATUM",
@@ -283,7 +340,7 @@ export const elegantTemplatePlaceholderKeys: readonly string[] = [
     "TECHNOLOGIEN",
     "ERFAHRUNG_TRENNER",
   ]),
-  ...Array.from({ length: 6 }, (_, experienceOffset) =>
+  ...Array.from({ length: 8 }, (_, experienceOffset) =>
     Array.from(
       { length: 5 },
       (_, achievementOffset) =>
@@ -309,7 +366,7 @@ export const elegantTemplatePlaceholderKeys: readonly string[] = [
     `STAERKE_${offset + 1}_TITEL`,
     `STAERKE_${offset + 1}_BESCHREIBUNG`,
   ]).flat(),
-  ...numberedPlaceholderKeys(5, [
+  ...numberedPlaceholderKeys(6, [
     "KENNTNIS_KATEGORIE",
     "KENNTNIS_EINTRAEGE",
   ]),

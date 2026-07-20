@@ -10,6 +10,7 @@ import path from "node:path";
 import type { ApplicationPaths } from "../../src/config/application-paths";
 import {
   elegantLebenslaufTemplateConfig,
+  kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   zeitgenoessischLebenslaufTemplateConfig,
   wordMusterTemplateConfig,
@@ -54,6 +55,7 @@ export class TemplateRepository {
     await this.ensureWordMusterTemplate();
     await this.ensureZeitgenoessischLebenslaufTemplate();
     await this.ensureKreativLebenslaufTemplate();
+    await this.ensureKompaktLebenslaufTemplate();
     await this.ensureElegantLebenslaufTemplate();
     return this.refresh();
   }
@@ -217,6 +219,46 @@ export class TemplateRepository {
 
   private async ensureKreativLebenslaufTemplate() {
     const config = kreativLebenslaufTemplateConfig;
+    const targetPath = path.join(
+      this.paths.lebenslaufTemplates,
+      config.fileName,
+    );
+    const available = await this.copyBundledTemplateIfMissing(
+      config.fileName,
+      targetPath,
+    );
+    if (!available) return;
+
+    await this.copyBundledTemplateIfMissing(
+      config.atsFileName,
+      path.join(this.paths.systemTemplateCache, config.atsFileName),
+    );
+    await this.writeMetadata(targetPath, {
+      id: config.id,
+      name: config.name,
+      documentType: config.documentType,
+      format: config.format,
+      source: config.source,
+      sortOrder: config.sortOrder,
+      description: config.description,
+      tags: [...config.tags],
+      isSystemTemplate: config.isSystemTemplate,
+      supportsPreview: config.supportsPreview,
+      supportsPlaceholders: config.supportsPlaceholders,
+      editableInWord: config.editableInWord,
+      isProtected: config.isProtected,
+      category: config.category,
+      layout: config.layout,
+      atsFriendly: config.atsFriendly,
+      supportsPhoto: config.supportsPhoto,
+      supportsBackground: config.supportsBackground,
+      supportsAtsMode: config.supportsAtsMode,
+      emphasis: config.emphasis,
+    });
+  }
+
+  private async ensureKompaktLebenslaufTemplate() {
+    const config = kompaktLebenslaufTemplateConfig;
     const targetPath = path.join(
       this.paths.lebenslaufTemplates,
       config.fileName,

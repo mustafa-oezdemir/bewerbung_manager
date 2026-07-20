@@ -94,4 +94,39 @@ describe("DataStore backups", () => {
     await expect(store.importSettings(settingsPath)).rejects.toThrow();
     expect(store.getWorkspace().settings.backupRetention).toBe(10);
   });
+
+  it("exports the current editor snapshot instead of a stale persisted template", async () => {
+    const workspace = await store.createApplication(
+      applicationInput("Snapshot GmbH"),
+    );
+    const persisted = workspace.applications[0];
+    const snapshot = {
+      ...persisted,
+      templateId: "executive-dark",
+      accentColor: "#16b8b5",
+      secondaryColor: "#087573",
+      designSettings: {
+        ...persisted.designSettings,
+        columnLayout: "template" as const,
+        backgroundId: "dots" as const,
+      },
+    };
+
+    const persistedHtml = store.getExportHtml(
+      persisted.id,
+      "lebenslauf",
+    );
+    const snapshotHtml = store.getExportHtml(
+      persisted.id,
+      "lebenslauf",
+      snapshot,
+    );
+
+    expect(persistedHtml).toContain("cv-centered");
+    expect(snapshotHtml).toContain("cv-sidebar-left");
+    expect(snapshotHtml).toContain("column-template");
+    expect(snapshotHtml).toContain("--accent:#16b8b5");
+    expect(snapshotHtml).toContain("--secondary:#087573");
+    expect(snapshotHtml).toContain("background-dots");
+  });
 });

@@ -2,6 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { ApplicationPaths } from "../../src/config/application-paths";
 import {
+  kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   maximumTemplateFileSize,
   zeitgenoessischLebenslaufTemplateConfig,
@@ -149,7 +150,8 @@ const sortTemplates = (templates: DocumentTemplate[]) => {
       (template) =>
         template.id !== wordMusterTemplateConfig.id &&
         template.id !== zeitgenoessischLebenslaufTemplateConfig.id &&
-        template.id !== kreativLebenslaufTemplateConfig.id,
+        template.id !== kreativLebenslaufTemplateConfig.id &&
+        template.id !== kompaktLebenslaufTemplateConfig.id,
     )
     .sort(
       (left, right) =>
@@ -168,6 +170,10 @@ const sortTemplates = (templates: DocumentTemplate[]) => {
     {
       id: kreativLebenslaufTemplateConfig.id,
       index: 3,
+    },
+    {
+      id: kompaktLebenslaufTemplateConfig.id,
+      index: 4,
     },
   ];
   const sorted = [...sortedWithoutPinned];

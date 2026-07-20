@@ -10,7 +10,12 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { useEffect, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { TemplateThumbnail } from "../components/TemplateThumbnail";
 import { KnowledgeSectionRenderer } from "../components/document/KnowledgeSectionRenderer";
 import { DocumentBackgroundLayer } from "../components/document/DocumentBackgroundLayer";
@@ -51,6 +56,7 @@ type Tab = "deckblatt" | "anschreiben" | "lebenslauf";
 
 type ResumePreviewPageProps = {
   application: Application;
+  atsMode: boolean;
   documents: DocumentDraft;
   name: string;
   plan: ResumePagePlan;
@@ -61,6 +67,7 @@ type ResumePreviewPageProps = {
 
 function ResumePreviewPage({
   application,
+  atsMode,
   documents,
   name,
   plan,
@@ -203,9 +210,7 @@ function ResumePreviewPage({
             <KnowledgeSectionRenderer
               section={profile?.knowledgeSection}
               legacySkills={profile?.skills}
-              atsMode={
-                application.designSettings.columnLayout === "compact-ats"
-              }
+              atsMode={atsMode}
             />
           )}
           {sections.languages && profile?.languages.length ? (
@@ -256,6 +261,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
     secondaryColor: templates[0].secondary,
     settings: defaultDocumentDesign,
   });
+  const formRef = useRef<HTMLFormElement>(null);
   useEffect(() => setTab(initialTab), [initialTab]);
   useEffect(() => {
     if (!application || application.id === design.applicationId) return;
@@ -358,36 +364,59 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
     });
   };
 
-  const save = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    await saveApplication({
+  const applicationSnapshot = (
+    form: HTMLFormElement | null,
+  ): Application => {
+    const data = form ? new FormData(form) : null;
+    const value = (name: string, fallback: string) => {
+      const current = data?.get(name);
+      return typeof current === "string" ? current : fallback;
+    };
+    return {
       ...application,
       templateId: design.templateId,
       accentColor: design.accentColor,
       secondaryColor: design.secondaryColor,
       designSettings: design.settings,
       documents: {
-        coverSubject: String(data.get("coverSubject") ?? docs.coverSubject),
-        coverIntroduction: String(
-          data.get("coverIntroduction") ?? docs.coverIntroduction,
+        coverSubject: value("coverSubject", docs.coverSubject),
+        coverIntroduction: value(
+          "coverIntroduction",
+          docs.coverIntroduction,
         ),
-        coverMotivation: String(
-          data.get("coverMotivation") ?? docs.coverMotivation,
+        coverMotivation: value(
+          "coverMotivation",
+          docs.coverMotivation,
         ),
-        coverQualification: String(
-          data.get("coverQualification") ?? docs.coverQualification,
+        coverQualification: value(
+          "coverQualification",
+          docs.coverQualification,
         ),
-        coverCompanyFit: String(
-          data.get("coverCompanyFit") ?? docs.coverCompanyFit,
+        coverCompanyFit: value(
+          "coverCompanyFit",
+          docs.coverCompanyFit,
         ),
-        coverClosing: String(data.get("coverClosing") ?? docs.coverClosing),
-        resumeProfile: String(data.get("resumeProfile") ?? docs.resumeProfile),
-        deckblattStatement: String(
-          data.get("deckblattStatement") ?? docs.deckblattStatement,
+        coverClosing: value("coverClosing", docs.coverClosing),
+        resumeProfile: value("resumeProfile", docs.resumeProfile),
+        deckblattStatement: value(
+          "deckblattStatement",
+          docs.deckblattStatement,
         ),
       },
-    });
+    };
+  };
+
+  const save = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await saveApplication(applicationSnapshot(event.currentTarget));
+  };
+
+  const exportCurrentPdf = async (
+    target: "deckblatt" | "anschreiben" | "lebenslauf" | "mappe",
+  ) => {
+    const snapshot = applicationSnapshot(formRef.current);
+    await saveApplication(snapshot);
+    await exportPdf(snapshot.id, target, snapshot);
   };
 
   return (
@@ -402,10 +431,10 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
           <button className="button secondary" onClick={() => void openFolder(application.id)}>
             <FolderOpen size={17} /> Ordner
           </button>
-          <button className="button secondary" onClick={() => void exportPdf(application.id, tab)}>
+          <button className="button secondary" onClick={() => void exportCurrentPdf(tab)}>
             <FileDown size={17} /> {tab === "deckblatt" ? "Deckblatt" : tab === "anschreiben" ? "Anschreiben" : "Lebenslauf"} PDF
           </button>
-          <button className="button primary" onClick={() => void exportPdf(application.id, "mappe")}>
+          <button className="button primary" onClick={() => void exportCurrentPdf("mappe")}>
             <Download size={17} /> Bewerbungsmappe
           </button>
         </div>
@@ -417,7 +446,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
             <button className={tab === "anschreiben" ? "active" : ""} onClick={() => setTab("anschreiben")}>Anschreiben</button>
             <button className={tab === "lebenslauf" ? "active" : ""} onClick={() => setTab("lebenslauf")}>Lebenslauf</button>
           </div>
-          <form onSubmit={(event) => void save(event)}>
+          <form ref={formRef} onSubmit={(event) => void save(event)}>
             {tab === "deckblatt" && (
               <label className="field">
                 <span>Kurzprofil auf dem Deckblatt</span>
@@ -947,6 +976,9 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                 />
                 <ResumePreviewPage
                   application={application}
+                  atsMode={
+                    design.settings.columnLayout === "compact-ats"
+                  }
                   documents={docs}
                   name={name}
                   plan={plan}

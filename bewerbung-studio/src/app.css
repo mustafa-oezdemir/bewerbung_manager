@@ -4766,6 +4766,10 @@ kbd {
   color: #154f45;
 }
 
+.managed-template-highlights.compact {
+  color: #0a3485;
+}
+
 .template-ats-option {
   display: flex;
   align-items: flex-start;

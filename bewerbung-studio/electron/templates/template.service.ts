@@ -9,6 +9,7 @@ import type { ApplicationPaths } from "../../src/config/application-paths";
 import {
   defaultTemplateSortOrder,
   elegantLebenslaufTemplateConfig,
+  kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   maximumTemplateFileSize,
   zeitgenoessischLebenslaufTemplateConfig,
@@ -212,7 +213,9 @@ export class TemplateService {
           ? zeitgenoessischLebenslaufTemplateConfig
           : template.id === kreativLebenslaufTemplateConfig.id
             ? kreativLebenslaufTemplateConfig
-          : undefined;
+            : template.id === kompaktLebenslaufTemplateConfig.id
+              ? kompaktLebenslaufTemplateConfig
+              : undefined;
     if (managedResumeConfig && options.atsMode) {
       const atsPath = path.join(
         this.paths.systemTemplateCache,
@@ -245,25 +248,70 @@ export class TemplateService {
         data,
       ),
     );
-    const creativeContentLength = Object.entries(data)
+    const singlePageContentLength = Object.entries(data)
       .filter(([key]) =>
-        /^(ZUSAMMENFASSUNG|BESCHREIBUNG_\d+|ERFOLG_\d+_\d+|STAERKE_\d+_BESCHREIBUNG|KENNTNIS_EINTRAEGE_\d+)$/.test(
+        /^(ZUSAMMENFASSUNG|BESCHREIBUNG_\d+|ERFOLG_\d+_\d+|ERFOLG_HIGHLIGHT_\d+_(?:TITEL|BESCHREIBUNG)|STAERKE_\d+_BESCHREIBUNG|KENNTNIS_EINTRAEGE_\d+)$/.test(
           key,
         ),
       )
       .reduce((length, [, value]) => length + value.trim().length, 0);
-    const filledCreativeExperiences = Array.from(
-      { length: 6 },
+    const filledSinglePageExperiences = Array.from(
+      { length: 8 },
       (_, index) => data[`POSITION_${index + 1}`]?.trim() ?? "",
     ).filter(Boolean).length;
-    const singlePageWarning =
+    const creativeSinglePageWarning =
       template.id === kreativLebenslaufTemplateConfig.id &&
       !options.atsMode &&
-      (creativeContentLength > 3_200 ||
-        filledCreativeExperiences > 4)
+      (singlePageContentLength > 3_200 ||
+        filledSinglePageExperiences > 4)
         ? "Der Inhalt passt möglicherweise nicht vollständig auf eine Seite. Bitte kürzen Sie einzelne Beschreibungen oder erlauben Sie eine zweite Seite."
         : undefined;
-    const combinedWarning = [warning, singlePageWarning]
+    const compactSinglePageWarning =
+      template.id === kompaktLebenslaufTemplateConfig.id &&
+      !options.atsMode &&
+      (singlePageContentLength > 3_700 ||
+        filledSinglePageExperiences > 5)
+        ? "Der Inhalt passt nicht vollständig auf eine Seite. Bitte kürzen Sie einzelne Beschreibungen oder erlauben Sie eine zweite Seite."
+        : undefined;
+    const compactSummaryWarning =
+      template.id === kompaktLebenslaufTemplateConfig.id &&
+      (data.ZUSAMMENFASSUNG?.trim().length ?? 0) > 600
+        ? "Die Zusammenfassung überschreitet die empfohlenen 600 Zeichen."
+        : undefined;
+    const normalizeAchievement = (value: string) =>
+      value
+        .toLocaleLowerCase("de-DE")
+        .replace(/[^\p{L}\p{N}]+/gu, " ")
+        .trim();
+    const experienceAchievements = new Set(
+      Object.entries(data)
+        .filter(
+          ([key, value]) =>
+            /^ERFOLG_\d+_\d+$/.test(key) && Boolean(value.trim()),
+        )
+        .map(([, value]) => normalizeAchievement(value)),
+    );
+    const hasDuplicateCompactAchievement =
+      template.id === kompaktLebenslaufTemplateConfig.id &&
+      Object.entries(data)
+        .filter(
+          ([key, value]) =>
+            /^ERFOLG_HIGHLIGHT_\d+_BESCHREIBUNG$/.test(key) &&
+            Boolean(value.trim()),
+        )
+        .some(([, value]) =>
+          experienceAchievements.has(normalizeAchievement(value)),
+        );
+    const duplicateAchievementWarning = hasDuplicateCompactAchievement
+      ? "Ein hervorgehobener Erfolg wird bereits in der Berufserfahrung verwendet."
+      : undefined;
+    const combinedWarning = [
+      warning,
+      creativeSinglePageWarning,
+      compactSinglePageWarning,
+      compactSummaryWarning,
+      duplicateAchievementWarning,
+    ]
       .filter((value): value is string => Boolean(value))
       .join(" ");
     return combinedWarning

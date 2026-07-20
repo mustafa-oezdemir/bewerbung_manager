@@ -189,6 +189,17 @@ export const marginLevelToMm: Record<DesignLevel, number> = {
   5: 23,
 };
 
+export const compactWordMarginLevelToMm: Record<
+  DesignLevel,
+  { vertical: number; horizontal: number }
+> = {
+  1: { vertical: 10, horizontal: 13 },
+  2: { vertical: 11, horizontal: 14 },
+  3: { vertical: 12, horizontal: 15 },
+  4: { vertical: 15, horizontal: 18 },
+  5: { vertical: 18, horizontal: 21 },
+};
+
 export const sectionSpacingLevelToMm: Record<DesignLevel, number> = {
   1: 3.5,
   2: 4.5,

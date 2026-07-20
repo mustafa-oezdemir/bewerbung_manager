@@ -287,7 +287,12 @@ const registerIpc = () => {
   });
   ipcMain.handle(
     "export:pdf",
-    async (_event, applicationId: unknown, rawTarget: unknown) => {
+    async (
+      _event,
+      applicationId: unknown,
+      rawTarget: unknown,
+      rawApplicationSnapshot: unknown,
+    ) => {
       const targets: ExportTarget[] = [
         "deckblatt",
         "anschreiben",
@@ -296,9 +301,25 @@ const registerIpc = () => {
       ];
       const target = targets.find((item) => item === rawTarget);
       if (!target) throw new Error("Ungültiges Exportziel.");
+      const normalizedApplicationId = String(applicationId);
+      const applicationSnapshot =
+        rawApplicationSnapshot === undefined
+          ? undefined
+          : applicationSchema.parse(rawApplicationSnapshot);
+      if (
+        applicationSnapshot &&
+        applicationSnapshot.id !== normalizedApplicationId
+      ) {
+        throw new Error(
+          "Die Exportdaten gehören nicht zur ausgewählten Bewerbung.",
+        );
+      }
       const result = await dialog.showSaveDialog(mainWindow!, {
         title: "PDF exportieren",
-        defaultPath: store.getExportDefaultName(String(applicationId), target),
+        defaultPath: store.getExportDefaultName(
+          normalizedApplicationId,
+          target,
+        ),
         filters: [{ name: "PDF", extensions: ["pdf"] }],
       });
       if (result.canceled || !result.filePath) return null;
@@ -311,7 +332,11 @@ const registerIpc = () => {
         },
       });
       try {
-        const html = store.getExportHtml(String(applicationId), target);
+        const html = store.getExportHtml(
+          normalizedApplicationId,
+          target,
+          applicationSnapshot,
+        );
         await exporter.loadURL(
           `data:text/html;charset=utf-8,${encodeURIComponent(html)}`,
         );
@@ -327,7 +352,7 @@ const registerIpc = () => {
                 generatedPdf,
                 await Promise.all(
                   store
-                    .getPackageAttachmentPaths(String(applicationId))
+                    .getPackageAttachmentPaths(normalizedApplicationId)
                     .map(async (attachment) => ({
                       fileName: attachment.fileName,
                       bytes: await readFile(attachment.path),

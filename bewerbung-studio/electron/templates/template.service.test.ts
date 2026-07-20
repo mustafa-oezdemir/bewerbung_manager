@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { resolveApplicationPaths } from "../../src/config/application-paths";
 import {
   elegantLebenslaufTemplateConfig,
+  kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   zeitgenoessischLebenslaufTemplateConfig,
   wordMusterTemplateConfig,
@@ -310,6 +311,9 @@ describe("Musterverwaltung", () => {
       kreativLebenslaufTemplateConfig.id,
     );
     expect(initialized.templates[4].id).toBe(
+      kompaktLebenslaufTemplateConfig.id,
+    );
+    expect(initialized.templates[5].id).toBe(
       elegantLebenslaufTemplateConfig.id,
     );
     const bundledPath = path.resolve(
@@ -645,6 +649,209 @@ describe("Musterverwaltung", () => {
     const favorited = await service.toggleTemplateFavorite(kreativ.id);
     expect(favorited.templates[3].id).toBe(
       kreativLebenslaufTemplateConfig.id,
+    );
+  });
+
+  it("registers Kompakt as the fifth high-density template and preserves margins, links, decoration and ATS mode", async () => {
+    paths = resolveApplicationPaths(
+      root,
+      path.resolve("public", "templates"),
+    );
+    service = new TemplateService(paths);
+    await createDocx(
+      path.join(paths.anschreibenTemplates, "Erste.docx"),
+    );
+    await writeFile(
+      path.join(paths.anschreibenTemplates, "Erste.template.json"),
+      JSON.stringify({ sortOrder: 1 }),
+      "utf8",
+    );
+    await createDocx(
+      path.join(
+        paths.anschreibenDocuments,
+        wordMusterTemplateConfig.fileName,
+      ),
+    );
+
+    const initialized = await service.initialize();
+    const kompakt = initialized.templates[4];
+    expect(kompakt).toMatchObject({
+      id: "word-lebenslauf-kompakt",
+      name: "Kompakt",
+      documentType: "lebenslauf",
+      format: "docx",
+      source: "system-word-template",
+      sortOrder: 5,
+      category: "compact",
+      layout: "two-column-compact",
+      atsFriendly: true,
+      supportsPhoto: false,
+      supportsBackground: true,
+      supportsPlaceholders: true,
+      editableInWord: true,
+      supportsAtsMode: true,
+      emphasis: "single-page-high-density",
+      isSystemTemplate: true,
+      isProtected: true,
+    });
+    const bundledPath = path.resolve(
+      "public",
+      "templates",
+      kompaktLebenslaufTemplateConfig.fileName,
+    );
+    const bundledOriginal = await readFile(bundledPath);
+    const data = {
+      VORNAME: "Julian",
+      NACHNAME: "Fischer",
+      BERUFSBEZEICHNUNG: "IT-Projektmanager",
+      KONTAKTDATEN_TITEL: "KONTAKTDATEN",
+      TELEFON: "+49 30 12345678",
+      EMAIL: "julian@example.de",
+      LINKEDIN: "linkedin.com/in/julian",
+      GITHUB: "github.com/julian",
+      WEBSITE: "julian.example/portfolio",
+      ORT: "München",
+      GEBURTSZEILE: "Geb. 01.03.1990 in München",
+      ZUSAMMENFASSUNG_TITEL: "ZUSAMMENFASSUNG",
+      ZUSAMMENFASSUNG: "Erfahrener Projektmanager mit technischem Fokus.",
+      ERFAHRUNG_TITEL: "ERFAHRUNG",
+      POSITION_1: "Stellvertretender Restaurantleiter",
+      UNTERNEHMEN_1: "Sushi Palace",
+      STARTDATUM_1: "2019",
+      DATUM_TRENNER_1: "–",
+      ENDDATUM_1: "2023",
+      METADATA_TRENNER_1: "·",
+      ARBEITSORT_1: "Düsseldorf",
+      BESCHREIBUNG_1: "Verantwortung für das tägliche Geschäft.",
+      ERFOLG_1_1: "Schulung von 25 neuen Mitarbeitern.",
+      TECHNOLOGIEN_1: "Inventar · Dienstplanung",
+      AUSBILDUNG_TITEL: "AUSBILDUNG",
+      ABSCHLUSS_1: "B.A.",
+      FACHRICHTUNG_1: "Betriebswirtschaft",
+      HOCHSCHULE_1: "Hochschule Düsseldorf",
+      AUSBILDUNG_START_1: "2014",
+      AUSBILDUNG_DATUM_TRENNER_1: "–",
+      AUSBILDUNG_ENDE_1: "2018",
+      AUSBILDUNG_METADATA_TRENNER_1: "·",
+      AUSBILDUNG_ORT_1: "Düsseldorf",
+      SPRACHEN_TITEL: "SPRACHEN",
+      SPRACHE_1: "Deutsch",
+      SPRACHNIVEAU_1: "Muttersprache",
+      SPRACHE_1_PUNKTE: "●●●●●",
+      SPRACHEN_ATS: "Deutsch – Muttersprache",
+      STAERKEN_TITEL: "STÄRKEN",
+      STAERKE_1_TITEL: "Teamleitung",
+      STAERKE_1_BESCHREIBUNG: "Führung von Teams mit 30 Mitarbeitern.",
+      STAERKEN_ATS: "Teamleitung",
+      ERFOLGE_TITEL: "ERFOLGE",
+      ERFOLG_HIGHLIGHT_1_TITEL: "Prozessqualität",
+      ERFOLG_HIGHLIGHT_1_BESCHREIBUNG:
+        "Operative Abläufe messbar verbessert.",
+      ERFOLGE_ATS: "Prozessqualität: Operative Abläufe verbessert.",
+      KENNTNISSE_TITEL: "FÄHIGKEITEN",
+      KENNTNISSE: "Projektmanagement, Kommunikation",
+      KENNTNIS_KATEGORIE_1: "Projektmanagement",
+      KENNTNIS_EINTRAEGE_1: "Jira · Asana",
+      DESIGN_PRIMARY: "#123456",
+      DESIGN_ACCENT: "#D15A00",
+      DESIGN_SOFT_ACCENT: "#FBE1D1",
+      DESIGN_FONT: "Arial",
+      DESIGN_MARGIN_VERTICAL_MM: "10",
+      DESIGN_MARGIN_HORIZONTAL_MM: "13",
+      DEKORATION_AKTIV: "true",
+    };
+    const targetDirectory = path.join(
+      paths.dataRoot,
+      "Bewerbungen",
+      "Kompakt",
+      "Lebenslauf",
+    );
+    const created = await service.createDocumentFromTemplate(
+      kompakt.id,
+      targetDirectory,
+      "ignored",
+      data,
+    );
+    const outputZip = new PizZip(await readFile(created.filePath));
+    const documentXml = outputZip.file("word/document.xml")!.asText();
+    const stylesXml = outputZip.file("word/styles.xml")!.asText();
+    const relationshipsXml = outputZip
+      .file("word/_rels/document.xml.rels")!
+      .asText();
+
+    expect(created.fileName).toMatch(
+      /^Lebenslauf_Julian_Fischer_\d{8}_\d{6}\.docx$/,
+    );
+    expect(documentXml).toContain('<w:gridCol w:w="6124"/>');
+    expect(documentXml).toContain('<w:gridCol w:w="4082"/>');
+    expect(documentXml).toContain('w:top="567"');
+    expect(documentXml).toContain('w:left="737"');
+    expect(documentXml).toContain("KOMPAKT_DEKORATION");
+    expect(documentXml).not.toContain("PROFILFOTO");
+    expect(stylesXml).toContain('w:color w:val="123456"');
+    expect(stylesXml).toContain('w:color w:val="D15A00"');
+    expect(relationshipsXml).toContain("mailto:julian@example.de");
+    expect(relationshipsXml).toContain("https://linkedin.com/in/julian");
+    expect(documentXml).not.toContain("{{");
+    expect(await readFile(bundledPath)).toEqual(bundledOriginal);
+
+    const withoutDecoration = await service.createDocumentFromTemplate(
+      kompakt.id,
+      path.join(targetDirectory, "OhneDekoration"),
+      "ignored",
+      { ...data, DEKORATION_AKTIV: "false" },
+    );
+    const withoutDecorationXml = new PizZip(
+      await readFile(withoutDecoration.filePath),
+    )
+      .file("word/document.xml")!
+      .asText();
+    expect(withoutDecorationXml).not.toContain("KOMPAKT_DEKORATION");
+    expect(withoutDecorationXml).not.toContain("<w:drawing>");
+
+    const atsCreated = await service.createDocumentFromTemplate(
+      kompakt.id,
+      path.join(targetDirectory, "ATS"),
+      "ignored",
+      data,
+      { atsMode: true },
+    );
+    const atsXml = new PizZip(await readFile(atsCreated.filePath))
+      .file("word/document.xml")!
+      .asText();
+    expect(atsXml).toContain("Julian");
+    expect(atsXml).not.toContain("<w:tbl>");
+    expect(atsXml).not.toContain("<w:drawing>");
+
+    const denseResult = await service.createDocumentFromTemplate(
+      kompakt.id,
+      path.join(targetDirectory, "Dicht"),
+      "ignored",
+      {
+        ...data,
+        ZUSAMMENFASSUNG: "a".repeat(601),
+        ERFOLG_HIGHLIGHT_1_BESCHREIBUNG:
+          "Schulung von 25 neuen Mitarbeitern.",
+        POSITION_2: "Schichtleiter",
+        POSITION_3: "Teamleiter",
+        POSITION_4: "Servicekoordinator",
+        POSITION_5: "Projektmanager",
+        POSITION_6: "Consultant",
+      },
+    );
+    expect(denseResult.warning).toContain(
+      "Der Inhalt passt nicht vollständig auf eine Seite.",
+    );
+    expect(denseResult.warning).toContain(
+      "Die Zusammenfassung überschreitet die empfohlenen 600 Zeichen.",
+    );
+    expect(denseResult.warning).toContain(
+      "bereits in der Berufserfahrung verwendet",
+    );
+
+    const favorited = await service.toggleTemplateFavorite(kompakt.id);
+    expect(favorited.templates[4].id).toBe(
+      kompaktLebenslaufTemplateConfig.id,
     );
   });
 

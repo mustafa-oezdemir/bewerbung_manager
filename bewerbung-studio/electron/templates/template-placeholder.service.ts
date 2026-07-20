@@ -3,6 +3,7 @@ import path from "node:path";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import {
+  kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   templatePlaceholderAliases,
   templatePlaceholderKeys,
@@ -76,7 +77,22 @@ const applyManagedResumeDesignTokens = (
   data: Record<string, string>,
 ) => {
   const replacements =
-    templateId === kreativLebenslaufTemplateConfig.id
+    templateId === kompaktLebenslaufTemplateConfig.id
+      ? new Map([
+          [
+            "0A3485",
+            normalizedHex(data.DESIGN_PRIMARY, "0A3485"),
+          ],
+          [
+            "FF6500",
+            normalizedHex(data.DESIGN_ACCENT, "FF6500"),
+          ],
+          [
+            "FFD8BF",
+            normalizedHex(data.DESIGN_SOFT_ACCENT, "FFD8BF"),
+          ],
+        ])
+      : templateId === kreativLebenslaufTemplateConfig.id
       ? new Map([
           [
             "154F45",
@@ -127,6 +143,118 @@ const applyManagedResumeDesignTokens = (
       .replaceAll('w:cs="Arial"', `w:cs="${font}"`);
     zip.file(fileName, xml);
   }
+};
+
+const escapeXmlAttribute = (value: string) =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+
+const compactHyperlinkTarget = (value: string) => {
+  const text = value.trim();
+  if (!text) return null;
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) {
+    return `mailto:${text}`;
+  }
+  if (/^\+?[\d\s()./-]{7,}$/.test(text)) {
+    return `tel:${text.replace(/[^\d+]/g, "")}`;
+  }
+  if (/^https?:\/\//i.test(text)) return text;
+  if (
+    /^(?:www\.|linkedin\.com\/|github\.com\/|[\w.-]+\.[a-z]{2,}\/)/i.test(
+      text,
+    )
+  ) {
+    return `https://${text}`;
+  }
+  return null;
+};
+
+const applyKompaktDocumentOptions = (
+  zip: PizZip,
+  data: Record<string, string>,
+) => {
+  const documentPart = zip.file("word/document.xml");
+  const relationshipsPart = zip.file(
+    "word/_rels/document.xml.rels",
+  );
+  if (!documentPart || !relationshipsPart) return;
+  let documentXml = documentPart.asText();
+  let relationshipsXml = relationshipsPart.asText();
+
+  const verticalMm = Number(data.DESIGN_MARGIN_VERTICAL_MM);
+  const horizontalMm = Number(data.DESIGN_MARGIN_HORIZONTAL_MM);
+  if (
+    Number.isFinite(verticalMm) &&
+    verticalMm >= 10 &&
+    verticalMm <= 25 &&
+    Number.isFinite(horizontalMm) &&
+    horizontalMm >= 13 &&
+    horizontalMm <= 25
+  ) {
+    const verticalDxa = Math.round((verticalMm / 25.4) * 1_440);
+    const horizontalDxa = Math.round(
+      (horizontalMm / 25.4) * 1_440,
+    );
+    documentXml = documentXml.replace(
+      /<w:pgMar\b[^>]*\/>/,
+      (pageMargins) =>
+        pageMargins
+          .replace(/w:top="[^"]*"/, `w:top="${verticalDxa}"`)
+          .replace(/w:bottom="[^"]*"/, `w:bottom="${verticalDxa}"`)
+          .replace(/w:left="[^"]*"/, `w:left="${horizontalDxa}"`)
+          .replace(/w:right="[^"]*"/, `w:right="${horizontalDxa}"`),
+    );
+  }
+
+  if (data.DEKORATION_AKTIV?.trim().toLowerCase() === "false") {
+    const decoration = documentXml
+      .match(/<w:drawing>[\s\S]*?<\/w:drawing>/g)
+      ?.find((candidate) => candidate.includes("KOMPAKT_DEKORATION"));
+    if (decoration) {
+      documentXml = removeEmptyParagraphs(
+        documentXml.replace(decoration, ""),
+      );
+    }
+  }
+
+  let hyperlinkIndex = 0;
+  documentXml = documentXml.replace(
+    /<w:p\b[\s\S]*?<\/w:p>/g,
+    (paragraph) => {
+      if (
+        !paragraph.includes('w:pStyle w:val="ContactLink"') ||
+        paragraph.includes("<w:hyperlink")
+      ) {
+        return paragraph;
+      }
+      const text = Array.from(
+        paragraph.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g),
+        (match) => decodeXmlText(match[1]),
+      )
+        .join("")
+        .trim();
+      const target = compactHyperlinkTarget(text);
+      if (!target) return paragraph;
+      hyperlinkIndex += 1;
+      const relationshipId = `rIdKompaktLink${hyperlinkIndex}`;
+      relationshipsXml = relationshipsXml.replace(
+        "</Relationships>",
+        `<Relationship Id="${relationshipId}" ` +
+          'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" ' +
+          `Target="${escapeXmlAttribute(target)}" TargetMode="External"/>` +
+          "</Relationships>",
+      );
+      return paragraph.replace(
+        /(<w:r\b[\s\S]*?<\/w:r>)/,
+        `<w:hyperlink r:id="${relationshipId}" w:history="1">$1</w:hyperlink>`,
+      );
+    },
+  );
+  zip.file("word/document.xml", documentXml);
+  zip.file("word/_rels/document.xml.rels", relationshipsXml);
 };
 
 const replaceProfilePhoto = (
@@ -270,13 +398,17 @@ export class TemplatePlaceholderService {
       const renderedZip = document.getZip();
       if (
         template.id === zeitgenoessischLebenslaufTemplateConfig.id ||
-        template.id === kreativLebenslaufTemplateConfig.id
+        template.id === kreativLebenslaufTemplateConfig.id ||
+        template.id === kompaktLebenslaufTemplateConfig.id
       ) {
         applyManagedResumeDesignTokens(
           template.id,
           renderedZip,
           data,
         );
+      }
+      if (template.id === kompaktLebenslaufTemplateConfig.id) {
+        applyKompaktDocumentOptions(renderedZip, data);
       }
       const photoResult = replaceProfilePhoto(
         renderedZip,

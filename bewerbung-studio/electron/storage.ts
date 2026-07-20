@@ -31,7 +31,10 @@ import {
   type Workspace,
 } from "../src/shared/schema";
 import { templates } from "../src/shared/templates";
-import { getDocumentFont } from "../src/shared/documentDesign";
+import {
+  compactWordMarginLevelToMm,
+  getDocumentFont,
+} from "../src/shared/documentDesign";
 import { ensureKnowledgeSection } from "../src/features/knowledge/knowledge.service";
 import { formatKnowledgeSectionAsText } from "../src/features/knowledge/knowledge.utils";
 import { buildCoverLetterMarkdown, buildDocumentHtml } from "./documents";
@@ -818,10 +821,17 @@ export class DataStore {
       TELEFON: profile?.phone ?? "",
       EMAIL: profile?.email ?? "",
       WEBSITE: profile?.portfolio || profile?.github || "",
+      GITHUB: profile?.github ?? "",
       LINKEDIN: profile?.linkedin ?? "",
       ORT: profile?.city ?? "",
       GEBURTSDATUM: profile?.birthDate ?? "",
       GEBURTSORT: profile?.birthPlace ?? "",
+      GEBURTSZEILE:
+        profile?.birthDate || profile?.birthPlace
+          ? `Geb. ${profile?.birthDate ?? ""}${
+              profile?.birthDate && profile?.birthPlace ? " in " : ""
+            }${profile?.birthPlace ?? ""}`
+          : "",
       KONTAKT_ZEILE_1: joinTemplateValues([
         profile?.phone,
         profile?.email,
@@ -843,6 +853,17 @@ export class DataStore {
         profile?.linkedin ||
         profile?.city
           ? "KONTAKTE"
+          : "",
+      KONTAKTDATEN_TITEL:
+        profile?.phone ||
+        profile?.email ||
+        profile?.portfolio ||
+        profile?.github ||
+        profile?.linkedin ||
+        profile?.city ||
+        profile?.birthDate ||
+        profile?.birthPlace
+          ? "KONTAKTDATEN"
           : "",
       TELEFON_ZEILE: templateContactLine("Telefon", profile?.phone),
       EMAIL_ZEILE: templateContactLine("E-Mail", profile?.email),
@@ -877,6 +898,13 @@ export class DataStore {
       ZUSAMMENFASSUNG:
         application.documents.resumeProfile || profile?.summary || "",
       STAERKEN_TITEL: profile?.skills.length ? "STÄRKEN" : "",
+      STAERKEN_ATS: (profile?.skills ?? []).slice(0, 3).join("\n"),
+      ERFOLGE_TITEL: "",
+      ERFOLGE_ATS: "",
+      ERFOLG_HIGHLIGHT_1_TITEL: "",
+      ERFOLG_HIGHLIGHT_1_BESCHREIBUNG: "",
+      ERFOLG_HIGHLIGHT_2_TITEL: "",
+      ERFOLG_HIGHLIGHT_2_BESCHREIBUNG: "",
       KENNTNISSE_TITEL: knowledgeText ? "FÄHIGKEITEN" : "",
       KENNTNISSE: knowledgeText,
       SPRACHEN_TITEL: profile?.languages.length ? "SPRACHEN" : "",
@@ -923,6 +951,19 @@ export class DataStore {
         0.62,
       ),
       DESIGN_FONT: wordFontName(application.designSettings.fontId),
+      DESIGN_MARGIN_VERTICAL_MM: String(
+        compactWordMarginLevelToMm[
+          application.designSettings.marginLevel
+        ].vertical,
+      ),
+      DESIGN_MARGIN_HORIZONTAL_MM: String(
+        compactWordMarginLevelToMm[
+          application.designSettings.marginLevel
+        ].horizontal,
+      ),
+      DEKORATION_AKTIV: application.designSettings.showBackgroundInPrint
+        ? "true"
+        : "false",
       ATS_MODUS:
         application.designSettings.columnLayout === "compact-ats"
           ? "true"
@@ -930,9 +971,9 @@ export class DataStore {
     };
     const lastExperienceIndex = Math.min(
       (profile?.experiences.length ?? 0) - 1,
-      5,
+      7,
     );
-    for (let index = 0; index < 6; index += 1) {
+    for (let index = 0; index < 8; index += 1) {
       const number = index + 1;
       const experience = profile?.experiences[index];
       elegantData[`POSITION_${number}`] = experience?.role ?? "";
@@ -988,7 +1029,7 @@ export class DataStore {
     knowledgeSection.categories
       .filter((category) => category.isVisible)
       .sort((left, right) => left.sortOrder - right.sortOrder)
-      .slice(0, 5)
+      .slice(0, 6)
       .forEach((category, index) => {
         const entries = [
           ...category.items
@@ -1060,8 +1101,19 @@ export class DataStore {
     };
   }
 
-  getExportHtml(id: string, target: "deckblatt" | "anschreiben" | "lebenslauf" | "mappe") {
-    const application = this.getApplication(id);
+  getExportHtml(
+    id: string,
+    target: "deckblatt" | "anschreiben" | "lebenslauf" | "mappe",
+    applicationSnapshot?: Application,
+  ) {
+    const application = applicationSnapshot
+      ? applicationSchema.parse(applicationSnapshot)
+      : this.getApplication(id);
+    if (application.id !== id) {
+      throw new Error(
+        "Die Exportdaten gehören nicht zur ausgewählten Bewerbung.",
+      );
+    }
     return buildDocumentHtml(
       application,
       this.getProfileForApplication(application),
