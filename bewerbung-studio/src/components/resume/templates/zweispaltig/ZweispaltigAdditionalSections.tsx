@@ -41,9 +41,7 @@ export function ZweispaltigAdditionalSections({
           className="zweispaltig-section zweispaltig-ats-list"
           data-element-id="zweispaltig.certifications"
         >
-          <h2 className="zweispaltig-section__title">
-            Zertifikate und Weiterbildungen
-          </h2>
+          <h2 className="zweispaltig-section__title">Weiterbildungen</h2>
           <ul>
             {certifications.map((certification) => (
               <li key={certification}>{certification}</li>

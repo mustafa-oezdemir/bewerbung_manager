@@ -62,7 +62,7 @@ export const formatTabellarischDateRange = (from: string, to: string) => {
 
   if (!start) return end;
   if (!end) return start;
-  return `${start} – ${end}`;
+  return `${start} - ${end}`;
 };
 
 export const toExternalHref = (value: string) => {

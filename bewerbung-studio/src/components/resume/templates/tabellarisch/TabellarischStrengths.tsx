@@ -1,23 +1,20 @@
-import {
-  BadgeCheck,
-  UsersRound,
-  WandSparkles,
-  type LucideIcon,
-} from "lucide-react";
+import { Flag, Trophy, type LucideIcon } from "lucide-react";
 import { ensureKnowledgeSection } from "../../../../features/knowledge/knowledge.service";
 import { visibleKnowledgeItems } from "../../../../features/knowledge/knowledge.utils";
-import { uniqueZweispaltigValues } from "./zweispaltig.model";
-import type { ZweispaltigStrengthsProps } from "./zweispaltig.types";
+import type { ApplicantProfile } from "../../../../shared/schema";
 
-const strengthIcons: LucideIcon[] = [UsersRound, WandSparkles, BadgeCheck];
+const strengthIcons: LucideIcon[] = [Flag, Trophy];
 
-export function ZweispaltigStrengths({
+export function TabellarischStrengths({
   profile,
-  variant,
-}: ZweispaltigStrengthsProps) {
+  atsMode,
+}: {
+  profile: ApplicantProfile | undefined;
+  atsMode: boolean;
+}) {
   const knowledge = ensureKnowledgeSection(
     profile?.knowledgeSection,
-    uniqueZweispaltigValues(profile?.skills ?? []),
+    profile?.skills ?? [],
   );
   const strengths = knowledge.categories
     .filter((category) => category.isVisible)
@@ -31,33 +28,33 @@ export function ZweispaltigStrengths({
           visibleKnowledgeItems(subcategory.items),
         ),
     ])
-    .slice(0, 3);
+    .slice(0, 2);
+
   if (!strengths.length) return null;
 
   return (
     <section
-      className={`zweispaltig-section zweispaltig-strengths zweispaltig-strengths--${variant}`}
-      data-element-id="zweispaltig.strengths"
+      className={`tabellarisch-section tabellarisch-strengths-section ${atsMode ? "tabellarisch-strengths-section--ats" : ""}`}
+      data-element-id="tabellarisch.strengths"
     >
-      <h2 className="zweispaltig-section__title">Stärken</h2>
-      {variant === "ats" ? (
-        <ul>
+      <h2 className="tabellarisch-section__title">Stärken</h2>
+      {atsMode ? (
+        <ul className="tabellarisch-strengths-ats">
           {strengths.map((strength) => (
             <li key={strength.id}>
-              {strength.name}
+              <strong>{strength.name}</strong>
               {strength.description?.trim()
-                ? ` – ${strength.description}`
+                ? ` - ${strength.description}`
                 : ""}
             </li>
           ))}
         </ul>
       ) : (
-        <div className="zweispaltig-strengths__list">
+        <div className="tabellarisch-strengths">
           {strengths.map((strength, index) => {
-            const StrengthIcon = strengthIcons[index] ?? BadgeCheck;
-
+            const StrengthIcon = strengthIcons[index] ?? Trophy;
             return (
-              <article className="zweispaltig-strength" key={strength.id}>
+              <article className="tabellarisch-strength" key={strength.id}>
                 <StrengthIcon aria-hidden="true" />
                 <div>
                   <h3>{strength.name}</h3>

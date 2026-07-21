@@ -33,8 +33,9 @@ const SECOND_PAGE_CAPACITY = 38;
 const RECOMMENDED_LETTER_CHARACTERS = 3_300;
 
 export const zweispaltigPaginationOptions: ResumePaginationOptions = {
-  firstPageCapacity: 35,
-  secondPageCapacity: 42,
+  firstPageCapacity: 50,
+  secondPageCapacity: 54,
+  preserveItemOrder: true,
 };
 
 export const kompaktPaginationOptions: ResumePaginationOptions = {
@@ -45,6 +46,12 @@ export const kompaktPaginationOptions: ResumePaginationOptions = {
 export const kreativPaginationOptions: ResumePaginationOptions = {
   firstPageCapacity: 50,
   secondPageCapacity: 54,
+  preserveItemOrder: true,
+};
+
+export const tabellarischPaginationOptions: ResumePaginationOptions = {
+  firstPageCapacity: 48,
+  secondPageCapacity: 52,
   preserveItemOrder: true,
 };
 

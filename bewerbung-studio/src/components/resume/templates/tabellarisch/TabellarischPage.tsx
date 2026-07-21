@@ -5,7 +5,9 @@
 
 import type { ApplicantProfile } from "../../../../shared/schema";
 import { TabellarischHeader } from "./TabellarischHeader";
+import { TabellarischBackground } from "./TabellarischBackground";
 import { TabellarischSummary } from "./TabellarischSummary";
+import { TabellarischStrengths } from "./TabellarischStrengths";
 import { TabellarischTimeline } from "./TabellarischTimeline";
 import { TabellarischContinuationHeader } from "./TabellarischContinuationHeader";
 import { TabellarischFooter } from "./TabellarischFooter";
@@ -41,9 +43,7 @@ export function TabellarischPage({
 
   return (
     <div className="tabellarisch-page__wrapper">
-      {!atsMode ? (
-        <div className="tabellarisch-decoration" aria-hidden="true" />
-      ) : null}
+      {!atsMode && !isContinuation ? <TabellarischBackground /> : null}
 
       <main className="tabellarisch-page__content">
         {isContinuation && (
@@ -61,6 +61,10 @@ export function TabellarischPage({
 
         {sections.profile && !isContinuation ? (
           <TabellarischSummary text={summary} />
+        ) : null}
+
+        {sections.skills && !isContinuation ? (
+          <TabellarischStrengths profile={profile} atsMode={atsMode} />
         ) : null}
 
         {sections.experience && experiences.length > 0 ? (
@@ -94,7 +98,7 @@ export function TabellarischPage({
           </section>
         ) : null}
 
-        {isLastPage ? (
+        {isLastPage && atsMode ? (
           <TabellarischAdditionalSections
             profile={profile}
             sections={sections}

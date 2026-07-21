@@ -7,6 +7,7 @@ import { ZweispaltigResume } from "./ZweispaltigResume";
 import {
   createZweispaltigPageData,
   formatZweispaltigDateRange,
+  parseZweispaltigLanguage,
   resolveZweispaltigSummary,
   toZweispaltigExternalHref,
   uniqueZweispaltigValues,
@@ -158,6 +159,13 @@ describe("Zweispaltig page model", () => {
     expect(
       uniqueZweispaltigValues(["React", " React ", "", "TypeScript"]),
     ).toEqual(["React", "TypeScript"]);
+    expect(parseZweispaltigLanguage("Deutsch – Muttersprache")).toMatchObject(
+      {
+        name: "Deutsch",
+        level: "Muttersprache",
+        score: 5,
+      },
+    );
   });
 });
 
@@ -231,8 +239,8 @@ describe("Zweispaltig rendering", () => {
     expect(getTemplate("zweispaltig")).toMatchObject({
       id: "zweispaltig",
       layout: "split-clean",
-      accent: "#165DAA",
-      secondary: "#EAF2FA",
+      accent: "#0B3D86",
+      secondary: "#58B5F7",
       supportsAtsMode: true,
       supportsPhoto: true,
       supportsFreeform: true,

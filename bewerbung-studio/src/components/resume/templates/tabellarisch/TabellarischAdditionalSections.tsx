@@ -22,8 +22,8 @@ export function TabellarischAdditionalSections({
   );
 
   return (
-    <>
-      {sections.skills ? (
+    <div className="tabellarisch-additional">
+      {sections.skills && atsMode ? (
         <TabellarischKnowledge profile={profile} atsMode={atsMode} />
       ) : null}
 
@@ -56,6 +56,6 @@ export function TabellarischAdditionalSections({
           </ul>
         </section>
       ) : null}
-    </>
+    </div>
   );
 }

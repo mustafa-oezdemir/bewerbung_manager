@@ -16,14 +16,23 @@ export function ZweispaltigResume({
   resumeProfile,
   sections,
 }: ZweispaltigResumeProps) {
+  const normalizedAccent = accentColor.toUpperCase();
+  const normalizedSecondary = secondaryColor.toUpperCase();
+  const primary =
+    !accentColor || normalizedAccent === "#165DAA"
+      ? zweispaltigDefaults.colors.primary
+      : accentColor;
+  const highlight =
+    !secondaryColor || normalizedSecondary === "#EAF2FA"
+      ? zweispaltigDefaults.colors.accent
+      : secondaryColor;
   const variables = {
     "--zweispaltig-primary": atsMode
       ? zweispaltigDefaults.colors.primaryDark
-      : accentColor || zweispaltigDefaults.colors.primary,
-    "--zweispaltig-soft":
-      secondaryColor || zweispaltigDefaults.colors.primarySoft,
-    "--zweispaltig-left-ratio": `${zweispaltigDefaults.layout.leftColumnRatio * 100}%`,
-    "--zweispaltig-right-ratio": `${zweispaltigDefaults.layout.rightColumnRatio * 100}%`,
+      : primary,
+    "--zweispaltig-accent": highlight,
+    "--zweispaltig-left-ratio": `${zweispaltigDefaults.layout.leftColumnRatio}fr`,
+    "--zweispaltig-right-ratio": `${zweispaltigDefaults.layout.rightColumnRatio}fr`,
   } as CSSProperties;
 
   return (

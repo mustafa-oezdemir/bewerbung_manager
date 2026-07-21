@@ -1,8 +1,25 @@
 import {
+  AtSign,
+  CakeSlice,
+  Github,
+  Globe2,
+  Link as LinkIcon,
+  MapPin,
+  Phone,
+  type LucideIcon,
+} from "lucide-react";
+import {
   toZweispaltigExternalHref,
   uniqueZweispaltigValues,
 } from "./zweispaltig.model";
 import type { ZweispaltigHeaderProps } from "./zweispaltig.types";
+
+type ZweispaltigContact = {
+  label: string;
+  value: string | undefined;
+  href: string;
+  Icon: LucideIcon;
+};
 
 export function ZweispaltigHeader({
   profile,
@@ -17,6 +34,61 @@ export function ZweispaltigHeader({
   const specializations = uniqueZweispaltigValues(
     profile?.skills ?? [],
   ).slice(0, 3);
+  const birth = [profile?.birthDate, profile?.birthPlace]
+    .filter(Boolean)
+    .join(", ");
+  const contacts: ZweispaltigContact[] = [
+    {
+      label: "Telefon",
+      value: profile?.phone,
+      href: profile?.phone
+        ? `tel:${profile.phone.replace(/[^\d+]/g, "")}`
+        : "",
+      Icon: Phone,
+    },
+    {
+      label: "E-Mail",
+      value: profile?.email,
+      href: profile?.email ? `mailto:${profile.email}` : "",
+      Icon: AtSign,
+    },
+    {
+      label: "LinkedIn",
+      value: profile?.linkedin,
+      href: profile?.linkedin
+        ? toZweispaltigExternalHref(profile.linkedin)
+        : "",
+      Icon: LinkIcon,
+    },
+    {
+      label: "Wohnort",
+      value: location,
+      href: "",
+      Icon: MapPin,
+    },
+    {
+      label: "Geboren",
+      value: birth,
+      href: "",
+      Icon: CakeSlice,
+    },
+    {
+      label: "GitHub",
+      value: profile?.github,
+      href: profile?.github
+        ? toZweispaltigExternalHref(profile.github)
+        : "",
+      Icon: Github,
+    },
+    {
+      label: "Portfolio",
+      value: profile?.portfolio,
+      href: profile?.portfolio
+        ? toZweispaltigExternalHref(profile.portfolio)
+        : "",
+      Icon: Globe2,
+    },
+  ].filter((contact) => contact.value?.trim());
 
   return (
     <header
@@ -30,61 +102,49 @@ export function ZweispaltigHeader({
           </p>
         ) : null}
         <h1>{name}</h1>
-        {profile?.title ? <h2>{profile.title}</h2> : null}
-        {!compact && specializations.length ? (
-          <p className="zweispaltig-header__specializations">
-            {specializations.join(" | ")}
-          </p>
+        {profile?.title || (!compact && specializations.length) ? (
+          <h2>
+            {profile?.title ? <span>{profile.title}</span> : null}
+            {!compact
+              ? specializations.map((specialization) => (
+                  <span key={specialization}>{specialization}</span>
+                ))
+              : null}
+          </h2>
         ) : null}
 
-        {!compact ? (
+        {!compact && contacts.length ? (
           <address className="zweispaltig-header__contacts">
-            {profile?.phone ? (
-              <a href={`tel:${profile.phone.replace(/[^\d+]/g, "")}`}>
-                <strong>Telefon</strong>
-                <span>{profile.phone}</span>
-              </a>
-            ) : null}
-            {profile?.email ? (
-              <a href={`mailto:${profile.email}`}>
-                <strong>E-Mail</strong>
-                <span>{profile.email}</span>
-              </a>
-            ) : null}
-            {location ? (
-              <span>
-                <strong>Wohnort</strong>
-                <span>{location}</span>
-              </span>
-            ) : null}
-            {profile?.linkedin ? (
-              <a href={toZweispaltigExternalHref(profile.linkedin)}>
-                <strong>LinkedIn</strong>
-                <span>{profile.linkedin}</span>
-              </a>
-            ) : null}
-            {profile?.github ? (
-              <a href={toZweispaltigExternalHref(profile.github)}>
-                <strong>GitHub</strong>
-                <span>{profile.github}</span>
-              </a>
-            ) : null}
-            {profile?.portfolio ? (
-              <a href={toZweispaltigExternalHref(profile.portfolio)}>
-                <strong>Portfolio</strong>
-                <span>{profile.portfolio}</span>
-              </a>
-            ) : null}
-            {profile?.birthDate || profile?.birthPlace ? (
-              <span>
-                <strong>Geboren</strong>
-                <span>
-                  {[profile?.birthDate, profile?.birthPlace]
-                    .filter(Boolean)
-                    .join(", ")}
+            {contacts.map(({ Icon, ...contact }) => {
+              const content = atsMode ? (
+                <>
+                  <strong>{contact.label}</strong>
+                  <span>{contact.value}</span>
+                </>
+              ) : (
+                <>
+                  <Icon aria-hidden="true" />
+                  <span>{contact.value}</span>
+                </>
+              );
+
+              return contact.href ? (
+                <a
+                  aria-label={`${contact.label}: ${contact.value}`}
+                  href={contact.href}
+                  key={contact.label}
+                >
+                  {content}
+                </a>
+              ) : (
+                <span
+                  aria-label={`${contact.label}: ${contact.value}`}
+                  key={contact.label}
+                >
+                  {content}
                 </span>
-              </span>
-            ) : null}
+              );
+            })}
           </address>
         ) : null}
       </div>

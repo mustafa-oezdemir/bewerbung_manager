@@ -5,6 +5,7 @@ import { profileSchema } from "../../../../shared/schema";
 import { getTemplate } from "../../../../shared/templates";
 import { TabellarischResume } from "./TabellarischResume";
 import { TabellarischSummary } from "./TabellarischSummary";
+import { TabellarischStrengths } from "./TabellarischStrengths";
 import { TabellarischTimeline } from "./TabellarischTimeline";
 import {
   createTabellarischPageData,
@@ -112,7 +113,7 @@ describe("Tabellarisch page model", () => {
 
   it("formats dates and external links without inventing values", () => {
     expect(formatTabellarischDateRange("01/2023", "heute")).toBe(
-      "01/2023 – heute",
+      "01/2023 - heute",
     );
     expect(formatTabellarischDateRange("", "2024")).toBe("2024");
     expect(toExternalHref("mina.example.com")).toBe(
@@ -186,6 +187,46 @@ describe("Tabellarisch rendering", () => {
 
     expect(markup).toContain("&lt;img");
     expect(markup).not.toContain("<img");
+  });
+
+  it("renders two visual strength cards before the timeline", () => {
+    const markup = renderToStaticMarkup(
+      <TabellarischResume
+        profile={profile}
+        name="Mina Kaya"
+        atsMode={false}
+        plan={{
+          pageNumber: 1,
+          density: "standard",
+          items: [
+            { kind: "experience", id: experienceOneId, weight: 5 },
+            { kind: "education", id: educationId, weight: 3 },
+          ],
+        }}
+        totalPages={1}
+        accentColor="#c78300"
+        secondaryColor="#17263d"
+        photoSource="data:image/png;base64,AA=="
+        resumeProfile="Auf die Stelle zugeschnitten"
+        sections={profile.resumeSections}
+      />,
+    );
+
+    expect(markup).toContain("tabellarisch-background");
+    expect(markup).toContain("Zusammenfassung");
+    expect(markup.match(/class="tabellarisch-strength"/g)).toHaveLength(2);
+    expect(markup.indexOf("Stärken")).toBeLessThan(
+      markup.indexOf("Berufserfahrung"),
+    );
+  });
+
+  it("keeps strength descriptions in the ATS text flow", () => {
+    const markup = renderToStaticMarkup(
+      <TabellarischStrengths profile={profile} atsMode />,
+    );
+
+    expect(markup).toContain("tabellarisch-strengths-ats");
+    expect(markup).not.toContain("<svg");
   });
 
   it("registers a timeline layout with the shared design defaults", () => {

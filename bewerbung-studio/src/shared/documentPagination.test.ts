@@ -5,6 +5,7 @@ import {
   getLetterPageStatus,
   kreativPaginationOptions,
   modernPaginationOptions,
+  tabellarischPaginationOptions,
   zweispaltigPaginationOptions,
 } from "./documentPagination";
 
@@ -96,7 +97,7 @@ describe("A4 document pagination", () => {
     ).toHaveLength(1);
   });
 
-  it("keeps long but one-page Modern and Kreativ profiles together", () => {
+  it("keeps long one-page Modern, Kreativ, and Zweispaltig profiles together", () => {
     const profile = profileSchema.parse({
       id: crypto.randomUUID(),
       isDefault: true,
@@ -143,6 +144,26 @@ describe("A4 document pagination", () => {
     expect(kreativPlan).toHaveLength(1);
     expect(kreativPlan[0].items).toHaveLength(6);
     expect(kreativPlan[0].density).toBe("compact");
+
+    const zweispaltigPlan = createResumePagePlan(
+      profile,
+      "",
+      zweispaltigPaginationOptions,
+    );
+
+    expect(zweispaltigPlan).toHaveLength(1);
+    expect(zweispaltigPlan[0].items).toHaveLength(6);
+    expect(zweispaltigPlan[0].density).toBe("compact");
+
+    const tabellarischPlan = createResumePagePlan(
+      profile,
+      "",
+      tabellarischPaginationOptions,
+    );
+
+    expect(tabellarischPlan).toHaveLength(1);
+    expect(tabellarischPlan[0].items).toHaveLength(6);
+    expect(tabellarischPlan[0].density).toBe("compact");
   });
 
   it("keeps Modern career items in reading order after a page split", () => {

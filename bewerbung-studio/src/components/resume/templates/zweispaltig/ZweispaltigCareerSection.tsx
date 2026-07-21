@@ -1,3 +1,4 @@
+import { CalendarDays, MapPin } from "lucide-react";
 import { formatZweispaltigDateRange } from "./zweispaltig.model";
 import type { ZweispaltigCareerSectionProps } from "./zweispaltig.types";
 
@@ -20,18 +21,22 @@ export function ZweispaltigCareerSection({
       <div className="zweispaltig-career__list">
         {items.map((item) => (
           <article className="zweispaltig-career-entry" key={item.id}>
-            <div className="zweispaltig-career-entry__heading">
-              <div>
-                <h3>{item.title}</h3>
-                <p>{item.organization}</p>
-              </div>
-              <p className="zweispaltig-career-entry__meta">
-                <strong>
-                  {formatZweispaltigDateRange(item.from, item.to)}
-                </strong>
-                {item.city ? <span>{item.city}</span> : null}
-              </p>
-            </div>
+            <h3>{item.title}</h3>
+            <p className="zweispaltig-career-entry__organization">
+              {item.organization}
+            </p>
+            <p className="zweispaltig-career-entry__meta">
+              <span>
+                <CalendarDays aria-hidden="true" />
+                {formatZweispaltigDateRange(item.from, item.to)}
+              </span>
+              {item.city ? (
+                <span>
+                  <MapPin aria-hidden="true" />
+                  {item.city}
+                </span>
+              ) : null}
+            </p>
             {item.achievements?.length ? (
               <ul>
                 {item.achievements.map((achievement) => (

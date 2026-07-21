@@ -80,20 +80,20 @@ function z(e) {
 function B(e) {
 	return e == null;
 }
-function te(e) {
+function V(e) {
 	let t = +!!e.startsWith("^"), n = e.endsWith("$") ? e.length - 1 : e.length;
 	return e.slice(t, n);
 }
-function V(e, t) {
+function H(e, t) {
 	let n = e / t, r = Math.round(n), i = 2 ** -52 * Math.max(Math.abs(n), 1);
 	return Math.abs(n - r) < i ? 0 : n - r;
 }
-var ne = /* @__PURE__*/ Symbol("evaluating");
-function H(e, t, n) {
+var te = /* @__PURE__*/ Symbol("evaluating");
+function U(e, t, n) {
 	let r;
 	Object.defineProperty(e, t, {
 		get() {
-			if (r !== ne) return r === void 0 && (r = ne, r = n()), r;
+			if (r !== te) return r === void 0 && (r = te, r = n()), r;
 		},
 		set(n) {
 			Object.defineProperty(e, t, { value: n });
@@ -101,7 +101,7 @@ function H(e, t, n) {
 		configurable: !0
 	});
 }
-function re(e, t, n) {
+function ne(e, t, n) {
 	Object.defineProperty(e, t, {
 		value: n,
 		writable: !0,
@@ -109,7 +109,7 @@ function re(e, t, n) {
 		configurable: !0
 	});
 }
-function ie(...e) {
+function re(...e) {
 	let t = {};
 	for (let n of e) {
 		let e = Object.getOwnPropertyDescriptors(n);
@@ -117,17 +117,17 @@ function ie(...e) {
 	}
 	return Object.defineProperties({}, t);
 }
-function ae(e) {
+function ie(e) {
 	return JSON.stringify(e);
 }
-function U(e) {
+function W(e) {
 	return e.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/[\s_-]+/g, "-").replace(/^-+|-+$/g, "");
 }
-var W = "captureStackTrace" in Error ? Error.captureStackTrace : (...e) => {};
-function oe(e) {
+var G = "captureStackTrace" in Error ? Error.captureStackTrace : (...e) => {};
+function ae(e) {
 	return typeof e == "object" && !!e && !Array.isArray(e);
 }
-var G = /* @__PURE__*/ z(() => {
+var K = /* @__PURE__*/ z(() => {
 	if (ee.jitless || typeof navigator < "u" && navigator?.userAgent?.includes("Cloudflare")) return !1;
 	try {
 		return Function(""), !0;
@@ -135,29 +135,29 @@ var G = /* @__PURE__*/ z(() => {
 		return !1;
 	}
 });
-function se(e) {
-	if (oe(e) === !1) return !1;
+function oe(e) {
+	if (ae(e) === !1) return !1;
 	let t = e.constructor;
 	if (t === void 0 || typeof t != "function") return !0;
 	let n = t.prototype;
-	return !(oe(n) === !1 || Object.prototype.hasOwnProperty.call(n, "isPrototypeOf") === !1);
+	return !(ae(n) === !1 || Object.prototype.hasOwnProperty.call(n, "isPrototypeOf") === !1);
 }
-function ce(e) {
-	return se(e) ? { ...e } : Array.isArray(e) ? [...e] : e instanceof Map ? new Map(e) : e instanceof Set ? new Set(e) : e;
+function se(e) {
+	return oe(e) ? { ...e } : Array.isArray(e) ? [...e] : e instanceof Map ? new Map(e) : e instanceof Set ? new Set(e) : e;
 }
-var le = /* @__PURE__*/ new Set([
+var ce = /* @__PURE__*/ new Set([
 	"string",
 	"number",
 	"symbol"
 ]);
-function ue(e) {
+function le(e) {
 	return e.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
-function de(e, t, n) {
+function ue(e, t, n) {
 	let r = new e._zod.constr(t ?? e._zod.def);
 	return (!t || n?.parent) && (r._zod.parent = e), r;
 }
-function K(e) {
+function q(e) {
 	let t = e;
 	if (!t) return {};
 	if (typeof t == "string") return { error: () => t };
@@ -170,80 +170,80 @@ function K(e) {
 		error: () => t.error
 	} : t;
 }
-function fe(e) {
+function de(e) {
 	return Object.keys(e).filter((t) => e[t]._zod.optin === "optional" && e[t]._zod.optout === "optional");
 }
-var pe = {
+var fe = {
 	safeint: [-(2 ** 53 - 1), 2 ** 53 - 1],
 	int32: [-2147483648, 2147483647],
 	uint32: [0, 4294967295],
 	float32: [-34028234663852886e22, 34028234663852886e22],
 	float64: [-Number.MAX_VALUE, Number.MAX_VALUE]
 };
-function me(e, t) {
+function pe(e, t) {
 	let n = e._zod.def, r = n.checks;
 	if (r && r.length > 0) throw Error(".pick() cannot be used on object schemas containing refinements");
-	return de(e, ie(e._zod.def, {
+	return ue(e, re(e._zod.def, {
 		get shape() {
 			let e = {};
 			for (let r in t) {
 				if (!(r in n.shape)) throw Error(`Unrecognized key: "${r}"`);
 				t[r] && (e[r] = n.shape[r]);
 			}
-			return re(this, "shape", e), e;
+			return ne(this, "shape", e), e;
 		},
 		checks: []
 	}));
 }
-function he(e, t) {
+function me(e, t) {
 	let n = e._zod.def, r = n.checks;
 	if (r && r.length > 0) throw Error(".omit() cannot be used on object schemas containing refinements");
-	return de(e, ie(e._zod.def, {
+	return ue(e, re(e._zod.def, {
 		get shape() {
 			let r = { ...e._zod.def.shape };
 			for (let e in t) {
 				if (!(e in n.shape)) throw Error(`Unrecognized key: "${e}"`);
 				t[e] && delete r[e];
 			}
-			return re(this, "shape", r), r;
+			return ne(this, "shape", r), r;
 		},
 		checks: []
 	}));
 }
-function ge(e, t) {
-	if (!se(t)) throw Error("Invalid input to extend: expected a plain object");
+function he(e, t) {
+	if (!oe(t)) throw Error("Invalid input to extend: expected a plain object");
 	let n = e._zod.def.checks;
 	if (n && n.length > 0) {
 		let n = e._zod.def.shape;
 		for (let e in t) if (Object.getOwnPropertyDescriptor(n, e) !== void 0) throw Error("Cannot overwrite keys on object schemas containing refinements. Use `.safeExtend()` instead.");
 	}
-	return de(e, ie(e._zod.def, { get shape() {
+	return ue(e, re(e._zod.def, { get shape() {
 		let n = {
 			...e._zod.def.shape,
 			...t
 		};
-		return re(this, "shape", n), n;
+		return ne(this, "shape", n), n;
+	} }));
+}
+function ge(e, t) {
+	if (!oe(t)) throw Error("Invalid input to safeExtend: expected a plain object");
+	return ue(e, re(e._zod.def, { get shape() {
+		let n = {
+			...e._zod.def.shape,
+			...t
+		};
+		return ne(this, "shape", n), n;
 	} }));
 }
 function _e(e, t) {
-	if (!se(t)) throw Error("Invalid input to safeExtend: expected a plain object");
-	return de(e, ie(e._zod.def, { get shape() {
-		let n = {
-			...e._zod.def.shape,
-			...t
-		};
-		return re(this, "shape", n), n;
-	} }));
-}
-function ve(e, t) {
 	if (e._zod.def.checks?.length) throw Error(".merge() cannot be used on object schemas containing refinements. Use .safeExtend() instead.");
-	return de(e, ie(e._zod.def, {
+	return ue(e, re(e._zod.def, {
 		get shape() {
 			let n = {
 				...e._zod.def.shape,
 				...t._zod.def.shape
 			};
-			return re(this, "shape", n), n;
+			return ne(this, "shape", n), n;
 		},
 		get catchall() {
 			return t._zod.def.catchall;
@@ -251,10 +251,10 @@ function ve(e, t) {
 		checks: t._zod.def.checks ?? []
 	}));
 }
-function ye(e, t, n) {
+function ve(e, t, n) {
 	let r = t._zod.def.checks;
 	if (r && r.length > 0) throw Error(".partial() cannot be used on object schemas containing refinements");
-	return de(t, ie(t._zod.def, {
+	return ue(t, re(t._zod.def, {
 		get shape() {
 			let r = t._zod.def.shape, i = { ...r };
 			if (n) for (let t in n) {
@@ -268,13 +268,13 @@ function ye(e, t, n) {
 				type: "optional",
 				innerType: r[t]
 			}) : r[t];
-			return re(this, "shape", i), i;
+			return ne(this, "shape", i), i;
 		},
 		checks: []
 	}));
 }
-function be(e, t, n) {
-	return de(t, ie(t._zod.def, { get shape() {
+function ye(e, t, n) {
+	return ue(t, re(t._zod.def, { get shape() {
 		let r = t._zod.def.shape, i = { ...r };
 		if (n) for (let t in n) {
 			if (!(t in i)) throw Error(`Unrecognized key: "${t}"`);
@@ -287,36 +287,36 @@ function be(e, t, n) {
 			type: "nonoptional",
 			innerType: r[t]
 		});
-		return re(this, "shape", i), i;
+		return ne(this, "shape", i), i;
 	} }));
 }
-function xe(e, t = 0) {
+function be(e, t = 0) {
 	if (e.aborted === !0) return !0;
 	for (let n = t; n < e.issues.length; n++) if (e.issues[n]?.continue !== !0) return !0;
 	return !1;
 }
-function Se(e, t = 0) {
+function xe(e, t = 0) {
 	if (e.aborted === !0) return !0;
 	for (let n = t; n < e.issues.length; n++) if (e.issues[n]?.continue === !1) return !0;
 	return !1;
 }
-function Ce(e, t) {
+function Se(e, t) {
 	return t.map((t) => {
 		var n;
 		return (n = t).path ?? (n.path = []), t.path.unshift(e), t;
 	});
 }
-function we(e) {
+function Ce(e) {
 	return typeof e == "string" ? e : e?.message;
 }
-function Te(e, t, n) {
-	let r = e.message ? e.message : we(e.inst?._zod.def?.error?.(e)) ?? we(t?.error?.(e)) ?? we(n.customError?.(e)) ?? we(n.localeError?.(e)) ?? "Invalid input", { inst: i, continue: a, input: o, ...s } = e;
+function we(e, t, n) {
+	let r = e.message ? e.message : Ce(e.inst?._zod.def?.error?.(e)) ?? Ce(t?.error?.(e)) ?? Ce(n.customError?.(e)) ?? Ce(n.localeError?.(e)) ?? "Invalid input", { inst: i, continue: a, input: o, ...s } = e;
 	return s.path ??= [], s.message = r, t?.reportInput && (s.input = o), s;
 }
-function Ee(e) {
+function Te(e) {
 	return Array.isArray(e) ? "array" : typeof e == "string" ? "string" : "unknown";
 }
-function q(...e) {
+function Ee(...e) {
 	let [t, n, r] = e;
 	return typeof t == "string" ? {
 		message: t,
@@ -378,8 +378,8 @@ var je = (e) => (t, n, r, i) => {
 	}, a);
 	if (o instanceof Promise) throw new P();
 	if (o.issues.length) {
-		let t = new ((i?.Err) ?? e)(o.issues.map((e) => Te(e, a, I())));
-		throw W(t, i?.callee), t;
+		let t = new ((i?.Err) ?? e)(o.issues.map((e) => we(e, a, I())));
+		throw G(t, i?.callee), t;
 	}
 	return o.value;
 }, Me = (e) => async (t, n, r, i) => {
@@ -391,8 +391,8 @@ var je = (e) => (t, n, r, i) => {
 		issues: []
 	}, a);
 	if (o instanceof Promise && (o = await o), o.issues.length) {
-		let t = new ((i?.Err) ?? e)(o.issues.map((e) => Te(e, a, I())));
-		throw W(t, i?.callee), t;
+		let t = new ((i?.Err) ?? e)(o.issues.map((e) => we(e, a, I())));
+		throw G(t, i?.callee), t;
 	}
 	return o.value;
 }, Ne = (e) => (t, n, r) => {
@@ -406,7 +406,7 @@ var je = (e) => (t, n, r, i) => {
 	if (a instanceof Promise) throw new P();
 	return a.issues.length ? {
 		success: !1,
-		error: new (e ?? J)(a.issues.map((e) => Te(e, i, I())))
+		error: new (e ?? J)(a.issues.map((e) => we(e, i, I())))
 	} : {
 		success: !0,
 		data: a.value
@@ -421,7 +421,7 @@ var je = (e) => (t, n, r, i) => {
 	}, i);
 	return a instanceof Promise && (a = await a), a.issues.length ? {
 		success: !1,
-		error: new e(a.issues.map((e) => Te(e, i, I())))
+		error: new e(a.issues.map((e) => we(e, i, I())))
 	} : {
 		success: !0,
 		data: a.value
@@ -451,10 +451,10 @@ var je = (e) => (t, n, r, i) => {
 	} : { direction: "backward" };
 	return Fe(e)(t, n, i);
 }, We = (e) => async (t, n, r) => Fe(e)(t, n, r), Ge = /^[cC][0-9a-z]{6,}$/, Ke = /^[0-9a-z]+$/, qe = /^[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{26}$/, Je = /^[0-9a-vA-V]{20}$/, Ye = /^[A-Za-z0-9]{27}$/, Xe = /^[a-zA-Z0-9_-]{21}$/, Ze = /^P(?:(\d+W)|(?!.*W)(?=\d|T\d)(\d+Y)?(\d+M)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+([.,]\d+)?S)?)?)$/, Qe = /^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/, $e = (e) => e ? RegExp(`^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-${e}[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$`) : /^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$/, et = /^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$/, tt = "^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$";
-function Y() {
+function nt() {
 	return new RegExp(tt, "u");
 }
-var nt = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/, rt = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:))$/, it = /^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/([0-9]|[1-2][0-9]|3[0-2])$/, at = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|::|([0-9a-fA-F]{1,4})?::([0-9a-fA-F]{1,4}:?){0,6})\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/, ot = /^$|^(?:[0-9a-zA-Z+/]{4})*(?:(?:[0-9a-zA-Z+/]{2}==)|(?:[0-9a-zA-Z+/]{3}=))?$/, st = /^[A-Za-z0-9_-]*$/, ct = /^https?$/, lt = /^\+[1-9]\d{6,14}$/, ut = "(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))", dt = /*@__PURE__*/ RegExp(`^${ut}$`);
+var rt = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/, it = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:))$/, at = /^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/([0-9]|[1-2][0-9]|3[0-2])$/, Y = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|::|([0-9a-fA-F]{1,4})?::([0-9a-fA-F]{1,4}:?){0,6})\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/, ot = /^$|^(?:[0-9a-zA-Z+/]{4})*(?:(?:[0-9a-zA-Z+/]{2}==)|(?:[0-9a-zA-Z+/]{3}=))?$/, st = /^[A-Za-z0-9_-]*$/, ct = /^https?$/, lt = /^\+[1-9]\d{6,14}$/, ut = "(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))", dt = /*@__PURE__*/ RegExp(`^${ut}$`);
 function ft(e) {
 	let t = "(?:[01]\\d|2[0-3]):[0-5]\\d";
 	return typeof e.precision == "number" ? e.precision === -1 ? `${t}` : e.precision === 0 ? `${t}:[0-5]\\d` : `${t}:[0-5]\\d\\.\\d{${e.precision}}` : `${t}(?::[0-5]\\d(?:\\.\\d+)?)?`;
@@ -518,7 +518,7 @@ var ht = (e) => {
 		(n = e._zod.bag).multipleOf ?? (n.multipleOf = t.value);
 	}), e._zod.check = (n) => {
 		if (typeof n.value != typeof t.value) throw Error("Cannot mix number and bigint in multiple_of check.");
-		(typeof n.value == "bigint" ? n.value % t.value === BigInt(0) : V(n.value, t.value) === 0) || n.issues.push({
+		(typeof n.value == "bigint" ? n.value % t.value === BigInt(0) : H(n.value, t.value) === 0) || n.issues.push({
 			origin: typeof n.value,
 			code: "not_multiple_of",
 			divisor: t.value,
@@ -529,7 +529,7 @@ var ht = (e) => {
 	};
 }), Et = /*@__PURE__*/ N("$ZodCheckNumberFormat", (e, t) => {
 	xt.init(e, t), t.format = t.format || "float64";
-	let n = t.format?.includes("int"), r = n ? "int" : "number", [i, a] = pe[t.format];
+	let n = t.format?.includes("int"), r = n ? "int" : "number", [i, a] = fe[t.format];
 	e._zod.onattach.push((e) => {
 		let r = e._zod.bag;
 		r.format = t.format, r.minimum = i, r.maximum = a, n && (r.pattern = gt);
@@ -599,7 +599,7 @@ var ht = (e) => {
 	}), e._zod.check = (n) => {
 		let r = n.value;
 		if (r.length <= t.maximum) return;
-		let i = Ee(r);
+		let i = Te(r);
 		n.issues.push({
 			origin: i,
 			code: "too_big",
@@ -621,7 +621,7 @@ var ht = (e) => {
 	}), e._zod.check = (n) => {
 		let r = n.value;
 		if (r.length >= t.minimum) return;
-		let i = Ee(r);
+		let i = Te(r);
 		n.issues.push({
 			origin: i,
 			code: "too_small",
@@ -643,7 +643,7 @@ var ht = (e) => {
 	}), e._zod.check = (n) => {
 		let r = n.value, i = r.length;
 		if (i === t.length) return;
-		let a = Ee(r), o = i > t.length;
+		let a = Te(r), o = i > t.length;
 		n.issues.push({
 			origin: a,
 			...o ? {
@@ -694,7 +694,7 @@ var ht = (e) => {
 	t.pattern ??= bt, At.init(e, t);
 }), Pt = /*@__PURE__*/ N("$ZodCheckIncludes", (e, t) => {
 	xt.init(e, t);
-	let n = ue(t.includes), r = new RegExp(typeof t.position == "number" ? `^.{${t.position}}${n}` : n);
+	let n = le(t.includes), r = new RegExp(typeof t.position == "number" ? `^.{${t.position}}${n}` : n);
 	t.pattern = r, e._zod.onattach.push((e) => {
 		let t = e._zod.bag;
 		t.patterns ??= /* @__PURE__ */ new Set(), t.patterns.add(r);
@@ -711,7 +711,7 @@ var ht = (e) => {
 	};
 }), Ft = /*@__PURE__*/ N("$ZodCheckStartsWith", (e, t) => {
 	xt.init(e, t);
-	let n = RegExp(`^${ue(t.prefix)}.*`);
+	let n = RegExp(`^${le(t.prefix)}.*`);
 	t.pattern ??= n, e._zod.onattach.push((e) => {
 		let t = e._zod.bag;
 		t.patterns ??= /* @__PURE__ */ new Set(), t.patterns.add(n);
@@ -728,7 +728,7 @@ var ht = (e) => {
 	};
 }), It = /*@__PURE__*/ N("$ZodCheckEndsWith", (e, t) => {
 	xt.init(e, t);
-	let n = RegExp(`.*${ue(t.suffix)}$`);
+	let n = RegExp(`.*${le(t.suffix)}$`);
 	t.pattern ??= n, e._zod.onattach.push((e) => {
 		let t = e._zod.bag;
 		t.patterns ??= /* @__PURE__ */ new Set(), t.patterns.add(n);
@@ -781,24 +781,24 @@ var ht = (e) => {
 	});
 	else {
 		let t = (e, t, n) => {
-			let r = xe(e), i;
+			let r = be(e), i;
 			for (let a of t) {
 				if (a._zod.def.when) {
-					if (Se(e) || !a._zod.def.when(e)) continue;
+					if (xe(e) || !a._zod.def.when(e)) continue;
 				} else if (r) continue;
 				let t = e.issues.length, o = a._zod.check(e);
 				if (o instanceof Promise && n?.async === !1) throw new P();
 				if (i || o instanceof Promise) i = (i ?? Promise.resolve()).then(async () => {
-					await o, e.issues.length !== t && (r ||= xe(e, t));
+					await o, e.issues.length !== t && (r ||= be(e, t));
 				});
 				else {
 					if (e.issues.length === t) continue;
-					r ||= xe(e, t);
+					r ||= be(e, t);
 				}
 			}
 			return i ? i.then(() => e) : e;
 		}, n = (n, i, a) => {
-			if (xe(n)) return n.aborted = !0, n;
+			if (be(n)) return n.aborted = !0, n;
 			let o = t(i, r, a);
 			if (o instanceof Promise) {
 				if (a.async === !1) throw new P();
@@ -826,7 +826,7 @@ var ht = (e) => {
 			return t(o, r, a);
 		};
 	}
-	H(e, "~standard", () => ({
+	U(e, "~standard", () => ({
 		validate: (t) => {
 			try {
 				let n = Pe(e, t);
@@ -917,7 +917,7 @@ var ht = (e) => {
 		}
 	};
 }), Kt = /*@__PURE__*/ N("$ZodEmoji", (e, t) => {
-	t.pattern ??= Y(), X.init(e, t);
+	t.pattern ??= nt(), X.init(e, t);
 }), qt = /*@__PURE__*/ N("$ZodNanoID", (e, t) => {
 	t.pattern ??= Xe, X.init(e, t);
 }), Jt = /*@__PURE__*/ N("$ZodCUID", (e, t) => {
@@ -939,9 +939,9 @@ var ht = (e) => {
 }), nn = /*@__PURE__*/ N("$ZodISODuration", (e, t) => {
 	t.pattern ??= Ze, X.init(e, t);
 }), rn = /*@__PURE__*/ N("$ZodIPv4", (e, t) => {
-	t.pattern ??= nt, X.init(e, t), e._zod.bag.format = "ipv4";
+	t.pattern ??= rt, X.init(e, t), e._zod.bag.format = "ipv4";
 }), an = /*@__PURE__*/ N("$ZodIPv6", (e, t) => {
-	t.pattern ??= rt, X.init(e, t), e._zod.bag.format = "ipv6", e._zod.check = (n) => {
+	t.pattern ??= it, X.init(e, t), e._zod.bag.format = "ipv6", e._zod.check = (n) => {
 		try {
 			new URL(`http://[${n.value}]`);
 		} catch {
@@ -955,9 +955,9 @@ var ht = (e) => {
 		}
 	};
 }), on = /*@__PURE__*/ N("$ZodCIDRv4", (e, t) => {
-	t.pattern ??= it, X.init(e, t);
+	t.pattern ??= at, X.init(e, t);
 }), sn = /*@__PURE__*/ N("$ZodCIDRv6", (e, t) => {
-	t.pattern ??= at, X.init(e, t), e._zod.check = (n) => {
+	t.pattern ??= Y, X.init(e, t), e._zod.check = (n) => {
 		let r = n.value.split("/");
 		try {
 			if (r.length !== 2) throw Error();
@@ -1079,7 +1079,7 @@ var mn = /*@__PURE__*/ N("$ZodJWT", (e, t) => {
 	}), t);
 });
 function bn(e, t, n) {
-	e.issues.length && t.issues.push(...Ce(n, e.issues)), t.value[n] = e.value;
+	e.issues.length && t.issues.push(...Se(n, e.issues)), t.value[n] = e.value;
 }
 var xn = /*@__PURE__*/ N("$ZodArray", (e, t) => {
 	Bt.init(e, t), e._zod.parse = (n, r) => {
@@ -1106,7 +1106,7 @@ function Sn(e, t, n, r, i, a) {
 	let o = n in r;
 	if (e.issues.length) {
 		if (i && a && !o) return;
-		t.issues.push(...Ce(n, e.issues));
+		t.issues.push(...Se(n, e.issues));
 	}
 	if (!o && !i) {
 		e.issues.length || t.issues.push({
@@ -1122,7 +1122,7 @@ function Sn(e, t, n, r, i, a) {
 function Cn(e) {
 	let t = Object.keys(e.shape);
 	for (let n of t) if (!e.shape?.[n]?._zod?.traits?.has("$ZodType")) throw Error(`Invalid element at key "${n}": expected a Zod schema`);
-	let n = fe(e.shape);
+	let n = de(e.shape);
 	return {
 		...e,
 		keys: t,
@@ -1161,7 +1161,7 @@ var Tn = /*@__PURE__*/ N("$ZodObject", (e, t) => {
 		} });
 	}
 	let n = z(() => Cn(t));
-	H(e._zod, "propValues", () => {
+	U(e._zod, "propValues", () => {
 		let e = t.shape, n = {};
 		for (let t in e) {
 			let r = e[t]._zod;
@@ -1172,7 +1172,7 @@ var Tn = /*@__PURE__*/ N("$ZodObject", (e, t) => {
 		}
 		return n;
 	});
-	let r = oe, i = t.catchall, a;
+	let r = ae, i = t.catchall, a;
 	e._zod.parse = (t, o) => {
 		a ??= n.value;
 		let s = t.value;
@@ -1201,7 +1201,7 @@ var Tn = /*@__PURE__*/ N("$ZodObject", (e, t) => {
 			"payload",
 			"ctx"
 		]), n = r.value, i = (e) => {
-			let t = ae(e);
+			let t = ie(e);
 			return `shape[${t}]._zod.run({ value: input[${t}], issues: [] }, ctx)`;
 		};
 		t.write("const input = payload.value;");
@@ -1209,7 +1209,7 @@ var Tn = /*@__PURE__*/ N("$ZodObject", (e, t) => {
 		for (let e of n.keys) a[e] = `key_${o++}`;
 		t.write("const newResult = {};");
 		for (let r of n.keys) {
-			let n = a[r], o = ae(r), s = e[r], c = s?._zod?.optin === "optional", l = s?._zod?.optout === "optional";
+			let n = a[r], o = ie(r), s = e[r], c = s?._zod?.optin === "optional", l = s?._zod?.optout === "optional";
 			t.write(`const ${n} = ${i(r)};`), c && l ? t.write(`
         if (${n}.issues.length) {
           if (${o} in input) {
@@ -1274,7 +1274,7 @@ var Tn = /*@__PURE__*/ N("$ZodObject", (e, t) => {
 		t.write("payload.value = newResult;"), t.write("return payload;");
 		let s = t.compile();
 		return (t, n) => s(e, t, n);
-	}, a, o = oe, s = !ee.jitless, c = s && G.value, l = t.catchall, u;
+	}, a, o = ae, s = !ee.jitless, c = s && K.value, l = t.catchall, u;
 	e._zod.parse = (d, f) => {
 		u ??= r.value;
 		let p = d.value;
@@ -1288,21 +1288,21 @@ var Tn = /*@__PURE__*/ N("$ZodObject", (e, t) => {
 });
 function Dn(e, t, n, r) {
 	for (let n of e) if (n.issues.length === 0) return t.value = n.value, t;
-	let i = e.filter((e) => !xe(e));
+	let i = e.filter((e) => !be(e));
 	return i.length === 1 ? (t.value = i[0].value, i[0]) : (t.issues.push({
 		code: "invalid_union",
 		input: t.value,
 		inst: n,
-		errors: e.map((e) => e.issues.map((e) => Te(e, r, I())))
+		errors: e.map((e) => e.issues.map((e) => we(e, r, I())))
 	}), t);
 }
 var On = /*@__PURE__*/ N("$ZodUnion", (e, t) => {
-	Bt.init(e, t), H(e._zod, "optin", () => t.options.some((e) => e._zod.optin === "optional") ? "optional" : void 0), H(e._zod, "optout", () => t.options.some((e) => e._zod.optout === "optional") ? "optional" : void 0), H(e._zod, "values", () => {
+	Bt.init(e, t), U(e._zod, "optin", () => t.options.some((e) => e._zod.optin === "optional") ? "optional" : void 0), U(e._zod, "optout", () => t.options.some((e) => e._zod.optout === "optional") ? "optional" : void 0), U(e._zod, "values", () => {
 		if (t.options.every((e) => e._zod.values)) return new Set(t.options.flatMap((e) => Array.from(e._zod.values)));
-	}), H(e._zod, "pattern", () => {
+	}), U(e._zod, "pattern", () => {
 		if (t.options.every((e) => e._zod.pattern)) {
 			let e = t.options.map((e) => e._zod.pattern);
-			return RegExp(`^(${e.map((e) => te(e.source)).join("|")})$`);
+			return RegExp(`^(${e.map((e) => V(e.source)).join("|")})$`);
 		}
 	});
 	let n = t.options.length === 1 ? t.options[0]._zod.run : null;
@@ -1339,7 +1339,7 @@ function An(e, t) {
 		valid: !0,
 		data: e
 	};
-	if (se(e) && se(t)) {
+	if (oe(e) && oe(t)) {
 		let n = Object.keys(t), r = Object.keys(e).filter((e) => n.indexOf(e) !== -1), i = {
 			...e,
 			...t
@@ -1393,7 +1393,7 @@ function jn(e, t, n) {
 	if (a.length && i && e.issues.push({
 		...i,
 		keys: a
-	}), xe(e)) return e;
+	}), be(e)) return e;
 	let o = An(t.value, n.value);
 	if (!o.valid) throw Error(`Unmergable intersection. Error path: ${JSON.stringify(o.mergeErrorPath)}`);
 	return e.value = o.data, e;
@@ -1401,7 +1401,7 @@ function jn(e, t, n) {
 var Mn = /*@__PURE__*/ N("$ZodEnum", (e, t) => {
 	Bt.init(e, t);
 	let n = L(t.entries), r = new Set(n);
-	e._zod.values = r, e._zod.pattern = RegExp(`^(${n.filter((e) => le.has(typeof e)).map((e) => typeof e == "string" ? ue(e) : e.toString()).join("|")})$`), e._zod.parse = (t, i) => {
+	e._zod.values = r, e._zod.pattern = RegExp(`^(${n.filter((e) => ce.has(typeof e)).map((e) => typeof e == "string" ? le(e) : e.toString()).join("|")})$`), e._zod.parse = (t, i) => {
 		let a = t.value;
 		return r.has(a) || t.issues.push({
 			code: "invalid_value",
@@ -1413,7 +1413,7 @@ var Mn = /*@__PURE__*/ N("$ZodEnum", (e, t) => {
 }), Nn = /*@__PURE__*/ N("$ZodLiteral", (e, t) => {
 	if (Bt.init(e, t), t.values.length === 0) throw Error("Cannot create literal schema with no valid values");
 	let n = new Set(t.values);
-	e._zod.values = n, e._zod.pattern = RegExp(`^(${t.values.map((e) => typeof e == "string" ? ue(e) : e ? ue(e.toString()) : String(e)).join("|")})$`), e._zod.parse = (r, i) => {
+	e._zod.values = n, e._zod.pattern = RegExp(`^(${t.values.map((e) => typeof e == "string" ? le(e) : e ? le(e.toString()) : String(e)).join("|")})$`), e._zod.parse = (r, i) => {
 		let a = r.value;
 		return n.has(a) || r.issues.push({
 			code: "invalid_value",
@@ -1438,9 +1438,9 @@ function Fn(e, t) {
 	} : e;
 }
 var In = /*@__PURE__*/ N("$ZodOptional", (e, t) => {
-	Bt.init(e, t), e._zod.optin = "optional", e._zod.optout = "optional", H(e._zod, "values", () => t.innerType._zod.values ? /* @__PURE__ */ new Set([...t.innerType._zod.values, void 0]) : void 0), H(e._zod, "pattern", () => {
+	Bt.init(e, t), e._zod.optin = "optional", e._zod.optout = "optional", U(e._zod, "values", () => t.innerType._zod.values ? /* @__PURE__ */ new Set([...t.innerType._zod.values, void 0]) : void 0), U(e._zod, "pattern", () => {
 		let e = t.innerType._zod.pattern;
-		return e ? RegExp(`^(${te(e.source)})?$`) : void 0;
+		return e ? RegExp(`^(${V(e.source)})?$`) : void 0;
 	}), e._zod.parse = (e, n) => {
 		if (t.innerType._zod.optin === "optional") {
 			let r = e.value, i = t.innerType._zod.run(e, n);
@@ -1449,14 +1449,14 @@ var In = /*@__PURE__*/ N("$ZodOptional", (e, t) => {
 		return e.value === void 0 ? e : t.innerType._zod.run(e, n);
 	};
 }), Ln = /*@__PURE__*/ N("$ZodExactOptional", (e, t) => {
-	In.init(e, t), H(e._zod, "values", () => t.innerType._zod.values), H(e._zod, "pattern", () => t.innerType._zod.pattern), e._zod.parse = (e, n) => t.innerType._zod.run(e, n);
+	In.init(e, t), U(e._zod, "values", () => t.innerType._zod.values), U(e._zod, "pattern", () => t.innerType._zod.pattern), e._zod.parse = (e, n) => t.innerType._zod.run(e, n);
 }), Rn = /*@__PURE__*/ N("$ZodNullable", (e, t) => {
-	Bt.init(e, t), H(e._zod, "optin", () => t.innerType._zod.optin), H(e._zod, "optout", () => t.innerType._zod.optout), H(e._zod, "pattern", () => {
+	Bt.init(e, t), U(e._zod, "optin", () => t.innerType._zod.optin), U(e._zod, "optout", () => t.innerType._zod.optout), U(e._zod, "pattern", () => {
 		let e = t.innerType._zod.pattern;
-		return e ? RegExp(`^(${te(e.source)}|null)$`) : void 0;
-	}), H(e._zod, "values", () => t.innerType._zod.values ? /* @__PURE__ */ new Set([...t.innerType._zod.values, null]) : void 0), e._zod.parse = (e, n) => e.value === null ? e : t.innerType._zod.run(e, n);
+		return e ? RegExp(`^(${V(e.source)}|null)$`) : void 0;
+	}), U(e._zod, "values", () => t.innerType._zod.values ? /* @__PURE__ */ new Set([...t.innerType._zod.values, null]) : void 0), e._zod.parse = (e, n) => e.value === null ? e : t.innerType._zod.run(e, n);
 }), zn = /*@__PURE__*/ N("$ZodDefault", (e, t) => {
-	Bt.init(e, t), e._zod.optin = "optional", H(e._zod, "values", () => t.innerType._zod.values), e._zod.parse = (e, n) => {
+	Bt.init(e, t), e._zod.optin = "optional", U(e._zod, "values", () => t.innerType._zod.values), e._zod.parse = (e, n) => {
 		if (n.direction === "backward") return t.innerType._zod.run(e, n);
 		if (e.value === void 0) return e.value = t.defaultValue, e;
 		let r = t.innerType._zod.run(e, n);
@@ -1467,9 +1467,9 @@ function Bn(e, t) {
 	return e.value === void 0 && (e.value = t.defaultValue), e;
 }
 var Vn = /*@__PURE__*/ N("$ZodPrefault", (e, t) => {
-	Bt.init(e, t), e._zod.optin = "optional", H(e._zod, "values", () => t.innerType._zod.values), e._zod.parse = (e, n) => (n.direction === "backward" || e.value === void 0 && (e.value = t.defaultValue), t.innerType._zod.run(e, n));
+	Bt.init(e, t), e._zod.optin = "optional", U(e._zod, "values", () => t.innerType._zod.values), e._zod.parse = (e, n) => (n.direction === "backward" || e.value === void 0 && (e.value = t.defaultValue), t.innerType._zod.run(e, n));
 }), Hn = /*@__PURE__*/ N("$ZodNonOptional", (e, t) => {
-	Bt.init(e, t), H(e._zod, "values", () => {
+	Bt.init(e, t), U(e._zod, "values", () => {
 		let e = t.innerType._zod.values;
 		return e ? new Set([...e].filter((e) => e !== void 0)) : void 0;
 	}), e._zod.parse = (n, r) => {
@@ -1486,21 +1486,21 @@ function Un(e, t) {
 	}), e;
 }
 var Wn = /*@__PURE__*/ N("$ZodCatch", (e, t) => {
-	Bt.init(e, t), e._zod.optin = "optional", H(e._zod, "optout", () => t.innerType._zod.optout), H(e._zod, "values", () => t.innerType._zod.values), e._zod.parse = (e, n) => {
+	Bt.init(e, t), e._zod.optin = "optional", U(e._zod, "optout", () => t.innerType._zod.optout), U(e._zod, "values", () => t.innerType._zod.values), e._zod.parse = (e, n) => {
 		if (n.direction === "backward") return t.innerType._zod.run(e, n);
 		let r = t.innerType._zod.run(e, n);
 		return r instanceof Promise ? r.then((r) => (e.value = r.value, r.issues.length && (e.value = t.catchValue({
 			...e,
-			error: { issues: r.issues.map((e) => Te(e, n, I())) },
+			error: { issues: r.issues.map((e) => we(e, n, I())) },
 			input: e.value
 		}), e.issues = [], e.fallback = !0), e)) : (e.value = r.value, r.issues.length && (e.value = t.catchValue({
 			...e,
-			error: { issues: r.issues.map((e) => Te(e, n, I())) },
+			error: { issues: r.issues.map((e) => we(e, n, I())) },
 			input: e.value
 		}), e.issues = [], e.fallback = !0), e);
 	};
 }), Gn = /*@__PURE__*/ N("$ZodPipe", (e, t) => {
-	Bt.init(e, t), H(e._zod, "values", () => t.in._zod.values), H(e._zod, "optin", () => t.in._zod.optin), H(e._zod, "optout", () => t.out._zod.optout), H(e._zod, "propValues", () => t.in._zod.propValues), e._zod.parse = (e, n) => {
+	Bt.init(e, t), U(e._zod, "values", () => t.in._zod.values), U(e._zod, "optin", () => t.in._zod.optin), U(e._zod, "optout", () => t.out._zod.optout), U(e._zod, "propValues", () => t.in._zod.propValues), e._zod.parse = (e, n) => {
 		if (n.direction === "backward") {
 			let r = t.out._zod.run(e, n);
 			return r instanceof Promise ? r.then((e) => Kn(e, t.in, n)) : Kn(r, t.in, n);
@@ -1517,7 +1517,7 @@ function Kn(e, t, n) {
 	}, n);
 }
 var qn = /*@__PURE__*/ N("$ZodReadonly", (e, t) => {
-	Bt.init(e, t), H(e._zod, "propValues", () => t.innerType._zod.propValues), H(e._zod, "values", () => t.innerType._zod.values), H(e._zod, "optin", () => t.innerType?._zod?.optin), H(e._zod, "optout", () => t.innerType?._zod?.optout), e._zod.parse = (e, n) => {
+	Bt.init(e, t), U(e._zod, "propValues", () => t.innerType._zod.propValues), U(e._zod, "values", () => t.innerType._zod.values), U(e._zod, "optin", () => t.innerType?._zod?.optin), U(e._zod, "optout", () => t.innerType?._zod?.optout), e._zod.parse = (e, n) => {
 		if (n.direction === "backward") return t.innerType._zod.run(e, n);
 		let r = t.innerType._zod.run(e, n);
 		return r instanceof Promise ? r.then(Jn) : Jn(r);
@@ -1542,7 +1542,7 @@ function Xn(e, t, n, r) {
 			path: [...r._zod.def.path ?? []],
 			continue: !r._zod.def.abort
 		};
-		r._zod.def.params && (e.params = r._zod.def.params), t.issues.push(q(e));
+		r._zod.def.params && (e.params = r._zod.def.params), t.issues.push(Ee(e));
 	}
 }
 //#endregion
@@ -1590,7 +1590,7 @@ var er = globalThis.__zod_globalRegistry;
 function tr(e, t) {
 	return new e({
 		type: "string",
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1600,7 +1600,7 @@ function nr(e, t) {
 		format: "email",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1610,7 +1610,7 @@ function rr(e, t) {
 		format: "guid",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1620,7 +1620,7 @@ function ir(e, t) {
 		format: "uuid",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1631,7 +1631,7 @@ function ar(e, t) {
 		check: "string_format",
 		abort: !1,
 		version: "v4",
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1642,7 +1642,7 @@ function or(e, t) {
 		check: "string_format",
 		abort: !1,
 		version: "v6",
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1653,7 +1653,7 @@ function sr(e, t) {
 		check: "string_format",
 		abort: !1,
 		version: "v7",
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1663,7 +1663,7 @@ function cr(e, t) {
 		format: "url",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1673,7 +1673,7 @@ function lr(e, t) {
 		format: "emoji",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1683,7 +1683,7 @@ function ur(e, t) {
 		format: "nanoid",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1693,7 +1693,7 @@ function dr(e, t) {
 		format: "cuid",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1703,7 +1703,7 @@ function fr(e, t) {
 		format: "cuid2",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1713,7 +1713,7 @@ function pr(e, t) {
 		format: "ulid",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1723,7 +1723,7 @@ function mr(e, t) {
 		format: "xid",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1733,7 +1733,7 @@ function hr(e, t) {
 		format: "ksuid",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1743,7 +1743,7 @@ function gr(e, t) {
 		format: "ipv4",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1753,7 +1753,7 @@ function _r(e, t) {
 		format: "ipv6",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1763,7 +1763,7 @@ function vr(e, t) {
 		format: "cidrv4",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1773,7 +1773,7 @@ function yr(e, t) {
 		format: "cidrv6",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1783,7 +1783,7 @@ function br(e, t) {
 		format: "base64",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1793,7 +1793,7 @@ function xr(e, t) {
 		format: "base64url",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1803,7 +1803,7 @@ function Sr(e, t) {
 		format: "e164",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1813,7 +1813,7 @@ function Cr(e, t) {
 		format: "jwt",
 		check: "string_format",
 		abort: !1,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1825,7 +1825,7 @@ function wr(e, t) {
 		offset: !1,
 		local: !1,
 		precision: null,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1834,7 +1834,7 @@ function Tr(e, t) {
 		type: "string",
 		format: "date",
 		check: "string_format",
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1844,7 +1844,7 @@ function Er(e, t) {
 		format: "time",
 		check: "string_format",
 		precision: null,
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1853,7 +1853,7 @@ function Dr(e, t) {
 		type: "string",
 		format: "duration",
 		check: "string_format",
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1861,7 +1861,7 @@ function Or(e, t) {
 	return new e({
 		type: "number",
 		checks: [],
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1871,14 +1871,14 @@ function kr(e, t) {
 		check: "number_format",
 		abort: !1,
 		format: "safeint",
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
 function Ar(e, t) {
 	return new e({
 		type: "boolean",
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1889,14 +1889,14 @@ function jr(e) {
 function Mr(e, t) {
 	return new e({
 		type: "never",
-		...K(t)
+		...q(t)
 	});
 }
 // @__NO_SIDE_EFFECTS__
 function Nr(e, t) {
 	return new Ct({
 		check: "less_than",
-		...K(t),
+		...q(t),
 		value: e,
 		inclusive: !1
 	});
@@ -1905,7 +1905,7 @@ function Nr(e, t) {
 function Pr(e, t) {
 	return new Ct({
 		check: "less_than",
-		...K(t),
+		...q(t),
 		value: e,
 		inclusive: !0
 	});
@@ -1914,7 +1914,7 @@ function Pr(e, t) {
 function Fr(e, t) {
 	return new wt({
 		check: "greater_than",
-		...K(t),
+		...q(t),
 		value: e,
 		inclusive: !1
 	});
@@ -1923,7 +1923,7 @@ function Fr(e, t) {
 function Ir(e, t) {
 	return new wt({
 		check: "greater_than",
-		...K(t),
+		...q(t),
 		value: e,
 		inclusive: !0
 	});
@@ -1932,7 +1932,7 @@ function Ir(e, t) {
 function Lr(e, t) {
 	return new Tt({
 		check: "multiple_of",
-		...K(t),
+		...q(t),
 		value: e
 	});
 }
@@ -1940,7 +1940,7 @@ function Lr(e, t) {
 function Rr(e, t) {
 	return new Dt({
 		check: "max_length",
-		...K(t),
+		...q(t),
 		maximum: e
 	});
 }
@@ -1948,7 +1948,7 @@ function Rr(e, t) {
 function zr(e, t) {
 	return new Ot({
 		check: "min_length",
-		...K(t),
+		...q(t),
 		minimum: e
 	});
 }
@@ -1956,7 +1956,7 @@ function zr(e, t) {
 function Br(e, t) {
 	return new kt({
 		check: "length_equals",
-		...K(t),
+		...q(t),
 		length: e
 	});
 }
@@ -1965,7 +1965,7 @@ function Vr(e, t) {
 	return new jt({
 		check: "string_format",
 		format: "regex",
-		...K(t),
+		...q(t),
 		pattern: e
 	});
 }
@@ -1974,7 +1974,7 @@ function Hr(e) {
 	return new Mt({
 		check: "string_format",
 		format: "lowercase",
-		...K(e)
+		...q(e)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1982,7 +1982,7 @@ function Ur(e) {
 	return new Nt({
 		check: "string_format",
 		format: "uppercase",
-		...K(e)
+		...q(e)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -1990,7 +1990,7 @@ function Wr(e, t) {
 	return new Pt({
 		check: "string_format",
 		format: "includes",
-		...K(t),
+		...q(t),
 		includes: e
 	});
 }
@@ -1999,7 +1999,7 @@ function Gr(e, t) {
 	return new Ft({
 		check: "string_format",
 		format: "starts_with",
-		...K(t),
+		...q(t),
 		prefix: e
 	});
 }
@@ -2008,7 +2008,7 @@ function Kr(e, t) {
 	return new It({
 		check: "string_format",
 		format: "ends_with",
-		...K(t),
+		...q(t),
 		suffix: e
 	});
 }
@@ -2037,14 +2037,14 @@ function Zr() {
 }
 // @__NO_SIDE_EFFECTS__
 function Qr() {
-	return /* @__PURE__ */ qr((e) => U(e));
+	return /* @__PURE__ */ qr((e) => W(e));
 }
 // @__NO_SIDE_EFFECTS__
 function $r(e, t, n) {
 	return new e({
 		type: "array",
 		element: t,
-		...K(n)
+		...q(n)
 	});
 }
 // @__NO_SIDE_EFFECTS__
@@ -2053,16 +2053,16 @@ function ei(e, t, n) {
 		type: "custom",
 		check: "custom",
 		fn: t,
-		...K(n)
+		...q(n)
 	});
 }
 // @__NO_SIDE_EFFECTS__
 function ti(e, t) {
 	let n = /* @__PURE__ */ ni((t) => (t.addIssue = (e) => {
-		if (typeof e == "string") t.issues.push(q(e, t.value, n._zod.def));
+		if (typeof e == "string") t.issues.push(Ee(e, t.value, n._zod.def));
 		else {
 			let r = e;
-			r.fatal && (r.continue = !1), r.code ??= "custom", r.input ??= t.value, r.inst ??= n, r.continue ??= !n._zod.def.abort, t.issues.push(q(r));
+			r.fatal && (r.continue = !1), r.code ??= "custom", r.input ??= t.value, r.inst ??= n, r.continue ??= !n._zod.def.abort, t.issues.push(Ee(r));
 		}
 	}, e(t.value, t)), t);
 	return n;
@@ -2071,7 +2071,7 @@ function ti(e, t) {
 function ni(e, t) {
 	let n = new xt({
 		check: "custom",
-		...K(t)
+		...q(t)
 	});
 	return n._zod.check = e, n;
 }
@@ -2514,7 +2514,7 @@ var ea = /*@__PURE__*/ N("ZodType", (e, t) => (Bt.init(e, t), Object.assign(e["~
 } }), e.toJSONSchema = ci(e, {}), e.def = t, e.type = t.type, Object.defineProperty(e, "_def", { value: t }), e.parse = (t, n) => Bi(e, t, n, { callee: e.parse }), e.safeParse = (t, n) => Hi(e, t, n), e.parseAsync = async (t, n) => Vi(e, t, n, { callee: e.parseAsync }), e.safeParseAsync = async (t, n) => Ui(e, t, n), e.spa = e.safeParseAsync, e.encode = (t, n) => Wi(e, t, n), e.decode = (t, n) => Gi(e, t, n), e.encodeAsync = async (t, n) => Ki(e, t, n), e.decodeAsync = async (t, n) => qi(e, t, n), e.safeEncode = (t, n) => Ji(e, t, n), e.safeDecode = (t, n) => Yi(e, t, n), e.safeEncodeAsync = async (t, n) => Xi(e, t, n), e.safeDecodeAsync = async (t, n) => Zi(e, t, n), $i(e, "ZodType", {
 	check(...e) {
 		let t = this.def;
-		return this.clone(ie(t, { checks: [...t.checks ?? [], ...e.map((e) => typeof e == "function" ? { _zod: {
+		return this.clone(re(t, { checks: [...t.checks ?? [], ...e.map((e) => typeof e == "function" ? { _zod: {
 			check: e,
 			def: { check: "custom" },
 			onattach: []
@@ -2524,7 +2524,7 @@ var ea = /*@__PURE__*/ N("ZodType", (e, t) => (Bt.init(e, t), Object.assign(e["~
 		return this.check(...e);
 	},
 	clone(e, t) {
-		return de(this, e, t);
+		return ue(this, e, t);
 	},
 	brand() {
 		return this;
@@ -2815,7 +2815,7 @@ function La(e, t) {
 	return /* @__PURE__ */ $r(Ia, e, t);
 }
 var Ra = /*@__PURE__*/ N("ZodObject", (e, t) => {
-	En.init(e, t), ea.init(e, t), e._zod.processJSONSchema = (t, n, r) => bi(e, t, n, r), H(e, "shape", () => t.shape), $i(e, "ZodObject", {
+	En.init(e, t), ea.init(e, t), e._zod.processJSONSchema = (t, n, r) => bi(e, t, n, r), U(e, "shape", () => t.shape), $i(e, "ZodObject", {
 		keyof() {
 			return Ga(Object.keys(this._zod.def.shape));
 		},
@@ -2850,25 +2850,25 @@ var Ra = /*@__PURE__*/ N("ZodObject", (e, t) => {
 			});
 		},
 		extend(e) {
-			return ge(this, e);
-		},
-		safeExtend(e) {
-			return _e(this, e);
-		},
-		merge(e) {
-			return ve(this, e);
-		},
-		pick(e) {
-			return me(this, e);
-		},
-		omit(e) {
 			return he(this, e);
 		},
+		safeExtend(e) {
+			return ge(this, e);
+		},
+		merge(e) {
+			return _e(this, e);
+		},
+		pick(e) {
+			return pe(this, e);
+		},
+		omit(e) {
+			return me(this, e);
+		},
 		partial(...e) {
-			return ye(Xa, this, e[0]);
+			return ve(Xa, this, e[0]);
 		},
 		required(...e) {
-			return be(oo, this, e[0]);
+			return ye(oo, this, e[0]);
 		}
 	});
 });
@@ -2876,7 +2876,7 @@ function za(e, t) {
 	return new Ra({
 		type: "object",
 		shape: e ?? {},
-		...K(t)
+		...q(t)
 	});
 }
 var Ba = /*@__PURE__*/ N("ZodUnion", (e, t) => {
@@ -2886,7 +2886,7 @@ function Va(e, t) {
 	return new Ba({
 		type: "union",
 		options: e,
-		...K(t)
+		...q(t)
 	});
 }
 var Ha = /*@__PURE__*/ N("ZodIntersection", (e, t) => {
@@ -2909,7 +2909,7 @@ var Wa = /*@__PURE__*/ N("ZodEnum", (e, t) => {
 		return new Wa({
 			...t,
 			checks: [],
-			...K(r),
+			...q(r),
 			entries: i
 		});
 	}, e.exclude = (e, r) => {
@@ -2919,7 +2919,7 @@ var Wa = /*@__PURE__*/ N("ZodEnum", (e, t) => {
 		return new Wa({
 			...t,
 			checks: [],
-			...K(r),
+			...q(r),
 			entries: i
 		});
 	};
@@ -2928,7 +2928,7 @@ function Ga(e, t) {
 	return new Wa({
 		type: "enum",
 		entries: Array.isArray(e) ? Object.fromEntries(e.map((e) => [e, e])) : e,
-		...K(t)
+		...q(t)
 	});
 }
 var Ka = /*@__PURE__*/ N("ZodLiteral", (e, t) => {
@@ -2941,17 +2941,17 @@ function qa(e, t) {
 	return new Ka({
 		type: "literal",
 		values: Array.isArray(e) ? e : [e],
-		...K(t)
+		...q(t)
 	});
 }
 var Ja = /*@__PURE__*/ N("ZodTransform", (e, t) => {
 	Pn.init(e, t), ea.init(e, t), e._zod.processJSONSchema = (t, n, r) => vi(e, t, n, r), e._zod.parse = (n, r) => {
 		if (r.direction === "backward") throw new F(e.constructor.name);
 		n.addIssue = (r) => {
-			if (typeof r == "string") n.issues.push(q(r, n.value, t));
+			if (typeof r == "string") n.issues.push(Ee(r, n.value, t));
 			else {
 				let t = r;
-				t.fatal && (t.continue = !1), t.code ??= "custom", t.input ??= n.value, t.inst ??= e, n.issues.push(q(t));
+				t.fatal && (t.continue = !1), t.code ??= "custom", t.input ??= n.value, t.inst ??= e, n.issues.push(Ee(t));
 			}
 		};
 		let i = t.transform(n.value, n);
@@ -2999,7 +2999,7 @@ function ro(e, t) {
 		type: "default",
 		innerType: e,
 		get defaultValue() {
-			return typeof t == "function" ? t() : ce(t);
+			return typeof t == "function" ? t() : se(t);
 		}
 	});
 }
@@ -3011,7 +3011,7 @@ function ao(e, t) {
 		type: "prefault",
 		innerType: e,
 		get defaultValue() {
-			return typeof t == "function" ? t() : ce(t);
+			return typeof t == "function" ? t() : se(t);
 		}
 	});
 }
@@ -3022,7 +3022,7 @@ function so(e, t) {
 	return new oo({
 		type: "nonoptional",
 		innerType: e,
-		...K(t)
+		...q(t)
 	});
 }
 var co = /*@__PURE__*/ N("ZodCatch", (e, t) => {
@@ -3775,8 +3775,8 @@ var as = za({
 		id: "zweispaltig",
 		name: "Zweispaltig",
 		description: "Kostenlose, zweispaltige Lebenslauf-Vorlage. Perfekt für jede Branche.",
-		accent: "#165DAA",
-		secondary: "#EAF2FA",
+		accent: "#0B3D86",
+		secondary: "#58B5F7",
 		font: "Source Sans 3",
 		layout: "split-clean",
 		features: [
@@ -4169,8 +4169,13 @@ var as = za({
 		supportsAtsMode: !0,
 		supportsPhoto: !0,
 		supportsFreeform: !0,
+		supportsMultiplePages: !0,
 		atsInfo: "Tabellarisch-Template unterstützt ATS-Modus mit einspaltigem Layout und ausgeblendeten Designelementen wie Timeline-Grafiken.",
 		designDefaults: {
+			marginLevel: 3,
+			sectionSpacingLevel: 3,
+			fontSize: "medium",
+			lineHeightLevel: 3,
 			columnLayout: "timeline",
 			resumeOutputMode: "visual",
 			backgroundId: "white",
@@ -4300,8 +4305,9 @@ var gs = (e = "", t = 0) => ({
 		isVisible: e?.isVisible ?? !0
 	};
 }, Cs = 30, ws = 38, Ts = 3300, Es = {
-	firstPageCapacity: 35,
-	secondPageCapacity: 42
+	firstPageCapacity: 50,
+	secondPageCapacity: 54,
+	preserveItemOrder: !0
 }, Ds = {
 	firstPageCapacity: 43,
 	secondPageCapacity: 46
@@ -4309,24 +4315,32 @@ var gs = (e = "", t = 0) => ({
 	firstPageCapacity: 50,
 	secondPageCapacity: 54,
 	preserveItemOrder: !0
-}, ks = (e, t = 95) => Math.max(0, Math.ceil(e.trim().length / t)), As = (e) => 4 + ks(`${e.role} ${e.company}`, 70) + e.achievements.filter((e) => e.trim()).reduce((e, t) => e + 1 + ks(t), 0), js = (e) => 2 + ks(`${e.degree} ${e.institution}`, 80), Ms = (e, t) => {
+}, ks = {
+	firstPageCapacity: 48,
+	secondPageCapacity: 52,
+	preserveItemOrder: !0
+}, As = {
+	firstPageCapacity: 50,
+	secondPageCapacity: 54,
+	preserveItemOrder: !0
+}, js = (e, t = 95) => Math.max(0, Math.ceil(e.trim().length / t)), Ms = (e) => 4 + js(`${e.role} ${e.company}`, 70) + e.achievements.filter((e) => e.trim()).reduce((e, t) => e + 1 + js(t), 0), Ns = (e) => 2 + js(`${e.degree} ${e.institution}`, 80), Ps = (e, t) => {
 	if (!e) return 4;
 	let n = t || e.summary, r = bs(Ss(e.knowledgeSection, e.skills)).length;
-	return ks(n, 105) + Math.ceil(r / 3) + Math.ceil(e.languages.length / 2) + Math.ceil(e.certifications.length / 2);
-}, Ns = (e, t) => e > t * 1.3 ? "dense" : e > t * .9 ? "compact" : "standard", Ps = (e, t = "", n = {}) => {
+	return js(n, 105) + Math.ceil(r / 3) + Math.ceil(e.languages.length / 2) + Math.ceil(e.certifications.length / 2);
+}, Fs = (e, t) => e > t * 1.3 ? "dense" : e > t * .9 ? "compact" : "standard", Is = (e, t = "", n = {}) => {
 	let r = n.firstPageCapacity ?? Cs, i = n.secondPageCapacity ?? ws, a = [...(e?.experiences ?? []).map((e) => ({
 		kind: "experience",
 		id: e.id,
-		weight: As(e)
+		weight: Ms(e)
 	})), ...(e?.education ?? []).map((e) => ({
 		kind: "education",
 		id: e.id,
-		weight: js(e)
-	}))], o = a.reduce((e, t) => e + t.weight, 0), s = Math.max(o, Ms(e, t));
+		weight: Ns(e)
+	}))], o = a.reduce((e, t) => e + t.weight, 0), s = Math.max(o, Ps(e, t));
 	if (s <= r || a.length <= 1) return [{
 		pageNumber: 1,
 		items: a,
-		density: Ns(s, r)
+		density: Fs(s, r)
 	}];
 	let c = [], l = [], u = 0, d = !1;
 	for (let e of a) !d && (c.length === 0 || u + e.weight <= r) ? (c.push(e), u += e.weight) : (l.push(e), d = n.preserveItemOrder ?? !1);
@@ -4335,13 +4349,13 @@ var gs = (e = "", t = 0) => ({
 	return [{
 		pageNumber: 1,
 		items: c,
-		density: Ns(Math.max(u, Ms(e, t)), r)
+		density: Fs(Math.max(u, Ps(e, t)), r)
 	}, {
 		pageNumber: 2,
 		items: l,
-		density: Ns(f, i)
+		density: Fs(f, i)
 	}];
-}, Fs = (e) => {
+}, Ls = (e) => {
 	let t = [
 		e.coverSubject,
 		e.coverIntroduction,
@@ -4356,13 +4370,13 @@ var gs = (e = "", t = 0) => ({
 		density: t > Ts ? "dense" : t > 2500 ? "compact" : "standard",
 		isOverRecommendedLength: t > Ts
 	};
-}, Is = /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=\s]+$/i, Ls = (e) => e && Is.test(e) ? e : "", $ = (e = "") => e.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#039;"), Rs = (e = "") => {
+}, Rs = /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=\s]+$/i, zs = (e) => e && Rs.test(e) ? e : "", $ = (e = "") => e.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#039;"), Bs = (e = "") => {
 	let t = e.trim();
 	return t ? /^https?:\/\//i.test(t) ? t : `https://${t.replace(/^[a-z][a-z\d+.-]*:(?:\/\/)?/i, "")}` : "";
-}, zs = (e) => Array.from(new Set(e.map((e) => e.trim()).filter(Boolean))), Bs = (e, t) => {
+}, Vs = (e) => Array.from(new Set(e.map((e) => e.trim()).filter(Boolean))), Hs = (e, t) => {
 	let n = e.trim(), r = t.trim();
 	return n ? r ? `${n} – ${r}` : n : r;
-}, Vs = (e, t) => e.backgroundId === "programming-languages-bg" && !t ? `<div class="document-background-layer programming-languages-layer" aria-hidden="true">${To.map((e) => `<span>${$(e)}</span>`).join("")}</div>` : "", Hs = (e, t, n) => {
+}, Us = (e, t) => e.backgroundId === "programming-languages-bg" && !t ? `<div class="document-background-layer programming-languages-layer" aria-hidden="true">${To.map((e) => `<span>${$(e)}</span>`).join("")}</div>` : "", Ws = (e, t, n) => {
 	let r = vs(e);
 	if (!r.length) return "";
 	let i = r.map((e) => ys(e, t.showLevels, t.showYearsOfExperience, n));
@@ -4374,33 +4388,33 @@ var gs = (e = "", t = 0) => ({
 	}).join("")}</div>`;
 	let a = n === "bullets" ? "ul" : "div";
 	return `<${a} class="knowledge-lines ${n}">${i.map((e) => n === "bullets" ? `<li>${$(e)}</li>` : `<p>${$(e)}</p>`).join("")}</${a}>`;
-}, Us = (e, t) => {
+}, Gs = (e, t) => {
 	if (!e) return "";
 	let n = Ss(e.knowledgeSection, e.skills);
 	if (!n.isVisible) return "";
 	let r = n.categories.filter((e) => e.isVisible).sort((e, t) => e.sortOrder - t.sortOrder).map((e) => {
-		let n = t ? "comma-separated" : e.displayMode, r = Hs(e.items, e, n), i = e.subcategories.filter((e) => e.isVisible).sort((e, t) => e.sortOrder - t.sortOrder).map((r) => {
-			let i = Hs(r.items, e, t ? "comma-separated" : r.displayMode ?? n);
+		let n = t ? "comma-separated" : e.displayMode, r = Ws(e.items, e, n), i = e.subcategories.filter((e) => e.isVisible).sort((e, t) => e.sortOrder - t.sortOrder).map((r) => {
+			let i = Ws(r.items, e, t ? "comma-separated" : r.displayMode ?? n);
 			return i ? `<div class="knowledge-subcategory"><h5>${$(r.title)}</h5>${i}</div>` : "";
 		}).join("");
 		return !r && !i ? "" : `<div class="knowledge-category"><h4>${$(e.title)}</h4>${e.subtitle ? `<small>${$(e.subtitle)}</small>` : ""}${r}${i}</div>`;
 	}).join(""), i = t ? "Kenntnisse" : n.title;
 	return r ? `<section class="knowledge-section"><h3>${$(i)}</h3>${r}</section>` : "";
-}, Ws = (e) => e ? `${e.firstName} ${e.lastName}`.trim() : "Vorname Nachname", Gs = (e) => [e.contact.firstName, e.contact.lastName].filter(Boolean).join(" "), Ks = (e) => {
-	let t = Gs(e);
+}, Ks = (e) => e ? `${e.firstName} ${e.lastName}`.trim() : "Vorname Nachname", qs = (e) => [e.contact.firstName, e.contact.lastName].filter(Boolean).join(" "), Js = (e) => {
+	let t = qs(e);
 	return t ? e.contact.salutation === "Frau" ? `Sehr geehrte Frau ${e.contact.lastName}` : e.contact.salutation === "Herr" ? `Sehr geehrter Herr ${e.contact.lastName}` : `Guten Tag ${t}` : "Sehr geehrte Damen und Herren";
-}, qs = (e) => [
+}, Ys = (e) => [
 	e.company.name,
-	Gs(e),
+	qs(e),
 	e.company.street,
 	`${e.company.postalCode} ${e.company.city}`.trim()
-].filter(Boolean).map($).join("<br>"), Js = (e) => e ? [
-	Ws(e),
+].filter(Boolean).map($).join("<br>"), Xs = (e) => e ? [
+	Ks(e),
 	e.street,
 	`${e.postalCode} ${e.city}`.trim(),
 	e.phone,
 	e.email
-].filter(Boolean).map($).join(" · ") : "Bitte unter Profile Ihre Absenderdaten ergänzen.", Ys = (e, t, n, r) => {
+].filter(Boolean).map($).join(" · ") : "Bitte unter Profile Ihre Absenderdaten ergänzen.", Zs = (e, t, n, r) => {
 	let i = jo(r.fontId), a = jo(r.headingFontId);
 	return `
   :root{--accent:${e};--secondary:${t};--on-secondary:${n};--ink:#172026;--muted:#5c6870;--line:#d9e0e3;--doc-margin:${Eo[r.marginLevel]}mm;--section-gap:${Oo[r.sectionSpacingLevel]}mm;--body-size:${Ao[r.fontSize]}pt;--body-line:${ko[r.lineHeightLevel]};--body-font:${i.family};--heading-font:${a.family};--heading-weight:${a.headingWeight}}
@@ -4463,20 +4477,20 @@ var gs = (e = "", t = 0) => ({
   .cv-entry,.cv-page section,.signature{break-inside:avoid;page-break-inside:avoid}.cv-page section>h3{break-after:avoid;page-break-after:avoid}
   @media print{body{background:#fff}.page{margin:0}.no-print-background{background:#fff!important}.no-print-background .document-background-layer{display:none!important}}
 `;
-}, Xs = "\n  .elegant-pdf{--elegant-heading:#3b4247;--elegant-text:#4b5359;--elegant-muted:#6d757a;--elegant-line:#b9bfc3;--elegant-sidebar-muted:#e2e9ef;display:grid;grid-template-columns:minmax(0,140mm) 70mm;width:100%;height:100%;color:var(--elegant-text);background:#fff;font-family:var(--body-font)}\n  .elegant-pdf *{box-sizing:border-box}\n  .elegant-pdf-main{position:relative;min-width:0;height:100%;padding:max(14mm,calc(var(--doc-margin) - 2mm)) max(10mm,calc(var(--doc-margin) - 6mm)) max(13mm,calc(var(--doc-margin) - 4mm)) var(--doc-margin);overflow:hidden;background:#fff}\n  .elegant-pdf-header{position:relative;padding-bottom:5mm;border-bottom:.35mm solid var(--elegant-line)}\n  .elegant-pdf-header:after{position:absolute;bottom:-.35mm;left:0;width:27mm;height:.7mm;background:var(--accent);content:\"\"}\n  .elegant-pdf-header .kicker{margin:0 0 2.2mm;font-size:7.7pt}\n  .elegant-pdf-header h1{margin:0;color:var(--elegant-heading);font-size:22pt;font-weight:500;letter-spacing:.01em;line-height:1.05;text-transform:uppercase;overflow-wrap:anywhere}\n  .elegant-pdf-header h2{margin:2mm 0 0;color:var(--accent);font-size:12pt;font-weight:400;line-height:1.25;overflow-wrap:anywhere}\n  .elegant-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.2mm 6mm;margin:3.3mm 0 0;color:var(--elegant-text);font-size:8pt;font-style:normal;line-height:1.3}\n  .elegant-pdf-contacts a,.elegant-pdf-contacts span{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:1.5mm;min-width:0;color:inherit;text-decoration:none}\n  .elegant-pdf-contacts strong{color:var(--elegant-heading)}\n  .elegant-pdf-contacts i{min-width:0;font-style:normal;overflow-wrap:anywhere}\n  .elegant-pdf-section{margin-top:var(--section-gap)}\n  .elegant-pdf-section>h3,.elegant-pdf-ats .knowledge-section>h3{display:flex;align-items:baseline;gap:2.5mm;margin:0 0 3.2mm;color:var(--elegant-heading);font-size:12pt;font-weight:500;letter-spacing:.055em;line-height:1.1;text-transform:uppercase}\n  .elegant-pdf-section>h3:after,.elegant-pdf-ats .knowledge-section>h3:after{flex:1;height:.3mm;background:linear-gradient(90deg,var(--accent),var(--elegant-line));content:\"\"}\n  .elegant-pdf-list{display:flex;flex-direction:column;gap:5mm}\n  .elegant-pdf-entry{break-inside:avoid;page-break-inside:avoid}\n  .elegant-pdf-entry-head{display:grid;grid-template-columns:minmax(0,1fr) max-content;gap:5mm;align-items:start}\n  .elegant-pdf-entry-head h4{margin:0;color:var(--elegant-heading);font-family:var(--heading-font);font-size:11pt;font-weight:500;line-height:1.2;overflow-wrap:anywhere}\n  .elegant-pdf-entry-head p{margin:.8mm 0 0;color:var(--accent);font-size:11pt;font-weight:400;line-height:1.2;overflow-wrap:anywhere}\n  .elegant-pdf-entry-meta{min-width:24mm;color:var(--elegant-muted);font-size:8pt;line-height:1.3;text-align:right}\n  .elegant-pdf-entry-meta strong,.elegant-pdf-entry-meta span{display:block}\n  .elegant-pdf-entry-meta span{margin-top:.6mm;overflow-wrap:anywhere}\n  .elegant-pdf-entry ul{margin:1.8mm 0 0;padding-left:4.5mm}\n  .elegant-pdf-entry li{margin:.6mm 0;padding-left:.4mm;color:var(--elegant-text);font-size:var(--body-size);line-height:var(--body-line)}\n  .elegant-pdf-entry li::marker{color:var(--accent)}\n  .elegant-pdf-sidebar{display:flex;flex-direction:column;gap:var(--section-gap);min-width:0;height:100%;padding:max(13mm,calc(var(--doc-margin) - 3mm)) max(12mm,calc(var(--doc-margin) - 5mm));overflow:hidden;color:#fff;background:var(--secondary)}\n  .elegant-pdf-photo{display:block;width:27mm;height:27mm;margin:0 auto 12mm;overflow:hidden;border-radius:1.5mm;background:color-mix(in srgb,var(--secondary),white 12%);object-fit:cover}\n  .elegant-pdf-sidebar section{margin:0;break-inside:avoid;page-break-inside:avoid}\n  .elegant-pdf-sidebar section>h3{position:relative;margin:0 0 2.4mm;padding-bottom:1.6mm;border:0;color:#fff;font-size:11.5pt;font-weight:400;letter-spacing:.075em;line-height:1.15;text-transform:uppercase}\n  .elegant-pdf-sidebar section>h3:after{position:absolute;bottom:0;left:0;width:14mm;height:.45mm;background:var(--accent);content:\"\"}\n  .elegant-pdf-sidebar section p,.elegant-pdf-sidebar section li{color:var(--elegant-sidebar-muted);font-size:var(--body-size);line-height:var(--body-line)}\n  .elegant-pdf-sidebar section p{margin:0}\n  .elegant-pdf-sidebar section ul{margin:0;padding-left:4mm}\n  .elegant-pdf-sidebar .knowledge-category{margin-bottom:2.5mm}\n  .elegant-pdf-sidebar .knowledge-category h4,.elegant-pdf-sidebar .knowledge-subcategory h5{color:#fff;font-size:8.7pt}\n  .elegant-pdf-sidebar .knowledge-tags span{border-color:color-mix(in srgb,white,transparent 50%);color:#fff}\n  .elegant-pdf-strengths{display:grid;gap:3mm}\n  .elegant-pdf-strength{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:2mm;align-items:start}\n  .elegant-pdf-strength i{display:grid;width:4mm;height:4mm;place-items:center;border:.25mm solid color-mix(in srgb,white,transparent 45%);border-radius:50%;color:#fff;font-size:7pt;font-style:normal;line-height:1}\n  .elegant-pdf-strength span{color:var(--elegant-sidebar-muted);font-size:var(--body-size);line-height:var(--body-line);overflow-wrap:anywhere}\n  .elegant-pdf-continuation .kicker{color:var(--accent);font-size:8pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}\n  .elegant-pdf-continuation h2{margin:3.5mm 0 0;color:#fff;font-size:18pt;line-height:1.05;overflow-wrap:anywhere}\n  .elegant-pdf-continuation p{margin:1.8mm 0 0;color:var(--elegant-sidebar-muted)}\n  .elegant-pdf-continuation hr{width:18mm;height:.6mm;margin:6mm 0;border:0;background:var(--accent)}\n  .elegant-pdf-continuation a{display:block;margin-top:1.7mm;color:#fff;font-size:8.3pt;text-decoration:none;overflow-wrap:anywhere}\n  .elegant-pdf-footer{position:absolute;right:max(10mm,calc(var(--doc-margin) - 6mm));bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;padding-top:1.7mm;border-top:.25mm solid var(--elegant-line);color:var(--elegant-muted);font-size:7.2pt}\n  .elegant-pdf-footer a{color:var(--accent);text-decoration:none}\n  .elegant-pdf-footer span:last-child{margin-left:auto}\n  .elegant-pdf-ats{--elegant-heading:#3b4247;--elegant-text:#4b5359;--elegant-muted:#6d757a;--elegant-line:#b9bfc3;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--elegant-text);background:#fff}\n  .elegant-pdf-ats .elegant-pdf-header:after{display:none}\n  .elegant-pdf-ats .elegant-pdf-contacts{display:block}\n  .elegant-pdf-ats .elegant-pdf-contacts a,.elegant-pdf-ats .elegant-pdf-contacts span{display:block;margin-top:.8mm}\n  .elegant-pdf-ats .elegant-pdf-contacts strong{margin-right:1.5mm}\n  .elegant-pdf-ats .elegant-pdf-entry-head{display:block}\n  .elegant-pdf-ats .elegant-pdf-entry-meta{margin-top:.8mm;text-align:left}\n  .elegant-pdf-ats .elegant-pdf-entry-meta strong,.elegant-pdf-ats .elegant-pdf-entry-meta span{display:inline}\n  .elegant-pdf-ats .elegant-pdf-entry-meta span:before{content:\" · \"}\n  .elegant-pdf-ats .knowledge-section{margin-top:var(--section-gap)}\n  .elegant-pdf-ats .knowledge-category h4,.elegant-pdf-ats .knowledge-subcategory h5{color:var(--elegant-heading)}\n", Zs = "\n  .zweispaltig-pdf{--zweispaltig-heading:#253746;--zweispaltig-text:#3f4d59;--zweispaltig-muted:#6b7782;--zweispaltig-divider:#9db7d1;position:relative;width:100%;height:100%;padding:max(14mm,calc(var(--doc-margin) - 3mm)) var(--doc-margin) max(13mm,calc(var(--doc-margin) - 4mm));overflow:hidden;color:var(--zweispaltig-text);background:#fff;font-family:var(--body-font)}\n  .zweispaltig-pdf *{box-sizing:border-box}\n  .zweispaltig-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8mm;padding-bottom:4.5mm;border-bottom:.4mm solid var(--zweispaltig-divider)}\n  .zweispaltig-pdf-header h1{margin:0;color:var(--accent);font-size:24pt;font-weight:750;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}\n  .zweispaltig-pdf-header h2{margin:1.5mm 0 0;color:var(--zweispaltig-heading);font-size:10.5pt;font-weight:650;letter-spacing:.055em;line-height:1.2;text-transform:uppercase;overflow-wrap:anywhere}\n  .zweispaltig-pdf-specializations{margin:1.4mm 0 0;color:color-mix(in srgb,var(--accent),#123f72 48%);font-size:8pt;font-weight:650;letter-spacing:.035em;line-height:1.25}\n  .zweispaltig-pdf-contacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.1mm 5mm;margin:3.2mm 0 0;color:var(--zweispaltig-muted);font-size:7.5pt;font-style:normal;line-height:1.2}\n  .zweispaltig-pdf-contacts a,.zweispaltig-pdf-contacts span{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:1.2mm;min-width:0;color:inherit;text-decoration:none}\n  .zweispaltig-pdf-contacts strong{color:var(--zweispaltig-heading)}\n  .zweispaltig-pdf-contacts i{min-width:0;font-style:normal;overflow-wrap:anywhere}\n  .zweispaltig-pdf-photo{display:block;width:23mm;height:23mm;overflow:hidden;border:.45mm solid var(--accent);border-radius:50%;background:color-mix(in srgb,var(--accent),white 90%);object-fit:cover}\n  .zweispaltig-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1.5mm 4mm;padding-bottom:3.5mm}\n  .zweispaltig-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--accent);font-size:7.3pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}\n  .zweispaltig-pdf-header.compact h1{font-size:15pt}\n  .zweispaltig-pdf-header.compact h2{margin:0;color:var(--zweispaltig-muted);font-size:8.6pt}\n  .zweispaltig-pdf-columns{display:grid;grid-template-columns:minmax(0,62%) minmax(0,38%)}\n  .zweispaltig-pdf-columns.continuation{grid-template-columns:minmax(0,1fr)}\n  .zweispaltig-pdf-main{min-width:0;padding-right:8mm}\n  .zweispaltig-pdf-sidebar{min-width:0;padding-left:8mm;border-left:.35mm solid var(--zweispaltig-divider)}\n  .zweispaltig-pdf-section,.zweispaltig-pdf-sidebar>section,.zweispaltig-pdf-sidebar>.knowledge-section{margin-top:var(--section-gap);break-inside:avoid;page-break-inside:avoid}\n  .zweispaltig-pdf-section>h3,.zweispaltig-pdf-sidebar section>h3,.zweispaltig-pdf-ats section>h3,.zweispaltig-pdf-ats .knowledge-section>h3{margin:0 0 2.5mm;padding-bottom:1.2mm;border-bottom:.45mm solid var(--accent);color:var(--accent);font-size:10.5pt;font-weight:750;letter-spacing:.075em;line-height:1.1;text-transform:uppercase}\n  .zweispaltig-pdf-summary{margin:0;hyphens:auto;overflow-wrap:break-word}\n  .zweispaltig-pdf-list{display:flex;flex-direction:column;gap:4.5mm}\n  .zweispaltig-pdf-entry{break-inside:avoid;page-break-inside:avoid}\n  .zweispaltig-pdf-entry-head{display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:start;gap:4mm}\n  .zweispaltig-pdf-entry-head h4{margin:0;color:var(--zweispaltig-heading);font-size:9.7pt;font-weight:750;line-height:1.18;overflow-wrap:anywhere}\n  .zweispaltig-pdf-entry-head p{margin:.7mm 0 0;color:var(--accent);font-size:8.5pt;font-weight:650;line-height:1.18;overflow-wrap:anywhere}\n  .zweispaltig-pdf-entry-meta{min-width:25mm;color:var(--zweispaltig-muted);font-size:7.5pt;line-height:1.25;text-align:right}\n  .zweispaltig-pdf-entry-meta strong,.zweispaltig-pdf-entry-meta span{display:block}\n  .zweispaltig-pdf-entry-meta span{margin-top:.5mm;overflow-wrap:anywhere}\n  .zweispaltig-pdf-entry ul,.zweispaltig-pdf-sidebar ul,.zweispaltig-pdf-ats ul{margin:1.5mm 0 0;padding-left:4.5mm}\n  .zweispaltig-pdf-entry li,.zweispaltig-pdf-sidebar li,.zweispaltig-pdf-ats li{margin:.5mm 0;padding-left:.3mm;hyphens:auto;overflow-wrap:break-word}\n  .zweispaltig-pdf-entry li::marker,.zweispaltig-pdf-sidebar li::marker,.zweispaltig-pdf-ats li::marker{color:var(--accent)}\n  .zweispaltig-pdf-sidebar .knowledge-category{margin-bottom:2.3mm}\n  .zweispaltig-pdf-sidebar .knowledge-category h4,.zweispaltig-pdf-sidebar .knowledge-subcategory h5{color:var(--zweispaltig-heading);font-size:8.4pt}\n  .zweispaltig-pdf-sidebar .knowledge-section p,.zweispaltig-pdf-sidebar .knowledge-section li{font-size:var(--body-size);line-height:var(--body-line)}\n  .zweispaltig-pdf-strengths{display:grid;gap:2.2mm}\n  .zweispaltig-pdf-strength{display:grid;grid-template-columns:4.2mm minmax(0,1fr);align-items:start;gap:1.7mm}\n  .zweispaltig-pdf-strength i{display:grid;width:3.8mm;height:3.8mm;place-items:center;border-radius:50%;color:#fff;background:var(--accent);font-size:6.8pt;font-style:normal;font-weight:800;line-height:1}\n  .zweispaltig-pdf-strength span{color:var(--zweispaltig-heading);font-size:var(--body-size);font-weight:650;line-height:1.25;overflow-wrap:anywhere}\n  .zweispaltig-pdf-footer{position:absolute;right:var(--doc-margin);bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;padding-top:1.4mm;border-top:.25mm solid var(--zweispaltig-divider);color:var(--zweispaltig-muted);font-size:7pt}\n  .zweispaltig-pdf-footer a{color:var(--accent);text-decoration:none;overflow-wrap:anywhere}\n  .zweispaltig-pdf-footer span:last-child{margin-left:auto}\n  .zweispaltig-pdf-ats{--zweispaltig-heading:#263641;--zweispaltig-text:#303c44;--zweispaltig-muted:#6b7782;--zweispaltig-divider:#c8d0d6;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--zweispaltig-text);background:#fff}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-header{display:block}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-contacts{display:block}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-contacts a,.zweispaltig-pdf-ats .zweispaltig-pdf-contacts span{display:block;margin-top:.7mm}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-contacts strong{margin-right:1.3mm}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-head{display:block}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta{margin-top:.7mm;text-align:left}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta strong,.zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta span{display:inline}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta span:before{content:\" · \"}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-section>h3,.zweispaltig-pdf-ats section>h3,.zweispaltig-pdf-ats .knowledge-section>h3{border-bottom-color:var(--zweispaltig-divider)}\n", Qs = "\n  .zeit-pdf{--zeit-dark:#075e4e;--zeit-soft:#cbeccd;--zeit-pale:#e5f5ec;--zeit-heading:#374247;--zeit-text:#434d52;--zeit-muted:#687277;--zeit-divider:#d5deda;position:relative;width:100%;height:100%;padding:max(15mm,calc(var(--doc-margin) - 2mm)) var(--doc-margin) max(14mm,calc(var(--doc-margin) - 3mm));overflow:hidden;color:var(--zeit-text);background:#fff;font-family:var(--body-font)}\n  .zeit-pdf *{box-sizing:border-box}\n  .zeit-pdf-header{display:grid;grid-template-columns:minmax(0,28.4%) minmax(0,6.25%) minmax(0,65.35%);min-height:42mm;margin-bottom:5.5mm}\n  .zeit-pdf-identity{grid-column:3;min-width:0;padding-top:4mm}\n  .zeit-pdf-identity h1{margin:0;color:var(--zeit-heading);font-size:25pt;font-weight:350;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}\n  .zeit-pdf-identity h2{display:inline-block;max-width:100%;margin:4mm 0 0;padding:2.6mm 4mm;border-radius:3.8mm;color:var(--zeit-dark);background:var(--zeit-soft);font-size:12.5pt;font-weight:600;letter-spacing:.045em;line-height:1.15;text-transform:uppercase;overflow-wrap:anywhere}\n  .zeit-pdf-photo-composition{position:relative;grid-column:1;width:50mm;max-width:100%;height:42mm}\n  .zeit-pdf-photo-composition span{position:absolute;display:block}\n  .zeit-pdf-photo-pale{top:1mm;left:0;width:42mm;height:39mm;border-radius:48% 52% 45% 55%/57% 40% 60% 43%;background:var(--zeit-pale);transform:rotate(-13deg)}\n  .zeit-pdf-photo-soft{top:-2mm;right:0;width:31mm;height:30mm;border-radius:58% 42% 62% 38%/44% 62% 38% 56%;background:color-mix(in srgb,var(--zeit-soft),var(--accent) 15%);transform:rotate(17deg)}\n  .zeit-pdf-photo-accent{right:2mm;bottom:0;width:24mm;height:23mm;border-radius:54% 46% 44% 56%/41% 55% 45% 59%;background:var(--accent);opacity:.92;transform:rotate(-11deg)}\n  .zeit-pdf-photo{position:absolute;top:3mm;left:5mm;z-index:2;display:block;width:36mm;height:36mm;border:1.8mm solid #fff;border-radius:50%;object-fit:cover}\n  .zeit-pdf-header.no-photo{min-height:29mm}.zeit-pdf-header.no-photo .zeit-pdf-identity{grid-column:1/-1;padding-top:0}\n  .zeit-pdf-header.compact{display:block;min-height:auto;margin-bottom:5mm;padding-bottom:3mm;border-bottom:.35mm solid var(--zeit-divider)}\n  .zeit-pdf-header.compact .zeit-pdf-identity{padding:0}.zeit-pdf-header.compact .kicker{margin:0 0 1.5mm;color:var(--zeit-dark);font-size:7.3pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}\n  .zeit-pdf-header.compact h1{font-size:15pt;font-weight:600}.zeit-pdf-header.compact h2{margin:0 0 0 3mm;padding:0;color:var(--zeit-muted);background:transparent;font-size:8.5pt}\n  .zeit-pdf-columns{position:relative;display:grid;grid-template-columns:minmax(0,28.4%) minmax(0,6.25%) minmax(0,65.35%)}\n  .zeit-pdf-columns:before{position:absolute;top:0;bottom:0;left:31.525%;width:.3mm;background:color-mix(in srgb,var(--accent),transparent 64%);content:\"\"}\n  .zeit-pdf-columns.continuation{display:block}.zeit-pdf-columns.continuation:before{display:none}\n  .zeit-pdf-left{grid-column:1;min-width:0}.zeit-pdf-main{grid-column:3;min-width:0}\n  .zeit-pdf-section,.zeit-pdf-left>section{margin-top:var(--section-gap);break-inside:avoid;page-break-inside:avoid}\n  .zeit-pdf-left>section:first-child,.zeit-pdf-main>.zeit-pdf-section:first-child{margin-top:0}\n  .zeit-pdf-heading{display:flex;align-items:center;gap:2mm;margin:0 0 3mm;padding-bottom:1.4mm;border-bottom:.45mm solid var(--accent)}\n  .zeit-pdf-heading i{display:grid;flex:none;width:6.5mm;height:6.5mm;place-items:center;border-radius:1.5mm;color:var(--zeit-dark);background:var(--zeit-soft);font-size:8pt;font-style:normal;font-weight:700}\n  .zeit-pdf-heading h3{margin:0;color:var(--zeit-dark);font-size:11pt;font-weight:750;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}\n  .zeit-pdf-summary{margin:0;color:var(--zeit-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}\n  .zeit-pdf-contacts{display:grid;gap:2.3mm}\n  .zeit-pdf-contact{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;min-width:0;color:inherit;font-size:var(--body-size);line-height:1.25;text-decoration:none}\n  .zeit-pdf-contact i{color:var(--zeit-dark);font-size:7.2pt;font-style:normal;font-weight:750;text-align:center}.zeit-pdf-contact span{overflow-wrap:anywhere}\n  .zeit-pdf-strengths{display:grid;gap:2.5mm}.zeit-pdf-strength{display:grid;grid-template-columns:3.5mm minmax(0,1fr);gap:1.5mm;align-items:start}\n  .zeit-pdf-strength i{width:2mm;height:2mm;margin-top:1.2mm;border-radius:50%;background:var(--accent)}.zeit-pdf-strength span{color:var(--zeit-heading);font-size:9pt;font-weight:700;line-height:1.2;overflow-wrap:anywhere}\n  .zeit-pdf-languages{display:grid;gap:3mm}.zeit-pdf-language h4{margin:0;color:var(--zeit-dark);font-size:8.8pt;font-weight:750;text-transform:uppercase}.zeit-pdf-language>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2mm;margin-top:1mm;color:var(--zeit-muted);font-size:7.8pt}\n  .zeit-pdf-dots{display:flex;gap:.7mm}.zeit-pdf-dots i{display:block;width:1.35mm;height:1.35mm;border:.25mm solid var(--zeit-muted);border-radius:50%}.zeit-pdf-dots i.filled{border-color:var(--zeit-dark);background:var(--zeit-dark)}\n  .zeit-pdf-list{display:flex;flex-direction:column;gap:5mm}.zeit-pdf-entry{break-inside:avoid;page-break-inside:avoid}\n  .zeit-pdf-entry-top,.zeit-pdf-entry-role{display:grid;grid-template-columns:minmax(0,1fr) minmax(25mm,35mm);gap:5mm;align-items:start}\n  .zeit-pdf-entry-top h4,.zeit-pdf-entry-role h5{margin:0;overflow-wrap:anywhere}.zeit-pdf-entry-top h4{color:var(--zeit-dark);font-size:10.5pt;font-weight:750;line-height:1.2;text-transform:uppercase}\n  .zeit-pdf-entry-top span,.zeit-pdf-entry-role span{color:var(--zeit-muted);font-size:7.8pt;line-height:1.2;text-align:right;overflow-wrap:anywhere}\n  .zeit-pdf-entry-role{margin-top:.8mm}.zeit-pdf-entry-role h5{color:var(--zeit-heading);font-size:9.2pt;font-weight:600;line-height:1.2}\n  .zeit-pdf-entry ul,.zeit-pdf-left ul,.zeit-pdf-ats ul{margin:1.5mm 0 0;padding-left:4.5mm}.zeit-pdf-entry li,.zeit-pdf-left li,.zeit-pdf-ats li{margin:.5mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.zeit-pdf-entry li::marker,.zeit-pdf-left li::marker,.zeit-pdf-ats li::marker{color:var(--accent)}\n  .zeit-pdf-footer{position:absolute;right:var(--doc-margin);bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;color:var(--zeit-muted);font-size:7.2pt}.zeit-pdf-footer a{color:var(--zeit-dark);text-decoration:none}.zeit-pdf-footer span:last-child{margin-left:auto}\n  .zeit-pdf-ats{--zeit-dark:#075e4e;--zeit-heading:#263a35;--zeit-text:#303c39;--zeit-muted:#687277;--zeit-divider:#ccd6d2;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--zeit-text);background:#fff}\n  .zeit-pdf-ats .zeit-pdf-header{display:block;min-height:auto;margin:0;padding-bottom:4mm;border-bottom:.35mm solid var(--zeit-divider)}.zeit-pdf-ats .zeit-pdf-identity{padding:0}.zeit-pdf-ats .zeit-pdf-identity h1{font-size:20pt;font-weight:600}.zeit-pdf-ats .zeit-pdf-identity h2{margin:1.5mm 0 0;padding:0;background:transparent;font-size:10pt}\n  .zeit-pdf-ats-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 5mm;margin-top:3mm;font-size:7.8pt;font-style:normal}.zeit-pdf-ats-contacts a,.zeit-pdf-ats-contacts span{color:inherit;text-decoration:none;overflow-wrap:anywhere}\n  .zeit-pdf-ats .zeit-pdf-heading i{display:none}.zeit-pdf-ats .zeit-pdf-heading{gap:0;border-bottom-color:var(--zeit-divider)}\n  .zeit-pdf-ats>section,.zeit-pdf-ats .knowledge-section{margin-top:var(--section-gap)}.zeit-pdf-ats>section>h3,.zeit-pdf-ats .knowledge-section>h3{margin:0 0 3mm;padding-bottom:1.4mm;border-bottom:.45mm solid var(--zeit-divider);color:var(--zeit-dark);font-size:11pt;font-weight:750;text-transform:uppercase}\n", $s = "\n  .kreativ-pdf{--kreativ-dark:#075d4e;--kreativ-text:#465156;--kreativ-muted:#687277;--kreativ-divider:#b8c4c0;--kreativ-light:#d7dfdc;--kreativ-inactive:#e1e5e3;--kreativ-margin:calc(var(--doc-margin) + 1mm);position:relative;width:100%;height:100%;overflow:hidden;color:var(--kreativ-text);background:#fff;font-family:var(--body-font)}\n  .kreativ-pdf *{box-sizing:border-box}\n  .kreativ-pdf-header{position:relative;z-index:3;display:grid;grid-template-columns:minmax(0,1fr) 28mm;align-items:center;gap:10mm;width:100%;height:46mm;padding:8mm var(--kreativ-margin) 6mm;color:#fff;background:var(--accent)}\n  .kreativ-pdf-identity{min-width:0}.kreativ-pdf-identity h1{margin:0;color:inherit;font-size:23pt;font-weight:750;letter-spacing:.015em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.kreativ-pdf-identity h2{margin:1.5mm 0 0;color:inherit;font-size:11.5pt;font-weight:650;line-height:1.15;overflow-wrap:anywhere}\n  .kreativ-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 8mm;max-width:118mm;margin:2.5mm 0 0;font-size:7.4pt;font-style:normal;line-height:1.15}.kreativ-pdf-contacts a,.kreativ-pdf-contacts span{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:1.2mm;min-width:0;color:inherit;text-decoration:none}.kreativ-pdf-contacts i{font-style:normal;overflow-wrap:anywhere}\n  .kreativ-pdf-photo{display:block;width:28mm;height:29mm;overflow:hidden;border:1.8mm solid rgba(255,255,255,.88);border-radius:1.8mm;background:rgba(255,255,255,.18);object-fit:cover}\n  .kreativ-pdf-header.no-photo{grid-template-columns:minmax(0,1fr)}\n  .kreativ-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1.5mm 4mm;height:auto;min-height:24mm;padding:12mm var(--kreativ-margin) 4mm;color:var(--kreativ-dark);background:#fff;border-bottom:.4mm solid var(--kreativ-divider)}\n  .kreativ-pdf-header.compact .kreativ-pdf-identity{display:contents}.kreativ-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--accent);font-size:7.3pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}.kreativ-pdf-header.compact h1{font-size:15pt}.kreativ-pdf-header.compact h2{margin:0;color:var(--kreativ-muted);font-size:8.7pt}\n  .kreativ-pdf-background{position:absolute;top:49mm;right:-13mm;z-index:1;width:78mm;height:78mm;fill:none;stroke:color-mix(in srgb,var(--accent),transparent 83%);stroke-width:1.2;pointer-events:none}\n  .kreativ-pdf-content{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,58.333%) minmax(0,6.111%) minmax(0,35.556%);align-items:start;padding:8mm var(--kreativ-margin) max(13mm,calc(var(--kreativ-margin) - 2mm))}\n  .kreativ-pdf-content.continuation{display:block;padding-top:7mm}.kreativ-pdf-left{grid-column:1;min-width:0}.kreativ-pdf-right{position:relative;grid-column:3;min-width:0}.kreativ-pdf-right:before{position:absolute;top:0;bottom:0;left:-5.5mm;width:.3mm;background:var(--kreativ-divider);content:\"\"}\n  .kreativ-pdf-section,.kreativ-pdf-right>section{margin:0 0 var(--section-gap);break-inside:avoid;page-break-inside:avoid}\n  .kreativ-pdf-title,.kreativ-pdf-right section>h3,.kreativ-pdf-ats>section>h3,.kreativ-pdf-ats .knowledge-section>h3{margin:0 0 3.5mm;padding-bottom:1.2mm;border-bottom:.65mm solid var(--kreativ-dark);color:var(--kreativ-dark);font-size:11pt;font-weight:750;letter-spacing:.025em;line-height:1;text-transform:uppercase}\n  .kreativ-pdf-summary{margin:0;color:var(--kreativ-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}\n  .kreativ-pdf-list{display:flex;flex-direction:column;gap:4.5mm}.kreativ-pdf-entry{padding-bottom:3mm;border-bottom:.25mm dashed var(--kreativ-light);break-inside:avoid;page-break-inside:avoid}.kreativ-pdf-entry:last-child{padding-bottom:0;border-bottom:0}\n  .kreativ-pdf-entry h4,.kreativ-pdf-entry h5{margin:0;overflow-wrap:anywhere}.kreativ-pdf-entry h4{color:var(--kreativ-dark);font-size:11pt;font-weight:600;line-height:1.15}.kreativ-pdf-entry h5{margin-top:1mm;color:var(--accent);font-size:9.5pt;font-weight:750;line-height:1.2}\n  .kreativ-pdf-entry-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm;color:var(--kreativ-muted);font-size:7.8pt;line-height:1.2}.kreativ-pdf-entry-meta span+span:before{margin-right:1.5mm;color:var(--accent);content:\"·\"}\n  .kreativ-pdf-entry ul,.kreativ-pdf-right ul,.kreativ-pdf-ats ul{margin:0;padding-left:4.5mm}.kreativ-pdf-entry li,.kreativ-pdf-right li,.kreativ-pdf-ats li{margin:.5mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.kreativ-pdf-entry li::marker,.kreativ-pdf-right li::marker,.kreativ-pdf-ats li::marker{color:var(--accent)}\n  .kreativ-pdf-strengths{display:grid}.kreativ-pdf-strength{display:grid;grid-template-columns:6mm minmax(0,1fr);gap:2mm;margin-bottom:3mm;padding-bottom:3mm;border-bottom:.25mm dashed var(--kreativ-light)}.kreativ-pdf-strength:last-child{margin:0;padding:0;border:0}.kreativ-pdf-strength i{color:var(--accent);font-size:11pt;font-style:normal}.kreativ-pdf-strength span{color:var(--kreativ-dark);font-size:9.4pt;font-weight:750;line-height:1.2;overflow-wrap:anywhere}\n  .kreativ-pdf-languages{display:grid;gap:3mm}.kreativ-pdf-language h4{margin:0;color:var(--kreativ-dark);font-size:8.8pt;font-weight:750;text-transform:uppercase}.kreativ-pdf-language>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2mm;margin-top:1mm;color:var(--kreativ-muted);font-size:7.6pt}.kreativ-pdf-dots{display:flex;gap:.8mm}.kreativ-pdf-dots i{display:block;width:1.6mm;height:1.6mm;border-radius:50%;background:var(--kreativ-inactive)}.kreativ-pdf-dots i.filled{background:var(--accent)}\n  .kreativ-pdf-skills{display:flex;flex-wrap:wrap;gap:2.5mm 4mm}.kreativ-pdf-skill{max-width:100%;padding:0 1.5mm 1.2mm;border-bottom:.3mm solid var(--kreativ-divider);color:var(--kreativ-text);font-size:8.4pt;font-weight:700;overflow-wrap:anywhere}\n  .kreativ-pdf-footer{position:absolute;right:var(--kreativ-margin);bottom:6mm;left:var(--kreativ-margin);z-index:3;display:flex;justify-content:space-between;gap:6mm;color:var(--kreativ-muted);font-size:7.2pt}.kreativ-pdf-footer a{color:var(--kreativ-dark);text-decoration:none}.kreativ-pdf-footer span:last-child{margin-left:auto}\n  .kreativ-pdf-ats{--kreativ-dark:#173b33;--kreativ-text:#303d3a;--kreativ-muted:#687277;--kreativ-divider:#b8c4c0;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--kreativ-text);background:#fff}\n  .kreativ-pdf-ats .kreativ-pdf-header{display:block;height:auto;min-height:auto;padding:0 0 4mm;color:var(--kreativ-dark);background:#fff;border-bottom:.4mm solid var(--kreativ-divider)}.kreativ-pdf-ats .kreativ-pdf-identity h1{font-size:20pt}.kreativ-pdf-ats .kreativ-pdf-identity h2{font-size:10pt}.kreativ-pdf-ats .kreativ-pdf-contacts{color:var(--kreativ-text)}\n  .kreativ-pdf-ats>section,.kreativ-pdf-ats .knowledge-section{margin-top:var(--section-gap)}.kreativ-pdf-ats .knowledge-category h4,.kreativ-pdf-ats .knowledge-subcategory h5{color:var(--kreativ-dark)}\n", ec = "\n  .ivy-pdf{--ivy-heading:var(--accent);--ivy-accent:var(--secondary);--ivy-text:#3f4b50;--ivy-muted:#667177;--ivy-divider:color-mix(in srgb,var(--accent),#0b459a 38%);--ivy-inactive:#dce9e8;--ivy-margin:var(--doc-margin);position:relative;width:100%;height:100%;overflow:hidden;color:var(--ivy-text);background:transparent;font-family:var(--body-font)}\n  .ivy-pdf *{box-sizing:border-box}.ivy-pdf-watercolor{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none}.ivy-pdf-content{position:relative;z-index:2;height:100%;padding:max(11mm,calc(var(--ivy-margin) - 1mm)) var(--ivy-margin) max(13mm,calc(var(--ivy-margin) + 1mm))}\n  .ivy-pdf-header{min-height:19mm;margin:0 0 5.5mm;text-align:center}.ivy-pdf-header .kicker{margin:0 0 1.2mm;color:var(--ivy-muted);font-size:7.2pt}.ivy-pdf-header h1{margin:0;color:var(--ivy-heading);font-family:Georgia,\"Times New Roman\",serif;font-size:17.5pt;font-weight:700;letter-spacing:.015em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.ivy-pdf-header h2{margin:1.5mm 0 1.3mm;color:var(--ivy-accent);font-size:11.5pt;font-weight:400;line-height:1.2;overflow-wrap:anywhere}\n  .ivy-pdf-contacts{display:flex;flex-wrap:wrap;justify-content:center;gap:.7mm 2.3mm;margin:0;color:var(--ivy-text);font-size:7.8pt;font-style:normal;line-height:1.25}.ivy-pdf-contacts a,.ivy-pdf-contacts span{color:inherit;text-decoration:none;overflow-wrap:anywhere}.ivy-pdf-contacts i{color:var(--ivy-text);font-style:normal}.ivy-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;min-height:auto;margin-bottom:5mm;padding-bottom:2.5mm;border-bottom:.3mm solid var(--ivy-divider);text-align:left}.ivy-pdf-header.compact .kicker{flex-basis:100%}.ivy-pdf-header.compact h1{font-size:14pt}.ivy-pdf-header.compact h2{max-width:96mm;margin:0;font-size:8.5pt;text-align:right}\n  .ivy-pdf-section,.ivy-pdf>.ivy-pdf-content>.knowledge-section{position:relative;z-index:2;min-width:0;margin:0 0 var(--section-gap)}.ivy-pdf-title,.ivy-pdf .knowledge-section>h3{position:relative;margin:0 0 2.5mm;padding:0 0 1.5mm;border-bottom:.3mm solid var(--ivy-divider);color:var(--ivy-heading);font-family:Georgia,\"Times New Roman\",serif;font-size:13.5pt;font-weight:700;line-height:1.05;text-align:center;text-transform:none;break-after:avoid;page-break-after:avoid}.ivy-pdf-summary{margin:0;color:var(--ivy-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}\n  .ivy-pdf-strengths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3.5mm 8mm}.ivy-pdf-strength{display:grid;grid-template-columns:5.5mm minmax(0,1fr);gap:1.5mm;min-width:0;break-inside:avoid}.ivy-pdf-strength i{color:var(--ivy-accent);font-size:13pt;font-style:normal;line-height:1}.ivy-pdf-strength h3{margin:0 0 .8mm;color:var(--ivy-heading);font-size:9.5pt;font-weight:600;line-height:1.15;overflow-wrap:anywhere}.ivy-pdf-strength p{margin:0;font-size:var(--body-size);line-height:var(--body-line)}\n  .ivy-pdf-list{display:flex;flex-direction:column;gap:4.5mm}.ivy-pdf-entry{min-width:0;break-inside:avoid;page-break-inside:avoid}.ivy-pdf-entry-top,.ivy-pdf-entry-role{display:grid;grid-template-columns:minmax(0,1fr) minmax(32mm,auto);gap:8mm;align-items:baseline}.ivy-pdf-entry h3,.ivy-pdf-entry h4{margin:0;overflow-wrap:anywhere}.ivy-pdf-entry-top h3{color:var(--ivy-accent);font-size:10.5pt;font-weight:500;line-height:1.15}.ivy-pdf-entry-top span,.ivy-pdf-entry-role span{color:var(--ivy-text);font-size:var(--body-size);line-height:1.2;text-align:right;overflow-wrap:anywhere}.ivy-pdf-entry-role{margin-top:.7mm}.ivy-pdf-entry-role h4{color:var(--ivy-heading);font-size:9.7pt;font-weight:500;line-height:1.18}.ivy-pdf-entry-role span{white-space:nowrap}\n  .ivy-pdf-entry ul,.ivy-pdf-certifications ul,.ivy-pdf-ats ul{margin:1.3mm 0 0;padding-left:4.5mm}.ivy-pdf-entry li,.ivy-pdf-certifications li,.ivy-pdf-ats li{margin:.35mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word}.ivy-pdf-entry li::marker,.ivy-pdf-certifications li::marker{color:var(--ivy-heading)}.ivy-pdf-education .ivy-pdf-list{gap:3.2mm}.ivy-pdf-knowledge{margin:0;overflow-wrap:anywhere}\n  .ivy-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 20mm}.ivy-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2mm;align-items:center;min-width:0}.ivy-pdf-language strong{color:var(--ivy-heading);font-weight:600}.ivy-pdf-language>span:not(.ivy-pdf-dots){overflow-wrap:anywhere}.ivy-pdf-dots{display:flex;gap:1mm}.ivy-pdf-dots i{display:block;width:2.1mm;height:2.1mm;border-radius:50%;background:var(--ivy-inactive)}.ivy-pdf-dots i.filled{background:var(--ivy-heading)}\n  .ivy-pdf-footer{position:absolute;right:var(--ivy-margin);bottom:6mm;left:var(--ivy-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--ivy-muted);font-size:7.1pt}.ivy-pdf-footer a{color:var(--ivy-heading);text-decoration:none}.ivy-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}\n  .ivy-pdf-ats{--ivy-heading:#173b63;--ivy-accent:#173b63;--ivy-text:#303b42;--ivy-divider:#aeb8bf;padding:max(11mm,calc(var(--doc-margin) - 1mm)) var(--doc-margin) 13mm;background:#fff;font-family:Arial,sans-serif}.ivy-pdf-ats .ivy-pdf-header{padding-bottom:3.5mm;border-bottom:.3mm solid var(--ivy-divider)}.ivy-pdf-ats .ivy-pdf-header h1{font-family:Arial,sans-serif;font-size:19pt}.ivy-pdf-ats .ivy-pdf-header h2{color:var(--ivy-heading);font-size:10pt}.ivy-pdf-ats .ivy-pdf-title,.ivy-pdf-ats .knowledge-section>h3{font-family:Arial,sans-serif;font-size:11pt;text-align:left}.ivy-pdf-ats .knowledge-category h4,.ivy-pdf-ats .knowledge-subcategory h5{color:var(--ivy-heading)}\n  .ivy-pdf[data-density=\"compact\"]{--section-gap:max(4.5mm,calc(var(--doc-section-gap) - 1mm))}.ivy-pdf[data-density=\"compact\"] .ivy-pdf-list{gap:3.6mm}.ivy-pdf[data-density=\"dense\"]{--section-gap:max(3.8mm,calc(var(--doc-section-gap) - 2mm))}.ivy-pdf[data-density=\"dense\"] .ivy-pdf-list{gap:3mm}.ivy-pdf[data-density=\"dense\"] .ivy-pdf-title{margin-bottom:2mm;font-size:12.5pt}\n  @media print{.no-print-background .ivy-pdf-watercolor{display:none!important}}\n", tc = "\n  .managed-pdf{position:relative;width:100%;height:100%;overflow:hidden;color:var(--managed-text);background:#fff;font-family:var(--body-font);font-size:var(--body-size);line-height:var(--body-line)}\n  .managed-pdf *{box-sizing:border-box}.managed-pdf a{color:inherit;text-decoration:none}.managed-pdf-content{position:relative;z-index:2;height:100%}.managed-pdf-background{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none}.managed-pdf-section{min-width:0;margin:0 0 var(--managed-section-gap);break-inside:avoid}.managed-pdf-title{margin:0 0 3mm;color:var(--managed-muted);font-size:9pt;font-weight:500;line-height:1;text-transform:uppercase;break-after:avoid}.managed-pdf-list{display:flex;flex-direction:column;gap:var(--managed-entry-gap)}.managed-pdf-entry{break-inside:avoid}.managed-pdf-entry h3,.managed-pdf-entry h4{margin:0;overflow-wrap:anywhere}.managed-pdf-entry ul,.managed-pdf-ats ul{margin:1mm 0 0;padding-left:4mm}.managed-pdf-entry li,.managed-pdf-ats li{margin:.25mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.managed-pdf-footer{position:absolute;right:var(--managed-margin);bottom:6mm;left:var(--managed-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--managed-muted);font-size:7pt}.managed-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}\n  .stilvoll-pdf{--managed-primary:var(--accent);--managed-dark:var(--secondary);--managed-text:#465156;--managed-muted:#6d777c;--managed-divider:#aeb8b5;--managed-pattern:#dce2df;--managed-margin:max(15mm,var(--doc-margin));--managed-section-gap:var(--section-gap);--managed-entry-gap:5mm}.stilvoll-pdf .managed-pdf-background{color:var(--managed-pattern);opacity:.62}.stilvoll-pdf .managed-pdf-background path{fill:none;stroke:currentColor;stroke-width:.45}.stilvoll-pdf-header{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) 28mm;gap:10mm;min-height:36mm;padding:14mm var(--managed-margin) 0}.stilvoll-pdf-header.no-photo{grid-template-columns:1fr}.stilvoll-pdf-header h1{margin:0;color:var(--managed-dark);font-size:23pt;font-weight:400;line-height:1;letter-spacing:.015em;text-transform:uppercase;overflow-wrap:anywhere}.stilvoll-pdf-header h2{margin:2mm 0 2.5mm;color:var(--managed-primary);font-size:12pt;font-weight:400;line-height:1.2}.stilvoll-pdf-contacts{display:flex;flex-wrap:wrap;gap:1mm 3.5mm;margin:0;color:var(--managed-text);font-size:7.8pt;font-style:normal}.stilvoll-pdf-contacts span{display:inline-flex;gap:1mm}.stilvoll-pdf-contacts i{color:var(--managed-muted);font-style:normal}.stilvoll-pdf-photo{width:26mm;height:26mm;overflow:hidden;border-radius:1.5mm;object-fit:cover}.stilvoll-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:24mm;padding-top:11mm;padding-bottom:3mm;border-bottom:.3mm solid var(--managed-divider)}.stilvoll-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-primary);font-size:7pt;text-transform:uppercase}.stilvoll-pdf-header.compact h1{font-size:15pt}.stilvoll-pdf-header.compact h2{margin:0;font-size:8.5pt}.stilvoll-pdf-columns{display:grid;grid-template-columns:54mm minmax(0,115mm);gap:11mm;padding:10mm var(--managed-margin) 16mm}.stilvoll-pdf-columns.continuation{display:block;padding-top:6mm}.stilvoll-pdf .managed-pdf-title{padding-bottom:1mm;border-bottom:.3mm solid var(--managed-divider)}.stilvoll-pdf-strength{display:grid;grid-template-columns:9mm minmax(0,1fr);gap:3mm;margin-bottom:5mm}.stilvoll-pdf-strength i{display:grid;place-items:center;width:8mm;height:8mm;border-radius:50%;color:var(--managed-primary);background:#f1f3f2;font-style:normal}.stilvoll-pdf-strength h3{margin:0 0 1mm;color:var(--managed-dark);font-size:9.5pt;font-weight:500}.stilvoll-pdf-strength p{margin:0}.stilvoll-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) 11mm;gap:2mm;align-items:center;margin-bottom:3mm}.managed-pdf-dots{display:flex;gap:.6mm}.managed-pdf-dots i{display:block;width:1.5mm;height:1.5mm;border-radius:50%;background:#dde2e0}.managed-pdf-dots i.filled{background:var(--managed-dark)}.stilvoll-pdf-entry h3{color:var(--managed-dark);font-size:11pt;font-weight:400}.stilvoll-pdf-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm}.stilvoll-pdf-meta strong{margin-right:auto;color:var(--managed-primary);font-size:9.8pt;font-weight:400}.stilvoll-pdf-meta span{color:var(--managed-muted);font-size:7.8pt}\n  .kompakt-pdf{--managed-primary:var(--accent);--managed-accent:var(--secondary);--managed-text:#3f494f;--managed-muted:#6d757a;--managed-divider:#aeb6ba;--managed-pattern:#ffd7bc;--managed-margin:max(13mm,calc(var(--doc-margin) - 1mm));--managed-section-gap:max(3.5mm,calc(var(--section-gap) - 1mm));--managed-entry-gap:4mm}.kompakt-pdf .managed-pdf-background{color:var(--managed-pattern);opacity:.72}.kompakt-pdf .managed-pdf-background path,.kompakt-pdf .managed-pdf-background circle{fill:none;stroke:currentColor;stroke-width:.7}.kompakt-pdf-header{position:relative;z-index:2;min-height:22mm;padding:13mm var(--managed-margin) 0}.kompakt-pdf-header h1{max-width:112mm;margin:0;color:var(--managed-primary);font-size:20pt;font-weight:450;line-height:1}.kompakt-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 4mm;padding-top:10mm;border-bottom:.25mm solid var(--managed-divider)}.kompakt-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-accent);font-size:7pt;text-transform:uppercase}.kompakt-pdf-header.compact h1{font-size:14pt}.kompakt-pdf-header h2{margin:0;color:var(--managed-muted);font-size:8.5pt}.kompakt-pdf-columns{display:grid;grid-template-columns:108mm 66mm;gap:10mm;padding:9mm var(--managed-margin) 15mm}.kompakt-pdf-columns.continuation{display:block;padding-top:6mm}.kompakt-pdf-entry h3{color:var(--managed-primary);font-size:10.5pt;font-weight:550}.kompakt-pdf-meta{display:flex;flex-wrap:wrap;gap:.7mm 4mm;margin:.7mm 0 1mm;color:var(--managed-muted);font-size:7.4pt}.kompakt-pdf-meta strong{color:var(--managed-accent);font-size:8.4pt}.kompakt-pdf-contacts{display:grid;gap:3.5mm;margin:0;font-style:normal}.kompakt-pdf-contact{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;align-items:center;color:var(--managed-primary);font-size:8.8pt}.kompakt-pdf-contact i{color:var(--managed-accent);font-size:11pt;font-style:normal}.kompakt-pdf-strength{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;margin-bottom:4mm}.kompakt-pdf-strength i{color:var(--managed-accent);font-size:11pt;font-style:normal}.kompakt-pdf-strength h3{margin:0 0 1mm;color:var(--managed-primary);font-size:9pt}.kompakt-pdf-strength p{margin:0}.kompakt-pdf-skills{display:flex;flex-wrap:wrap;gap:2mm 3mm}.kompakt-pdf-skill{padding:0 1.5mm 1mm;border-bottom:.3mm solid var(--managed-divider);color:var(--managed-primary);font-size:7.8pt;font-weight:700}.kompakt-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 8mm}.kompakt-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:1.5mm;align-items:center}.kompakt-pdf-language strong{color:var(--managed-primary)}.kompakt-pdf-language .managed-pdf-dots i{width:2.2mm;height:2.2mm}.kompakt-pdf-language .managed-pdf-dots i.filled{background:var(--managed-accent)}\n  .einfach-pdf{--managed-primary:var(--accent);--managed-accent:var(--secondary);--managed-text:#424b50;--managed-muted:#667177;--managed-divider:var(--accent);--managed-pattern:#eaf6fd;--managed-margin:max(15mm,var(--doc-margin));--managed-section-gap:var(--section-gap);--managed-entry-gap:4.5mm}.einfach-pdf .managed-pdf-background{color:var(--managed-pattern);opacity:.78}.einfach-pdf .managed-pdf-background path{fill:none;stroke:currentColor;stroke-width:4.2}.einfach-pdf-inner{height:100%;padding:14mm var(--managed-margin) 16mm}.einfach-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 32mm;gap:9mm;min-height:36mm;margin-bottom:7mm}.einfach-pdf-header.no-photo{grid-template-columns:1fr}.einfach-pdf-header h1{margin:0;color:var(--managed-primary);font-size:24pt;font-weight:750;line-height:1;text-transform:uppercase}.einfach-pdf-header h2{margin:2mm 0;color:var(--managed-accent);font-size:11.5pt}.einfach-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 8mm;max-width:118mm;margin:0;font-size:7.8pt;font-style:normal}.einfach-pdf-contact{display:grid;grid-template-columns:4mm minmax(0,1fr);gap:1mm}.einfach-pdf-contact i{color:var(--managed-accent);font-style:normal}.einfach-pdf-photo{width:30mm;height:30mm;border-radius:50%;object-fit:cover}.einfach-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:auto;margin-bottom:6mm;padding-bottom:3mm;border-bottom:.5mm solid var(--managed-primary)}.einfach-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-accent);font-size:7pt;text-transform:uppercase}.einfach-pdf-header.compact h1{font-size:16pt}.einfach-pdf-header.compact h2{margin:0;font-size:9pt}.einfach-pdf .managed-pdf-title{padding-bottom:1mm;border-bottom:.65mm solid var(--managed-primary);color:var(--managed-primary);font-size:14pt;font-weight:750}.einfach-pdf-strengths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4mm 15mm}.einfach-pdf-strength{display:grid;grid-template-columns:7mm minmax(0,1fr);gap:2mm}.einfach-pdf-strength i{color:var(--managed-accent);font-size:14pt;font-style:normal}.einfach-pdf-strength h3{margin:0 0 1.5mm;color:var(--managed-primary);font-size:9.5pt}.einfach-pdf-strength p{margin:0}.einfach-pdf-entry{padding-bottom:3mm;border-bottom:.25mm dashed #d4d9dc}.einfach-pdf-entry:last-child{border-bottom:0}.einfach-pdf-entry h3{color:var(--managed-primary);font-size:11pt;font-weight:500}.einfach-pdf-entry h4{margin-top:1mm;color:var(--managed-accent);font-size:9.5pt}.einfach-pdf-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm;color:var(--managed-muted);font-size:7.8pt}.einfach-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 15mm}.einfach-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:3mm;align-items:center}.einfach-pdf-language strong{color:var(--managed-primary)}.einfach-pdf-language .managed-pdf-dots{gap:1mm}.einfach-pdf-language .managed-pdf-dots i{width:2.3mm;height:2.3mm}.einfach-pdf-language .managed-pdf-dots i.filled{background:var(--managed-accent)}\n  .managed-pdf[data-density=\"compact\"]{--managed-entry-gap:max(3.2mm,calc(var(--managed-entry-gap) - 1mm));--managed-section-gap:max(4mm,calc(var(--managed-section-gap) - 1mm))}.managed-pdf[data-density=\"dense\"]{--managed-entry-gap:3mm;--managed-section-gap:4mm}.kompakt-pdf[data-density=\"dense\"]{--managed-entry-gap:2.5mm;--managed-section-gap:3.5mm;font-size:max(7.5pt,calc(var(--body-size) - .5pt));line-height:max(1.18,calc(var(--body-line) - .07))}\n  .managed-pdf-ats{--managed-primary:#173b63;--managed-dark:#173b63;--managed-accent:#173b63;--managed-text:#303b42;--managed-muted:#626e75;--managed-divider:#aeb8bf;padding:14mm var(--managed-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.managed-pdf-ats .managed-pdf-header{display:block;min-height:auto;margin:0;padding:0 0 4mm;border-bottom:.3mm solid var(--managed-divider)}.managed-pdf-ats .managed-pdf-header h1{max-width:none;font-size:19pt}.managed-pdf-ats .managed-pdf-header h2{margin-top:1mm;color:var(--managed-primary);font-size:10pt}.managed-pdf-ats .managed-pdf-section{margin-top:var(--managed-section-gap);margin-bottom:0}.managed-pdf-ats .managed-pdf-title{margin-bottom:2mm;padding-bottom:1mm;border-bottom:.3mm solid var(--managed-divider);color:var(--managed-primary);font-size:10.5pt;font-weight:700}.managed-pdf-ats .managed-pdf-list{gap:var(--managed-entry-gap)}\n  @media print{.no-print-background .managed-pdf-background{display:none!important}}\n", nc = "\n  .modern-pdf{--modern-primary:var(--accent);--modern-soft:var(--secondary);--modern-heading:#303437;--modern-text:#444b4f;--modern-muted:#686f73;--modern-divider:#aeb4b6;--modern-icon-bg:#f2f3f3;--modern-margin:15mm;--modern-section-gap:7mm;--modern-entry-gap:4.5mm;position:relative;width:100%;height:100%;overflow:hidden;color:var(--modern-text);background:#fff;font-family:var(--body-font);font-size:8.4pt;line-height:1.27}\n  .modern-pdf *{box-sizing:border-box}.modern-pdf a{color:inherit;text-decoration:none}.modern-pdf-content{position:relative;z-index:2;height:100%;padding:14mm var(--modern-margin) 14mm}\n  .modern-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 29mm;gap:9mm;align-items:start;min-height:25mm;margin-bottom:4mm}.modern-pdf-header.no-photo{grid-template-columns:1fr}.modern-pdf-identity{min-width:0}.modern-pdf-header h1{margin:0;color:var(--modern-heading);font-size:24pt;font-weight:700;letter-spacing:.01em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.modern-pdf-header h2{margin:2mm 0 0;color:var(--modern-primary);font-size:12pt;font-weight:500;line-height:1.18;overflow-wrap:anywhere}.modern-pdf-photo{justify-self:end;width:25mm;height:25mm;border-radius:50%;object-fit:cover;background:var(--modern-icon-bg)}\n  .modern-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:auto;margin-bottom:7mm;padding-bottom:3mm;border-bottom:.35mm solid var(--modern-divider)}.modern-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--modern-primary);font-size:7pt;letter-spacing:.08em;text-transform:uppercase}.modern-pdf-header.compact h1{font-size:15pt}.modern-pdf-header.compact h2{margin:0;font-size:9pt}\n  .modern-pdf-columns{display:grid;grid-template-columns:102mm 67mm;gap:11mm;align-items:start}.modern-pdf-columns.continuation{display:block}.modern-pdf-left,.modern-pdf-right{display:flex;min-width:0;flex-direction:column;gap:var(--modern-section-gap)}\n  .modern-pdf-section{min-width:0;break-inside:auto}.modern-pdf-title{margin:0 0 3.2mm;padding-bottom:1mm;border-bottom:.35mm solid var(--modern-divider);color:var(--modern-muted);font-size:9.2pt;font-weight:500;letter-spacing:.025em;line-height:1;text-transform:uppercase;break-after:avoid}.modern-pdf-list{display:flex;flex-direction:column;gap:var(--modern-entry-gap)}\n  .modern-pdf-entry{break-inside:auto}.modern-pdf-entry h3{margin:0 0 1mm;color:var(--modern-heading);font-size:11pt;font-weight:500;line-height:1.15;overflow-wrap:anywhere;break-after:avoid}.modern-pdf-entry-meta{display:flex;flex-wrap:wrap;align-items:center;gap:1mm 4mm;margin:0 0 1.5mm;color:var(--modern-muted);font-size:7.9pt;line-height:1.2;break-after:avoid}.modern-pdf-entry-meta strong{margin-right:auto;color:var(--modern-primary);font-weight:600}.modern-pdf-entry-meta span{display:flex;align-items:center;gap:1mm;white-space:nowrap}.modern-pdf-entry-meta i{color:var(--modern-muted);font-size:6.8pt;font-style:normal}.modern-pdf-entry ul,.modern-pdf-certifications,.modern-pdf-ats ul{margin:0;padding-left:4mm}.modern-pdf-entry li,.modern-pdf-certifications li,.modern-pdf-ats li{margin:.35mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word;break-inside:avoid}\n  .modern-pdf-contacts{display:grid;gap:3.2mm;margin:0;font-style:normal}.modern-pdf-contact{display:grid;grid-template-columns:8.5mm minmax(0,1fr);gap:3mm;align-items:center;min-width:0}.modern-pdf-contact i{display:grid;place-items:center;width:8.5mm;height:8.5mm;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:7pt;font-style:normal;font-weight:700}.modern-pdf-contact span,.modern-pdf-contact a{min-width:0;color:var(--modern-text);font-size:8.4pt;line-height:1.2;overflow-wrap:anywhere}\n  .modern-pdf-contacts.inline{display:flex;flex-wrap:nowrap;align-items:center;gap:1.8mm;max-width:145mm;margin-top:3mm}.modern-pdf-contacts.inline .modern-pdf-contact{display:flex;flex:0 0 auto;grid-template-columns:none;gap:.8mm;min-width:0}.modern-pdf-contacts.inline .modern-pdf-contact i{display:block;width:3.2mm;height:auto;border-radius:0;color:var(--modern-muted);background:transparent;font-size:6.8pt;line-height:1.2}.modern-pdf-contacts.inline .modern-pdf-contact span,.modern-pdf-contacts.inline .modern-pdf-contact a{display:block;max-width:44mm;overflow:hidden;color:var(--modern-muted);font-size:7.4pt;text-overflow:ellipsis;white-space:nowrap}\n  .modern-pdf-summary{margin:0;hyphens:auto;overflow-wrap:break-word}.modern-pdf-strengths{display:flex;flex-direction:column;gap:4mm}.modern-pdf-strength{display:grid;grid-template-columns:10mm minmax(0,1fr);gap:3mm;align-items:start}.modern-pdf-strength>i{display:grid;width:9mm;height:9mm;place-items:center;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:10pt;font-style:normal;font-weight:700}.modern-pdf-strength h3{margin:0 0 .5mm;color:var(--modern-heading);font-size:9.5pt;font-weight:600}.modern-pdf-strength p{margin:0;hyphens:auto;overflow-wrap:break-word}.modern-pdf-languages{display:flex;flex-direction:column;gap:2.5mm}.modern-pdf-language{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4mm;align-items:center}.modern-pdf-language>div{display:flex;min-width:0;justify-content:space-between;gap:2mm}.modern-pdf-language strong{color:var(--modern-heading);font-weight:600}.modern-pdf-language em{color:var(--modern-muted);font-size:7.9pt;font-style:normal}.modern-pdf-dots{display:flex;gap:1.1mm;color:var(--modern-primary);font-size:6pt;white-space:nowrap}\n  .modern-pdf-knowledge{display:flex;flex-wrap:wrap;gap:2.5mm 3mm}.modern-pdf-knowledge span{padding:0 2mm 1mm;border-bottom:.3mm solid var(--modern-divider);color:var(--modern-text);font-size:8.2pt;line-height:1.15}.modern-pdf-achievements{display:flex;flex-direction:column;gap:4mm}.modern-pdf-achievements article{display:grid;grid-template-columns:9mm minmax(0,1fr);gap:3mm;align-items:start}.modern-pdf-achievements i{display:grid;width:9mm;height:9mm;place-items:center;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:8pt;font-style:normal}.modern-pdf-achievements p{margin:0;line-height:1.25}\n  .modern-pdf-footer{position:absolute;right:var(--modern-margin);bottom:6mm;left:var(--modern-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--modern-muted);font-size:7.2pt}.modern-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}\n  .modern-pdf[data-density=\"compact\"]{--modern-section-gap:5mm;--modern-entry-gap:3.7mm;font-size:8.1pt}.modern-pdf[data-density=\"dense\"]{--modern-section-gap:4mm;--modern-entry-gap:3mm;font-size:7.7pt;line-height:1.2}.modern-pdf[data-density=\"dense\"] .modern-pdf-title{margin-bottom:2.5mm}.modern-pdf[data-density=\"dense\"] .modern-pdf-contacts{gap:2.5mm}.modern-pdf[data-density=\"dense\"] .modern-pdf-strengths{gap:3mm}\n  .modern-pdf-ats{--modern-primary:#173b63;--modern-heading:#26343e;--modern-text:#303b42;--modern-muted:#626e75;--modern-divider:#aeb8bf;padding:14mm var(--modern-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.modern-pdf-ats .modern-pdf-header{display:block;min-height:auto;margin-bottom:5mm;padding-bottom:3mm;border-bottom:.35mm solid var(--modern-divider)}.modern-pdf-ats .modern-pdf-header h1{font-size:19pt}.modern-pdf-ats .modern-pdf-header h2{margin-top:1mm;color:var(--modern-heading);font-size:10pt}.modern-pdf-ats .modern-pdf-section{margin-bottom:5mm}.modern-pdf-ats .modern-pdf-title{margin-bottom:2mm;color:var(--modern-heading);font-size:10.5pt;font-weight:700}.modern-pdf-ats .modern-pdf-contacts{display:flex;flex-wrap:wrap;gap:1mm 5mm}.modern-pdf-ats .modern-pdf-contact{display:block}.modern-pdf-ats .modern-pdf-contact i{display:none}.modern-pdf-ats .modern-pdf-language{display:block}.modern-pdf-ats .modern-pdf-dots{display:none}\n  @media print{.no-print-background .modern-pdf-background{display:none!important}}\n", rc = "\n  <script>\n    (() => {\n      const fit = (page) => {\n        const content = page.querySelector(\".page-content\");\n        if (!content) return;\n        if (page.dataset.noFit === \"true\") {\n          content.dataset.fitScale = \"1.000\";\n          return;\n        }\n        content.style.transform = \"\";\n        content.style.width = \"100%\";\n        const heightRatio = page.clientHeight / Math.max(content.scrollHeight, 1);\n        const widthRatio = page.clientWidth / Math.max(content.scrollWidth, 1);\n        const scale = Math.min(1, heightRatio, widthRatio);\n        if (scale < 0.999) {\n          content.style.transform = \"scale(\" + scale + \")\";\n          content.style.width = 100 / scale + \"%\";\n          content.dataset.fitScale = scale.toFixed(3);\n        } else {\n          content.dataset.fitScale = \"1.000\";\n        }\n      };\n      document.querySelectorAll(\".page\").forEach(fit);\n    })();\n  <\/script>", ic = (e, t, n) => {
-	let r = ps(e.templateId), i = e.accentColor || r.accent, a = e.secondaryColor || r.secondary, o = ms(a), s = e.designSettings, c = s.resumeOutputMode === "ats" || s.columnLayout === "compact-ats", l = c ? "compact-ats" : s.columnLayout, u = `background-${s.backgroundId} ${s.showBackgroundInPrint ? "print-background" : "no-print-background"}`, d = Vs(s, c), f = e.documents, p = t?.resumeSections ?? {
+}, Qs = "\n  .elegant-pdf{--elegant-heading:#3b4247;--elegant-text:#4b5359;--elegant-muted:#6d757a;--elegant-line:#b9bfc3;--elegant-sidebar-muted:#e2e9ef;display:grid;grid-template-columns:minmax(0,140mm) 70mm;width:100%;height:100%;color:var(--elegant-text);background:#fff;font-family:var(--body-font)}\n  .elegant-pdf *{box-sizing:border-box}\n  .elegant-pdf-main{position:relative;min-width:0;height:100%;padding:max(14mm,calc(var(--doc-margin) - 2mm)) max(10mm,calc(var(--doc-margin) - 6mm)) max(13mm,calc(var(--doc-margin) - 4mm)) var(--doc-margin);overflow:hidden;background:#fff}\n  .elegant-pdf-header{position:relative;padding-bottom:5mm;border-bottom:.35mm solid var(--elegant-line)}\n  .elegant-pdf-header:after{position:absolute;bottom:-.35mm;left:0;width:27mm;height:.7mm;background:var(--accent);content:\"\"}\n  .elegant-pdf-header .kicker{margin:0 0 2.2mm;font-size:7.7pt}\n  .elegant-pdf-header h1{margin:0;color:var(--elegant-heading);font-size:22pt;font-weight:500;letter-spacing:.01em;line-height:1.05;text-transform:uppercase;overflow-wrap:anywhere}\n  .elegant-pdf-header h2{margin:2mm 0 0;color:var(--accent);font-size:12pt;font-weight:400;line-height:1.25;overflow-wrap:anywhere}\n  .elegant-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.2mm 6mm;margin:3.3mm 0 0;color:var(--elegant-text);font-size:8pt;font-style:normal;line-height:1.3}\n  .elegant-pdf-contacts a,.elegant-pdf-contacts span{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:1.5mm;min-width:0;color:inherit;text-decoration:none}\n  .elegant-pdf-contacts strong{color:var(--elegant-heading)}\n  .elegant-pdf-contacts i{min-width:0;font-style:normal;overflow-wrap:anywhere}\n  .elegant-pdf-section{margin-top:var(--section-gap)}\n  .elegant-pdf-section>h3,.elegant-pdf-ats .knowledge-section>h3{display:flex;align-items:baseline;gap:2.5mm;margin:0 0 3.2mm;color:var(--elegant-heading);font-size:12pt;font-weight:500;letter-spacing:.055em;line-height:1.1;text-transform:uppercase}\n  .elegant-pdf-section>h3:after,.elegant-pdf-ats .knowledge-section>h3:after{flex:1;height:.3mm;background:linear-gradient(90deg,var(--accent),var(--elegant-line));content:\"\"}\n  .elegant-pdf-list{display:flex;flex-direction:column;gap:5mm}\n  .elegant-pdf-entry{break-inside:avoid;page-break-inside:avoid}\n  .elegant-pdf-entry-head{display:grid;grid-template-columns:minmax(0,1fr) max-content;gap:5mm;align-items:start}\n  .elegant-pdf-entry-head h4{margin:0;color:var(--elegant-heading);font-family:var(--heading-font);font-size:11pt;font-weight:500;line-height:1.2;overflow-wrap:anywhere}\n  .elegant-pdf-entry-head p{margin:.8mm 0 0;color:var(--accent);font-size:11pt;font-weight:400;line-height:1.2;overflow-wrap:anywhere}\n  .elegant-pdf-entry-meta{min-width:24mm;color:var(--elegant-muted);font-size:8pt;line-height:1.3;text-align:right}\n  .elegant-pdf-entry-meta strong,.elegant-pdf-entry-meta span{display:block}\n  .elegant-pdf-entry-meta span{margin-top:.6mm;overflow-wrap:anywhere}\n  .elegant-pdf-entry ul{margin:1.8mm 0 0;padding-left:4.5mm}\n  .elegant-pdf-entry li{margin:.6mm 0;padding-left:.4mm;color:var(--elegant-text);font-size:var(--body-size);line-height:var(--body-line)}\n  .elegant-pdf-entry li::marker{color:var(--accent)}\n  .elegant-pdf-sidebar{display:flex;flex-direction:column;gap:var(--section-gap);min-width:0;height:100%;padding:max(13mm,calc(var(--doc-margin) - 3mm)) max(12mm,calc(var(--doc-margin) - 5mm));overflow:hidden;color:#fff;background:var(--secondary)}\n  .elegant-pdf-photo{display:block;width:27mm;height:27mm;margin:0 auto 12mm;overflow:hidden;border-radius:1.5mm;background:color-mix(in srgb,var(--secondary),white 12%);object-fit:cover}\n  .elegant-pdf-sidebar section{margin:0;break-inside:avoid;page-break-inside:avoid}\n  .elegant-pdf-sidebar section>h3{position:relative;margin:0 0 2.4mm;padding-bottom:1.6mm;border:0;color:#fff;font-size:11.5pt;font-weight:400;letter-spacing:.075em;line-height:1.15;text-transform:uppercase}\n  .elegant-pdf-sidebar section>h3:after{position:absolute;bottom:0;left:0;width:14mm;height:.45mm;background:var(--accent);content:\"\"}\n  .elegant-pdf-sidebar section p,.elegant-pdf-sidebar section li{color:var(--elegant-sidebar-muted);font-size:var(--body-size);line-height:var(--body-line)}\n  .elegant-pdf-sidebar section p{margin:0}\n  .elegant-pdf-sidebar section ul{margin:0;padding-left:4mm}\n  .elegant-pdf-sidebar .knowledge-category{margin-bottom:2.5mm}\n  .elegant-pdf-sidebar .knowledge-category h4,.elegant-pdf-sidebar .knowledge-subcategory h5{color:#fff;font-size:8.7pt}\n  .elegant-pdf-sidebar .knowledge-tags span{border-color:color-mix(in srgb,white,transparent 50%);color:#fff}\n  .elegant-pdf-strengths{display:grid;gap:3mm}\n  .elegant-pdf-strength{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:2mm;align-items:start}\n  .elegant-pdf-strength i{display:grid;width:4mm;height:4mm;place-items:center;border:.25mm solid color-mix(in srgb,white,transparent 45%);border-radius:50%;color:#fff;font-size:7pt;font-style:normal;line-height:1}\n  .elegant-pdf-strength span{color:var(--elegant-sidebar-muted);font-size:var(--body-size);line-height:var(--body-line);overflow-wrap:anywhere}\n  .elegant-pdf-continuation .kicker{color:var(--accent);font-size:8pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}\n  .elegant-pdf-continuation h2{margin:3.5mm 0 0;color:#fff;font-size:18pt;line-height:1.05;overflow-wrap:anywhere}\n  .elegant-pdf-continuation p{margin:1.8mm 0 0;color:var(--elegant-sidebar-muted)}\n  .elegant-pdf-continuation hr{width:18mm;height:.6mm;margin:6mm 0;border:0;background:var(--accent)}\n  .elegant-pdf-continuation a{display:block;margin-top:1.7mm;color:#fff;font-size:8.3pt;text-decoration:none;overflow-wrap:anywhere}\n  .elegant-pdf-footer{position:absolute;right:max(10mm,calc(var(--doc-margin) - 6mm));bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;padding-top:1.7mm;border-top:.25mm solid var(--elegant-line);color:var(--elegant-muted);font-size:7.2pt}\n  .elegant-pdf-footer a{color:var(--accent);text-decoration:none}\n  .elegant-pdf-footer span:last-child{margin-left:auto}\n  .elegant-pdf-ats{--elegant-heading:#3b4247;--elegant-text:#4b5359;--elegant-muted:#6d757a;--elegant-line:#b9bfc3;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--elegant-text);background:#fff}\n  .elegant-pdf-ats .elegant-pdf-header:after{display:none}\n  .elegant-pdf-ats .elegant-pdf-contacts{display:block}\n  .elegant-pdf-ats .elegant-pdf-contacts a,.elegant-pdf-ats .elegant-pdf-contacts span{display:block;margin-top:.8mm}\n  .elegant-pdf-ats .elegant-pdf-contacts strong{margin-right:1.5mm}\n  .elegant-pdf-ats .elegant-pdf-entry-head{display:block}\n  .elegant-pdf-ats .elegant-pdf-entry-meta{margin-top:.8mm;text-align:left}\n  .elegant-pdf-ats .elegant-pdf-entry-meta strong,.elegant-pdf-ats .elegant-pdf-entry-meta span{display:inline}\n  .elegant-pdf-ats .elegant-pdf-entry-meta span:before{content:\" · \"}\n  .elegant-pdf-ats .knowledge-section{margin-top:var(--section-gap)}\n  .elegant-pdf-ats .knowledge-category h4,.elegant-pdf-ats .knowledge-subcategory h5{color:var(--elegant-heading)}\n", $s = "\n  .zweispaltig-pdf{--zweispaltig-heading:#253746;--zweispaltig-text:#3f4d59;--zweispaltig-muted:#6b7782;--zweispaltig-divider:#9db7d1;position:relative;width:100%;height:100%;padding:max(14mm,calc(var(--doc-margin) - 3mm)) var(--doc-margin) max(13mm,calc(var(--doc-margin) - 4mm));overflow:hidden;color:var(--zweispaltig-text);background:#fff;font-family:var(--body-font)}\n  .zweispaltig-pdf *{box-sizing:border-box}\n  .zweispaltig-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8mm;padding-bottom:4.5mm;border-bottom:.4mm solid var(--zweispaltig-divider)}\n  .zweispaltig-pdf-header h1{margin:0;color:var(--accent);font-size:24pt;font-weight:750;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}\n  .zweispaltig-pdf-header h2{margin:1.5mm 0 0;color:var(--zweispaltig-heading);font-size:10.5pt;font-weight:650;letter-spacing:.055em;line-height:1.2;text-transform:uppercase;overflow-wrap:anywhere}\n  .zweispaltig-pdf-specializations{margin:1.4mm 0 0;color:color-mix(in srgb,var(--accent),#123f72 48%);font-size:8pt;font-weight:650;letter-spacing:.035em;line-height:1.25}\n  .zweispaltig-pdf-contacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.1mm 5mm;margin:3.2mm 0 0;color:var(--zweispaltig-muted);font-size:7.5pt;font-style:normal;line-height:1.2}\n  .zweispaltig-pdf-contacts a,.zweispaltig-pdf-contacts span{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:1.2mm;min-width:0;color:inherit;text-decoration:none}\n  .zweispaltig-pdf-contacts strong{color:var(--zweispaltig-heading)}\n  .zweispaltig-pdf-contacts i{min-width:0;font-style:normal;overflow-wrap:anywhere}\n  .zweispaltig-pdf-photo{display:block;width:23mm;height:23mm;overflow:hidden;border:.45mm solid var(--accent);border-radius:50%;background:color-mix(in srgb,var(--accent),white 90%);object-fit:cover}\n  .zweispaltig-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1.5mm 4mm;padding-bottom:3.5mm}\n  .zweispaltig-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--accent);font-size:7.3pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}\n  .zweispaltig-pdf-header.compact h1{font-size:15pt}\n  .zweispaltig-pdf-header.compact h2{margin:0;color:var(--zweispaltig-muted);font-size:8.6pt}\n  .zweispaltig-pdf-columns{display:grid;grid-template-columns:minmax(0,62%) minmax(0,38%)}\n  .zweispaltig-pdf-columns.continuation{grid-template-columns:minmax(0,1fr)}\n  .zweispaltig-pdf-main{min-width:0;padding-right:8mm}\n  .zweispaltig-pdf-sidebar{min-width:0;padding-left:8mm;border-left:.35mm solid var(--zweispaltig-divider)}\n  .zweispaltig-pdf-section,.zweispaltig-pdf-sidebar>section,.zweispaltig-pdf-sidebar>.knowledge-section{margin-top:var(--section-gap);break-inside:avoid;page-break-inside:avoid}\n  .zweispaltig-pdf-section>h3,.zweispaltig-pdf-sidebar section>h3,.zweispaltig-pdf-ats section>h3,.zweispaltig-pdf-ats .knowledge-section>h3{margin:0 0 2.5mm;padding-bottom:1.2mm;border-bottom:.45mm solid var(--accent);color:var(--accent);font-size:10.5pt;font-weight:750;letter-spacing:.075em;line-height:1.1;text-transform:uppercase}\n  .zweispaltig-pdf-summary{margin:0;hyphens:auto;overflow-wrap:break-word}\n  .zweispaltig-pdf-list{display:flex;flex-direction:column;gap:4.5mm}\n  .zweispaltig-pdf-entry{break-inside:avoid;page-break-inside:avoid}\n  .zweispaltig-pdf-entry-head{display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:start;gap:4mm}\n  .zweispaltig-pdf-entry-head h4{margin:0;color:var(--zweispaltig-heading);font-size:9.7pt;font-weight:750;line-height:1.18;overflow-wrap:anywhere}\n  .zweispaltig-pdf-entry-head p{margin:.7mm 0 0;color:var(--accent);font-size:8.5pt;font-weight:650;line-height:1.18;overflow-wrap:anywhere}\n  .zweispaltig-pdf-entry-meta{min-width:25mm;color:var(--zweispaltig-muted);font-size:7.5pt;line-height:1.25;text-align:right}\n  .zweispaltig-pdf-entry-meta strong,.zweispaltig-pdf-entry-meta span{display:block}\n  .zweispaltig-pdf-entry-meta span{margin-top:.5mm;overflow-wrap:anywhere}\n  .zweispaltig-pdf-entry ul,.zweispaltig-pdf-sidebar ul,.zweispaltig-pdf-ats ul{margin:1.5mm 0 0;padding-left:4.5mm}\n  .zweispaltig-pdf-entry li,.zweispaltig-pdf-sidebar li,.zweispaltig-pdf-ats li{margin:.5mm 0;padding-left:.3mm;hyphens:auto;overflow-wrap:break-word}\n  .zweispaltig-pdf-entry li::marker,.zweispaltig-pdf-sidebar li::marker,.zweispaltig-pdf-ats li::marker{color:var(--accent)}\n  .zweispaltig-pdf-sidebar .knowledge-category{margin-bottom:2.3mm}\n  .zweispaltig-pdf-sidebar .knowledge-category h4,.zweispaltig-pdf-sidebar .knowledge-subcategory h5{color:var(--zweispaltig-heading);font-size:8.4pt}\n  .zweispaltig-pdf-sidebar .knowledge-section p,.zweispaltig-pdf-sidebar .knowledge-section li{font-size:var(--body-size);line-height:var(--body-line)}\n  .zweispaltig-pdf-strengths{display:grid;gap:2.2mm}\n  .zweispaltig-pdf-strength{display:grid;grid-template-columns:4.2mm minmax(0,1fr);align-items:start;gap:1.7mm}\n  .zweispaltig-pdf-strength i{display:grid;width:3.8mm;height:3.8mm;place-items:center;border-radius:50%;color:#fff;background:var(--accent);font-size:6.8pt;font-style:normal;font-weight:800;line-height:1}\n  .zweispaltig-pdf-strength span{color:var(--zweispaltig-heading);font-size:var(--body-size);font-weight:650;line-height:1.25;overflow-wrap:anywhere}\n  .zweispaltig-pdf-footer{position:absolute;right:var(--doc-margin);bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;padding-top:1.4mm;border-top:.25mm solid var(--zweispaltig-divider);color:var(--zweispaltig-muted);font-size:7pt}\n  .zweispaltig-pdf-footer a{color:var(--accent);text-decoration:none;overflow-wrap:anywhere}\n  .zweispaltig-pdf-footer span:last-child{margin-left:auto}\n  .zweispaltig-pdf-ats{--zweispaltig-heading:#263641;--zweispaltig-text:#303c44;--zweispaltig-muted:#6b7782;--zweispaltig-divider:#c8d0d6;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--zweispaltig-text);background:#fff}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-header{display:block}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-contacts{display:block}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-contacts a,.zweispaltig-pdf-ats .zweispaltig-pdf-contacts span{display:block;margin-top:.7mm}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-contacts strong{margin-right:1.3mm}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-head{display:block}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta{margin-top:.7mm;text-align:left}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta strong,.zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta span{display:inline}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta span:before{content:\" · \"}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-section>h3,.zweispaltig-pdf-ats section>h3,.zweispaltig-pdf-ats .knowledge-section>h3{border-bottom-color:var(--zweispaltig-divider)}\n", ec = "\n  .zeit-pdf{--zeit-dark:#075e4e;--zeit-soft:#cbeccd;--zeit-pale:#e5f5ec;--zeit-heading:#374247;--zeit-text:#434d52;--zeit-muted:#687277;--zeit-divider:#d5deda;position:relative;width:100%;height:100%;padding:max(15mm,calc(var(--doc-margin) - 2mm)) var(--doc-margin) max(14mm,calc(var(--doc-margin) - 3mm));overflow:hidden;color:var(--zeit-text);background:#fff;font-family:var(--body-font)}\n  .zeit-pdf *{box-sizing:border-box}\n  .zeit-pdf-header{display:grid;grid-template-columns:minmax(0,28.4%) minmax(0,6.25%) minmax(0,65.35%);min-height:42mm;margin-bottom:5.5mm}\n  .zeit-pdf-identity{grid-column:3;min-width:0;padding-top:4mm}\n  .zeit-pdf-identity h1{margin:0;color:var(--zeit-heading);font-size:25pt;font-weight:350;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}\n  .zeit-pdf-identity h2{display:inline-block;max-width:100%;margin:4mm 0 0;padding:2.6mm 4mm;border-radius:3.8mm;color:var(--zeit-dark);background:var(--zeit-soft);font-size:12.5pt;font-weight:600;letter-spacing:.045em;line-height:1.15;text-transform:uppercase;overflow-wrap:anywhere}\n  .zeit-pdf-photo-composition{position:relative;grid-column:1;width:50mm;max-width:100%;height:42mm}\n  .zeit-pdf-photo-composition span{position:absolute;display:block}\n  .zeit-pdf-photo-pale{top:1mm;left:0;width:42mm;height:39mm;border-radius:48% 52% 45% 55%/57% 40% 60% 43%;background:var(--zeit-pale);transform:rotate(-13deg)}\n  .zeit-pdf-photo-soft{top:-2mm;right:0;width:31mm;height:30mm;border-radius:58% 42% 62% 38%/44% 62% 38% 56%;background:color-mix(in srgb,var(--zeit-soft),var(--accent) 15%);transform:rotate(17deg)}\n  .zeit-pdf-photo-accent{right:2mm;bottom:0;width:24mm;height:23mm;border-radius:54% 46% 44% 56%/41% 55% 45% 59%;background:var(--accent);opacity:.92;transform:rotate(-11deg)}\n  .zeit-pdf-photo{position:absolute;top:3mm;left:5mm;z-index:2;display:block;width:36mm;height:36mm;border:1.8mm solid #fff;border-radius:50%;object-fit:cover}\n  .zeit-pdf-header.no-photo{min-height:29mm}.zeit-pdf-header.no-photo .zeit-pdf-identity{grid-column:1/-1;padding-top:0}\n  .zeit-pdf-header.compact{display:block;min-height:auto;margin-bottom:5mm;padding-bottom:3mm;border-bottom:.35mm solid var(--zeit-divider)}\n  .zeit-pdf-header.compact .zeit-pdf-identity{padding:0}.zeit-pdf-header.compact .kicker{margin:0 0 1.5mm;color:var(--zeit-dark);font-size:7.3pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}\n  .zeit-pdf-header.compact h1{font-size:15pt;font-weight:600}.zeit-pdf-header.compact h2{margin:0 0 0 3mm;padding:0;color:var(--zeit-muted);background:transparent;font-size:8.5pt}\n  .zeit-pdf-columns{position:relative;display:grid;grid-template-columns:minmax(0,28.4%) minmax(0,6.25%) minmax(0,65.35%)}\n  .zeit-pdf-columns:before{position:absolute;top:0;bottom:0;left:31.525%;width:.3mm;background:color-mix(in srgb,var(--accent),transparent 64%);content:\"\"}\n  .zeit-pdf-columns.continuation{display:block}.zeit-pdf-columns.continuation:before{display:none}\n  .zeit-pdf-left{grid-column:1;min-width:0}.zeit-pdf-main{grid-column:3;min-width:0}\n  .zeit-pdf-section,.zeit-pdf-left>section{margin-top:var(--section-gap);break-inside:avoid;page-break-inside:avoid}\n  .zeit-pdf-left>section:first-child,.zeit-pdf-main>.zeit-pdf-section:first-child{margin-top:0}\n  .zeit-pdf-heading{display:flex;align-items:center;gap:2mm;margin:0 0 3mm;padding-bottom:1.4mm;border-bottom:.45mm solid var(--accent)}\n  .zeit-pdf-heading i{display:grid;flex:none;width:6.5mm;height:6.5mm;place-items:center;border-radius:1.5mm;color:var(--zeit-dark);background:var(--zeit-soft);font-size:8pt;font-style:normal;font-weight:700}\n  .zeit-pdf-heading h3{margin:0;color:var(--zeit-dark);font-size:11pt;font-weight:750;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}\n  .zeit-pdf-summary{margin:0;color:var(--zeit-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}\n  .zeit-pdf-contacts{display:grid;gap:2.3mm}\n  .zeit-pdf-contact{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;min-width:0;color:inherit;font-size:var(--body-size);line-height:1.25;text-decoration:none}\n  .zeit-pdf-contact i{color:var(--zeit-dark);font-size:7.2pt;font-style:normal;font-weight:750;text-align:center}.zeit-pdf-contact span{overflow-wrap:anywhere}\n  .zeit-pdf-strengths{display:grid;gap:2.5mm}.zeit-pdf-strength{display:grid;grid-template-columns:3.5mm minmax(0,1fr);gap:1.5mm;align-items:start}\n  .zeit-pdf-strength i{width:2mm;height:2mm;margin-top:1.2mm;border-radius:50%;background:var(--accent)}.zeit-pdf-strength span{color:var(--zeit-heading);font-size:9pt;font-weight:700;line-height:1.2;overflow-wrap:anywhere}\n  .zeit-pdf-languages{display:grid;gap:3mm}.zeit-pdf-language h4{margin:0;color:var(--zeit-dark);font-size:8.8pt;font-weight:750;text-transform:uppercase}.zeit-pdf-language>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2mm;margin-top:1mm;color:var(--zeit-muted);font-size:7.8pt}\n  .zeit-pdf-dots{display:flex;gap:.7mm}.zeit-pdf-dots i{display:block;width:1.35mm;height:1.35mm;border:.25mm solid var(--zeit-muted);border-radius:50%}.zeit-pdf-dots i.filled{border-color:var(--zeit-dark);background:var(--zeit-dark)}\n  .zeit-pdf-list{display:flex;flex-direction:column;gap:5mm}.zeit-pdf-entry{break-inside:avoid;page-break-inside:avoid}\n  .zeit-pdf-entry-top,.zeit-pdf-entry-role{display:grid;grid-template-columns:minmax(0,1fr) minmax(25mm,35mm);gap:5mm;align-items:start}\n  .zeit-pdf-entry-top h4,.zeit-pdf-entry-role h5{margin:0;overflow-wrap:anywhere}.zeit-pdf-entry-top h4{color:var(--zeit-dark);font-size:10.5pt;font-weight:750;line-height:1.2;text-transform:uppercase}\n  .zeit-pdf-entry-top span,.zeit-pdf-entry-role span{color:var(--zeit-muted);font-size:7.8pt;line-height:1.2;text-align:right;overflow-wrap:anywhere}\n  .zeit-pdf-entry-role{margin-top:.8mm}.zeit-pdf-entry-role h5{color:var(--zeit-heading);font-size:9.2pt;font-weight:600;line-height:1.2}\n  .zeit-pdf-entry ul,.zeit-pdf-left ul,.zeit-pdf-ats ul{margin:1.5mm 0 0;padding-left:4.5mm}.zeit-pdf-entry li,.zeit-pdf-left li,.zeit-pdf-ats li{margin:.5mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.zeit-pdf-entry li::marker,.zeit-pdf-left li::marker,.zeit-pdf-ats li::marker{color:var(--accent)}\n  .zeit-pdf-footer{position:absolute;right:var(--doc-margin);bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;color:var(--zeit-muted);font-size:7.2pt}.zeit-pdf-footer a{color:var(--zeit-dark);text-decoration:none}.zeit-pdf-footer span:last-child{margin-left:auto}\n  .zeit-pdf-ats{--zeit-dark:#075e4e;--zeit-heading:#263a35;--zeit-text:#303c39;--zeit-muted:#687277;--zeit-divider:#ccd6d2;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--zeit-text);background:#fff}\n  .zeit-pdf-ats .zeit-pdf-header{display:block;min-height:auto;margin:0;padding-bottom:4mm;border-bottom:.35mm solid var(--zeit-divider)}.zeit-pdf-ats .zeit-pdf-identity{padding:0}.zeit-pdf-ats .zeit-pdf-identity h1{font-size:20pt;font-weight:600}.zeit-pdf-ats .zeit-pdf-identity h2{margin:1.5mm 0 0;padding:0;background:transparent;font-size:10pt}\n  .zeit-pdf-ats-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 5mm;margin-top:3mm;font-size:7.8pt;font-style:normal}.zeit-pdf-ats-contacts a,.zeit-pdf-ats-contacts span{color:inherit;text-decoration:none;overflow-wrap:anywhere}\n  .zeit-pdf-ats .zeit-pdf-heading i{display:none}.zeit-pdf-ats .zeit-pdf-heading{gap:0;border-bottom-color:var(--zeit-divider)}\n  .zeit-pdf-ats>section,.zeit-pdf-ats .knowledge-section{margin-top:var(--section-gap)}.zeit-pdf-ats>section>h3,.zeit-pdf-ats .knowledge-section>h3{margin:0 0 3mm;padding-bottom:1.4mm;border-bottom:.45mm solid var(--zeit-divider);color:var(--zeit-dark);font-size:11pt;font-weight:750;text-transform:uppercase}\n", tc = "\n  .kreativ-pdf{--kreativ-dark:#075d4e;--kreativ-text:#465156;--kreativ-muted:#687277;--kreativ-divider:#b8c4c0;--kreativ-light:#d7dfdc;--kreativ-inactive:#e1e5e3;--kreativ-margin:calc(var(--doc-margin) + 1mm);--kreativ-column-gap:11mm;--kreativ-section-gap:var(--section-gap);--kreativ-entry-gap:4.5mm;position:relative;width:100%;height:100%;overflow:hidden;color:var(--kreativ-text);background:#fff;font-family:var(--body-font);font-size:var(--body-size);line-height:var(--body-line)}\n  .kreativ-pdf *{box-sizing:border-box}\n  .kreativ-pdf-header{position:relative;z-index:3;display:grid;grid-template-columns:minmax(0,1fr) 28mm;align-items:center;gap:10mm;width:100%;height:46mm;padding:12mm var(--kreativ-margin) 6mm;color:#fff;background:var(--accent)}\n  .kreativ-pdf-identity{min-width:0}.kreativ-pdf-identity h1{margin:0;color:inherit;font-size:23pt;font-weight:750;letter-spacing:.015em;line-height:1;overflow-wrap:anywhere}.kreativ-pdf-identity h2{margin:1.5mm 0 0;color:inherit;font-size:11.5pt;font-weight:650;line-height:1.15;overflow-wrap:anywhere}\n  .kreativ-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 8mm;max-width:118mm;margin:2.2mm 0 0;font-size:7.8pt;font-style:normal;line-height:1.15}.kreativ-pdf-contacts a,.kreativ-pdf-contacts>span{display:grid;grid-template-columns:3.2mm minmax(0,1fr);align-items:center;gap:1.1mm;min-width:0;color:inherit;text-decoration:none}.kreativ-pdf-contacts svg{width:3mm;height:3mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.4}.kreativ-pdf-contacts i{min-width:0;font-style:normal;overflow-wrap:anywhere}\n  .kreativ-pdf-photo{display:block;width:28mm;height:28mm;overflow:hidden;border-radius:1.8mm;background:rgba(255,255,255,.18);object-fit:cover}\n  .kreativ-pdf-header.no-photo{grid-template-columns:minmax(0,1fr)}\n  .kreativ-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1.5mm 4mm;height:auto;min-height:24mm;padding:12mm var(--kreativ-margin) 4mm;color:var(--kreativ-dark);background:#fff;border-bottom:.4mm solid var(--kreativ-divider)}\n  .kreativ-pdf-header.compact .kreativ-pdf-identity{display:contents}.kreativ-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--accent);font-size:7.3pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}.kreativ-pdf-header.compact h1{font-size:15pt}.kreativ-pdf-header.compact h2{margin:0;color:var(--kreativ-muted);font-size:8.7pt}\n  .kreativ-pdf-background{position:absolute;top:46mm;right:-9mm;z-index:1;width:78mm;height:78mm;fill:none;stroke:color-mix(in srgb,var(--accent),transparent 85%);stroke-width:.9;pointer-events:none}.kreativ-pdf-background .wide{stroke-dasharray:1.2 1.5}.kreativ-pdf-background .tight{stroke-dasharray:.8 1.2}\n  .kreativ-pdf-content{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,105fr) minmax(0,64fr);column-gap:var(--kreativ-column-gap);align-items:start;padding:10mm var(--kreativ-margin) max(13mm,calc(var(--kreativ-margin) - 2mm))}\n  .kreativ-pdf-content.continuation{display:block;padding-top:7mm}.kreativ-pdf-left{grid-column:1;min-width:0}.kreativ-pdf-right{position:relative;grid-column:2;min-width:0}\n  .kreativ-pdf-section,.kreativ-pdf-right>section{margin:0 0 var(--kreativ-section-gap);break-inside:avoid;page-break-inside:avoid}\n  .kreativ-pdf-title,.kreativ-pdf-right section>h3,.kreativ-pdf-ats>section>h3,.kreativ-pdf-ats .knowledge-section>h3{margin:0 0 3.5mm;padding-bottom:1.2mm;border-bottom:.65mm solid var(--kreativ-dark);color:var(--kreativ-dark);font-family:var(--heading-font);font-size:14pt;font-weight:750;letter-spacing:.025em;line-height:1;text-transform:uppercase}\n  .kreativ-pdf-summary{margin:0;color:var(--kreativ-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}\n  .kreativ-pdf-list{display:flex;flex-direction:column;gap:var(--kreativ-entry-gap)}.kreativ-pdf-entry{padding-bottom:3mm;border-bottom:.25mm dashed var(--kreativ-light);break-inside:avoid;page-break-inside:avoid}.kreativ-pdf-entry:last-child{padding-bottom:0;border-bottom:0}\n  .kreativ-pdf-entry h4,.kreativ-pdf-entry h5{margin:0;overflow-wrap:anywhere}.kreativ-pdf-entry h4{color:var(--kreativ-dark);font-size:11pt;font-weight:600;line-height:1.15}.kreativ-pdf-entry h5{margin-top:1mm;color:var(--accent);font-size:9.5pt;font-weight:750;line-height:1.2}\n  .kreativ-pdf-entry-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm;color:var(--kreativ-muted);font-size:7.8pt;line-height:1.2}.kreativ-pdf-entry-meta span+span:before{margin-right:1.5mm;color:var(--accent);content:\"·\"}\n  .kreativ-pdf-entry ul,.kreativ-pdf-right ul,.kreativ-pdf-ats ul{margin:0;padding-left:4.5mm}.kreativ-pdf-entry li,.kreativ-pdf-right li,.kreativ-pdf-ats li{margin:.5mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.kreativ-pdf-entry li::marker,.kreativ-pdf-right li::marker,.kreativ-pdf-ats li::marker{color:var(--accent)}\n  .kreativ-pdf-strengths{display:grid}.kreativ-pdf-strength{display:grid;grid-template-columns:7mm minmax(0,1fr);align-items:start;gap:2.5mm;min-width:0;margin-bottom:3mm;padding-bottom:3mm;border-bottom:.25mm dashed var(--kreativ-light)}.kreativ-pdf-strength:last-child{margin:0;padding:0;border:0}.kreativ-pdf-strength svg{width:5.5mm;height:5.5mm;color:var(--accent);fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.2}.kreativ-pdf-strength i{display:grid;place-items:center;width:5.5mm;height:5.5mm;color:var(--accent);font-size:9pt;font-style:normal}.kreativ-pdf-strength h4,.kreativ-pdf-strength span{margin:0;color:var(--kreativ-dark);font-size:9.4pt;font-weight:750;line-height:1.2;overflow-wrap:anywhere}.kreativ-pdf-strength p{margin:1.5mm 0 0;color:var(--kreativ-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}\n  .kreativ-pdf-languages{display:grid;gap:3mm}.kreativ-pdf-language h4{margin:0;color:var(--kreativ-dark);font-size:8.8pt;font-weight:750;line-height:1.15}.kreativ-pdf-language>div{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2mm;margin-top:1mm;color:var(--kreativ-muted);font-size:7.6pt}.kreativ-pdf-dots{display:flex;gap:1mm}.kreativ-pdf-dots i{display:block;width:3.5mm;height:3.5mm;border-radius:50%;background:var(--kreativ-inactive)}.kreativ-pdf-dots i.filled{background:var(--accent)}\n  .kreativ-pdf-skills{display:flex;flex-wrap:wrap;gap:2.5mm 4mm}.kreativ-pdf-skill{max-width:100%;padding:0 1.5mm 1.2mm;border-bottom:.3mm solid var(--kreativ-divider);color:var(--kreativ-text);font-size:8.4pt;font-weight:700;overflow-wrap:anywhere}\n  .kreativ-pdf-footer{position:absolute;right:var(--kreativ-margin);bottom:6mm;left:var(--kreativ-margin);z-index:3;display:flex;justify-content:space-between;gap:6mm;color:var(--kreativ-muted);font-size:7.2pt}.kreativ-pdf-footer a{color:var(--kreativ-dark);text-decoration:none}.kreativ-pdf-footer span:last-child{margin-left:auto}\n  .kreativ-pdf-ats{--kreativ-dark:#173b33;--kreativ-text:#303d3a;--kreativ-muted:#687277;--kreativ-divider:#b8c4c0;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--kreativ-text);background:#fff}\n  .kreativ-pdf-ats .kreativ-pdf-header{display:block;height:auto;min-height:auto;padding:0 0 4mm;color:var(--kreativ-dark);background:#fff;border-bottom:.4mm solid var(--kreativ-divider)}.kreativ-pdf-ats .kreativ-pdf-identity h1{font-size:20pt}.kreativ-pdf-ats .kreativ-pdf-identity h2{font-size:10pt}.kreativ-pdf-ats .kreativ-pdf-contacts{color:var(--kreativ-text)}\n  .kreativ-pdf-ats>section,.kreativ-pdf-ats .knowledge-section{margin-top:var(--section-gap)}.kreativ-pdf-ats .knowledge-category h4,.kreativ-pdf-ats .knowledge-subcategory h5{color:var(--kreativ-dark)}\n  .kreativ-pdf[data-density=\"compact\"]{--kreativ-section-gap:max(5mm,calc(var(--section-gap) - 1mm));--kreativ-entry-gap:3.7mm}.kreativ-pdf[data-density=\"dense\"]{--kreativ-section-gap:max(3.7mm,calc(var(--section-gap) - 2mm));--kreativ-entry-gap:2.8mm}.kreativ-pdf[data-density=\"dense\"] .kreativ-pdf-header{height:42mm;padding-top:6mm;padding-bottom:5mm}.kreativ-pdf[data-density=\"dense\"] .kreativ-pdf-identity h1{font-size:21pt}.kreativ-pdf[data-density=\"dense\"] .kreativ-pdf-content{padding-top:6mm}\n", nc = "\n  .ivy-pdf{--ivy-heading:var(--accent);--ivy-accent:var(--secondary);--ivy-text:#3f4b50;--ivy-muted:#667177;--ivy-divider:color-mix(in srgb,var(--accent),#0b459a 38%);--ivy-inactive:#dce9e8;--ivy-margin:var(--doc-margin);position:relative;width:100%;height:100%;overflow:hidden;color:var(--ivy-text);background:transparent;font-family:var(--body-font)}\n  .ivy-pdf *{box-sizing:border-box}.ivy-pdf-watercolor{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none}.ivy-pdf-content{position:relative;z-index:2;height:100%;padding:max(11mm,calc(var(--ivy-margin) - 1mm)) var(--ivy-margin) max(13mm,calc(var(--ivy-margin) + 1mm))}\n  .ivy-pdf-header{min-height:19mm;margin:0 0 5.5mm;text-align:center}.ivy-pdf-header .kicker{margin:0 0 1.2mm;color:var(--ivy-muted);font-size:7.2pt}.ivy-pdf-header h1{margin:0;color:var(--ivy-heading);font-family:Georgia,\"Times New Roman\",serif;font-size:17.5pt;font-weight:700;letter-spacing:.015em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.ivy-pdf-header h2{margin:1.5mm 0 1.3mm;color:var(--ivy-accent);font-size:11.5pt;font-weight:400;line-height:1.2;overflow-wrap:anywhere}\n  .ivy-pdf-contacts{display:flex;flex-wrap:wrap;justify-content:center;gap:.7mm 2.3mm;margin:0;color:var(--ivy-text);font-size:7.8pt;font-style:normal;line-height:1.25}.ivy-pdf-contacts a,.ivy-pdf-contacts span{color:inherit;text-decoration:none;overflow-wrap:anywhere}.ivy-pdf-contacts i{color:var(--ivy-text);font-style:normal}.ivy-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;min-height:auto;margin-bottom:5mm;padding-bottom:2.5mm;border-bottom:.3mm solid var(--ivy-divider);text-align:left}.ivy-pdf-header.compact .kicker{flex-basis:100%}.ivy-pdf-header.compact h1{font-size:14pt}.ivy-pdf-header.compact h2{max-width:96mm;margin:0;font-size:8.5pt;text-align:right}\n  .ivy-pdf-section,.ivy-pdf>.ivy-pdf-content>.knowledge-section{position:relative;z-index:2;min-width:0;margin:0 0 var(--section-gap)}.ivy-pdf-title,.ivy-pdf .knowledge-section>h3{position:relative;margin:0 0 2.5mm;padding:0 0 1.5mm;border-bottom:.3mm solid var(--ivy-divider);color:var(--ivy-heading);font-family:Georgia,\"Times New Roman\",serif;font-size:13.5pt;font-weight:700;line-height:1.05;text-align:center;text-transform:none;break-after:avoid;page-break-after:avoid}.ivy-pdf-summary{margin:0;color:var(--ivy-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}\n  .ivy-pdf-strengths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3.5mm 8mm}.ivy-pdf-strength{display:grid;grid-template-columns:5.5mm minmax(0,1fr);gap:1.5mm;min-width:0;break-inside:avoid}.ivy-pdf-strength i{color:var(--ivy-accent);font-size:13pt;font-style:normal;line-height:1}.ivy-pdf-strength h3{margin:0 0 .8mm;color:var(--ivy-heading);font-size:9.5pt;font-weight:600;line-height:1.15;overflow-wrap:anywhere}.ivy-pdf-strength p{margin:0;font-size:var(--body-size);line-height:var(--body-line)}\n  .ivy-pdf-list{display:flex;flex-direction:column;gap:4.5mm}.ivy-pdf-entry{min-width:0;break-inside:avoid;page-break-inside:avoid}.ivy-pdf-entry-top,.ivy-pdf-entry-role{display:grid;grid-template-columns:minmax(0,1fr) minmax(32mm,auto);gap:8mm;align-items:baseline}.ivy-pdf-entry h3,.ivy-pdf-entry h4{margin:0;overflow-wrap:anywhere}.ivy-pdf-entry-top h3{color:var(--ivy-accent);font-size:10.5pt;font-weight:500;line-height:1.15}.ivy-pdf-entry-top span,.ivy-pdf-entry-role span{color:var(--ivy-text);font-size:var(--body-size);line-height:1.2;text-align:right;overflow-wrap:anywhere}.ivy-pdf-entry-role{margin-top:.7mm}.ivy-pdf-entry-role h4{color:var(--ivy-heading);font-size:9.7pt;font-weight:500;line-height:1.18}.ivy-pdf-entry-role span{white-space:nowrap}\n  .ivy-pdf-entry ul,.ivy-pdf-certifications ul,.ivy-pdf-ats ul{margin:1.3mm 0 0;padding-left:4.5mm}.ivy-pdf-entry li,.ivy-pdf-certifications li,.ivy-pdf-ats li{margin:.35mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word}.ivy-pdf-entry li::marker,.ivy-pdf-certifications li::marker{color:var(--ivy-heading)}.ivy-pdf-education .ivy-pdf-list{gap:3.2mm}.ivy-pdf-knowledge{margin:0;overflow-wrap:anywhere}\n  .ivy-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 20mm}.ivy-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2mm;align-items:center;min-width:0}.ivy-pdf-language strong{color:var(--ivy-heading);font-weight:600}.ivy-pdf-language>span:not(.ivy-pdf-dots){overflow-wrap:anywhere}.ivy-pdf-dots{display:flex;gap:1mm}.ivy-pdf-dots i{display:block;width:2.1mm;height:2.1mm;border-radius:50%;background:var(--ivy-inactive)}.ivy-pdf-dots i.filled{background:var(--ivy-heading)}\n  .ivy-pdf-footer{position:absolute;right:var(--ivy-margin);bottom:6mm;left:var(--ivy-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--ivy-muted);font-size:7.1pt}.ivy-pdf-footer a{color:var(--ivy-heading);text-decoration:none}.ivy-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}\n  .ivy-pdf-ats{--ivy-heading:#173b63;--ivy-accent:#173b63;--ivy-text:#303b42;--ivy-divider:#aeb8bf;padding:max(11mm,calc(var(--doc-margin) - 1mm)) var(--doc-margin) 13mm;background:#fff;font-family:Arial,sans-serif}.ivy-pdf-ats .ivy-pdf-header{padding-bottom:3.5mm;border-bottom:.3mm solid var(--ivy-divider)}.ivy-pdf-ats .ivy-pdf-header h1{font-family:Arial,sans-serif;font-size:19pt}.ivy-pdf-ats .ivy-pdf-header h2{color:var(--ivy-heading);font-size:10pt}.ivy-pdf-ats .ivy-pdf-title,.ivy-pdf-ats .knowledge-section>h3{font-family:Arial,sans-serif;font-size:11pt;text-align:left}.ivy-pdf-ats .knowledge-category h4,.ivy-pdf-ats .knowledge-subcategory h5{color:var(--ivy-heading)}\n  .ivy-pdf[data-density=\"compact\"]{--section-gap:max(4.5mm,calc(var(--doc-section-gap) - 1mm))}.ivy-pdf[data-density=\"compact\"] .ivy-pdf-list{gap:3.6mm}.ivy-pdf[data-density=\"dense\"]{--section-gap:max(3.8mm,calc(var(--doc-section-gap) - 2mm))}.ivy-pdf[data-density=\"dense\"] .ivy-pdf-list{gap:3mm}.ivy-pdf[data-density=\"dense\"] .ivy-pdf-title{margin-bottom:2mm;font-size:12.5pt}\n  @media print{.no-print-background .ivy-pdf-watercolor{display:none!important}}\n", rc = "\n  .managed-pdf{position:relative;width:100%;height:100%;overflow:hidden;color:var(--managed-text);background:#fff;font-family:var(--body-font);font-size:var(--body-size);line-height:var(--body-line)}\n  .managed-pdf *{box-sizing:border-box}.managed-pdf a{color:inherit;text-decoration:none}.managed-pdf-content{position:relative;z-index:2;height:100%}.managed-pdf-background{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none}.managed-pdf-section{min-width:0;margin:0 0 var(--managed-section-gap);break-inside:avoid}.managed-pdf-title{margin:0 0 3mm;color:var(--managed-muted);font-size:9pt;font-weight:500;line-height:1;text-transform:uppercase;break-after:avoid}.managed-pdf-list{display:flex;flex-direction:column;gap:var(--managed-entry-gap)}.managed-pdf-entry{break-inside:avoid}.managed-pdf-entry h3,.managed-pdf-entry h4{margin:0;overflow-wrap:anywhere}.managed-pdf-entry ul,.managed-pdf-ats ul{margin:1mm 0 0;padding-left:4mm}.managed-pdf-entry li,.managed-pdf-ats li{margin:.25mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.managed-pdf-footer{position:absolute;right:var(--managed-margin);bottom:6mm;left:var(--managed-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--managed-muted);font-size:7pt}.managed-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}\n  .stilvoll-pdf{--managed-primary:var(--accent);--managed-dark:var(--secondary);--managed-text:#465156;--managed-muted:#6d777c;--managed-divider:#aeb8b5;--managed-pattern:#dce2df;--managed-margin:max(15mm,var(--doc-margin));--managed-section-gap:var(--section-gap);--managed-entry-gap:5mm}.stilvoll-pdf .managed-pdf-background{color:var(--managed-pattern);opacity:.62}.stilvoll-pdf .managed-pdf-background path{fill:none;stroke:currentColor;stroke-width:.45}.stilvoll-pdf-header{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) 28mm;gap:10mm;min-height:36mm;padding:14mm var(--managed-margin) 0}.stilvoll-pdf-header.no-photo{grid-template-columns:1fr}.stilvoll-pdf-header h1{margin:0;color:var(--managed-dark);font-size:23pt;font-weight:400;line-height:1;letter-spacing:.015em;text-transform:uppercase;overflow-wrap:anywhere}.stilvoll-pdf-header h2{margin:2mm 0 2.5mm;color:var(--managed-primary);font-size:12pt;font-weight:400;line-height:1.2}.stilvoll-pdf-contacts{display:flex;flex-wrap:wrap;gap:1mm 3.5mm;margin:0;color:var(--managed-text);font-size:7.8pt;font-style:normal}.stilvoll-pdf-contacts span{display:inline-flex;gap:1mm}.stilvoll-pdf-contacts i{color:var(--managed-muted);font-style:normal}.stilvoll-pdf-photo{width:26mm;height:26mm;overflow:hidden;border-radius:1.5mm;object-fit:cover}.stilvoll-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:24mm;padding-top:11mm;padding-bottom:3mm;border-bottom:.3mm solid var(--managed-divider)}.stilvoll-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-primary);font-size:7pt;text-transform:uppercase}.stilvoll-pdf-header.compact h1{font-size:15pt}.stilvoll-pdf-header.compact h2{margin:0;font-size:8.5pt}.stilvoll-pdf-columns{display:grid;grid-template-columns:54mm minmax(0,115mm);gap:11mm;padding:10mm var(--managed-margin) 16mm}.stilvoll-pdf-columns.continuation{display:block;padding-top:6mm}.stilvoll-pdf .managed-pdf-title{padding-bottom:1mm;border-bottom:.3mm solid var(--managed-divider)}.stilvoll-pdf-strength{display:grid;grid-template-columns:9mm minmax(0,1fr);gap:3mm;margin-bottom:5mm}.stilvoll-pdf-strength i{display:grid;place-items:center;width:8mm;height:8mm;border-radius:50%;color:var(--managed-primary);background:#f1f3f2;font-style:normal}.stilvoll-pdf-strength h3{margin:0 0 1mm;color:var(--managed-dark);font-size:9.5pt;font-weight:500}.stilvoll-pdf-strength p{margin:0}.stilvoll-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) 11mm;gap:2mm;align-items:center;margin-bottom:3mm}.managed-pdf-dots{display:flex;gap:.6mm}.managed-pdf-dots i{display:block;width:1.5mm;height:1.5mm;border-radius:50%;background:#dde2e0}.managed-pdf-dots i.filled{background:var(--managed-dark)}.stilvoll-pdf-entry h3{color:var(--managed-dark);font-size:11pt;font-weight:400}.stilvoll-pdf-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm}.stilvoll-pdf-meta strong{margin-right:auto;color:var(--managed-primary);font-size:9.8pt;font-weight:400}.stilvoll-pdf-meta span{color:var(--managed-muted);font-size:7.8pt}\n  .kompakt-pdf{--managed-primary:var(--accent);--managed-accent:var(--secondary);--managed-text:#3f494f;--managed-muted:#6d757a;--managed-divider:#aeb6ba;--managed-pattern:#ffd7bc;--managed-margin:max(13mm,calc(var(--doc-margin) - 1mm));--managed-section-gap:max(3.5mm,calc(var(--section-gap) - 1mm));--managed-entry-gap:4mm}.kompakt-pdf .managed-pdf-background{color:var(--managed-pattern);opacity:.72}.kompakt-pdf .managed-pdf-background path,.kompakt-pdf .managed-pdf-background circle{fill:none;stroke:currentColor;stroke-width:.7}.kompakt-pdf-header{position:relative;z-index:2;min-height:22mm;padding:13mm var(--managed-margin) 0}.kompakt-pdf-header h1{max-width:112mm;margin:0;color:var(--managed-primary);font-size:20pt;font-weight:450;line-height:1}.kompakt-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 4mm;padding-top:10mm;border-bottom:.25mm solid var(--managed-divider)}.kompakt-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-accent);font-size:7pt;text-transform:uppercase}.kompakt-pdf-header.compact h1{font-size:14pt}.kompakt-pdf-header h2{margin:0;color:var(--managed-muted);font-size:8.5pt}.kompakt-pdf-columns{display:grid;grid-template-columns:108mm 66mm;gap:10mm;padding:9mm var(--managed-margin) 15mm}.kompakt-pdf-columns.continuation{display:block;padding-top:6mm}.kompakt-pdf-entry h3{color:var(--managed-primary);font-size:10.5pt;font-weight:550}.kompakt-pdf-meta{display:flex;flex-wrap:wrap;gap:.7mm 4mm;margin:.7mm 0 1mm;color:var(--managed-muted);font-size:7.4pt}.kompakt-pdf-meta strong{color:var(--managed-accent);font-size:8.4pt}.kompakt-pdf-contacts{display:grid;gap:3.5mm;margin:0;font-style:normal}.kompakt-pdf-contact{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;align-items:center;color:var(--managed-primary);font-size:8.8pt}.kompakt-pdf-contact i{color:var(--managed-accent);font-size:11pt;font-style:normal}.kompakt-pdf-strength{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;margin-bottom:4mm}.kompakt-pdf-strength i{color:var(--managed-accent);font-size:11pt;font-style:normal}.kompakt-pdf-strength h3{margin:0 0 1mm;color:var(--managed-primary);font-size:9pt}.kompakt-pdf-strength p{margin:0}.kompakt-pdf-skills{display:flex;flex-wrap:wrap;gap:2mm 3mm}.kompakt-pdf-skill{padding:0 1.5mm 1mm;border-bottom:.3mm solid var(--managed-divider);color:var(--managed-primary);font-size:7.8pt;font-weight:700}.kompakt-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 8mm}.kompakt-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:1.5mm;align-items:center}.kompakt-pdf-language strong{color:var(--managed-primary)}.kompakt-pdf-language .managed-pdf-dots i{width:2.2mm;height:2.2mm}.kompakt-pdf-language .managed-pdf-dots i.filled{background:var(--managed-accent)}\n  .einfach-pdf{--managed-primary:var(--accent);--managed-accent:var(--secondary);--managed-text:#424b50;--managed-muted:#667177;--managed-divider:var(--accent);--managed-pattern:#eaf6fd;--managed-margin:max(15mm,var(--doc-margin));--managed-section-gap:var(--section-gap);--managed-entry-gap:4.5mm}.einfach-pdf .managed-pdf-background{color:var(--managed-pattern);opacity:.78}.einfach-pdf .managed-pdf-background path{fill:none;stroke:currentColor;stroke-width:4.2}.einfach-pdf-inner{height:100%;padding:14mm var(--managed-margin) 16mm}.einfach-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 32mm;gap:9mm;min-height:36mm;margin-bottom:7mm}.einfach-pdf-header.no-photo{grid-template-columns:1fr}.einfach-pdf-header h1{margin:0;color:var(--managed-primary);font-size:24pt;font-weight:750;line-height:1;text-transform:uppercase}.einfach-pdf-header h2{margin:2mm 0;color:var(--managed-accent);font-size:11.5pt}.einfach-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 8mm;max-width:118mm;margin:0;font-size:7.8pt;font-style:normal}.einfach-pdf-contact{display:grid;grid-template-columns:4mm minmax(0,1fr);gap:1mm}.einfach-pdf-contact i{color:var(--managed-accent);font-style:normal}.einfach-pdf-photo{width:30mm;height:30mm;border-radius:50%;object-fit:cover}.einfach-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:auto;margin-bottom:6mm;padding-bottom:3mm;border-bottom:.5mm solid var(--managed-primary)}.einfach-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-accent);font-size:7pt;text-transform:uppercase}.einfach-pdf-header.compact h1{font-size:16pt}.einfach-pdf-header.compact h2{margin:0;font-size:9pt}.einfach-pdf .managed-pdf-title{padding-bottom:1mm;border-bottom:.65mm solid var(--managed-primary);color:var(--managed-primary);font-size:14pt;font-weight:750}.einfach-pdf-strengths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4mm 15mm}.einfach-pdf-strength{display:grid;grid-template-columns:7mm minmax(0,1fr);gap:2mm}.einfach-pdf-strength i{color:var(--managed-accent);font-size:14pt;font-style:normal}.einfach-pdf-strength h3{margin:0 0 1.5mm;color:var(--managed-primary);font-size:9.5pt}.einfach-pdf-strength p{margin:0}.einfach-pdf-entry{padding-bottom:3mm;border-bottom:.25mm dashed #d4d9dc}.einfach-pdf-entry:last-child{border-bottom:0}.einfach-pdf-entry h3{color:var(--managed-primary);font-size:11pt;font-weight:500}.einfach-pdf-entry h4{margin-top:1mm;color:var(--managed-accent);font-size:9.5pt}.einfach-pdf-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm;color:var(--managed-muted);font-size:7.8pt}.einfach-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 15mm}.einfach-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:3mm;align-items:center}.einfach-pdf-language strong{color:var(--managed-primary)}.einfach-pdf-language .managed-pdf-dots{gap:1mm}.einfach-pdf-language .managed-pdf-dots i{width:2.3mm;height:2.3mm}.einfach-pdf-language .managed-pdf-dots i.filled{background:var(--managed-accent)}\n  .managed-pdf[data-density=\"compact\"]{--managed-entry-gap:max(3.2mm,calc(var(--managed-entry-gap) - 1mm));--managed-section-gap:max(4mm,calc(var(--managed-section-gap) - 1mm))}.managed-pdf[data-density=\"dense\"]{--managed-entry-gap:3mm;--managed-section-gap:4mm}.kompakt-pdf[data-density=\"dense\"]{--managed-entry-gap:2.5mm;--managed-section-gap:3.5mm;font-size:max(7.5pt,calc(var(--body-size) - .5pt));line-height:max(1.18,calc(var(--body-line) - .07))}\n  .managed-pdf-ats{--managed-primary:#173b63;--managed-dark:#173b63;--managed-accent:#173b63;--managed-text:#303b42;--managed-muted:#626e75;--managed-divider:#aeb8bf;padding:14mm var(--managed-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.managed-pdf-ats .managed-pdf-header{display:block;min-height:auto;margin:0;padding:0 0 4mm;border-bottom:.3mm solid var(--managed-divider)}.managed-pdf-ats .managed-pdf-header h1{max-width:none;font-size:19pt}.managed-pdf-ats .managed-pdf-header h2{margin-top:1mm;color:var(--managed-primary);font-size:10pt}.managed-pdf-ats .managed-pdf-section{margin-top:var(--managed-section-gap);margin-bottom:0}.managed-pdf-ats .managed-pdf-title{margin-bottom:2mm;padding-bottom:1mm;border-bottom:.3mm solid var(--managed-divider);color:var(--managed-primary);font-size:10.5pt;font-weight:700}.managed-pdf-ats .managed-pdf-list{gap:var(--managed-entry-gap)}\n  @media print{.no-print-background .managed-pdf-background{display:none!important}}\n", ic = "\n  .modern-pdf{--modern-primary:var(--accent);--modern-soft:var(--secondary);--modern-heading:#303437;--modern-text:#444b4f;--modern-muted:#686f73;--modern-divider:#aeb4b6;--modern-icon-bg:#f2f3f3;--modern-margin:15mm;--modern-section-gap:7mm;--modern-entry-gap:4.5mm;position:relative;width:100%;height:100%;overflow:hidden;color:var(--modern-text);background:#fff;font-family:var(--body-font);font-size:8.4pt;line-height:1.27}\n  .modern-pdf *{box-sizing:border-box}.modern-pdf a{color:inherit;text-decoration:none}.modern-pdf-content{position:relative;z-index:2;height:100%;padding:14mm var(--modern-margin) 14mm}\n  .modern-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 29mm;gap:9mm;align-items:start;min-height:25mm;margin-bottom:4mm}.modern-pdf-header.no-photo{grid-template-columns:1fr}.modern-pdf-identity{min-width:0}.modern-pdf-header h1{margin:0;color:var(--modern-heading);font-size:24pt;font-weight:700;letter-spacing:.01em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.modern-pdf-header h2{margin:2mm 0 0;color:var(--modern-primary);font-size:12pt;font-weight:500;line-height:1.18;overflow-wrap:anywhere}.modern-pdf-photo{justify-self:end;width:25mm;height:25mm;border-radius:50%;object-fit:cover;background:var(--modern-icon-bg)}\n  .modern-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:auto;margin-bottom:7mm;padding-bottom:3mm;border-bottom:.35mm solid var(--modern-divider)}.modern-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--modern-primary);font-size:7pt;letter-spacing:.08em;text-transform:uppercase}.modern-pdf-header.compact h1{font-size:15pt}.modern-pdf-header.compact h2{margin:0;font-size:9pt}\n  .modern-pdf-columns{display:grid;grid-template-columns:102mm 67mm;gap:11mm;align-items:start}.modern-pdf-columns.continuation{display:block}.modern-pdf-left,.modern-pdf-right{display:flex;min-width:0;flex-direction:column;gap:var(--modern-section-gap)}\n  .modern-pdf-section{min-width:0;break-inside:auto}.modern-pdf-title{margin:0 0 3.2mm;padding-bottom:1mm;border-bottom:.35mm solid var(--modern-divider);color:var(--modern-muted);font-size:9.2pt;font-weight:500;letter-spacing:.025em;line-height:1;text-transform:uppercase;break-after:avoid}.modern-pdf-list{display:flex;flex-direction:column;gap:var(--modern-entry-gap)}\n  .modern-pdf-entry{break-inside:auto}.modern-pdf-entry h3{margin:0 0 1mm;color:var(--modern-heading);font-size:11pt;font-weight:500;line-height:1.15;overflow-wrap:anywhere;break-after:avoid}.modern-pdf-entry-meta{display:flex;flex-wrap:wrap;align-items:center;gap:1mm 4mm;margin:0 0 1.5mm;color:var(--modern-muted);font-size:7.9pt;line-height:1.2;break-after:avoid}.modern-pdf-entry-meta strong{margin-right:auto;color:var(--modern-primary);font-weight:600}.modern-pdf-entry-meta span{display:flex;align-items:center;gap:1mm;white-space:nowrap}.modern-pdf-entry-meta i{color:var(--modern-muted);font-size:6.8pt;font-style:normal}.modern-pdf-entry ul,.modern-pdf-certifications,.modern-pdf-ats ul{margin:0;padding-left:4mm}.modern-pdf-entry li,.modern-pdf-certifications li,.modern-pdf-ats li{margin:.35mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word;break-inside:avoid}\n  .modern-pdf-contacts{display:grid;gap:3.2mm;margin:0;font-style:normal}.modern-pdf-contact{display:grid;grid-template-columns:8.5mm minmax(0,1fr);gap:3mm;align-items:center;min-width:0}.modern-pdf-contact i{display:grid;place-items:center;width:8.5mm;height:8.5mm;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:7pt;font-style:normal;font-weight:700}.modern-pdf-contact span,.modern-pdf-contact a{min-width:0;color:var(--modern-text);font-size:8.4pt;line-height:1.2;overflow-wrap:anywhere}\n  .modern-pdf-contacts.inline{display:flex;flex-wrap:nowrap;align-items:center;gap:1.8mm;max-width:145mm;margin-top:3mm}.modern-pdf-contacts.inline .modern-pdf-contact{display:flex;flex:0 0 auto;grid-template-columns:none;gap:.8mm;min-width:0}.modern-pdf-contacts.inline .modern-pdf-contact i{display:block;width:3.2mm;height:auto;border-radius:0;color:var(--modern-muted);background:transparent;font-size:6.8pt;line-height:1.2}.modern-pdf-contacts.inline .modern-pdf-contact span,.modern-pdf-contacts.inline .modern-pdf-contact a{display:block;max-width:44mm;overflow:hidden;color:var(--modern-muted);font-size:7.4pt;text-overflow:ellipsis;white-space:nowrap}\n  .modern-pdf-summary{margin:0;hyphens:auto;overflow-wrap:break-word}.modern-pdf-strengths{display:flex;flex-direction:column;gap:4mm}.modern-pdf-strength{display:grid;grid-template-columns:10mm minmax(0,1fr);gap:3mm;align-items:start}.modern-pdf-strength>i{display:grid;width:9mm;height:9mm;place-items:center;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:10pt;font-style:normal;font-weight:700}.modern-pdf-strength h3{margin:0 0 .5mm;color:var(--modern-heading);font-size:9.5pt;font-weight:600}.modern-pdf-strength p{margin:0;hyphens:auto;overflow-wrap:break-word}.modern-pdf-languages{display:flex;flex-direction:column;gap:2.5mm}.modern-pdf-language{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4mm;align-items:center}.modern-pdf-language>div{display:flex;min-width:0;justify-content:space-between;gap:2mm}.modern-pdf-language strong{color:var(--modern-heading);font-weight:600}.modern-pdf-language em{color:var(--modern-muted);font-size:7.9pt;font-style:normal}.modern-pdf-dots{display:flex;gap:1.1mm;color:var(--modern-primary);font-size:6pt;white-space:nowrap}\n  .modern-pdf-knowledge{display:flex;flex-wrap:wrap;gap:2.5mm 3mm}.modern-pdf-knowledge span{padding:0 2mm 1mm;border-bottom:.3mm solid var(--modern-divider);color:var(--modern-text);font-size:8.2pt;line-height:1.15}.modern-pdf-achievements{display:flex;flex-direction:column;gap:4mm}.modern-pdf-achievements article{display:grid;grid-template-columns:9mm minmax(0,1fr);gap:3mm;align-items:start}.modern-pdf-achievements i{display:grid;width:9mm;height:9mm;place-items:center;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:8pt;font-style:normal}.modern-pdf-achievements p{margin:0;line-height:1.25}\n  .modern-pdf-footer{position:absolute;right:var(--modern-margin);bottom:6mm;left:var(--modern-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--modern-muted);font-size:7.2pt}.modern-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}\n  .modern-pdf[data-density=\"compact\"]{--modern-section-gap:5mm;--modern-entry-gap:3.7mm;font-size:8.1pt}.modern-pdf[data-density=\"dense\"]{--modern-section-gap:4mm;--modern-entry-gap:3mm;font-size:7.7pt;line-height:1.2}.modern-pdf[data-density=\"dense\"] .modern-pdf-title{margin-bottom:2.5mm}.modern-pdf[data-density=\"dense\"] .modern-pdf-contacts{gap:2.5mm}.modern-pdf[data-density=\"dense\"] .modern-pdf-strengths{gap:3mm}\n  .modern-pdf-ats{--modern-primary:#173b63;--modern-heading:#26343e;--modern-text:#303b42;--modern-muted:#626e75;--modern-divider:#aeb8bf;padding:14mm var(--modern-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.modern-pdf-ats .modern-pdf-header{display:block;min-height:auto;margin-bottom:5mm;padding-bottom:3mm;border-bottom:.35mm solid var(--modern-divider)}.modern-pdf-ats .modern-pdf-header h1{font-size:19pt}.modern-pdf-ats .modern-pdf-header h2{margin-top:1mm;color:var(--modern-heading);font-size:10pt}.modern-pdf-ats .modern-pdf-section{margin-bottom:5mm}.modern-pdf-ats .modern-pdf-title{margin-bottom:2mm;color:var(--modern-heading);font-size:10.5pt;font-weight:700}.modern-pdf-ats .modern-pdf-contacts{display:flex;flex-wrap:wrap;gap:1mm 5mm}.modern-pdf-ats .modern-pdf-contact{display:block}.modern-pdf-ats .modern-pdf-contact i{display:none}.modern-pdf-ats .modern-pdf-language{display:block}.modern-pdf-ats .modern-pdf-dots{display:none}\n  @media print{.no-print-background .modern-pdf-background{display:none!important}}\n", ac = "\n  .tabellarisch-pdf{--tab-primary:var(--secondary);--tab-accent:var(--accent);--tab-text:#3f4850;--tab-muted:#6d747a;--tab-line:#c8cdd1;--tab-margin:max(15mm,var(--doc-margin));--tab-section-gap:max(6.3mm,var(--section-gap));--tab-entry-gap:4.4mm;position:relative;width:100%;height:100%;overflow:hidden;color:var(--tab-text);background:#fff;font-family:var(--body-font);font-size:max(8.7pt,var(--body-size));line-height:max(1.28,var(--body-line))}\n  .tabellarisch-pdf *{box-sizing:border-box}.tabellarisch-pdf a{color:inherit;text-decoration:none}.tabellarisch-pdf-content{position:relative;z-index:2;height:100%;padding:max(15mm,var(--doc-margin)) var(--tab-margin) max(19mm,calc(var(--doc-margin) + 5mm))}\n  .tabellarisch-pdf-background{position:absolute;top:0;right:0;z-index:0;width:100%;height:58mm;fill:none;stroke:var(--tab-line);stroke-width:1.15;opacity:.62;pointer-events:none}\n  .tabellarisch-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 32mm;gap:10mm;align-items:start;min-height:30mm}.tabellarisch-pdf-header.no-photo{grid-template-columns:1fr}.tabellarisch-pdf-identity{min-width:0;padding-top:1mm}.tabellarisch-pdf-header h1{margin:0;color:var(--tab-primary);font-family:var(--heading-font);font-size:25pt;font-weight:750;letter-spacing:.015em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.tabellarisch-pdf-header h2{margin:2.3mm 0 0;color:var(--tab-accent);font-family:var(--heading-font);font-size:13.5pt;font-weight:650;line-height:1.15;overflow-wrap:anywhere}.tabellarisch-pdf-photo{display:block;width:30mm;height:30mm;justify-self:end;border-radius:50%;background:#e8ebed;object-fit:cover}\n  .tabellarisch-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.15mm 7mm;max-width:118mm;margin:2.5mm 0 0;color:var(--tab-text);font-size:8.4pt;font-style:normal;font-weight:600;line-height:1.2}.tabellarisch-pdf-contact{display:grid;grid-template-columns:3.2mm minmax(0,1fr);gap:1.2mm;align-items:center;min-width:0}.tabellarisch-pdf-contact svg{width:3mm;height:3mm;fill:none;stroke:var(--tab-accent);stroke-linecap:round;stroke-linejoin:round;stroke-width:2.4}.tabellarisch-pdf-contact span,.tabellarisch-pdf-contact a{min-width:0;overflow-wrap:anywhere}\n  .tabellarisch-pdf-section{min-width:0;margin-top:var(--tab-section-gap);break-inside:auto}.tabellarisch-pdf-title{display:flex;align-items:baseline;gap:2.5mm;margin:0 0 3.5mm;color:var(--tab-primary);font-family:var(--heading-font);font-size:15pt;font-weight:750;letter-spacing:.01em;line-height:1.05;text-transform:uppercase;break-after:avoid}.tabellarisch-pdf-title small{color:var(--tab-muted);font-size:7.5pt;font-weight:600;text-transform:none}.tabellarisch-pdf-summary{margin:0;hyphens:auto;overflow-wrap:break-word}\n  .tabellarisch-pdf-strengths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5mm 12mm}.tabellarisch-pdf-strength{display:grid;grid-template-columns:8mm minmax(0,1fr);gap:2.5mm;align-items:start;break-inside:avoid}.tabellarisch-pdf-strength svg{width:6mm;height:6mm;fill:none;stroke:var(--tab-accent);stroke-linecap:round;stroke-linejoin:round;stroke-width:2.1}.tabellarisch-pdf-strength h3{margin:0 0 1.5mm;color:var(--tab-primary);font-size:10.3pt;font-weight:700;line-height:1.2}.tabellarisch-pdf-strength p{margin:0;hyphens:auto;overflow-wrap:break-word}\n  .tabellarisch-pdf-timeline{display:flex;flex-direction:column}.tabellarisch-pdf-entry{display:grid;grid-template-columns:minmax(30mm,35mm) 7mm minmax(0,1fr);gap:4mm;min-width:0;padding-bottom:var(--tab-entry-gap);break-inside:avoid}.tabellarisch-pdf-entry:last-child{padding-bottom:0}.tabellarisch-pdf-meta{padding-top:.45mm}.tabellarisch-pdf-date,.tabellarisch-pdf-location{margin:0}.tabellarisch-pdf-date{color:var(--tab-primary);font-size:10pt;font-weight:750;line-height:1.15}.tabellarisch-pdf-location{margin-top:2mm;color:var(--tab-text);font-size:8.4pt;line-height:1.3}.tabellarisch-pdf-rail{position:relative;display:block;min-height:100%}.tabellarisch-pdf-rail:before{position:absolute;top:2.5mm;bottom:-1mm;left:50%;width:.35mm;background:var(--tab-line);content:\"\";transform:translateX(-50%)}.tabellarisch-pdf-rail:after{position:absolute;top:.6mm;left:50%;width:2.3mm;height:2.3mm;border-radius:50%;background:var(--tab-primary);content:\"\";transform:translateX(-50%)}.tabellarisch-pdf-timeline:not(.continues) .tabellarisch-pdf-entry:last-child .tabellarisch-pdf-rail:before{bottom:auto;height:1mm}.tabellarisch-pdf-entry-content{min-width:0}.tabellarisch-pdf-entry h3{margin:0;color:var(--tab-primary);font-family:var(--heading-font);font-size:12pt;font-weight:500;line-height:1.15;overflow-wrap:anywhere}.tabellarisch-pdf-organization{margin:1mm 0 1.5mm;color:var(--tab-accent);font-size:10.2pt;font-weight:700;line-height:1.2;overflow-wrap:anywhere}.tabellarisch-pdf-entry ul,.tabellarisch-pdf-list ul,.tabellarisch-pdf-ats ul{margin:0;padding-left:4.5mm}.tabellarisch-pdf-entry li,.tabellarisch-pdf-list li,.tabellarisch-pdf-ats li{margin:.45mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word}.tabellarisch-pdf-entry li::marker{color:var(--tab-muted)}\n  .tabellarisch-pdf-additional{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12mm}.tabellarisch-pdf-list ul.inline{display:flex;flex-wrap:wrap;gap:1mm 6mm;padding:0;list-style:none}.tabellarisch-pdf-list ul.inline li:before{margin-right:1.5mm;color:var(--tab-accent);content:\"•\"}\n  .tabellarisch-pdf-continuation{display:flex;align-items:baseline;justify-content:space-between;gap:8mm;margin-bottom:6mm;padding-bottom:2.5mm;border-bottom:.35mm solid var(--tab-line)}.tabellarisch-pdf-continuation strong{color:var(--tab-primary);font-family:var(--heading-font);font-size:13pt}.tabellarisch-pdf-continuation span{color:var(--tab-accent);font-size:9pt;font-weight:600;text-align:right}.tabellarisch-pdf-footer{position:absolute;right:var(--tab-margin);bottom:6mm;left:var(--tab-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--tab-muted);font-size:7.5pt}.tabellarisch-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}\n  .tabellarisch-pdf[data-density=\"compact\"]{--tab-section-gap:5.2mm;--tab-entry-gap:3.4mm;font-size:max(8.3pt,var(--body-size));line-height:max(1.24,var(--body-line))}.tabellarisch-pdf[data-density=\"dense\"]{--tab-section-gap:4.1mm;--tab-entry-gap:2.6mm;--tab-margin:max(13mm,var(--doc-margin));font-size:8pt;line-height:1.22}.tabellarisch-pdf[data-density=\"dense\"] .tabellarisch-pdf-content{padding-top:13mm}.tabellarisch-pdf[data-density=\"dense\"] .tabellarisch-pdf-header{min-height:29mm}.tabellarisch-pdf[data-density=\"dense\"] .tabellarisch-pdf-header h1{font-size:22pt}.tabellarisch-pdf[data-density=\"dense\"] .tabellarisch-pdf-header h2{font-size:12pt}.tabellarisch-pdf[data-density=\"dense\"] .tabellarisch-pdf-title{margin-bottom:2.4mm;font-size:13.5pt}\n  .tabellarisch-pdf-ats{--tab-primary:#222b30;--tab-accent:#222b30;--tab-line:#cfd4d7;padding:14mm var(--tab-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.tabellarisch-pdf-ats .tabellarisch-pdf-header{display:block;min-height:0;padding-bottom:4mm;border-bottom:.35mm solid var(--tab-line)}.tabellarisch-pdf-ats .tabellarisch-pdf-contacts{display:flex;flex-wrap:wrap;gap:1mm 5mm}.tabellarisch-pdf-ats .tabellarisch-pdf-contact{display:block}.tabellarisch-pdf-ats .tabellarisch-pdf-contact svg{display:none}.tabellarisch-pdf-ats .tabellarisch-pdf-title{font-size:11pt}.tabellarisch-pdf-ats .tabellarisch-pdf-entry{display:block}.tabellarisch-pdf-ats .tabellarisch-pdf-entry h3{font-size:11pt}.tabellarisch-pdf-ats .tabellarisch-pdf-organization{margin-bottom:1mm}.tabellarisch-pdf-ats-meta{margin:0 0 1.5mm;color:var(--tab-muted);font-size:8.3pt}\n  @media print{.no-print-background .tabellarisch-pdf-background{display:none!important}}\n", oc = "\n  <script>\n    (() => {\n      const fit = (page) => {\n        const content = page.querySelector(\".page-content\");\n        if (!content) return;\n        if (page.dataset.noFit === \"true\") {\n          content.dataset.fitScale = \"1.000\";\n          return;\n        }\n        content.style.transform = \"\";\n        content.style.width = \"100%\";\n        const heightRatio = page.clientHeight / Math.max(content.scrollHeight, 1);\n        const widthRatio = page.clientWidth / Math.max(content.scrollWidth, 1);\n        const scale = Math.min(1, heightRatio, widthRatio);\n        if (scale < 0.999) {\n          content.style.transform = \"scale(\" + scale + \")\";\n          content.style.width = 100 / scale + \"%\";\n          content.dataset.fitScale = scale.toFixed(3);\n        } else {\n          content.dataset.fitScale = \"1.000\";\n        }\n      };\n      document.querySelectorAll(\".page\").forEach(fit);\n    })();\n  <\/script>", sc = (e, t, n) => {
+	let r = ps(e.templateId), i = e.accentColor || r.accent, a = e.secondaryColor || r.secondary, o = ms(a), s = e.designSettings, c = s.resumeOutputMode === "ats" || s.columnLayout === "compact-ats", l = c ? "compact-ats" : s.columnLayout, u = `background-${s.backgroundId} ${s.showBackgroundInPrint ? "print-background" : "no-print-background"}`, d = Us(s, c), f = e.documents, p = t?.resumeSections ?? {
 		profile: !0,
 		experience: !0,
 		education: !0,
 		skills: !0,
 		languages: !0,
 		certifications: !0
-	}, m = Ws(t), h = e.job.title, g = e.company.name, _ = t ? `${t.firstName.charAt(0)}${t.lastName.charAt(0)}`.toUpperCase() : "VN", v = Ls(t?.photoPath), y = Ls(t?.signaturePath), b = (e = !1) => c ? "" : v ? `<span class="cv-avatar${e ? " side-avatar" : ""} has-image"><img class="cv-avatar-image" src="${$(v)}" alt=""></span>` : `<span class="cv-avatar${e ? " side-avatar" : ""}">${$(_)}</span>`, x = t ? [
+	}, m = Ks(t), h = e.job.title, g = e.company.name, _ = t ? `${t.firstName.charAt(0)}${t.lastName.charAt(0)}`.toUpperCase() : "VN", v = zs(t?.photoPath), y = zs(t?.signaturePath), b = (e = !1) => c ? "" : v ? `<span class="cv-avatar${e ? " side-avatar" : ""} has-image"><img class="cv-avatar-image" src="${$(v)}" alt=""></span>` : `<span class="cv-avatar${e ? " side-avatar" : ""}">${$(_)}</span>`, x = t ? [
 		t.phone,
 		t.email,
 		t.city,
 		t.linkedin
-	].filter(Boolean).map($).join(" · ") : "Telefon · E-Mail · Ort", S = new Intl.DateTimeFormat("de-DE", { dateStyle: "long" }).format(/* @__PURE__ */ new Date()), C = Fs(f), w = `
+	].filter(Boolean).map($).join(" · ") : "Telefon · E-Mail · Ort", S = new Intl.DateTimeFormat("de-DE", { dateStyle: "long" }).format(/* @__PURE__ */ new Date()), C = Ls(f), w = `
     <section class="page cover-page ${u}">
       ${d}
       <div class="page-content standard-page-content cover-content">
@@ -4486,18 +4500,18 @@ var gs = (e = "", t = 0) => ({
         <p class="muted">bei ${$(g)}</p>
         <h2>${$(m)}</h2>
         <p>${$(f.deckblattStatement || t?.summary || "Motiviert, strukturiert und bereit für die nächste berufliche Aufgabe.")}</p>
-        <div class="contact"><p>${Js(t)}</p></div>
+        <div class="contact"><p>${Xs(t)}</p></div>
       </div>
     </section>`, T = `
     <section class="page letter-page letter-${C.density} ${u}">
       ${d}
       <div class="page-content letter-content">
         <div class="rule"></div>
-        <div class="sender">${Js(t)}</div>
-        <div class="recipient">${qs(e)}</div>
+        <div class="sender">${Xs(t)}</div>
+        <div class="recipient">${Ys(e)}</div>
         <p class="date">${$(t?.city || e.company.city)}, ${S}</p>
         <p class="subject">${$(f.coverSubject || `Bewerbung als ${h}`)}</p>
-        <p>${$(Ks(e))},</p>
+        <p>${$(Js(e))},</p>
         <p>${$(f.coverIntroduction || `die ausgeschriebene Position als ${h} bei ${g} spricht mich besonders an, weil sie fachliche Verantwortung mit konkretem Gestaltungsspielraum verbindet.`)}</p>
         <p>${$(f.coverMotivation || "Meine Motivation entsteht aus der Möglichkeit, vorhandene Erfahrung gezielt einzusetzen, mich fachlich weiterzuentwickeln und gemeinsam mit Ihrem Team messbare Ergebnisse zu erzielen.")}</p>
         <p>${$(f.coverQualification || t?.summary || "Ich arbeite strukturiert, zuverlässig und lösungsorientiert. Neue Anforderungen erfasse ich schnell und überführe sie in nachvollziehbare, belastbare Ergebnisse.")}</p>
@@ -4505,11 +4519,11 @@ var gs = (e = "", t = 0) => ({
         <p>${$(f.coverClosing || "Gerne überzeuge ich Sie in einem persönlichen Gespräch davon, welchen konkreten Beitrag ich in Ihrem Team leisten kann. Auf Ihren Terminvorschlag freue ich mich.")}</p>
         <div class="signature"><p>Mit freundlichen Grüßen</p>${y ? `<img class="signature-image" src="${$(y)}" alt="">` : ""}<strong>${$(m)}</strong></div>
       </div>
-    </section>`, E = new Map((t?.experiences ?? []).map((e) => [e.id, e])), D = new Map((t?.education ?? []).map((e) => [e.id, e])), O = p.profile ? `<section><h3>Zusammenfassung</h3><p>${$(f.resumeProfile || t?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>` : "", k = p.skills ? Us(t, c) : "", A = p.languages && t?.languages.length ? `<section><h3>Sprachen</h3>${t.languages.map((e) => c ? `<p class="language language-plain"><span>${$(e)}</span></p>` : `<p class="language"><span>${$(e)}</span><i>●●●●○</i></p>`).join("")}</section>` : "", j = p.certifications && t?.certifications.length ? `<section><h3>Zertifikate</h3><ul>${t.certifications.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", M = Ps(t ? {
+    </section>`, E = new Map((t?.experiences ?? []).map((e) => [e.id, e])), D = new Map((t?.education ?? []).map((e) => [e.id, e])), O = p.profile ? `<section><h3>Zusammenfassung</h3><p>${$(f.resumeProfile || t?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>` : "", k = p.skills ? Gs(t, c) : "", A = p.languages && t?.languages.length ? `<section><h3>Sprachen</h3>${t.languages.map((e) => c ? `<p class="language language-plain"><span>${$(e)}</span></p>` : `<p class="language"><span>${$(e)}</span><i>●●●●○</i></p>`).join("")}</section>` : "", j = p.certifications && t?.certifications.length ? `<section><h3>Zertifikate</h3><ul>${t.certifications.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", M = Is(t ? {
 		...t,
 		experiences: p.experience ? t.experiences : [],
 		education: p.education ? t.education : []
-	} : void 0, f.resumeProfile, r.id === "zweispaltig" ? Es : r.id === "kompakt" ? Ds : r.id === "modern" ? Os : void 0), N = (e) => {
+	} : void 0, f.resumeProfile, r.id === "zweispaltig" ? Es : r.id === "kompakt" ? Ds : r.id === "kreativ" ? Os : r.id === "tabellarisch" ? ks : r.id === "modern" ? As : void 0), N = (e) => {
 		let t = E.get(e);
 		return t ? `
       <article class="cv-entry">
@@ -4548,17 +4562,17 @@ var gs = (e = "", t = 0) => ({
 			{
 				label: "LinkedIn",
 				value: t.linkedin,
-				href: Rs(t.linkedin)
+				href: Bs(t.linkedin)
 			},
 			{
 				label: "GitHub",
 				value: t.github,
-				href: Rs(t.github)
+				href: Bs(t.github)
 			},
 			{
 				label: "Portfolio",
 				value: t.portfolio,
-				href: Rs(t.portfolio)
+				href: Bs(t.portfolio)
 			},
 			{
 				label: "Ort",
@@ -4606,13 +4620,13 @@ var gs = (e = "", t = 0) => ({
             <p>${$(n.organization)}</p>
           </div>
           <div class="elegant-pdf-entry-meta">
-            <strong>${$(Bs(n.from, n.to))}</strong>
+            <strong>${$(Hs(n.from, n.to))}</strong>
             ${n.city ? `<span>${$(n.city)}</span>` : ""}
           </div>
         </div>
         ${n.achievements.length ? `<ul>${n.achievements.map((e) => `<li>${$(e)}</li>`).join("")}</ul>` : ""}
       </article>` : "";
-	}, L = zs(t?.skills ?? []).slice(0, 3), R = L.length ? `<section><h3>Stärken</h3><div class="elegant-pdf-strengths">${L.map((e) => `<div class="elegant-pdf-strength"><i aria-hidden="true">✓</i><span>${$(e)}</span></div>`).join("")}</div></section>` : "", z = L.length ? `<section class="elegant-pdf-section"><h3>Stärken</h3><ul>${L.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", B = t?.portfolio || t?.github || t?.linkedin || "", te = (e) => {
+	}, L = Vs(t?.skills ?? []).slice(0, 3), R = L.length ? `<section><h3>Stärken</h3><div class="elegant-pdf-strengths">${L.map((e) => `<div class="elegant-pdf-strength"><i aria-hidden="true">✓</i><span>${$(e)}</span></div>`).join("")}</div></section>` : "", z = L.length ? `<section class="elegant-pdf-section"><h3>Stärken</h3><ul>${L.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", B = t?.portfolio || t?.github || t?.linkedin || "", V = (e) => {
 		let n = e.items.filter((e) => e.kind === "experience").map((e) => I(e.id, "experience")).join(""), r = e.items.filter((e) => e.kind === "education").map((e) => I(e.id, "education")).join(""), i = e.pageNumber > 1, a = e.pageNumber === M.length, o = `
       ${n ? `<section class="elegant-pdf-section"><h3>Berufserfahrung${i ? " · Fortsetzung" : ""}</h3><div class="elegant-pdf-list">${n}</div></section>` : ""}
       ${r ? `<section class="elegant-pdf-section"><h3>Ausbildung</h3><div class="elegant-pdf-list">${r}</div></section>` : ""}`;
@@ -4629,7 +4643,7 @@ var gs = (e = "", t = 0) => ({
           </div>
         </section>`;
 		}
-		let s = B ? `<a href="${$(Rs(B))}">${$(B)}</a>` : "", l = i ? `<aside class="elegant-pdf-sidebar elegant-pdf-continuation">
+		let s = B ? `<a href="${$(Bs(B))}">${$(B)}</a>` : "", l = i ? `<aside class="elegant-pdf-sidebar elegant-pdf-continuation">
           <p class="kicker">Lebenslauf</p>
           <h2>${$(m)}</h2>
           ${t?.title ? `<p>${$(t.title)}</p>` : ""}
@@ -4645,7 +4659,7 @@ var gs = (e = "", t = 0) => ({
           ${k}
           ${A}
           ${j}
-        </aside>`, d = B ? `<a href="${$(Rs(B))}">${$(B)}</a>` : "<span></span>";
+        </aside>`, d = B ? `<a href="${$(Bs(B))}">${$(B)}</a>` : "<span></span>";
 		return `
       <section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="elegant" data-no-fit="true">
         <div class="page-content elegant-pdf">
@@ -4658,7 +4672,7 @@ var gs = (e = "", t = 0) => ({
           ${l}
         </div>
       </section>`;
-	}, V = () => {
+	}, H = () => {
 		if (!t) return "";
 		let e = [
 			t.postalCode,
@@ -4683,17 +4697,17 @@ var gs = (e = "", t = 0) => ({
 			{
 				label: "LinkedIn",
 				value: t.linkedin,
-				href: Rs(t.linkedin)
+				href: Bs(t.linkedin)
 			},
 			{
 				label: "GitHub",
 				value: t.github,
-				href: Rs(t.github)
+				href: Bs(t.github)
 			},
 			{
 				label: "Portfolio",
 				value: t.portfolio,
-				href: Rs(t.portfolio)
+				href: Bs(t.portfolio)
 			},
 			{
 				label: "Geboren",
@@ -4705,8 +4719,8 @@ var gs = (e = "", t = 0) => ({
 			let t = `<strong>${$(e.label)}</strong><i>${$(e.value)}</i>`;
 			return e.href ? `<a href="${$(e.href)}">${t}</a>` : `<span>${t}</span>`;
 		}).join("")}</address>` : "";
-	}, ne = (e, n) => {
-		let r = zs(t?.skills ?? []).slice(0, 3);
+	}, te = (e, n) => {
+		let r = Vs(t?.skills ?? []).slice(0, 3);
 		return `
       <header class="zweispaltig-pdf-header${e ? " compact" : ""}">
         <div>
@@ -4714,11 +4728,11 @@ var gs = (e = "", t = 0) => ({
           <h1>${$(m)}</h1>
           ${t?.title || h ? `<h2>${$(t?.title || h)}</h2>` : ""}
           ${!e && r.length ? `<p class="zweispaltig-pdf-specializations">${r.map($).join(" | ")}</p>` : ""}
-          ${e ? "" : V()}
+          ${e ? "" : H()}
         </div>
         ${n && v ? `<img class="zweispaltig-pdf-photo" src="${$(v)}" alt="">` : ""}
       </header>`;
-	}, H = (e, t) => {
+	}, U = (e, t) => {
 		let n = t === "experience" ? (() => {
 			let t = E.get(e);
 			return t ? {
@@ -4748,14 +4762,14 @@ var gs = (e = "", t = 0) => ({
             <p>${$(n.organization)}</p>
           </div>
           <div class="zweispaltig-pdf-entry-meta">
-            <strong>${$(Bs(n.from, n.to))}</strong>
+            <strong>${$(Hs(n.from, n.to))}</strong>
             ${n.city ? `<span>${$(n.city)}</span>` : ""}
           </div>
         </div>
         ${n.achievements.length ? `<ul>${n.achievements.map((e) => `<li>${$(e)}</li>`).join("")}</ul>` : ""}
       </article>` : "";
-	}, re = L.length ? `<section><h3>Stärken</h3><div class="zweispaltig-pdf-strengths">${L.map((e) => `<div class="zweispaltig-pdf-strength"><i aria-hidden="true">✓</i><span>${$(e)}</span></div>`).join("")}</div></section>` : "", ie = L.length ? `<section class="zweispaltig-pdf-section"><h3>Stärken</h3><ul>${L.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", ae = t?.portfolio || t?.github || t?.linkedin || "", U = (e) => {
-		let n = e.items.filter((e) => e.kind === "experience").map((e) => H(e.id, "experience")).join(""), r = e.items.filter((e) => e.kind === "education").map((e) => H(e.id, "education")).join(""), i = e.pageNumber > 1, a = e.pageNumber === M.length, o = `
+	}, ne = L.length ? `<section><h3>Stärken</h3><div class="zweispaltig-pdf-strengths">${L.map((e) => `<div class="zweispaltig-pdf-strength"><i aria-hidden="true">✓</i><span>${$(e)}</span></div>`).join("")}</div></section>` : "", re = L.length ? `<section class="zweispaltig-pdf-section"><h3>Stärken</h3><ul>${L.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", ie = t?.portfolio || t?.github || t?.linkedin || "", W = (e) => {
+		let n = e.items.filter((e) => e.kind === "experience").map((e) => U(e.id, "experience")).join(""), r = e.items.filter((e) => e.kind === "education").map((e) => U(e.id, "education")).join(""), i = e.pageNumber > 1, a = e.pageNumber === M.length, o = `
       ${n ? `<section class="zweispaltig-pdf-section"><h3>Berufserfahrung${i ? " · Fortsetzung" : ""}</h3><div class="zweispaltig-pdf-list">${n}</div></section>` : ""}
       ${r ? `<section class="zweispaltig-pdf-section"><h3>Ausbildung</h3><div class="zweispaltig-pdf-list">${r}</div></section>` : ""}`;
 		if (c) {
@@ -4763,24 +4777,24 @@ var gs = (e = "", t = 0) => ({
 			return `
         <section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="zweispaltig" data-no-fit="true">
           <div class="page-content zweispaltig-pdf zweispaltig-pdf-ats">
-            ${ne(i, !1)}
+            ${te(i, !1)}
             ${n}
             ${o}
-            ${a ? `${k}${A}${ie}${j}` : ""}
+            ${a ? `${k}${A}${re}${j}` : ""}
             <span class="page-number">${e.pageNumber} / ${M.length}</span>
           </div>
         </section>`;
 		}
 		let s = p.profile && !i ? `<section class="zweispaltig-pdf-section"><h3>Zusammenfassung</h3><p class="zweispaltig-pdf-summary">${$(f.resumeProfile || t?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>` : "", l = i ? "" : `<aside class="zweispaltig-pdf-sidebar">
-          ${re}
+          ${ne}
           ${k}
           ${A}
           ${j}
-        </aside>`, d = ae ? `<a href="${$(Rs(ae))}">${$(ae)}</a>` : "<span></span>";
+        </aside>`, d = ie ? `<a href="${$(Bs(ie))}">${$(ie)}</a>` : "<span></span>";
 		return `
       <section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="zweispaltig" data-no-fit="true">
         <div class="page-content zweispaltig-pdf">
-          ${ne(i, !i)}
+          ${te(i, !i)}
           <div class="zweispaltig-pdf-columns${i ? " continuation" : ""}">
             <main class="zweispaltig-pdf-main">
               ${s}
@@ -4792,7 +4806,7 @@ var gs = (e = "", t = 0) => ({
           <footer class="zweispaltig-pdf-footer">${d}<span>Seite ${e.pageNumber} von ${M.length}</span></footer>
         </div>
       </section>`;
-	}, W = (e, t) => `<header class="zeit-pdf-heading"><i aria-hidden="true">${$(t)}</i><h3>${$(e)}</h3></header>`, oe = [
+	}, G = (e, t) => `<header class="zeit-pdf-heading"><i aria-hidden="true">${$(t)}</i><h3>${$(e)}</h3></header>`, ae = [
 		{
 			label: "Telefon",
 			symbol: "T",
@@ -4809,13 +4823,13 @@ var gs = (e = "", t = 0) => ({
 			label: "Portfolio",
 			symbol: "W",
 			value: t?.portfolio,
-			href: Rs(t?.portfolio)
+			href: Bs(t?.portfolio)
 		},
 		{
 			label: "LinkedIn",
 			symbol: "in",
 			value: t?.linkedin,
-			href: Rs(t?.linkedin)
+			href: Bs(t?.linkedin)
 		},
 		{
 			label: "Wohnort",
@@ -4831,15 +4845,15 @@ var gs = (e = "", t = 0) => ({
 			label: "GitHub",
 			symbol: "G",
 			value: t?.github,
-			href: Rs(t?.github)
+			href: Bs(t?.github)
 		}
-	].filter((e) => e.value?.trim()), G = (e) => oe.length ? e ? `<address class="zeit-pdf-ats-contacts">${oe.map((e) => {
+	].filter((e) => e.value?.trim()), K = (e) => ae.length ? e ? `<address class="zeit-pdf-ats-contacts">${ae.map((e) => {
 		let t = `<strong>${$(e.label)}:</strong> ${$(e.value)}`;
 		return e.href ? `<a href="${$(e.href)}">${t}</a>` : `<span>${t}</span>`;
-	}).join("")}</address>` : `<section>${W("Kontakte", "@")}<div class="zeit-pdf-contacts">${oe.map((e) => {
+	}).join("")}</address>` : `<section>${G("Kontakte", "@")}<div class="zeit-pdf-contacts">${ae.map((e) => {
 		let t = `<i aria-hidden="true">${$(e.symbol)}</i><span>${$(e.value)}</span>`;
 		return e.href ? `<a class="zeit-pdf-contact" href="${$(e.href)}">${t}</a>` : `<span class="zeit-pdf-contact">${t}</span>`;
-	}).join("")}</div></section>` : "", se = (e, n) => {
+	}).join("")}</div></section>` : "", oe = (e, n) => {
 		let r = !e && !n && v ? `<div class="zeit-pdf-photo-composition">
             <span class="zeit-pdf-photo-pale"></span>
             <span class="zeit-pdf-photo-soft"></span>
@@ -4853,21 +4867,21 @@ var gs = (e = "", t = 0) => ({
           ${e ? "<p class=\"kicker\">Lebenslauf · Fortsetzung</p>" : ""}
           <h1>${$(m)}</h1>
           ${t?.title || h ? `<h2>${$(t?.title || h)}</h2>` : ""}
-          ${n && !e ? G(!0) : ""}
+          ${n && !e ? K(!0) : ""}
         </div>
       </header>`;
-	}, ce = (e) => {
+	}, se = (e) => {
 		let t = e.toLocaleLowerCase("de-DE");
 		return /muttersprache|native|c2/.test(t) ? 5 : /verhandlung|fließ|fliess|c1|b2|versiert/.test(t) ? 4 : /b1|gut/.test(t) ? 3 : /a2|grundkennt/.test(t) ? 2 : /a1|anfänger|anfaenger/.test(t) ? 1 : 4;
-	}, le = zs(t?.languages ?? []).map((e) => {
+	}, ce = Vs(t?.languages ?? []).map((e) => {
 		let [t, ...n] = e.split(/\s+[–—-]\s+/), r = n.join(" – ").trim();
 		return {
 			raw: e,
 			name: t.trim() || e,
 			level: r,
-			score: ce(r)
+			score: se(r)
 		};
-	}), ue = le.length ? `<section>${W("Sprachen", "A")}<div class="zeit-pdf-languages">${le.map((e) => `<article class="zeit-pdf-language"><h4>${$(e.name)}</h4><div><span>${$(e.level)}</span><span class="zeit-pdf-dots">${Array.from({ length: 5 }, (t, n) => `<i class="${n < e.score ? "filled" : ""}"></i>`).join("")}</span></div></article>`).join("")}</div></section>` : "", de = le.length ? `<section class="zeit-pdf-section">${W("Sprachen", "A")}<ul>${le.map((e) => `<li>${$(e.raw)}</li>`).join("")}</ul></section>` : "", K = L.length ? `<section>${W("Stärken", "◆")}<div class="zeit-pdf-strengths">${L.map((e) => `<div class="zeit-pdf-strength"><i aria-hidden="true"></i><span>${$(e)}</span></div>`).join("")}</div></section>` : "", fe = L.length ? `<section class="zeit-pdf-section">${W("Stärken", "◆")}<ul>${L.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", pe = zs(t?.certifications ?? []), me = pe.length ? `<section>${W("Zertifikate", "✓")}<ul>${pe.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", he = pe.length ? `<section class="zeit-pdf-section">${W("Zertifikate", "✓")}<ul>${pe.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", ge = (e, t) => {
+	}), le = ce.length ? `<section>${G("Sprachen", "A")}<div class="zeit-pdf-languages">${ce.map((e) => `<article class="zeit-pdf-language"><h4>${$(e.name)}</h4><div><span>${$(e.level)}</span><span class="zeit-pdf-dots">${Array.from({ length: 5 }, (t, n) => `<i class="${n < e.score ? "filled" : ""}"></i>`).join("")}</span></div></article>`).join("")}</div></section>` : "", ue = ce.length ? `<section class="zeit-pdf-section">${G("Sprachen", "A")}<ul>${ce.map((e) => `<li>${$(e.raw)}</li>`).join("")}</ul></section>` : "", q = L.length ? `<section>${G("Stärken", "◆")}<div class="zeit-pdf-strengths">${L.map((e) => `<div class="zeit-pdf-strength"><i aria-hidden="true"></i><span>${$(e)}</span></div>`).join("")}</div></section>` : "", de = L.length ? `<section class="zeit-pdf-section">${G("Stärken", "◆")}<ul>${L.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", fe = Vs(t?.certifications ?? []), pe = fe.length ? `<section>${G("Zertifikate", "✓")}<ul>${fe.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", me = fe.length ? `<section class="zeit-pdf-section">${G("Zertifikate", "✓")}<ul>${fe.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", he = (e, t) => {
 		let n = t === "experience" ? (() => {
 			let t = E.get(e);
 			return t ? {
@@ -4897,36 +4911,36 @@ var gs = (e = "", t = 0) => ({
         </div>
         <div class="zeit-pdf-entry-role">
           <h5>${$(n.title)}</h5>
-          <span>${$(Bs(n.from, n.to))}</span>
+          <span>${$(Hs(n.from, n.to))}</span>
         </div>
         ${n.achievements.length ? `<ul>${n.achievements.map((e) => `<li>${$(e)}</li>`).join("")}</ul>` : ""}
       </article>` : "";
-	}, _e = t?.portfolio || t?.github || t?.linkedin || "", ve = (e) => {
-		let n = e.items.filter((e) => e.kind === "experience").map((e) => ge(e.id, "experience")).join(""), r = e.items.filter((e) => e.kind === "education").map((e) => ge(e.id, "education")).join(""), i = e.pageNumber > 1, a = e.pageNumber === M.length, o = n ? `<section class="zeit-pdf-section">${W(c ? "Berufserfahrung" : "Erfahrung", "▣")}<div class="zeit-pdf-list">${n}</div></section>` : "", s = r ? `<section class="zeit-pdf-section">${W("Ausbildung", "⌂")}<div class="zeit-pdf-list">${r}</div></section>` : "";
+	}, ge = t?.portfolio || t?.github || t?.linkedin || "", _e = (e) => {
+		let n = e.items.filter((e) => e.kind === "experience").map((e) => he(e.id, "experience")).join(""), r = e.items.filter((e) => e.kind === "education").map((e) => he(e.id, "education")).join(""), i = e.pageNumber > 1, a = e.pageNumber === M.length, o = n ? `<section class="zeit-pdf-section">${G(c ? "Berufserfahrung" : "Erfahrung", "▣")}<div class="zeit-pdf-list">${n}</div></section>` : "", s = r ? `<section class="zeit-pdf-section">${G("Ausbildung", "⌂")}<div class="zeit-pdf-list">${r}</div></section>` : "";
 		if (c) {
-			let n = p.profile && !i ? `<section class="zeit-pdf-section">${W("Zusammenfassung", "≡")}<p class="zeit-pdf-summary">${$(f.resumeProfile || t?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>` : "";
+			let n = p.profile && !i ? `<section class="zeit-pdf-section">${G("Zusammenfassung", "≡")}<p class="zeit-pdf-summary">${$(f.resumeProfile || t?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>` : "";
 			return `
         <section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="zeitgenoessisch" data-no-fit="true">
           <div class="page-content zeit-pdf zeit-pdf-ats">
-            ${se(i, !0)}
+            ${oe(i, !0)}
             ${n}
             ${o}
             ${s}
-            ${a ? `${k}${p.languages ? de : ""}${p.skills ? fe : ""}${p.certifications ? he : ""}` : ""}
+            ${a ? `${k}${p.languages ? ue : ""}${p.skills ? de : ""}${p.certifications ? me : ""}` : ""}
             <span class="page-number">${e.pageNumber} / ${M.length}</span>
           </div>
         </section>`;
 		}
-		let l = p.profile && !i ? `<section class="zeit-pdf-section">${W("Zusammenfassung", "≡")}<p class="zeit-pdf-summary">${$(f.resumeProfile || t?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>` : "", d = i ? "" : `<aside class="zeit-pdf-left">
-          ${G(!1)}
-          ${p.skills ? K : ""}
-          ${p.languages ? ue : ""}
-          ${p.certifications ? me : ""}
-        </aside>`, m = _e ? `<a href="${$(Rs(_e))}">${$(_e)}</a>` : "<span></span>";
+		let l = p.profile && !i ? `<section class="zeit-pdf-section">${G("Zusammenfassung", "≡")}<p class="zeit-pdf-summary">${$(f.resumeProfile || t?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>` : "", d = i ? "" : `<aside class="zeit-pdf-left">
+          ${K(!1)}
+          ${p.skills ? q : ""}
+          ${p.languages ? le : ""}
+          ${p.certifications ? pe : ""}
+        </aside>`, m = ge ? `<a href="${$(Bs(ge))}">${$(ge)}</a>` : "<span></span>";
 		return `
       <section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="zeitgenoessisch" data-no-fit="true">
         <div class="page-content zeit-pdf">
-          ${se(i, !1)}
+          ${oe(i, !1)}
           <div class="zeit-pdf-columns${i ? " continuation" : ""}">
             ${d}
             <main class="zeit-pdf-main">
@@ -4939,10 +4953,52 @@ var gs = (e = "", t = 0) => ({
           <footer class="zeit-pdf-footer">${m}<span>Seite ${e.pageNumber} von ${M.length}</span></footer>
         </div>
       </section>`;
-	}, ye = () => oe.length ? `<address class="kreativ-pdf-contacts">${oe.map((e) => {
-		let t = `<strong>${$(e.label)}</strong><i>${$(e.value)}</i>`;
-		return e.href ? `<a href="${$(e.href)}">${t}</a>` : `<span>${t}</span>`;
-	}).join("")}</address>` : "", be = (e, n) => {
+	}, ve = (e) => `<svg viewBox="0 0 24 24" aria-hidden="true">${{
+		phone: "<path d=\"M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.6 1.9Z\"/>",
+		mail: "<rect width=\"20\" height=\"16\" x=\"2\" y=\"4\" rx=\"2\"/><path d=\"m22 7-10 6L2 7\"/>",
+		linkedin: "<path d=\"M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6Z\"/><rect width=\"4\" height=\"12\" x=\"2\" y=\"9\"/><circle cx=\"4\" cy=\"4\" r=\"2\"/>",
+		location: "<path d=\"M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/>",
+		birth: "<path d=\"M4 21h16M7 21V10h10v11M9 10V7h6v3M12 7V3M10 5h4\"/>",
+		strength: "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"m8.5 12 2.2 2.2 4.8-5\"/>"
+	}[e]}</svg>`, ye = [
+		{
+			label: "Telefon",
+			icon: ve("phone"),
+			value: t?.phone,
+			href: t?.phone ? `tel:${t.phone.replace(/[^\d+]/g, "")}` : ""
+		},
+		{
+			label: "E-Mail",
+			icon: ve("mail"),
+			value: t?.email,
+			href: t?.email ? `mailto:${t.email}` : ""
+		},
+		{
+			label: "LinkedIn",
+			icon: ve("linkedin"),
+			value: t?.linkedin,
+			href: Bs(t?.linkedin)
+		},
+		{
+			label: "Wohnort",
+			icon: ve("location"),
+			value: [
+				t?.postalCode,
+				t?.city,
+				t?.country
+			].filter(Boolean).join(" "),
+			href: ""
+		},
+		{
+			label: "Geboren",
+			icon: ve("birth"),
+			value: [t?.birthDate, t?.birthPlace].filter(Boolean).join(", "),
+			href: ""
+		}
+	].filter((e) => e.value?.trim()), be = () => ye.length ? `<address class="kreativ-pdf-contacts">${ye.map((e) => {
+		let t = `${e.icon}<i>${$(e.value)}</i>`;
+		return e.href ? `<a aria-label="${$(e.label)}" href="${$(e.href)}">${t}</a>` : `<span aria-label="${$(e.label)}">${t}</span>`;
+	}).join("")}</address>` : "", xe = (e, n) => {
 		let r = !e && !n && v ? `<img class="kreativ-pdf-photo" src="${$(v)}" alt="">` : "";
 		return `
       <header class="kreativ-pdf-header${e ? " compact" : ""}${r ? "" : " no-photo"}">
@@ -4950,22 +5006,22 @@ var gs = (e = "", t = 0) => ({
           ${e ? "<p class=\"kicker\">Lebenslauf · Fortsetzung</p>" : ""}
           <h1>${$(m)}</h1>
           ${t?.title || h ? `<h2>${$(t?.title || h)}</h2>` : ""}
-          ${e ? "" : ye()}
+          ${e ? "" : be()}
         </div>
         ${r}
       </header>`;
-	}, xe = (e) => {
+	}, Se = (e) => {
 		let t = e.toLocaleLowerCase("de-DE");
 		return /muttersprache|native|c2/.test(t) ? 5 : /verhandlung|fließ|fliess|c1/.test(t) ? 4 : /b2|fortgeschritten|versiert/.test(t) ? 3 : /b1|a2|grundkennt/.test(t) ? 2 : /a1|anfänger|anfaenger/.test(t) ? 1 : 3;
-	}, Se = zs(t?.languages ?? []).map((e) => {
+	}, Ce = Vs(t?.languages ?? []).map((e) => {
 		let [t, ...n] = e.split(/\s+[–—-]\s+/), r = n.join(" – ").trim();
 		return {
 			raw: e,
 			name: t.trim() || e,
 			level: r,
-			score: xe(r)
+			score: Se(r)
 		};
-	}), Ce = Se.length ? `<section><h3>Sprachen</h3><div class="kreativ-pdf-languages">${Se.map((e) => `<article class="kreativ-pdf-language"><h4>${$(e.name)}</h4><div><span>${$(e.level)}</span><span class="kreativ-pdf-dots">${Array.from({ length: 5 }, (t, n) => `<i class="${n < e.score ? "filled" : ""}"></i>`).join("")}</span></div></article>`).join("")}</div></section>` : "", we = Se.length ? `<section><h3>Sprachen</h3><ul>${Se.map((e) => `<li>${$(e.raw)}</li>`).join("")}</ul></section>` : "", Te = L.length ? `<section><h3>Stärken</h3><div class="kreativ-pdf-strengths">${L.map((e) => `<div class="kreativ-pdf-strength"><i aria-hidden="true">◆</i><span>${$(e)}</span></div>`).join("")}</div></section>` : "", Ee = L.length ? `<section><h3>Stärken</h3><ul>${L.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", q = zs(((t ? Ss(t.knowledgeSection, t.skills) : void 0)?.categories ?? []).filter((e) => e.isVisible).sort((e, t) => e.sortOrder - t.sortOrder).flatMap((e) => [...vs(e.items).map((t) => ys(t, e.showLevels, e.showYearsOfExperience, "comma-separated")), ...e.subcategories.filter((e) => e.isVisible).sort((e, t) => e.sortOrder - t.sortOrder).flatMap((t) => vs(t.items).map((t) => ys(t, e.showLevels, e.showYearsOfExperience, "comma-separated")))])), De = q.length ? `<section><h3>Fähigkeiten</h3><div class="kreativ-pdf-skills">${q.map((e) => `<span class="kreativ-pdf-skill">${$(e)}</span>`).join("")}</div></section>` : "", J = zs(t?.certifications ?? []), Oe = J.length ? `<section><h3>Zertifikate</h3><ul>${J.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", ke = J.length ? `<section><h3>Zertifikate</h3><ul>${J.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", Ae = (e, t) => {
+	}), we = Ce.length ? `<section><h3>Sprachen</h3><div class="kreativ-pdf-languages">${Ce.map((e) => `<article class="kreativ-pdf-language"><h4>${$(e.name)}</h4><div><span>${$(e.level)}</span><span class="kreativ-pdf-dots">${Array.from({ length: 5 }, (t, n) => `<i class="${n < e.score ? "filled" : ""}"></i>`).join("")}</span></div></article>`).join("")}</div></section>` : "", Te = Ce.length ? `<section><h3>Sprachen</h3><ul>${Ce.map((e) => `<li>${$(e.raw)}</li>`).join("")}</ul></section>` : "", Ee = t ? Ss(t.knowledgeSection, t.skills) : void 0, De = (Ee?.categories ?? []).filter((e) => e.isVisible).sort((e, t) => e.sortOrder - t.sortOrder).flatMap((e) => [...vs(e.items), ...e.subcategories.filter((e) => e.isVisible).sort((e, t) => e.sortOrder - t.sortOrder).flatMap((e) => vs(e.items))]).slice(0, 3), J = De.length ? `<section><h3>Stärken</h3><div class="kreativ-pdf-strengths">${De.map((e) => `<article class="kreativ-pdf-strength">${ve("strength")}<div><h4>${$(e.name)}</h4>${e.description?.trim() ? `<p>${$(e.description)}</p>` : ""}</div></article>`).join("")}</div></section>` : "", Oe = De.length ? `<section><h3>Stärken</h3><ul>${De.map((e) => `<li>${$(e.name)}</li>`).join("")}</ul></section>` : "", ke = Vs((Ee?.categories ?? []).filter((e) => e.isVisible).sort((e, t) => e.sortOrder - t.sortOrder).flatMap((e) => [...vs(e.items).map((t) => ys(t, e.showLevels, e.showYearsOfExperience, "comma-separated")), ...e.subcategories.filter((e) => e.isVisible).sort((e, t) => e.sortOrder - t.sortOrder).flatMap((t) => vs(t.items).map((t) => ys(t, e.showLevels, e.showYearsOfExperience, "comma-separated")))])), Ae = ke.length ? `<section><h3>Fähigkeiten</h3><div class="kreativ-pdf-skills">${ke.map((e) => `<span class="kreativ-pdf-skill">${$(e)}</span>`).join("")}</div></section>` : "", je = Vs(t?.certifications ?? []), Me = je.length ? `<section><h3>Zertifikate</h3><ul>${je.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", Ne = je.length ? `<section><h3>Zertifikate</h3><ul>${je.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", Pe = (e, t) => {
 		let n = t === "experience" ? (() => {
 			let t = E.get(e);
 			return t ? {
@@ -4992,39 +5048,39 @@ var gs = (e = "", t = 0) => ({
         <h4>${$(n.title)}</h4>
         <h5>${$(n.organization)}</h5>
         <p class="kreativ-pdf-entry-meta">
-          <span>${$(Bs(n.from, n.to))}</span>
+          <span>${$(Hs(n.from, n.to))}</span>
           ${n.city ? `<span>${$(n.city)}</span>` : ""}
         </p>
         ${n.achievements.length ? `<ul>${n.achievements.map((e) => `<li>${$(e)}</li>`).join("")}</ul>` : ""}
       </article>` : "";
-	}, je = t?.portfolio || t?.github || t?.linkedin || "", Me = (e) => {
-		let n = e.items.filter((e) => e.kind === "experience").map((e) => Ae(e.id, "experience")).join(""), r = e.items.filter((e) => e.kind === "education").map((e) => Ae(e.id, "education")).join(""), i = e.pageNumber > 1, a = e.pageNumber === M.length, o = n ? `<section class="kreativ-pdf-section"><h3 class="kreativ-pdf-title">${c ? "Berufserfahrung" : "Erfahrung"}</h3><div class="kreativ-pdf-list">${n}</div></section>` : "", s = r ? `<section class="kreativ-pdf-section"><h3 class="kreativ-pdf-title">Ausbildung</h3><div class="kreativ-pdf-list">${r}</div></section>` : "";
+	}, Fe = t?.portfolio || t?.github || t?.linkedin || "", Ie = (e) => {
+		let n = e.items.filter((e) => e.kind === "experience").map((e) => Pe(e.id, "experience")).join(""), r = e.items.filter((e) => e.kind === "education").map((e) => Pe(e.id, "education")).join(""), i = e.pageNumber > 1, a = e.pageNumber === M.length, o = n ? `<section class="kreativ-pdf-section"><h3 class="kreativ-pdf-title">${c ? "Berufserfahrung" : "Erfahrung"}</h3><div class="kreativ-pdf-list">${n}</div></section>` : "", s = r ? `<section class="kreativ-pdf-section"><h3 class="kreativ-pdf-title">Ausbildung</h3><div class="kreativ-pdf-list">${r}</div></section>` : "";
 		if (c) {
 			let n = p.profile && !i ? `<section><h3>Zusammenfassung</h3><p class="kreativ-pdf-summary">${$(f.resumeProfile || t?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>` : "";
 			return `
         <section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="kreativ" data-no-fit="true">
-          <div class="page-content kreativ-pdf kreativ-pdf-ats">
-            ${be(i, !0)}
+          <div class="page-content kreativ-pdf kreativ-pdf-ats" data-density="${e.density}">
+            ${xe(i, !0)}
             ${n}
             ${o}
             ${s}
-            ${a ? `${k}${p.languages ? we : ""}${p.skills ? Ee : ""}${p.certifications ? ke : ""}` : ""}
+            ${a ? `${k}${p.languages ? Te : ""}${p.skills ? Oe : ""}${p.certifications ? Ne : ""}` : ""}
             <span class="page-number">${e.pageNumber} / ${M.length}</span>
           </div>
         </section>`;
 		}
-		let l = p.profile && !i ? `<section><h3>Zusammenfassung</h3><p class="kreativ-pdf-summary">${$(f.resumeProfile || t?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>` : "", d = i ? "" : "<svg class=\"kreativ-pdf-background\" viewBox=\"0 0 100 100\" aria-hidden=\"true\"><circle cx=\"62\" cy=\"45\" r=\"39\"/><circle cx=\"78\" cy=\"53\" r=\"30\"/><circle cx=\"91\" cy=\"62\" r=\"22\"/></svg>", m = i ? "" : `<aside class="kreativ-pdf-right">
+		let l = p.profile && !i ? `<section><h3>Zusammenfassung</h3><p class="kreativ-pdf-summary">${$(f.resumeProfile || t?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>` : "", d = i ? "" : "<svg class=\"kreativ-pdf-background\" viewBox=\"0 0 100 100\" aria-hidden=\"true\"><g class=\"wide\"><circle cx=\"58\" cy=\"30\" r=\"37\"/><circle cx=\"72\" cy=\"44\" r=\"31\"/><circle cx=\"84\" cy=\"59\" r=\"25\"/></g><g class=\"tight\"><circle cx=\"96\" cy=\"70\" r=\"21\"/><circle cx=\"65\" cy=\"21\" r=\"24\"/><circle cx=\"89\" cy=\"35\" r=\"18\"/><circle cx=\"99\" cy=\"49\" r=\"14\"/></g></svg>", m = i ? "" : `<aside class="kreativ-pdf-right">
           ${l}
-          ${p.skills ? Te : ""}
-          ${p.languages ? Ce : ""}
-          ${p.skills ? De : ""}
-          ${p.certifications ? Oe : ""}
-        </aside>`, h = je ? `<a href="${$(Rs(je))}">${$(je)}</a>` : "<span></span>";
+          ${p.skills ? J : ""}
+          ${p.languages ? we : ""}
+          ${p.skills ? Ae : ""}
+          ${p.certifications ? Me : ""}
+        </aside>`, h = Fe ? `<a href="${$(Bs(Fe))}">${$(Fe)}</a>` : "<span></span>";
 		return `
       <section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="kreativ" data-no-fit="true">
-        <div class="page-content kreativ-pdf">
+        <div class="page-content kreativ-pdf" data-density="${e.density}">
           ${d}
-          ${be(i, !1)}
+          ${xe(i, !1)}
           <div class="kreativ-pdf-content${i ? " continuation" : ""}">
             <main class="kreativ-pdf-left">
               ${o}
@@ -5036,7 +5092,7 @@ var gs = (e = "", t = 0) => ({
           <footer class="kreativ-pdf-footer">${h}<span>Seite ${e.pageNumber} / ${M.length}</span></footer>
         </div>
       </section>`;
-	}, Ne = [
+	}, Le = [
 		{
 			value: t?.phone || "",
 			href: t?.phone ? `tel:${t.phone.replace(/[^\d+]/g, "")}` : ""
@@ -5047,11 +5103,11 @@ var gs = (e = "", t = 0) => ({
 		},
 		{
 			value: t?.linkedin || "",
-			href: t?.linkedin ? Rs(t.linkedin) : ""
+			href: t?.linkedin ? Bs(t.linkedin) : ""
 		},
 		{
 			value: t?.portfolio || t?.github || "",
-			href: t?.portfolio || t?.github ? Rs(t?.portfolio || t?.github || "") : ""
+			href: t?.portfolio || t?.github ? Bs(t?.portfolio || t?.github || "") : ""
 		},
 		{
 			value: [t?.city, t?.country].filter(Boolean).join(", "),
@@ -5061,29 +5117,29 @@ var gs = (e = "", t = 0) => ({
 			value: t?.birthDate || t?.birthPlace ? `Geb. ${t?.birthDate || ""}${t?.birthPlace ? ` in ${t.birthPlace}` : ""}`.trim() : "",
 			href: ""
 		}
-	].filter((e) => e.value.trim()), Pe = zs(t?.skills ?? []).slice(0, 3).map((e) => e.split(/\s+(?:–|—|:)\s+/)[0]).join(" | "), Fe = [t?.title || h, Pe].filter(Boolean).join(" | "), Ie = Ne.length ? `<address class="ivy-pdf-contacts">${Ne.map((e, t) => {
+	].filter((e) => e.value.trim()), Re = Vs(t?.skills ?? []).slice(0, 3).map((e) => e.split(/\s+(?:–|—|:)\s+/)[0]).join(" | "), ze = [t?.title || h, Re].filter(Boolean).join(" | "), Be = Le.length ? `<address class="ivy-pdf-contacts">${Le.map((e, t) => {
 		let n = e.href ? `<a href="${$(e.href)}">${$(e.value)}</a>` : `<span>${$(e.value)}</span>`;
 		return `${t ? "<i aria-hidden=\"true\">•</i>" : ""}${n}`;
-	}).join("")}</address>` : "", Le = (e) => `
+	}).join("")}</address>` : "", Ve = (e) => `
     <header class="ivy-pdf-header${e ? " compact" : ""}">
       ${e ? "<p class=\"kicker\">Lebenslauf · Fortsetzung</p>" : ""}
       <h1>${$(m)}</h1>
-      ${Fe ? `<h2>${$(Fe)}</h2>` : ""}
-      ${e ? "" : Ie}
-    </header>`, Re = zs(t?.skills ?? []).slice(0, 6).map((e) => {
+      ${ze ? `<h2>${$(ze)}</h2>` : ""}
+      ${e ? "" : Be}
+    </header>`, He = Vs(t?.skills ?? []).slice(0, 6).map((e) => {
 		let [t, ...n] = e.split(/\s+(?:–|—|:)\s+/);
 		return {
 			title: t.trim(),
 			description: n.join(" – ").trim()
 		};
-	}), ze = Re.length ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Stärken</h3><div class="ivy-pdf-strengths">${Re.map((e, t) => `<article class="ivy-pdf-strength"><i aria-hidden="true">${[
+	}), Ue = He.length ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Stärken</h3><div class="ivy-pdf-strengths">${He.map((e, t) => `<article class="ivy-pdf-strength"><i aria-hidden="true">${[
 		"♥",
 		"✦",
 		"⚑",
 		"◆",
 		"★",
 		"✣"
-	][t]}</i><div><h3>${$(e.title)}</h3>${e.description ? `<p>${$(e.description)}</p>` : ""}</div></article>`).join("")}</div></section>` : "", Be = Re.length ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Stärken</h3><ul>${Re.map((e) => `<li><strong>${$(e.title)}</strong>${e.description ? ` – ${$(e.description)}` : ""}</li>`).join("")}</ul></section>` : "", Ve = Se.length ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Sprachen</h3><div class="ivy-pdf-languages">${Se.map((e) => `<article class="ivy-pdf-language"><strong>${$(e.name)}</strong><span>${$(e.level)}</span><span class="ivy-pdf-dots">${Array.from({ length: 5 }, (t, n) => `<i class="${n < e.score ? "filled" : ""}"></i>`).join("")}</span></article>`).join("")}</div></section>` : "", He = Se.length ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Sprachen</h3><ul>${Se.map((e) => `<li>${$(e.raw)}</li>`).join("")}</ul></section>` : "", Ue = q.length ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Kenntnisse</h3><p class="ivy-pdf-knowledge">${q.map($).join(" · ")}</p></section>` : "", We = J.length ? `<section class="ivy-pdf-section ivy-pdf-certifications"><h3 class="ivy-pdf-title">Zertifikate</h3><ul>${J.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", Ge = (e, t) => {
+	][t]}</i><div><h3>${$(e.title)}</h3>${e.description ? `<p>${$(e.description)}</p>` : ""}</div></article>`).join("")}</div></section>` : "", We = He.length ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Stärken</h3><ul>${He.map((e) => `<li><strong>${$(e.title)}</strong>${e.description ? ` – ${$(e.description)}` : ""}</li>`).join("")}</ul></section>` : "", Ge = Ce.length ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Sprachen</h3><div class="ivy-pdf-languages">${Ce.map((e) => `<article class="ivy-pdf-language"><strong>${$(e.name)}</strong><span>${$(e.level)}</span><span class="ivy-pdf-dots">${Array.from({ length: 5 }, (t, n) => `<i class="${n < e.score ? "filled" : ""}"></i>`).join("")}</span></article>`).join("")}</div></section>` : "", Ke = Ce.length ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Sprachen</h3><ul>${Ce.map((e) => `<li>${$(e.raw)}</li>`).join("")}</ul></section>` : "", qe = ke.length ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Kenntnisse</h3><p class="ivy-pdf-knowledge">${ke.map($).join(" · ")}</p></section>` : "", Je = je.length ? `<section class="ivy-pdf-section ivy-pdf-certifications"><h3 class="ivy-pdf-title">Zertifikate</h3><ul>${je.map((e) => `<li>${$(e)}</li>`).join("")}</ul></section>` : "", Ye = (e, t) => {
 		let n = t === "experience" ? (() => {
 			let t = E.get(e);
 			return t ? {
@@ -5107,33 +5163,33 @@ var gs = (e = "", t = 0) => ({
 		})();
 		return n ? `<article class="ivy-pdf-entry">
       <div class="ivy-pdf-entry-top"><h3>${$(n.organization)}</h3>${n.city ? `<span>${$(n.city)}</span>` : "<span></span>"}</div>
-      <div class="ivy-pdf-entry-role"><h4>${$(n.title)}</h4><span>${$(Bs(n.from, n.to))}</span></div>
+      <div class="ivy-pdf-entry-role"><h4>${$(n.title)}</h4><span>${$(Hs(n.from, n.to))}</span></div>
       ${n.achievements.length ? `<ul>${n.achievements.map((e) => `<li>${$(e)}</li>`).join("")}</ul>` : ""}
     </article>` : "";
-	}, Ke = t?.portfolio || t?.github || t?.linkedin || "", qe = (e) => {
-		let n = e.items.filter((e) => e.kind === "experience").map((e) => Ge(e.id, "experience")).join(""), r = e.items.filter((e) => e.kind === "education").map((e) => Ge(e.id, "education")).join(""), i = e.pageNumber > 1, a = e.pageNumber === M.length, o = n ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">${c ? "Berufserfahrung" : "Erfahrung"}${i ? "<small class=\"muted\"> · Fortsetzung</small>" : ""}</h3><div class="ivy-pdf-list">${n}</div></section>` : "", l = r ? `<section class="ivy-pdf-section ivy-pdf-education"><h3 class="ivy-pdf-title">Ausbildung</h3><div class="ivy-pdf-list">${r}</div></section>` : "", d = p.profile && !i ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Zusammenfassung</h3><p class="ivy-pdf-summary">${$(f.resumeProfile || t?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>` : "", m = Ke ? `<a href="${$(Rs(Ke))}">${$(Ke)}</a>` : "<span></span>";
+	}, Xe = t?.portfolio || t?.github || t?.linkedin || "", Ze = (e) => {
+		let n = e.items.filter((e) => e.kind === "experience").map((e) => Ye(e.id, "experience")).join(""), r = e.items.filter((e) => e.kind === "education").map((e) => Ye(e.id, "education")).join(""), i = e.pageNumber > 1, a = e.pageNumber === M.length, o = n ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">${c ? "Berufserfahrung" : "Erfahrung"}${i ? "<small class=\"muted\"> · Fortsetzung</small>" : ""}</h3><div class="ivy-pdf-list">${n}</div></section>` : "", l = r ? `<section class="ivy-pdf-section ivy-pdf-education"><h3 class="ivy-pdf-title">Ausbildung</h3><div class="ivy-pdf-list">${r}</div></section>` : "", d = p.profile && !i ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Zusammenfassung</h3><p class="ivy-pdf-summary">${$(f.resumeProfile || t?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>` : "", m = Xe ? `<a href="${$(Bs(Xe))}">${$(Xe)}</a>` : "<span></span>";
 		return `<section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="ivy-league" data-no-fit="true">
       <div class="page-content ivy-pdf${c ? " ivy-pdf-ats" : ""}" data-density="${e.density}">
         ${!c && s.backgroundId === "pastel-gradient" ? "\n    <svg class=\"ivy-pdf-watercolor\" viewBox=\"0 0 210 297\" preserveAspectRatio=\"none\" aria-hidden=\"true\">\n      <defs><filter id=\"ivy-pdf-blur\"><feGaussianBlur stdDeviation=\"5\"/></filter><linearGradient id=\"ivy-pdf-paper\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#eef9f8\"/><stop offset=\".48\" stop-color=\"#fbfdf9\"/><stop offset=\"1\" stop-color=\"#fff8e9\"/></linearGradient></defs>\n      <rect width=\"210\" height=\"297\" fill=\"url(#ivy-pdf-paper)\"/>\n      <g filter=\"url(#ivy-pdf-blur)\" opacity=\".62\">\n        <path d=\"M-18 4C18-9 48 1 73 24c16 15 15 38-4 55-25 23-63 30-91 12z\" fill=\"#d9f1f4\"/>\n        <path d=\"M123-15c34 4 78 1 106 30v59c-34 7-79-8-97-31-13-17-15-38-9-58z\" fill=\"#fff1d8\"/>\n        <path d=\"M-12 93c38-20 81-12 101 17 20 28-3 56-42 62-28 5-52-2-66-20z\" fill=\"#e3f5ed\"/>\n        <path d=\"M133 85c31-12 74 1 91 28v67c-23 14-68 4-89-24-19-25-18-56-2-71z\" fill=\"#e4f3f3\"/>\n        <path d=\"M-20 191c28-18 65-18 89 7 24 26 19 58-8 78-22 16-55 15-81 3z\" fill=\"#e9f6f4\"/>\n        <path d=\"M93 185c34-24 83-20 118 6 29 22 31 69 10 102H116c-24-22-42-78-23-108z\" fill=\"#fff1d4\"/>\n        <path d=\"M144 247c29-13 67 1 84 25v36h-89c-10-22-7-48 5-61z\" fill=\"#d8f1f2\"/>\n      </g>\n    </svg>" : ""}
         <div class="ivy-pdf-content">
-          ${Le(i)}
+          ${Ve(i)}
           ${d}
-          ${!c && !i && p.skills ? ze : ""}
+          ${!c && !i && p.skills ? Ue : ""}
           ${o}
           ${l}
-          ${a ? `${p.skills ? Ue : ""}${p.languages ? c ? He : Ve : ""}${c && p.skills ? Be : ""}${p.certifications ? We : ""}` : ""}
+          ${a ? `${p.skills ? qe : ""}${p.languages ? c ? Ke : Ge : ""}${c && p.skills ? We : ""}${p.certifications ? Je : ""}` : ""}
           ${!n && !r && e.pageNumber === 1 ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}
         </div>
         <footer class="ivy-pdf-footer">${m}<span>Seite ${e.pageNumber} / ${M.length}</span></footer>
       </div>
     </section>`;
-	}, Je = f.resumeProfile || t?.summary || "Kurzprofil im Dokumenteditor ergänzen.", Ye = t?.portfolio || t?.github || t?.linkedin || "", Xe = zs(t?.skills ?? []).slice(0, 4).map((e) => {
+	}, Qe = f.resumeProfile || t?.summary || "Kurzprofil im Dokumenteditor ergänzen.", $e = t?.portfolio || t?.github || t?.linkedin || "", et = Vs(t?.skills ?? []).slice(0, 4).map((e) => {
 		let [t, ...n] = e.split(/\s+(?:–|—|:)\s+/);
 		return {
 			title: t.trim(),
 			description: n.join(" – ").trim()
 		};
-	}), Ze = [
+	}), tt = [
 		{
 			icon: "☎",
 			value: t?.phone || "",
@@ -5147,12 +5203,12 @@ var gs = (e = "", t = 0) => ({
 		{
 			icon: "↗",
 			value: t?.linkedin || "",
-			href: t?.linkedin ? Rs(t.linkedin) : ""
+			href: t?.linkedin ? Bs(t.linkedin) : ""
 		},
 		{
 			icon: "⌖",
 			value: t?.portfolio || t?.github || "",
-			href: t?.portfolio || t?.github ? Rs(t?.portfolio || t?.github || "") : ""
+			href: t?.portfolio || t?.github ? Bs(t?.portfolio || t?.github || "") : ""
 		},
 		{
 			icon: "◆",
@@ -5164,7 +5220,7 @@ var gs = (e = "", t = 0) => ({
 			value: t?.birthDate || t?.birthPlace ? `Geb. ${t?.birthDate || ""}${t?.birthPlace ? ` in ${t.birthPlace}` : ""}`.trim() : "",
 			href: ""
 		}
-	].filter((e) => e.value.trim()), Qe = [t?.title || h, ...Xe.slice(0, 3).map((e) => e.title)].filter(Boolean).join(" | "), $e = (e) => `<footer class="managed-pdf-footer">${Ye ? `<a href="${$(Rs(Ye))}">${$(Ye)}</a>` : "<span></span>"}<span>Seite ${e.pageNumber} / ${M.length}</span></footer>`, et = (e) => `<span class="managed-pdf-dots">${Array.from({ length: 5 }, (t, n) => `<i class="${n < e ? "filled" : ""}"></i>`).join("")}</span>`, tt = (e, t, n) => {
+	].filter((e) => e.value.trim()), nt = [t?.title || h, ...et.slice(0, 3).map((e) => e.title)].filter(Boolean).join(" | "), rt = (e) => `<footer class="managed-pdf-footer">${$e ? `<a href="${$(Bs($e))}">${$($e)}</a>` : "<span></span>"}<span>Seite ${e.pageNumber} / ${M.length}</span></footer>`, it = (e) => `<span class="managed-pdf-dots">${Array.from({ length: 5 }, (t, n) => `<i class="${n < e ? "filled" : ""}"></i>`).join("")}</span>`, at = (e, t, n) => {
 		let r = t === "experience" ? (() => {
 			let t = E.get(e);
 			return t ? {
@@ -5188,56 +5244,56 @@ var gs = (e = "", t = 0) => ({
 		})();
 		if (!r) return "";
 		let i = r.achievements.length ? `<ul>${r.achievements.map((e) => `<li>${$(e)}</li>`).join("")}</ul>` : "";
-		return n === "einfach" ? `<article class="managed-pdf-entry einfach-pdf-entry"><h3>${$(r.title)}</h3><h4>${$(r.organization)}</h4><p class="einfach-pdf-meta"><span>${$(Bs(r.from, r.to))}</span>${r.city ? `<span>${$(r.city)}</span>` : ""}</p>${i}</article>` : n === "kompakt" ? `<article class="managed-pdf-entry kompakt-pdf-entry"><h3>${$(r.title)}</h3><p class="kompakt-pdf-meta"><strong>${$(r.organization)}</strong><span>${$(Bs(r.from, r.to))}</span>${r.city ? `<span>${$(r.city)}</span>` : ""}</p>${i}</article>` : `<article class="managed-pdf-entry stilvoll-pdf-entry"><h3>${$(r.title)}</h3><p class="stilvoll-pdf-meta"><strong>${$(r.organization)}</strong><span>${$(Bs(r.from, r.to))}${r.city ? ` · ${$(r.city)}` : ""}</span></p>${i}</article>`;
-	}, Y = (e, t, n = "") => t ? `<section class="managed-pdf-section ${n}"><h3 class="managed-pdf-title">${e}</h3>${t}</section>` : "", nt = Ze.map((e) => {
+		return n === "einfach" ? `<article class="managed-pdf-entry einfach-pdf-entry"><h3>${$(r.title)}</h3><h4>${$(r.organization)}</h4><p class="einfach-pdf-meta"><span>${$(Hs(r.from, r.to))}</span>${r.city ? `<span>${$(r.city)}</span>` : ""}</p>${i}</article>` : n === "kompakt" ? `<article class="managed-pdf-entry kompakt-pdf-entry"><h3>${$(r.title)}</h3><p class="kompakt-pdf-meta"><strong>${$(r.organization)}</strong><span>${$(Hs(r.from, r.to))}</span>${r.city ? `<span>${$(r.city)}</span>` : ""}</p>${i}</article>` : `<article class="managed-pdf-entry stilvoll-pdf-entry"><h3>${$(r.title)}</h3><p class="stilvoll-pdf-meta"><strong>${$(r.organization)}</strong><span>${$(Hs(r.from, r.to))}${r.city ? ` · ${$(r.city)}` : ""}</span></p>${i}</article>`;
+	}, Y = (e, t, n = "") => t ? `<section class="managed-pdf-section ${n}"><h3 class="managed-pdf-title">${e}</h3>${t}</section>` : "", ot = tt.map((e) => {
 		let t = $(e.value);
 		return e.href ? `<a href="${$(e.href)}">${t}</a>` : t;
-	}).join(" · "), rt = Xe.length ? `<ul>${Xe.map((e) => `<li><strong>${$(e.title)}</strong>${e.description ? ` – ${$(e.description)}` : ""}</li>`).join("")}</ul>` : "", it = Se.length ? `<ul>${Se.map((e) => `<li>${$(e.raw)}</li>`).join("")}</ul>` : "", at = q.length ? `<p>${q.map($).join(" · ")}</p>` : "", ot = J.length ? `<ul>${J.map((e) => `<li>${$(e)}</li>`).join("")}</ul>` : "", st = (e, t) => {
-		let n = e.pageNumber > 1, r = e.pageNumber === M.length, i = e.items.filter((e) => e.kind === "experience").map((e) => tt(e.id, "experience", t)).join(""), a = e.items.filter((e) => e.kind === "education").map((e) => tt(e.id, "education", t)).join("");
+	}).join(" · "), st = et.length ? `<ul>${et.map((e) => `<li><strong>${$(e.title)}</strong>${e.description ? ` – ${$(e.description)}` : ""}</li>`).join("")}</ul>` : "", ct = Ce.length ? `<ul>${Ce.map((e) => `<li>${$(e.raw)}</li>`).join("")}</ul>` : "", lt = ke.length ? `<p>${ke.map($).join(" · ")}</p>` : "", ut = je.length ? `<ul>${je.map((e) => `<li>${$(e)}</li>`).join("")}</ul>` : "", dt = (e, t) => {
+		let n = e.pageNumber > 1, r = e.pageNumber === M.length, i = e.items.filter((e) => e.kind === "experience").map((e) => at(e.id, "experience", t)).join(""), a = e.items.filter((e) => e.kind === "education").map((e) => at(e.id, "education", t)).join("");
 		return `<section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="${t}" data-no-fit="true"><div class="page-content managed-pdf ${t}-pdf managed-pdf-ats" data-density="${e.density}">
       <header class="managed-pdf-header ${t}-pdf-header${n ? " compact" : ""}">
         ${n ? "<p class=\"kicker\">Lebenslauf · Fortsetzung</p>" : ""}
-        <h1>${$(m)}</h1>${Qe ? `<h2>${$(Qe)}</h2>` : ""}
+        <h1>${$(m)}</h1>${nt ? `<h2>${$(nt)}</h2>` : ""}
       </header>
-      ${n ? "" : Y("Persönliche Daten", `<p>${nt}</p>`)}
-      ${p.profile && !n ? Y("Zusammenfassung", `<p>${$(Je)}</p>`) : ""}
+      ${n ? "" : Y("Persönliche Daten", `<p>${ot}</p>`)}
+      ${p.profile && !n ? Y("Zusammenfassung", `<p>${$(Qe)}</p>`) : ""}
       ${p.experience ? Y(`Berufserfahrung${n ? " · Fortsetzung" : ""}`, `<div class="managed-pdf-list">${i}</div>`) : ""}
       ${p.education ? Y("Ausbildung", `<div class="managed-pdf-list">${a}</div>`) : ""}
-      ${r && p.skills ? Y("Kenntnisse", at) : ""}
-      ${r && p.languages ? Y("Sprachen", it) : ""}
-      ${r && p.skills ? Y("Stärken", rt) : ""}
-      ${r && p.certifications ? Y(t === "kompakt" ? "Erfolge und Zertifikate" : "Zertifikate", ot) : ""}
-      ${$e(e)}
+      ${r && p.skills ? Y("Kenntnisse", lt) : ""}
+      ${r && p.languages ? Y("Sprachen", ct) : ""}
+      ${r && p.skills ? Y("Stärken", st) : ""}
+      ${r && p.certifications ? Y(t === "kompakt" ? "Erfolge und Zertifikate" : "Zertifikate", ut) : ""}
+      ${rt(e)}
     </div></section>`;
-	}, ct = (e, t) => {
-		let n = e === "stilvoll" ? "stilvoll-pdf-contacts" : "einfach-pdf-contacts", r = e === "stilvoll" ? "" : "einfach-pdf-contact", i = Ze.map((e) => {
+	}, ft = (e, t) => {
+		let n = e === "stilvoll" ? "stilvoll-pdf-contacts" : "einfach-pdf-contacts", r = e === "stilvoll" ? "" : "einfach-pdf-contact", i = tt.map((e) => {
 			let t = e.href ? `<a href="${$(e.href)}">${$(e.value)}</a>` : `<span>${$(e.value)}</span>`;
 			return `<span class="${r}"><i aria-hidden="true">${e.icon}</i>${t}</span>`;
 		}).join(""), a = !t && v ? `<img class="${e === "stilvoll" ? "stilvoll-pdf-photo" : "einfach-pdf-photo"}" src="${$(v)}" alt="">` : "";
 		return `<header class="managed-pdf-header ${e}-pdf-header${t ? " compact" : ""}${a ? "" : " no-photo"}">
-      <div>${t ? "<p class=\"kicker\">Lebenslauf · Fortsetzung</p>" : ""}<h1>${$(m)}</h1>${Qe ? `<h2>${$(Qe)}</h2>` : ""}${!t && Ze.length ? `<address class="${n}">${i}</address>` : ""}</div>${a}
+      <div>${t ? "<p class=\"kicker\">Lebenslauf · Fortsetzung</p>" : ""}<h1>${$(m)}</h1>${nt ? `<h2>${$(nt)}</h2>` : ""}${!t && tt.length ? `<address class="${n}">${i}</address>` : ""}</div>${a}
     </header>`;
-	}, lt = (e) => Xe.length ? `<div class="${e}-pdf-strengths">${Xe.map((t, n) => `<article class="${e}-pdf-strength"><i aria-hidden="true">${[
+	}, pt = (e) => et.length ? `<div class="${e}-pdf-strengths">${et.map((t, n) => `<article class="${e}-pdf-strength"><i aria-hidden="true">${[
 		"★",
 		"⚑",
 		"↗",
 		"◇"
-	][n]}</i><div><h3>${$(t.title)}</h3>${t.description ? `<p>${$(t.description)}</p>` : ""}</div></article>`).join("")}</div>` : "", ut = (e) => Se.length ? `<div class="${e}-pdf-languages">${Se.map((t) => `<article class="${e}-pdf-language"><strong>${$(t.name)}</strong><span>${$(t.level)}</span>${et(t.score)}</article>`).join("")}</div>` : "", dt = (e) => {
-		if (c) return st(e, "stilvoll");
-		let t = e.pageNumber > 1, n = e.items.filter((e) => e.kind === "experience").map((e) => tt(e.id, "experience", "stilvoll")).join(""), r = e.items.filter((e) => e.kind === "education").map((e) => tt(e.id, "education", "stilvoll")).join(""), i = t ? "" : `<aside>${p.profile ? Y("Zusammenfassung", `<p>${$(Je)}</p>`) : ""}${p.skills ? Y("Stärken", lt("stilvoll")) : ""}${p.languages ? Y("Sprachen", ut("stilvoll")) : ""}</aside>`;
-		return `<section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="stilvoll" data-no-fit="true"><div class="page-content managed-pdf stilvoll-pdf" data-density="${e.density}">${s.backgroundId === "geometric" && !t ? "<svg class=\"managed-pdf-background\" viewBox=\"0 0 210 297\" aria-hidden=\"true\"><defs><pattern id=\"stilvoll-pdf-chevron\" width=\"34\" height=\"25\" patternUnits=\"userSpaceOnUse\"><path d=\"M0 22 17 6l17 16M0 16 17 0l17 16\"/></pattern></defs><rect x=\"45\" y=\"-5\" width=\"165\" height=\"105\" fill=\"url(#stilvoll-pdf-chevron)\"/><rect x=\"118\" y=\"48\" width=\"92\" height=\"83\" fill=\"url(#stilvoll-pdf-chevron)\"/></svg>" : ""}${ct("stilvoll", t)}<div class="stilvoll-pdf-columns${t ? " continuation" : ""}">${i}<main>${p.experience ? Y(`Erfahrung${t ? " · Fortsetzung" : ""}`, `<div class="managed-pdf-list">${n}</div>`) : ""}${p.education ? Y("Ausbildung", `<div class="managed-pdf-list">${r}</div>`) : ""}</main></div>${$e(e)}</div></section>`;
-	}, ft = (e) => {
-		if (c) return st(e, "kompakt");
-		let t = e.pageNumber > 1, n = e.pageNumber === M.length, r = e.items.filter((e) => e.kind === "experience").map((e) => tt(e.id, "experience", "kompakt")).join(""), i = e.items.filter((e) => e.kind === "education").map((e) => tt(e.id, "education", "kompakt")).join(""), a = Ze.map((e) => {
+	][n]}</i><div><h3>${$(t.title)}</h3>${t.description ? `<p>${$(t.description)}</p>` : ""}</div></article>`).join("")}</div>` : "", mt = (e) => Ce.length ? `<div class="${e}-pdf-languages">${Ce.map((t) => `<article class="${e}-pdf-language"><strong>${$(t.name)}</strong><span>${$(t.level)}</span>${it(t.score)}</article>`).join("")}</div>` : "", ht = (e) => {
+		if (c) return dt(e, "stilvoll");
+		let t = e.pageNumber > 1, n = e.items.filter((e) => e.kind === "experience").map((e) => at(e.id, "experience", "stilvoll")).join(""), r = e.items.filter((e) => e.kind === "education").map((e) => at(e.id, "education", "stilvoll")).join(""), i = t ? "" : `<aside>${p.profile ? Y("Zusammenfassung", `<p>${$(Qe)}</p>`) : ""}${p.skills ? Y("Stärken", pt("stilvoll")) : ""}${p.languages ? Y("Sprachen", mt("stilvoll")) : ""}</aside>`;
+		return `<section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="stilvoll" data-no-fit="true"><div class="page-content managed-pdf stilvoll-pdf" data-density="${e.density}">${s.backgroundId === "geometric" && !t ? "<svg class=\"managed-pdf-background\" viewBox=\"0 0 210 297\" aria-hidden=\"true\"><defs><pattern id=\"stilvoll-pdf-chevron\" width=\"34\" height=\"25\" patternUnits=\"userSpaceOnUse\"><path d=\"M0 22 17 6l17 16M0 16 17 0l17 16\"/></pattern></defs><rect x=\"45\" y=\"-5\" width=\"165\" height=\"105\" fill=\"url(#stilvoll-pdf-chevron)\"/><rect x=\"118\" y=\"48\" width=\"92\" height=\"83\" fill=\"url(#stilvoll-pdf-chevron)\"/></svg>" : ""}${ft("stilvoll", t)}<div class="stilvoll-pdf-columns${t ? " continuation" : ""}">${i}<main>${p.experience ? Y(`Erfahrung${t ? " · Fortsetzung" : ""}`, `<div class="managed-pdf-list">${n}</div>`) : ""}${p.education ? Y("Ausbildung", `<div class="managed-pdf-list">${r}</div>`) : ""}</main></div>${rt(e)}</div></section>`;
+	}, gt = (e) => {
+		if (c) return dt(e, "kompakt");
+		let t = e.pageNumber > 1, n = e.pageNumber === M.length, r = e.items.filter((e) => e.kind === "experience").map((e) => at(e.id, "experience", "kompakt")).join(""), i = e.items.filter((e) => e.kind === "education").map((e) => at(e.id, "education", "kompakt")).join(""), a = tt.map((e) => {
 			let t = e.href ? `<a href="${$(e.href)}">${$(e.value)}</a>` : $(e.value);
 			return `<span class="kompakt-pdf-contact"><i aria-hidden="true">${e.icon}</i>${t}</span>`;
-		}).join(""), o = t ? "" : `<aside>${Y("Kontaktdaten", `<address class="kompakt-pdf-contacts">${a}</address>`)}${p.profile ? Y("Zusammenfassung", `<p>${$(Je)}</p>`) : ""}${p.skills ? Y("Stärken", lt("kompakt")) : ""}${p.certifications ? Y("Erfolge", ot, "kompakt-pdf-strengths") : ""}${p.skills ? Y("Fähigkeiten", `<div class="kompakt-pdf-skills">${q.map((e) => `<span class="kompakt-pdf-skill">${$(e)}</span>`).join("")}</div>`) : ""}</aside>`;
-		return `<section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="kompakt" data-no-fit="true"><div class="page-content managed-pdf kompakt-pdf" data-density="${e.density}">${s.backgroundId === "abstract" && !t ? "<svg class=\"managed-pdf-background\" viewBox=\"0 0 210 297\" aria-hidden=\"true\"><path d=\"M72-10c2 32 10 48 38 62 31 16 58 22 111 64M80-10c2 28 11 43 38 56 34 16 62 24 103 59M89-10c2 25 12 38 37 50 35 17 64 25 95 54M98-10c3 22 12 33 35 44 36 18 63 26 88 49M144 0v16c0 7 5 12 12 12h25c7 0 12 5 12 12v2M159 49h50M177 71h33\"/><circle cx=\"144\" cy=\"28\" r=\"3.2\"/><circle cx=\"176\" cy=\"49\" r=\"2.2\"/><circle cx=\"198\" cy=\"71\" r=\"2.2\"/></svg>" : ""}<header class="managed-pdf-header kompakt-pdf-header${t ? " compact" : ""}">${t ? "<p class=\"kicker\">Lebenslauf · Fortsetzung</p>" : ""}<h1>${$(m)}</h1>${t && Qe ? `<h2>${$(Qe)}</h2>` : ""}</header><div class="kompakt-pdf-columns${t ? " continuation" : ""}"><main>${p.experience ? Y(`Erfahrung${t ? " · Fortsetzung" : ""}`, `<div class="managed-pdf-list">${r}</div>`) : ""}${p.education ? Y("Ausbildung", `<div class="managed-pdf-list">${i}</div>`) : ""}${n && p.languages ? Y("Sprachen", ut("kompakt")) : ""}</main>${o}</div>${$e(e)}</div></section>`;
-	}, pt = (e) => {
-		if (c) return st(e, "einfach");
-		let t = e.pageNumber > 1, n = e.pageNumber === M.length, r = e.items.filter((e) => e.kind === "experience").map((e) => tt(e.id, "experience", "einfach")).join(""), i = e.items.filter((e) => e.kind === "education").map((e) => tt(e.id, "education", "einfach")).join("");
-		return `<section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="einfach" data-no-fit="true"><div class="page-content managed-pdf einfach-pdf" data-density="${e.density}">${s.backgroundId === "geometric" && !t ? "<svg class=\"managed-pdf-background\" viewBox=\"0 0 210 297\" aria-hidden=\"true\"><path d=\"M128-8v21h14V-8M148 21v19h16V26M71 20v24h16V31M98 39v20h16V48M152 57v22h16V67M174 79v23h20V89M101 112a11 11 0 1 0 22 0M174 251v29h-14v17M82 261h18v25h15M8 276a9 9 0 1 1 18 0\"/></svg>" : ""}<div class="einfach-pdf-inner">${ct("einfach", t)}${p.profile && !t ? Y("Zusammenfassung", `<p>${$(Je)}</p>`) : ""}${p.skills && !t ? Y("Stärken", lt("einfach")) : ""}${p.experience ? Y(`Erfahrung${t ? " · Fortsetzung" : ""}`, `<div class="managed-pdf-list">${r}</div>`) : ""}${p.education ? Y("Ausbildung", `<div class="managed-pdf-list">${i}</div>`) : ""}${n && p.skills ? Y("Kenntnisse", at) : ""}${n && p.languages ? Y("Sprachen", ut("einfach")) : ""}${n && p.certifications ? Y("Zertifikate", ot) : ""}</div>${$e(e)}</div></section>`;
-	}, mt = (e, t, n = "") => t ? `<section class="modern-pdf-section ${n}"><h3 class="modern-pdf-title">${$(e)}</h3>${t}</section>` : "", ht = t?.title || h, gt = [ht, ...ht.length < 48 ? Xe.slice(0, 2).map((e) => e.title) : []].filter(Boolean).join(" | "), _t = [
+		}).join(""), o = t ? "" : `<aside>${Y("Kontaktdaten", `<address class="kompakt-pdf-contacts">${a}</address>`)}${p.profile ? Y("Zusammenfassung", `<p>${$(Qe)}</p>`) : ""}${p.skills ? Y("Stärken", pt("kompakt")) : ""}${p.certifications ? Y("Erfolge", ut, "kompakt-pdf-strengths") : ""}${p.skills ? Y("Fähigkeiten", `<div class="kompakt-pdf-skills">${ke.map((e) => `<span class="kompakt-pdf-skill">${$(e)}</span>`).join("")}</div>`) : ""}</aside>`;
+		return `<section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="kompakt" data-no-fit="true"><div class="page-content managed-pdf kompakt-pdf" data-density="${e.density}">${s.backgroundId === "abstract" && !t ? "<svg class=\"managed-pdf-background\" viewBox=\"0 0 210 297\" aria-hidden=\"true\"><path d=\"M72-10c2 32 10 48 38 62 31 16 58 22 111 64M80-10c2 28 11 43 38 56 34 16 62 24 103 59M89-10c2 25 12 38 37 50 35 17 64 25 95 54M98-10c3 22 12 33 35 44 36 18 63 26 88 49M144 0v16c0 7 5 12 12 12h25c7 0 12 5 12 12v2M159 49h50M177 71h33\"/><circle cx=\"144\" cy=\"28\" r=\"3.2\"/><circle cx=\"176\" cy=\"49\" r=\"2.2\"/><circle cx=\"198\" cy=\"71\" r=\"2.2\"/></svg>" : ""}<header class="managed-pdf-header kompakt-pdf-header${t ? " compact" : ""}">${t ? "<p class=\"kicker\">Lebenslauf · Fortsetzung</p>" : ""}<h1>${$(m)}</h1>${t && nt ? `<h2>${$(nt)}</h2>` : ""}</header><div class="kompakt-pdf-columns${t ? " continuation" : ""}"><main>${p.experience ? Y(`Erfahrung${t ? " · Fortsetzung" : ""}`, `<div class="managed-pdf-list">${r}</div>`) : ""}${p.education ? Y("Ausbildung", `<div class="managed-pdf-list">${i}</div>`) : ""}${n && p.languages ? Y("Sprachen", mt("kompakt")) : ""}</main>${o}</div>${rt(e)}</div></section>`;
+	}, _t = (e) => {
+		if (c) return dt(e, "einfach");
+		let t = e.pageNumber > 1, n = e.pageNumber === M.length, r = e.items.filter((e) => e.kind === "experience").map((e) => at(e.id, "experience", "einfach")).join(""), i = e.items.filter((e) => e.kind === "education").map((e) => at(e.id, "education", "einfach")).join("");
+		return `<section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="einfach" data-no-fit="true"><div class="page-content managed-pdf einfach-pdf" data-density="${e.density}">${s.backgroundId === "geometric" && !t ? "<svg class=\"managed-pdf-background\" viewBox=\"0 0 210 297\" aria-hidden=\"true\"><path d=\"M128-8v21h14V-8M148 21v19h16V26M71 20v24h16V31M98 39v20h16V48M152 57v22h16V67M174 79v23h20V89M101 112a11 11 0 1 0 22 0M174 251v29h-14v17M82 261h18v25h15M8 276a9 9 0 1 1 18 0\"/></svg>" : ""}<div class="einfach-pdf-inner">${ft("einfach", t)}${p.profile && !t ? Y("Zusammenfassung", `<p>${$(Qe)}</p>`) : ""}${p.skills && !t ? Y("Stärken", pt("einfach")) : ""}${p.experience ? Y(`Erfahrung${t ? " · Fortsetzung" : ""}`, `<div class="managed-pdf-list">${r}</div>`) : ""}${p.education ? Y("Ausbildung", `<div class="managed-pdf-list">${i}</div>`) : ""}${n && p.skills ? Y("Kenntnisse", lt) : ""}${n && p.languages ? Y("Sprachen", mt("einfach")) : ""}${n && p.certifications ? Y("Zertifikate", ut) : ""}</div>${rt(e)}</div></section>`;
+	}, vt = (e, t, n = "") => t ? `<section class="modern-pdf-section ${n}"><h3 class="modern-pdf-title">${$(e)}</h3>${t}</section>` : "", yt = t?.title || h, bt = [yt, ...yt.length < 48 ? et.slice(0, 2).map((e) => e.title) : []].filter(Boolean).join(" | "), xt = [
 		{
 			icon: "T",
 			value: t?.phone || "",
@@ -5251,12 +5307,12 @@ var gs = (e = "", t = 0) => ({
 		{
 			icon: "in",
 			value: t?.linkedin || "",
-			href: Rs(t?.linkedin)
+			href: Bs(t?.linkedin)
 		},
 		{
 			icon: "W",
 			value: t?.portfolio || t?.github || "",
-			href: Rs(t?.portfolio || t?.github)
+			href: Bs(t?.portfolio || t?.github)
 		},
 		{
 			icon: "O",
@@ -5268,22 +5324,22 @@ var gs = (e = "", t = 0) => ({
 			value: t?.birthDate || t?.birthPlace ? `Geb. ${t?.birthDate || ""}${t?.birthPlace ? ` in ${t.birthPlace}` : ""}`.trim() : "",
 			href: ""
 		}
-	].filter((e) => e.value.trim()), vt = (e = !1, t = !1) => {
-		if (!_t.length) return "";
-		let n = t ? _t.filter((e) => [
+	].filter((e) => e.value.trim()), St = (e = !1, t = !1) => {
+		if (!xt.length) return "";
+		let n = t ? xt.filter((e) => [
 			"T",
 			"@",
 			"in",
 			"O"
-		].includes(e.icon)).slice(0, 4) : _t;
+		].includes(e.icon)).slice(0, 4) : xt;
 		return `<address class="modern-pdf-contacts${t ? " inline" : ""}">${n.map((t) => {
 			let n = $(t.value), r = t.href ? `<a href="${$(t.href)}">${n}</a>` : `<span>${n}</span>`;
 			return `<span class="modern-pdf-contact">${e ? "" : `<i aria-hidden="true">${t.icon}</i>`}${r}</span>`;
 		}).join("")}</address>`;
-	}, yt = (e, t = !1) => {
+	}, Ct = (e, t = !1) => {
 		let n = !e && !t && v ? `<img class="modern-pdf-photo" src="${$(v)}" alt="">` : "";
-		return `<header class="modern-pdf-header${e ? " compact" : ""}${n ? "" : " no-photo"}"><div class="modern-pdf-identity">${e ? "<p class=\"kicker\">Lebenslauf · Fortsetzung</p>" : ""}<h1>${$(m)}</h1>${gt ? `<h2>${$(gt)}</h2>` : ""}${!e && !t ? vt(!1, !0) : ""}</div>${n}</header>`;
-	}, bt = (e, t) => {
+		return `<header class="modern-pdf-header${e ? " compact" : ""}${n ? "" : " no-photo"}"><div class="modern-pdf-identity">${e ? "<p class=\"kicker\">Lebenslauf · Fortsetzung</p>" : ""}<h1>${$(m)}</h1>${bt ? `<h2>${$(bt)}</h2>` : ""}${!e && !t ? St(!1, !0) : ""}</div>${n}</header>`;
+	}, wt = (e, t) => {
 		let n = t === "experience" ? (() => {
 			let t = E.get(e);
 			return t ? {
@@ -5305,13 +5361,82 @@ var gs = (e = "", t = 0) => ({
 				achievements: []
 			} : void 0;
 		})();
-		return n ? `<article class="modern-pdf-entry"><h3>${$(n.title)}</h3><p class="modern-pdf-entry-meta"><strong>${$(n.organization)}</strong><span class="modern-pdf-entry-date"><i aria-hidden="true">▦</i>${$(Bs(n.from, n.to))}</span>${n.city ? `<span class="modern-pdf-entry-location"><i aria-hidden="true">●</i>${$(n.city)}</span>` : ""}</p>${n.achievements.length ? `<ul>${n.achievements.map((e) => `<li>${$(e)}</li>`).join("")}</ul>` : ""}</article>` : "";
-	}, xt = Xe.filter((e) => e.description), St = xt.length ? `<div class="modern-pdf-strengths">${xt.map((e, t) => `<article class="modern-pdf-strength"><i aria-hidden="true">${t % 2 == 0 ? "✓" : "⚑"}</i><div><h3>${$(e.title)}</h3><p>${$(e.description)}</p></div></article>`).join("")}</div>` : "", Ct = q.length ? `<div class="modern-pdf-knowledge">${q.map((e) => `<span>${$(e)}</span>`).join("")}</div>` : "", wt = J.length ? `<div class="modern-pdf-achievements">${J.map((e) => `<article><i aria-hidden="true">★</i><p>${$(e)}</p></article>`).join("")}</div>` : "", Tt = Se.length ? `<div class="modern-pdf-languages">${Se.map((e) => `<article class="modern-pdf-language"><div><strong>${$(e.name)}</strong><em>${$(e.level)}</em></div><span class="modern-pdf-dots" aria-hidden="true">${Array.from({ length: 5 }, (t, n) => n < e.score ? "●" : "○").join("")}</span></article>`).join("")}</div>` : "", Et = Se.length ? `<ul>${Se.map((e) => `<li>${$(e.raw)}</li>`).join("")}</ul>` : "", Dt = Xe.length ? `<ul>${Xe.map((e) => `<li><strong>${$(e.title)}</strong>${e.description ? ` – ${$(e.description)}` : ""}</li>`).join("")}</ul>` : "", Ot = q.length ? `<p>${q.map($).join(" · ")}</p>` : "", kt = J.length ? `<ul class="modern-pdf-certifications">${J.map((e) => `<li>${$(e)}</li>`).join("")}</ul>` : "", At = (e) => `<footer class="modern-pdf-footer">${Ye ? `<a href="${$(Rs(Ye))}">${$(Ye)}</a>` : "<span></span>"}<span>Seite ${e.pageNumber} / ${M.length}</span></footer>`, jt = M.map(r.id === "modern" ? (e) => {
-		let t = e.pageNumber > 1, n = e.pageNumber === M.length, r = e.items.filter((e) => e.kind === "experience").map((e) => bt(e.id, "experience")).join(""), i = e.items.filter((e) => e.kind === "education").map((e) => bt(e.id, "education")).join(""), a = p.experience && r ? mt(`${c ? "Berufserfahrung" : "Erfahrung"}${t ? " · Fortsetzung" : ""}`, `<div class="modern-pdf-list">${r}</div>`) : "", o = p.education && i ? mt("Ausbildung", `<div class="modern-pdf-list">${i}</div>`) : "";
-		if (c) return `<section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="modern" data-no-fit="true"><div class="page-content modern-pdf modern-pdf-ats" data-density="${e.density}">${yt(t, !0)}${t ? "" : mt("Persönliche Daten", vt(!0))}${p.profile && !t ? mt("Zusammenfassung", `<p class="modern-pdf-summary">${$(Je)}</p>`) : ""}${a}${o}${n && p.skills ? mt("Kenntnisse", Ot) : ""}${n && p.languages ? mt("Sprachen", Et) : ""}${n && p.skills ? mt("Stärken", Dt) : ""}${n && p.certifications ? mt("Zertifikate", kt) : ""}${At(e)}</div></section>`;
-		let s = t ? "" : `<aside class="modern-pdf-right">${p.skills ? mt("Stärken", St) : ""}${p.languages ? mt("Sprachen", Tt) : ""}${p.skills ? mt("Fähigkeiten", Ct) : ""}${p.certifications ? mt("Erfolge", wt) : ""}</aside>`, l = p.profile && !t ? mt("Zusammenfassung", `<p class="modern-pdf-summary">${$(Je)}</p>`) : "";
-		return `<section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="modern" data-no-fit="true"><div class="page-content modern-pdf" data-density="${e.density}"><div class="modern-pdf-content">${yt(t)}<div class="modern-pdf-columns${t ? " continuation" : ""}"><main class="modern-pdf-left">${l}${a}${o}${!r && !i && e.pageNumber === 1 ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}</main>${s}</div></div>${At(e)}</div></section>`;
-	} : r.id === "stilvoll" ? dt : r.id === "kompakt" ? ft : r.id === "einfach" ? pt : r.id === "elegant" ? te : r.id === "ivy-league" ? qe : r.id === "kreativ" ? Me : r.id === "zeitgenoessisch" ? ve : r.id === "zweispaltig" ? U : (e) => {
+		return n ? `<article class="modern-pdf-entry"><h3>${$(n.title)}</h3><p class="modern-pdf-entry-meta"><strong>${$(n.organization)}</strong><span class="modern-pdf-entry-date"><i aria-hidden="true">▦</i>${$(Hs(n.from, n.to))}</span>${n.city ? `<span class="modern-pdf-entry-location"><i aria-hidden="true">●</i>${$(n.city)}</span>` : ""}</p>${n.achievements.length ? `<ul>${n.achievements.map((e) => `<li>${$(e)}</li>`).join("")}</ul>` : ""}</article>` : "";
+	}, Tt = et.filter((e) => e.description), Et = Tt.length ? `<div class="modern-pdf-strengths">${Tt.map((e, t) => `<article class="modern-pdf-strength"><i aria-hidden="true">${t % 2 == 0 ? "✓" : "⚑"}</i><div><h3>${$(e.title)}</h3><p>${$(e.description)}</p></div></article>`).join("")}</div>` : "", Dt = ke.length ? `<div class="modern-pdf-knowledge">${ke.map((e) => `<span>${$(e)}</span>`).join("")}</div>` : "", Ot = je.length ? `<div class="modern-pdf-achievements">${je.map((e) => `<article><i aria-hidden="true">★</i><p>${$(e)}</p></article>`).join("")}</div>` : "", kt = Ce.length ? `<div class="modern-pdf-languages">${Ce.map((e) => `<article class="modern-pdf-language"><div><strong>${$(e.name)}</strong><em>${$(e.level)}</em></div><span class="modern-pdf-dots" aria-hidden="true">${Array.from({ length: 5 }, (t, n) => n < e.score ? "●" : "○").join("")}</span></article>`).join("")}</div>` : "", At = Ce.length ? `<ul>${Ce.map((e) => `<li>${$(e.raw)}</li>`).join("")}</ul>` : "", jt = et.length ? `<ul>${et.map((e) => `<li><strong>${$(e.title)}</strong>${e.description ? ` – ${$(e.description)}` : ""}</li>`).join("")}</ul>` : "", Mt = ke.length ? `<p>${ke.map($).join(" · ")}</p>` : "", Nt = je.length ? `<ul class="modern-pdf-certifications">${je.map((e) => `<li>${$(e)}</li>`).join("")}</ul>` : "", Pt = (e) => `<footer class="modern-pdf-footer">${$e ? `<a href="${$(Bs($e))}">${$($e)}</a>` : "<span></span>"}<span>Seite ${e.pageNumber} / ${M.length}</span></footer>`, Ft = (e) => {
+		let t = e.pageNumber > 1, n = e.pageNumber === M.length, r = e.items.filter((e) => e.kind === "experience").map((e) => wt(e.id, "experience")).join(""), i = e.items.filter((e) => e.kind === "education").map((e) => wt(e.id, "education")).join(""), a = p.experience && r ? vt(`${c ? "Berufserfahrung" : "Erfahrung"}${t ? " · Fortsetzung" : ""}`, `<div class="modern-pdf-list">${r}</div>`) : "", o = p.education && i ? vt("Ausbildung", `<div class="modern-pdf-list">${i}</div>`) : "";
+		if (c) return `<section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="modern" data-no-fit="true"><div class="page-content modern-pdf modern-pdf-ats" data-density="${e.density}">${Ct(t, !0)}${t ? "" : vt("Persönliche Daten", St(!0))}${p.profile && !t ? vt("Zusammenfassung", `<p class="modern-pdf-summary">${$(Qe)}</p>`) : ""}${a}${o}${n && p.skills ? vt("Kenntnisse", Mt) : ""}${n && p.languages ? vt("Sprachen", At) : ""}${n && p.skills ? vt("Stärken", jt) : ""}${n && p.certifications ? vt("Zertifikate", Nt) : ""}${Pt(e)}</div></section>`;
+		let s = t ? "" : `<aside class="modern-pdf-right">${p.skills ? vt("Stärken", Et) : ""}${p.languages ? vt("Sprachen", kt) : ""}${p.skills ? vt("Fähigkeiten", Dt) : ""}${p.certifications ? vt("Erfolge", Ot) : ""}</aside>`, l = p.profile && !t ? vt("Zusammenfassung", `<p class="modern-pdf-summary">${$(Qe)}</p>`) : "";
+		return `<section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="modern" data-no-fit="true"><div class="page-content modern-pdf" data-density="${e.density}"><div class="modern-pdf-content">${Ct(t)}<div class="modern-pdf-columns${t ? " continuation" : ""}"><main class="modern-pdf-left">${l}${a}${o}${!r && !i && e.pageNumber === 1 ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}</main>${s}</div></div>${Pt(e)}</div></section>`;
+	}, It = (e) => `<svg viewBox="0 0 24 24" aria-hidden="true">${{
+		profile: "<path d=\"M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1\"/><path d=\"M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1\"/>",
+		flag: "<path d=\"M5 22V4\"/><path d=\"M5 5c5-4 9 4 14 0v10c-5 4-9-4-14 0\"/>",
+		trophy: "<path d=\"M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z\"/><path d=\"M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4\"/>"
+	}[e]}</svg>`, Lt = [
+		{
+			label: "Telefon",
+			icon: ve("phone"),
+			value: t?.phone || "",
+			href: t?.phone ? `tel:${t.phone.replace(/[^\d+]/g, "")}` : ""
+		},
+		{
+			label: "E-Mail",
+			icon: ve("mail"),
+			value: t?.email || "",
+			href: t?.email ? `mailto:${t.email}` : ""
+		},
+		{
+			label: "Profil",
+			icon: It("profile"),
+			value: t?.linkedin || t?.portfolio || t?.github || "",
+			href: Bs(t?.linkedin || t?.portfolio || t?.github)
+		},
+		{
+			label: "Wohnort",
+			icon: ve("location"),
+			value: [t?.city, t?.country].filter(Boolean).join(", "),
+			href: ""
+		},
+		{
+			label: "Geboren",
+			icon: ve("birth"),
+			value: [t?.birthDate, t?.birthPlace].filter(Boolean).join(" in "),
+			href: ""
+		}
+	].filter((e) => e.value.trim()), Rt = (e = !1) => `<address class="tabellarisch-pdf-contacts">${Lt.map((t) => {
+		let n = t.href ? `<a href="${$(t.href)}">${$(t.value)}</a>` : `<span>${$(t.value)}</span>`;
+		return `<span class="tabellarisch-pdf-contact">${e ? `<strong>${$(t.label)}:</strong>` : t.icon}${n}</span>`;
+	}).join("")}</address>`, zt = (e, t, n = "", r = !1) => t ? `<section class="tabellarisch-pdf-section ${n}"><h2 class="tabellarisch-pdf-title">${$(e)}${r ? "<small>Fortsetzung</small>" : ""}</h2>${t}</section>` : "", Bt = De.slice(0, 2), Vt = (e = !1) => Bt.length ? e ? `<ul>${Bt.map((e) => `<li><strong>${$(e.name)}</strong>${e.description?.trim() ? ` - ${$(e.description)}` : ""}</li>`).join("")}</ul>` : `<div class="tabellarisch-pdf-strengths">${Bt.map((e, t) => `<article class="tabellarisch-pdf-strength">${It(t === 0 ? "flag" : "trophy")}<div><h3>${$(e.name)}</h3>${e.description?.trim() ? `<p>${$(e.description)}</p>` : ""}</div></article>`).join("")}</div>` : "", X = (e, t) => {
+		let n = e.trim(), r = t.trim();
+		return n ? r ? `${n} - ${r}` : n : r;
+	}, Ht = (e, t, n = !1) => {
+		let r = t === "experience" ? (() => {
+			let t = E.get(e);
+			return t ? {
+				title: t.role,
+				organization: t.company,
+				from: t.from,
+				to: t.to,
+				city: t.city,
+				achievements: t.achievements.filter(Boolean)
+			} : void 0;
+		})() : (() => {
+			let t = D.get(e);
+			return t ? {
+				title: t.degree,
+				organization: t.institution,
+				from: t.from,
+				to: t.to,
+				city: t.city,
+				achievements: []
+			} : void 0;
+		})();
+		if (!r) return "";
+		let i = r.achievements.length ? `<ul>${r.achievements.map((e) => `<li>${$(e)}</li>`).join("")}</ul>` : "";
+		return n ? `<article class="tabellarisch-pdf-entry"><div class="tabellarisch-pdf-entry-content"><h3>${$(r.title)}</h3><p class="tabellarisch-pdf-organization">${$(r.organization)}</p><p class="tabellarisch-pdf-ats-meta">${$(X(r.from, r.to))}${r.city ? ` - ${$(r.city)}` : ""}</p>${i}</div></article>` : `<article class="tabellarisch-pdf-entry"><div class="tabellarisch-pdf-meta"><p class="tabellarisch-pdf-date">${$(X(r.from, r.to))}</p>${r.city ? `<p class="tabellarisch-pdf-location">${$(r.city)}</p>` : ""}</div><span class="tabellarisch-pdf-rail" aria-hidden="true"></span><div class="tabellarisch-pdf-entry-content"><h3>${$(r.title)}</h3><p class="tabellarisch-pdf-organization">${$(r.organization)}</p>${i}</div></article>`;
+	}, Ut = (e) => `<footer class="tabellarisch-pdf-footer">${$e ? `<a href="${$(Bs($e))}">${$($e)}</a>` : "<span></span>"}<span>Seite ${e.pageNumber} / ${M.length}</span></footer>`, Wt = M.map(r.id === "modern" ? Ft : r.id === "stilvoll" ? ht : r.id === "kompakt" ? gt : r.id === "einfach" ? _t : r.id === "elegant" ? V : r.id === "ivy-league" ? Ze : r.id === "kreativ" ? Ie : r.id === "zeitgenoessisch" ? _e : r.id === "zweispaltig" ? W : r.id === "tabellarisch" ? (e) => {
+		let n = e.pageNumber > 1, r = e.pageNumber === M.length, i = e.items.filter((e) => e.kind === "experience").map((e) => Ht(e.id, "experience", c)).join(""), a = e.items.filter((e) => e.kind === "education").map((e) => Ht(e.id, "education", c)).join(""), o = !c && !n && v ? `<img class="tabellarisch-pdf-photo" src="${$(v)}" alt="">` : "", s = n ? `<header class="tabellarisch-pdf-continuation"><strong>${$(m)}</strong><span>${$(t?.title || h)}</span></header>` : `<header class="tabellarisch-pdf-header${o ? "" : " no-photo"}"><div class="tabellarisch-pdf-identity"><h1>${$(m)}</h1>${t?.title || h ? `<h2>${$(t?.title || h)}</h2>` : ""}${Rt(c)}</div>${o}</header>`, l = p.profile && !n ? zt("Zusammenfassung", `<p class="tabellarisch-pdf-summary">${$(Qe)}</p>`) : "", d = p.skills && !n ? zt("Stärken", Vt(c)) : "", f = p.experience && i ? zt("Erfahrung", `<div class="tabellarisch-pdf-timeline${r ? "" : " continues"}">${i}</div>`, "", n) : "", g = p.education && a ? zt("Ausbildung", `<div class="tabellarisch-pdf-timeline">${a}</div>`) : "", _ = r && c ? `<div class="tabellarisch-pdf-additional">${c && p.skills ? zt("Kenntnisse", lt, "tabellarisch-pdf-list") : ""}${p.certifications ? zt("Zertifikate", ut, "tabellarisch-pdf-list") : ""}${p.languages ? zt("Sprachen", `<ul class="inline">${Ce.map((e) => `<li>${$(e.raw)}</li>`).join("")}</ul>`, "tabellarisch-pdf-list") : ""}</div>` : "";
+		return c ? `<section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="tabellarisch" data-no-fit="true"><div class="page-content tabellarisch-pdf tabellarisch-pdf-ats" data-density="${e.density}">${s}${l}${d}${f}${g}${_}</div></section>` : `<section class="page cv-sheet ${u}" data-resume-page="${e.pageNumber}" data-template="tabellarisch" data-no-fit="true"><div class="page-content tabellarisch-pdf" data-density="${e.density}">${n ? "" : "<svg class=\"tabellarisch-pdf-background\" viewBox=\"0 0 1000 260\" preserveAspectRatio=\"xMidYMin slice\" aria-hidden=\"true\"><defs><pattern id=\"tabellarisch-pdf-cubes\" width=\"144\" height=\"84\" patternUnits=\"userSpaceOnUse\"><path d=\"M72 0 144 42 72 84 0 42 72 0v84M0 42l72 42 72-42\"/></pattern><linearGradient id=\"tabellarisch-pdf-fade\" x1=\"0\" x2=\"1\"><stop offset=\"0\" stop-color=\"white\" stop-opacity=\"0\"/><stop offset=\".25\" stop-color=\"white\" stop-opacity=\".45\"/><stop offset=\".48\" stop-color=\"white\" stop-opacity=\"1\"/></linearGradient><mask id=\"tabellarisch-pdf-mask\"><rect width=\"1000\" height=\"260\" fill=\"url(#tabellarisch-pdf-fade)\"/></mask></defs><rect x=\"210\" y=\"-44\" width=\"850\" height=\"310\" fill=\"url(#tabellarisch-pdf-cubes)\" mask=\"url(#tabellarisch-pdf-mask)\"/></svg>"}<div class="tabellarisch-pdf-content">${s}${l}${d}${f}${g}${_}</div>${Ut(e)}</div></section>`;
+	} : (e) => {
 		let n = e.items.filter((e) => e.kind === "experience").map((e) => N(e.id)).join(""), i = e.items.filter((e) => e.kind === "education").map((e) => P(e.id)).join(""), a = e.pageNumber === 2, o = e.density === "standard" ? "" : ` cv-${e.density}`, s = `
           <main class="cv-primary">
             ${n ? `<section><h3>Berufserfahrung${a ? " · Fortsetzung" : ""}</h3>${n}</section>` : ""}
@@ -5341,17 +5466,17 @@ var gs = (e = "", t = 0) => ({
           <span class="page-number">${e.pageNumber} / ${M.length}</span>
         </div>
       </section>`;
-	}).join(""), Mt = n === "mappe" ? [
+	}).join(""), Gt = n === "mappe" ? [
 		w,
 		T,
-		jt
-	] : n === "deckblatt" ? [w] : n === "anschreiben" ? [T] : [jt];
-	return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${$(g)} – ${$(h)}</title><style>${Ys(i, a, o, s)}${Xs}${Zs}${Qs}${$s}${ec}${tc}${nc}</style></head><body>${Mt.join("")}${rc}</body></html>`;
-}, ac = (e, t) => {
+		Wt
+	] : n === "deckblatt" ? [w] : n === "anschreiben" ? [T] : [Wt];
+	return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${$(g)} – ${$(h)}</title><style>${Zs(i, a, o, s)}${Qs}${$s}${ec}${tc}${nc}${rc}${ic}${ac}</style></head><body>${Gt.join("")}${oc}</body></html>`;
+}, cc = (e, t) => {
 	let n = e.documents;
 	return `# ${n.coverSubject || `Bewerbung als ${e.job.title}`}
 
-${Ks(e)},
+${Js(e)},
 
 ${n.coverIntroduction}
 
@@ -5365,24 +5490,24 @@ ${n.coverClosing}
 
 Mit freundlichen Grüßen
 
-${Ws(t)}
+${Ks(t)}
 `;
-}, oc = () => (/* @__PURE__ */ new Date()).toISOString(), sc = () => crypto.randomUUID(), cc = /* @__PURE__ */ new Set([
+}, lc = () => (/* @__PURE__ */ new Date()).toISOString(), uc = () => crypto.randomUUID(), dc = /* @__PURE__ */ new Set([
 	"Zusage",
 	"Absage",
 	"Zurückgezogen",
 	"Archiviert"
-]), lc = (e, t) => t?.trim() ? `${e}: ${t.trim()}` : "", uc = (e) => {
+]), fc = (e, t) => t?.trim() ? `${e}: ${t.trim()}` : "", pc = (e) => {
 	let t = e.toLocaleLowerCase("de-DE"), n = /muttersprache|c2|native/.test(t) ? 5 : /c1|verhandlungssicher|versiert|fließend/.test(t) || /b2|gute kenntnisse/.test(t) ? 4 : /b1|grundkenntnisse/.test(t) ? 3 : /a2/.test(t) ? 2 : /a1/.test(t) ? 1 : e ? 3 : 0;
 	return `${"●".repeat(n)}${"○".repeat(5 - n)}`;
-}, dc = (e) => jo(e).family.match(/"([^"]+)"|([^,]+)/)?.[1] ?? jo(e).family.match(/"([^"]+)"|([^,]+)/)?.[2]?.trim() ?? "Arial", fc = (e, t, n) => {
+}, mc = (e) => jo(e).family.match(/"([^"]+)"|([^,]+)/)?.[1] ?? jo(e).family.match(/"([^"]+)"|([^,]+)/)?.[2]?.trim() ?? "Arial", hc = (e, t, n) => {
 	let r = (e) => [
 		1,
 		3,
 		5
 	].map((t) => Number.parseInt(e.replace("#", "").slice(t - 1, t + 1), 16)), i = r(e), a = r(t);
 	return `#${i.map((e, t) => Math.round(e * (1 - n) + a[t] * n).toString(16).padStart(2, "0")).join("")}`;
-}, pc = {
+}, gc = {
 	"application-sent": [],
 	"application-deadline": [4320, 1440],
 	interview: [1440, 60],
@@ -5398,26 +5523,26 @@ ${Ws(t)}
 	"fixed-term-end": [20160],
 	"probation-end": [20160],
 	custom: []
-}, mc = () => ({
+}, _c = () => ({
 	schemaVersion: 1,
 	applications: [],
 	profiles: [],
 	events: [],
 	attachments: [],
 	settings: us,
-	updatedAt: oc()
-}), hc = (e) => e.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[<>:"/\\|?*\u0000-\u001F]/g, "-").replace(/\s+/g, "_").replace(/[. ]+$/g, "").slice(0, 80) || "Bewerbung", gc = () => (/* @__PURE__ */ new Date()).toISOString().replace(/\D/g, "").slice(0, 14), _c = (e, t) => {
+	updatedAt: lc()
+}), vc = (e) => e.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[<>:"/\\|?*\u0000-\u001F]/g, "-").replace(/\s+/g, "_").replace(/[. ]+$/g, "").slice(0, 80) || "Bewerbung", yc = () => (/* @__PURE__ */ new Date()).toISOString().replace(/\D/g, "").slice(0, 14), bc = (e, t) => {
 	let n = new Date(e);
 	return n.setDate(n.getDate() + t), n.setHours(9, 0, 0, 0), n.toISOString();
-}, vc = (e, t = " | ") => e.map((e) => e?.trim()).filter(Boolean).join(t), yc = (e) => {
+}, xc = (e, t = " | ") => e.map((e) => e?.trim()).filter(Boolean).join(t), Sc = (e) => {
 	let [t, ...n] = e.split(/\s+(?:\||–|—|:)\s+|\s+-\s+/).map((e) => e.trim());
 	return {
 		name: t ?? "",
 		level: n.join(" – ")
 	};
-}, bc = class {
+}, Cc = class {
 	constructor(t) {
-		this.workspace = mc(), this.dataPath = e.join(t, "BewerbungsManager", "data"), this.workspacePath = e.join(this.dataPath, "Settings", "workspace.json");
+		this.workspace = _c(), this.dataPath = e.join(t, "BewerbungsManager", "data"), this.workspacePath = e.join(this.dataPath, "Settings", "workspace.json");
 	}
 	async initialize() {
 		let t = [
@@ -5443,11 +5568,11 @@ ${Ws(t)}
 			let t = JSON.parse(await a(e, "utf8")), n = ls.safeParse(t);
 			if (n.success) return n.data;
 		} catch {}
-		return mc();
+		return _c();
 	}
 	async atomicWrite(t, a) {
 		await r(e.dirname(t), { recursive: !0 });
-		let o = `${t}.${sc()}.tmp`, l = `${t}.bak`, u = await i(o, "w");
+		let o = `${t}.${uc()}.tmp`, l = `${t}.bak`, u = await i(o, "w");
 		try {
 			await u.writeFile(a, "utf8"), await u.sync();
 		} finally {
@@ -5463,7 +5588,7 @@ ${Ws(t)}
 		}
 	}
 	async persist() {
-		this.workspace.updatedAt = oc();
+		this.workspace.updatedAt = lc();
 		let e = ls.parse(this.workspace);
 		await this.atomicWrite(this.workspacePath, JSON.stringify(e, null, 2)), await Promise.all(e.applications.map((e) => this.persistApplicationFiles(e))), await this.createAutomaticBackup();
 	}
@@ -5510,14 +5635,14 @@ ${Ws(t)}
 			this.atomicWrite(e.join(n, "bewerbung.json"), JSON.stringify(rs.parse(t), null, 2)),
 			this.atomicWrite(e.join(n, "Stellenanzeige", "stellenanzeige.json"), JSON.stringify(t.job, null, 2)),
 			this.atomicWrite(e.join(n, "Stellenanzeige", "stellenanzeige.txt"), t.job.fullText),
-			this.atomicWrite(e.join(n, "Anschreiben", `${hc(t.company.name)}.md`), ac(t, r)),
-			this.atomicWrite(e.join(n, "Export", "bewerbungsmappe.html"), ic(t, r, "mappe"))
+			this.atomicWrite(e.join(n, "Anschreiben", `${vc(t.company.name)}.md`), cc(t, r)),
+			this.atomicWrite(e.join(n, "Export", "bewerbungsmappe.html"), sc(t, r, "mappe"))
 		]);
 	}
 	createEvent(e, t, n, r, i) {
-		let a = oc();
+		let a = lc();
 		return {
-			id: sc(),
+			id: uc(),
 			applicationId: e,
 			type: t,
 			title: n,
@@ -5526,7 +5651,7 @@ ${Ws(t)}
 			allDay: i,
 			completed: !1,
 			cancelled: !1,
-			reminderMinutes: pc[t],
+			reminderMinutes: gc[t],
 			createdAt: a,
 			updatedAt: a
 		};
@@ -5534,7 +5659,7 @@ ${Ws(t)}
 	ensureEvent(e, t, n, r, i = !1) {
 		let a = this.workspace.events.find((n) => n.applicationId === e.id && n.type === t);
 		if (!r) {
-			a && (a.cancelled = !0, a.updatedAt = oc());
+			a && (a.cancelled = !0, a.updatedAt = lc());
 			return;
 		}
 		if (a) {
@@ -5543,7 +5668,7 @@ ${Ws(t)}
 				startAt: r,
 				allDay: i,
 				cancelled: !1,
-				updatedAt: oc()
+				updatedAt: lc()
 			});
 			return;
 		}
@@ -5552,8 +5677,8 @@ ${Ws(t)}
 	syncEvents(e) {
 		let t = e.company.name;
 		this.ensureEvent(e, "application-sent", `Bewerbung gesendet · ${t}`, e.sentAt, !0), this.ensureEvent(e, "application-deadline", `Bewerbungsfrist · ${t}`, e.deadlineAt, !0), this.ensureEvent(e, "interview", `Vorstellungsgespräch · ${t}`, e.interviewAt), this.ensureEvent(e, "second-interview", `Zweites Gespräch · ${t}`, e.secondInterviewAt), this.ensureEvent(e, "contract-start", `Vertragsbeginn · ${t}`, e.startAt, !0), this.ensureEvent(e, "contract-end", `Vertragsende · ${t}`, e.contractEndAt, !0), this.ensureEvent(e, "fixed-term-end", `Befristungsende · ${t}`, e.fixedTermEndAt, !0), this.ensureEvent(e, "probation-end", `Probezeitende · ${t}`, e.probationEndAt, !0);
-		let n = e.status === "Beworben" && e.sentAt && this.workspace.settings.followUpDays !== null ? _c(e.sentAt, this.workspace.settings.followUpDays) : void 0;
-		if (this.ensureEvent(e, "follow-up-call", `Bei ${t} zum Stand der Bewerbung nachfragen`, n), cc.has(e.status)) {
+		let n = e.status === "Beworben" && e.sentAt && this.workspace.settings.followUpDays !== null ? bc(e.sentAt, this.workspace.settings.followUpDays) : void 0;
+		if (this.ensureEvent(e, "follow-up-call", `Bei ${t} zum Stand der Bewerbung nachfragen`, n), dc.has(e.status)) {
 			let t = /* @__PURE__ */ new Set([
 				"application-sent",
 				"contract-start",
@@ -5562,14 +5687,14 @@ ${Ws(t)}
 				"probation-end"
 			]);
 			this.workspace.events.forEach((n) => {
-				n.applicationId === e.id && !t.has(n.type) && new Date(n.startAt) > /* @__PURE__ */ new Date() && (n.cancelled = !0, n.updatedAt = oc());
+				n.applicationId === e.id && !t.has(n.type) && new Date(n.startAt) > /* @__PURE__ */ new Date() && (n.cancelled = !0, n.updatedAt = lc());
 			});
 		}
 	}
 	async createApplication(e) {
-		let t = is.parse(e), n = oc(), r = `${hc(t.company.name)}_${gc()}`, i = {
+		let t = is.parse(e), n = lc(), r = `${vc(t.company.name)}_${yc()}`, i = {
 			schemaVersion: 1,
-			id: sc(),
+			id: uc(),
 			folderName: r,
 			...t,
 			status: t.sentAt ? "Beworben" : "Entwurf",
@@ -5597,13 +5722,13 @@ ${Ws(t)}
 	async saveApplication(e) {
 		let t = rs.parse(e), n = this.workspace.applications.findIndex((e) => e.id === t.id);
 		if (n < 0) throw Error("Bewerbung wurde nicht gefunden.");
-		return t.updatedAt = oc(), this.workspace.applications[n] = t, this.syncEvents(t), await this.persist(), this.getWorkspace();
+		return t.updatedAt = lc(), this.workspace.applications[n] = t, this.syncEvents(t), await this.persist(), this.getWorkspace();
 	}
 	async changeStatus(e, t, n) {
 		let r = this.workspace.applications.find((t) => t.id === e);
 		if (!r) throw Error("Bewerbung wurde nicht gefunden.");
 		if (r.status !== t) {
-			let e = oc(), i = r.status;
+			let e = lc(), i = r.status;
 			r.status = t, r.updatedAt = e, r.statusHistory.push({
 				at: e,
 				from: i,
@@ -5619,10 +5744,10 @@ ${Ws(t)}
 	async duplicateApplication(e) {
 		let t = this.workspace.applications.find((t) => t.id === e);
 		if (!t) throw Error("Bewerbung wurde nicht gefunden.");
-		let n = oc(), r = {
+		let n = lc(), r = {
 			...structuredClone(t),
-			id: sc(),
-			folderName: `${hc(t.company.name)}_${gc()}`,
+			id: uc(),
+			folderName: `${vc(t.company.name)}_${yc()}`,
 			status: "Entwurf",
 			sentAt: void 0,
 			rejectionAt: void 0,
@@ -5658,10 +5783,10 @@ ${Ws(t)}
 	async addAttachment(t, i, a) {
 		let o = this.workspace.applications.find((e) => e.id === t);
 		if (!o) throw Error("Bewerbung wurde nicht gefunden.");
-		let s = e.basename(a), c = `${gc()}_${hc(s)}`, l = e.join(this.applicationPath(o), i, c);
+		let s = e.basename(a), c = `${yc()}_${vc(s)}`, l = e.join(this.applicationPath(o), i, c);
 		await r(e.dirname(l), { recursive: !0 }), await n(a, l);
 		let u = {
-			id: sc(),
+			id: uc(),
 			applicationId: t,
 			category: i,
 			fileName: s,
@@ -5670,7 +5795,7 @@ ${Ws(t)}
 			documentDate: "",
 			order: o.attachmentIds.length,
 			includedInPackage: !0,
-			createdAt: oc()
+			createdAt: lc()
 		};
 		return this.workspace.attachments.push(u), o.attachmentIds.push(u.id), await this.persist(), this.getWorkspace();
 	}
@@ -5747,24 +5872,24 @@ ${Ws(t)}
 			GEBURTSDATUM: r?.birthDate ?? "",
 			GEBURTSORT: r?.birthPlace ?? "",
 			GEBURTSZEILE: r?.birthDate || r?.birthPlace ? `Geb. ${r?.birthDate ?? ""}${r?.birthDate && r?.birthPlace ? " in " : ""}${r?.birthPlace ?? ""}` : "",
-			KONTAKT_ZEILE_1: vc([r?.phone, r?.email]),
-			KONTAKT_ZEILE_2: vc([r?.portfolio || r?.github, r?.linkedin]),
-			KONTAKT_ZEILE_3: vc([
+			KONTAKT_ZEILE_1: xc([r?.phone, r?.email]),
+			KONTAKT_ZEILE_2: xc([r?.portfolio || r?.github, r?.linkedin]),
+			KONTAKT_ZEILE_3: xc([
 				r?.city,
 				r?.birthDate,
 				r?.birthPlace
 			]),
 			KONTAKTE_TITEL: r?.phone || r?.email || r?.portfolio || r?.github || r?.linkedin || r?.city ? "KONTAKTE" : "",
 			KONTAKTDATEN_TITEL: r?.phone || r?.email || r?.portfolio || r?.github || r?.linkedin || r?.city || r?.birthDate || r?.birthPlace ? "KONTAKTDATEN" : "",
-			TELEFON_ZEILE: lc("Telefon", r?.phone),
-			EMAIL_ZEILE: lc("E-Mail", r?.email),
-			WEBSITE_ZEILE: lc("Website", r?.portfolio || r?.github),
-			LINKEDIN_ZEILE: lc("LinkedIn", r?.linkedin),
-			ORT_ZEILE: lc("Ort", r?.city),
+			TELEFON_ZEILE: fc("Telefon", r?.phone),
+			EMAIL_ZEILE: fc("E-Mail", r?.email),
+			WEBSITE_ZEILE: fc("Website", r?.portfolio || r?.github),
+			LINKEDIN_ZEILE: fc("LinkedIn", r?.linkedin),
+			ORT_ZEILE: fc("Ort", r?.city),
 			HEADER_KONTAKT_1: r?.phone ?? "",
 			HEADER_KONTAKT_2: r?.email ?? "",
 			HEADER_KONTAKT_3: r?.linkedin ?? "",
-			HEADER_KONTAKT_4: vc([r?.city, r?.country]),
+			HEADER_KONTAKT_4: xc([r?.city, r?.country]),
 			HEADER_KONTAKT_5: r?.birthDate || r?.birthPlace ? `Geb. ${r?.birthDate ?? ""}${r?.birthDate && r?.birthPlace ? " in " : ""}${r?.birthPlace ?? ""}` : "",
 			HEADER_KONTAKT_6: r?.portfolio || r?.github || "",
 			PROFILFOTO: r?.photoPath ?? "",
@@ -5805,9 +5930,9 @@ ${Ws(t)}
 			INTERESSEN: "",
 			DESIGN_PRIMARY: n.accentColor,
 			DESIGN_ACCENT: n.secondaryColor,
-			DESIGN_SOFT_ACCENT: fc(n.accentColor, "#ffffff", .78),
-			DESIGN_TITLE_BACKGROUND: fc(n.accentColor, "#ffffff", .62),
-			DESIGN_FONT: dc(n.designSettings.fontId),
+			DESIGN_SOFT_ACCENT: hc(n.accentColor, "#ffffff", .78),
+			DESIGN_TITLE_BACKGROUND: hc(n.accentColor, "#ffffff", .62),
+			DESIGN_FONT: mc(n.designSettings.fontId),
 			DESIGN_MARGIN_VERTICAL_MM: String(Do[n.designSettings.marginLevel].vertical),
 			DESIGN_MARGIN_HORIZONTAL_MM: String(Do[n.designSettings.marginLevel].horizontal),
 			DEKORATION_AKTIV: n.designSettings.showBackgroundInPrint ? "true" : "false",
@@ -5823,8 +5948,8 @@ ${Ws(t)}
 			l[`ABSCHLUSS_${t}`] = n?.degree ?? "", l[`FACHRICHTUNG_${t}`] = "", l[`HOCHSCHULE_${t}`] = n?.institution ?? "", l[`AUSBILDUNG_START_${t}`] = n?.from ?? "", l[`AUSBILDUNG_DATUM_TRENNER_${t}`] = n?.from && n.to ? " – " : "", l[`AUSBILDUNG_ENDE_${t}`] = n?.to ?? "", l[`AUSBILDUNG_ORT_${t}`] = n?.city ?? "", l[`AUSBILDUNG_METADATA_TRENNER_${t}`] = (n?.from || n?.to) && n?.city ? "·" : "";
 			let i = r?.skills[e] ?? "";
 			l[`STAERKE_${t}_TITEL`] = i, l[`STAERKE_${t}_BESCHREIBUNG`] = "";
-			let a = yc(r?.languages[e] ?? "");
-			l[`SPRACHE_${t}`] = a.name, l[`SPRACHNIVEAU_${t}`] = a.level, l[`SPRACHE_${t}_PUNKTE`] = uc(a.level);
+			let a = Sc(r?.languages[e] ?? "");
+			l[`SPRACHE_${t}`] = a.name, l[`SPRACHNIVEAU_${t}`] = a.level, l[`SPRACHE_${t}_PUNKTE`] = pc(a.level);
 		}
 		s.categories.filter((e) => e.isVisible).sort((e, t) => e.sortOrder - t.sortOrder).slice(0, 6).forEach((e, t) => {
 			let n = [...e.items.filter((e) => e.isVisible && e.name.trim()).sort((e, t) => e.sortOrder - t.sortOrder).map((e) => e.name), ...e.subcategories.filter((e) => e.isVisible).sort((e, t) => e.sortOrder - t.sortOrder).flatMap((e) => e.items.filter((e) => e.isVisible && e.name.trim()).sort((e, t) => e.sortOrder - t.sortOrder).map((e) => e.name))];
@@ -5875,17 +6000,17 @@ ${Ws(t)}
 	getExportHtml(e, t, n) {
 		let r = n ? rs.parse(n) : this.getApplication(e);
 		if (r.id !== e) throw Error("Die Exportdaten gehören nicht zur ausgewählten Bewerbung.");
-		return ic(r, this.getProfileForApplication(r), t);
+		return sc(r, this.getProfileForApplication(r), t);
 	}
 	getExportDefaultName(e, t) {
 		let n = this.getApplication(e);
-		return `${hc(n.company.name)}_${hc(n.job.title)}_${t}.pdf`;
+		return `${vc(n.company.name)}_${vc(n.job.title)}_${t}.pdf`;
 	}
 	async writeBackup(e) {
 		await u(e, JSON.stringify(ls.parse(this.workspace), null, 2), "utf8");
 	}
 	async importBackup(t) {
-		let r = JSON.parse(await a(t, "utf8")), i = ls.parse(r), o = e.join(this.dataPath, "Backups", `vor-import-${gc()}.json`);
+		let r = JSON.parse(await a(t, "utf8")), i = ls.parse(r), o = e.join(this.dataPath, "Backups", `vor-import-${yc()}.json`);
 		await n(this.workspacePath, o);
 		let s = this.workspace;
 		try {
@@ -5917,7 +6042,7 @@ ${Ws(t)}
 	getTemplateIds() {
 		return new Set(fs.map((e) => e.id));
 	}
-}, xc = async (e, t, n) => {
+}, wc = async (e, t, n) => {
 	try {
 		let n = await b.load(t);
 		(await e.copyPages(n, n.getPageIndices())).forEach((t) => e.addPage(t));
@@ -5925,21 +6050,21 @@ ${Ws(t)}
 		let t = e instanceof Error ? e.message : "Unbekannter Fehler";
 		throw Error(`PDF „${n}“ konnte nicht verarbeitet werden: ${t}`);
 	}
-}, Sc = async (e, t) => {
+}, Tc = async (e, t) => {
 	let n = await b.create();
-	await xc(n, e, "Bewerbungsunterlagen");
-	for (let e of t) await xc(n, e.bytes, e.fileName);
+	await wc(n, e, "Bewerbungsunterlagen");
+	for (let e of t) await wc(n, e.bytes, e.fileName);
 	return n.save();
-}, Cc = /* @__PURE__ */ new Set([
+}, Ec = /* @__PURE__ */ new Set([
 	".docx",
 	".dotx",
 	".doc"
-]), wc = {
+]), Dc = {
 	"muster-folder": "Musterordner",
 	"existing-document": "Eigenes Dokument",
 	"uploaded-word-template": "Eigene Word-Vorlage",
 	"system-word-template": "System Word-Vorlage"
-}, Tc = 1e3, Ec = {
+}, Oc = 1e3, kc = {
 	id: "word-muster-anschreiben",
 	fileName: "Anschreiben_Muster.docx",
 	name: "Word Muster",
@@ -5958,7 +6083,7 @@ ${Ws(t)}
 		"DOCX",
 		"Anschreiben"
 	]
-}, Dc = {
+}, Ac = {
 	id: "word-lebenslauf-elegant",
 	fileName: "Elegant_Lebenslauf_Muster.docx",
 	atsFileName: "Elegant_Lebenslauf_ATS.docx",
@@ -5988,7 +6113,7 @@ ${Ws(t)}
 		"Foto"
 	],
 	cardHighlights: ["Breite Hauptspalte für Berufserfahrung", "Blaue Seitenleiste für persönliche Highlights"]
-}, Oc = {
+}, jc = {
 	id: "word-lebenslauf-zeitgenoessisch",
 	fileName: "Zeitgenoessisch_Lebenslauf_Muster.docx",
 	atsFileName: "Zeitgenoessisch_Lebenslauf_ATS.docx",
@@ -6019,7 +6144,7 @@ ${Ws(t)}
 		"Grün"
 	],
 	cardHighlights: ["Grüne moderne Word-Lebenslaufvorlage", "Foto, Stärken, Zusammenfassung und Erfahrung"]
-}, kc = {
+}, Mc = {
 	id: "word-lebenslauf-gepflegt",
 	fileName: "Gepflegt_Lebenslauf_Muster.docx",
 	atsFileName: "Gepflegt_Lebenslauf_ATS.docx",
@@ -6050,7 +6175,7 @@ ${Ws(t)}
 		"Kundenorientiert"
 	],
 	cardHighlights: ["Linke Farbfläche für Profil und Kernkompetenzen", "Klare Business-Hierarchie für kundenorientierte Rollen"]
-}, Ac = {
+}, Nc = {
 	id: "word-lebenslauf-modern",
 	fileName: "Modern_Lebenslauf_Muster.docx",
 	atsFileName: "Modern_Lebenslauf_ATS.docx",
@@ -6082,7 +6207,7 @@ ${Ws(t)}
 		"Professionell"
 	],
 	cardHighlights: ["Türkise Wellenmuster für professionelle Ausstrahlung", "Zwei Spalten mit separaten Kontakt- und Erfahrungsbereichen"]
-}, jc = {
+}, Pc = {
 	id: "word-lebenslauf-kreativ",
 	fileName: "Kreativ_Lebenslauf_Muster.docx",
 	atsFileName: "Kreativ_Lebenslauf_ATS.docx",
@@ -6124,7 +6249,7 @@ ${Ws(t)}
 		orange: "#D97706"
 	},
 	cardHighlights: ["Viele Informationen übersichtlich auf einer Seite", "Zweispaltig · Mit Foto · DOCX"]
-}, Mc = {
+}, Fc = {
 	id: "word-lebenslauf-ivy-league",
 	fileName: "Ivy_League_Lebenslauf_Muster.docx",
 	atsFileName: "Ivy_League_Lebenslauf_ATS.docx",
@@ -6158,7 +6283,7 @@ ${Ws(t)}
 		"Klassisch"
 	],
 	cardHighlights: ["Klassische Serifentypografie mit ruhiger Einspaltenstruktur", "Pastell-Hintergrund · Ohne Foto · ATS-freundlich"]
-}, Nc = {
+}, Ic = {
 	id: "word-lebenslauf-kompakt",
 	fileName: "Kompakt_Lebenslauf_Muster.docx",
 	atsFileName: "Kompakt_Lebenslauf_ATS.docx",
@@ -6199,7 +6324,7 @@ ${Ws(t)}
 		dunkelgruen: "#185D47"
 	},
 	cardHighlights: ["Einseitig · Hohe Informationsdichte", "Zweispaltig · Ohne Foto · ATS-freundlich · DOCX"]
-}, Pc = {
+}, Lc = {
 	id: "word-lebenslauf-stilvoll",
 	fileName: "Stilvoll_Lebenslauf_Muster.docx",
 	atsFileName: "Stilvoll_Lebenslauf_ATS.docx",
@@ -6233,7 +6358,7 @@ ${Ws(t)}
 		"Grün"
 	],
 	cardHighlights: ["Kompakte Profilspalte und breite Karrierespalte", "Geometrisches Muster · Mit Foto · ATS-freundlich"]
-}, Fc = {
+}, Rc = {
 	id: "word-lebenslauf-einfach",
 	fileName: "Einfach_Lebenslauf_Muster.docx",
 	atsFileName: "Einfach_Lebenslauf_ATS.docx",
@@ -6267,7 +6392,7 @@ ${Ws(t)}
 		"Blau"
 	],
 	cardHighlights: ["Klare Einspaltenstruktur mit kräftigen Abschnittslinien", "Mit Foto · Geometrisches Dekor · ATS-freundlich"]
-}, Ic = [
+}, zc = [
 	"BEWERBER_NAME",
 	"BEWERBER_VORNAME",
 	"BEWERBER_NACHNAME",
@@ -6292,7 +6417,7 @@ ${Ws(t)}
 	"GRUSSFORMEL",
 	"UNTERSCHRIFT",
 	"KENNTNISSE"
-], Lc = {
+], Bc = {
 	FIRMA_ADI: "FIRMA_NAME",
 	FIRMA_ADRESI: "FIRMA_ADRESSE",
 	POSTA_KODU: "FIRMA_PLZ",
@@ -6302,9 +6427,9 @@ ${Ws(t)}
 	REFERENZNUMMER: "STELLENNUMMER",
 	ANSCHREIBEN_METNI: "HAUPTTEXT",
 	KAPANIS: "SCHLUSSTEXT"
-}, Rc = /* @__PURE__ */ "VORNAME.NACHNAME.BERUFSBEZEICHNUNG.FACHGEBIET_1.FACHGEBIET_2.FACHGEBIETE.TELEFON.EMAIL.WEBSITE.LINKEDIN.ORT.GEBURTSDATUM.GEBURTSORT.GEBURTSZEILE.GITHUB.KONTAKTDATEN_TITEL.KONTAKT_ZEILE_1.KONTAKT_ZEILE_2.KONTAKT_ZEILE_3.KONTAKTE_TITEL.HEADER_KONTAKT_1.HEADER_KONTAKT_2.HEADER_KONTAKT_3.HEADER_KONTAKT_4.HEADER_KONTAKT_5.HEADER_KONTAKT_6.TELEFON_ZEILE.EMAIL_ZEILE.WEBSITE_ZEILE.LINKEDIN_ZEILE.ORT_ZEILE.PROFILFOTO.ZUSAMMENFASSUNG_TITEL.ZUSAMMENFASSUNG.STAERKEN_TITEL.STAERKEN_ATS.ERFOLGE_TITEL.ERFOLGE_ATS.ERFOLG_HIGHLIGHT_1_TITEL.ERFOLG_HIGHLIGHT_1_BESCHREIBUNG.ERFOLG_HIGHLIGHT_2_TITEL.ERFOLG_HIGHLIGHT_2_BESCHREIBUNG.KENNTNISSE_TITEL.SPRACHEN_TITEL.SPRACHEN_ATS.BERUFSERFAHRUNG_TITEL.ERFAHRUNG_TITEL.AUSBILDUNG_TITEL.PROJEKTE_TITEL.PROJEKTE.WEITERBILDUNGEN_TITEL.WEITERBILDUNGEN.ZERTIFIKATE_TITEL.ZERTIFIKATE.VEROEFFENTLICHUNGEN_TITEL.VEROEFFENTLICHUNGEN.EHRENAMT_TITEL.EHRENAMT.SOFTWARE_TITEL.SOFTWARE.ZUSATZANGABEN_TITEL.ZUSATZANGABEN.FUEHRERSCHEIN_TITEL.FUEHRERSCHEIN.INTERESSEN_TITEL.INTERESSEN.ATS_MODUS".split("."), zc = (e, t) => Array.from({ length: e }, (e, n) => t.map((e) => `${e}_${n + 1}`)).flat(), Bc = [
-	...Rc,
-	...zc(8, [
+}, Vc = /* @__PURE__ */ "VORNAME.NACHNAME.BERUFSBEZEICHNUNG.FACHGEBIET_1.FACHGEBIET_2.FACHGEBIETE.TELEFON.EMAIL.WEBSITE.LINKEDIN.ORT.GEBURTSDATUM.GEBURTSORT.GEBURTSZEILE.GITHUB.KONTAKTDATEN_TITEL.KONTAKT_ZEILE_1.KONTAKT_ZEILE_2.KONTAKT_ZEILE_3.KONTAKTE_TITEL.HEADER_KONTAKT_1.HEADER_KONTAKT_2.HEADER_KONTAKT_3.HEADER_KONTAKT_4.HEADER_KONTAKT_5.HEADER_KONTAKT_6.TELEFON_ZEILE.EMAIL_ZEILE.WEBSITE_ZEILE.LINKEDIN_ZEILE.ORT_ZEILE.PROFILFOTO.ZUSAMMENFASSUNG_TITEL.ZUSAMMENFASSUNG.STAERKEN_TITEL.STAERKEN_ATS.ERFOLGE_TITEL.ERFOLGE_ATS.ERFOLG_HIGHLIGHT_1_TITEL.ERFOLG_HIGHLIGHT_1_BESCHREIBUNG.ERFOLG_HIGHLIGHT_2_TITEL.ERFOLG_HIGHLIGHT_2_BESCHREIBUNG.KENNTNISSE_TITEL.SPRACHEN_TITEL.SPRACHEN_ATS.BERUFSERFAHRUNG_TITEL.ERFAHRUNG_TITEL.AUSBILDUNG_TITEL.PROJEKTE_TITEL.PROJEKTE.WEITERBILDUNGEN_TITEL.WEITERBILDUNGEN.ZERTIFIKATE_TITEL.ZERTIFIKATE.VEROEFFENTLICHUNGEN_TITEL.VEROEFFENTLICHUNGEN.EHRENAMT_TITEL.EHRENAMT.SOFTWARE_TITEL.SOFTWARE.ZUSATZANGABEN_TITEL.ZUSATZANGABEN.FUEHRERSCHEIN_TITEL.FUEHRERSCHEIN.INTERESSEN_TITEL.INTERESSEN.ATS_MODUS".split("."), Hc = (e, t) => Array.from({ length: e }, (e, n) => t.map((e) => `${e}_${n + 1}`)).flat(), Uc = [
+	...Vc,
+	...Hc(8, [
 		"POSITION",
 		"UNTERNEHMEN",
 		"STARTDATUM",
@@ -6317,7 +6442,7 @@ ${Ws(t)}
 		"ERFAHRUNG_TRENNER"
 	]),
 	...Array.from({ length: 8 }, (e, t) => Array.from({ length: 5 }, (e, n) => `ERFOLG_${t + 1}_${n + 1}`)).flat(),
-	...zc(3, [
+	...Hc(3, [
 		"ABSCHLUSS",
 		"FACHRICHTUNG",
 		"HOCHSCHULE",
@@ -6327,28 +6452,28 @@ ${Ws(t)}
 		"AUSBILDUNG_ORT",
 		"AUSBILDUNG_METADATA_TRENNER"
 	]),
-	...zc(3, ["SPRACHE", "SPRACHNIVEAU"]),
+	...Hc(3, ["SPRACHE", "SPRACHNIVEAU"]),
 	...Array.from({ length: 3 }, (e, t) => `SPRACHE_${t + 1}_PUNKTE`),
 	...Array.from({ length: 4 }, (e, t) => [`STAERKE_${t + 1}_TITEL`, `STAERKE_${t + 1}_BESCHREIBUNG`]).flat(),
-	...zc(6, ["KENNTNIS_KATEGORIE", "KENNTNIS_EINTRAEGE"])
-], Vc = [...Ic, ...Bc], Hc = class extends Error {
+	...Hc(6, ["KENNTNIS_KATEGORIE", "KENNTNIS_EINTRAEGE"])
+], Wc = [...zc, ...Uc], Gc = class extends Error {
 	code;
 	constructor(e, t) {
 		super(e), this.code = t, this.name = "TemplateError";
 	}
-}, Uc = (e) => {
-	if (e instanceof Hc) return e;
+}, Kc = (e) => {
+	if (e instanceof Gc) return e;
 	let t = typeof e == "object" && e && "code" in e ? String(e.code) : "";
 	return [
 		"EBUSY",
 		"EPERM",
 		"EACCES"
-	].includes(t) ? new Hc("Die Datei wird von einem anderen Programm verwendet.", "LOCKED") : [
+	].includes(t) ? new Gc("Die Datei wird von einem anderen Programm verwendet.", "LOCKED") : [
 		"ENOENT",
 		"ENODATA",
 		"EIO"
-	].includes(t) ? new Hc("Die Vorlage ist derzeit nicht lokal verfügbar. Die Datei wird möglicherweise noch von OneDrive synchronisiert.", "NOT_LOCAL") : new Hc("Die Vorlage konnte nicht gelesen werden.", "CORRUPT");
-}, Wc = (e) => e.replaceAll("Ä", "Ae").replaceAll("Ö", "Oe").replaceAll("Ü", "Ue").replaceAll("ä", "ae").replaceAll("ö", "oe").replaceAll("ü", "ue").replaceAll("ß", "ss").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-").replace(/\s+/g, "_").replace(/[. ]+$/g, "").slice(0, 100) || "Vorlage", Gc = (e = /* @__PURE__ */ new Date()) => {
+	].includes(t) ? new Gc("Die Vorlage ist derzeit nicht lokal verfügbar. Die Datei wird möglicherweise noch von OneDrive synchronisiert.", "NOT_LOCAL") : new Gc("Die Vorlage konnte nicht gelesen werden.", "CORRUPT");
+}, qc = (e) => e.replaceAll("Ä", "Ae").replaceAll("Ö", "Oe").replaceAll("Ü", "Ue").replaceAll("ä", "ae").replaceAll("ö", "oe").replaceAll("ü", "ue").replaceAll("ß", "ss").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-").replace(/\s+/g, "_").replace(/[. ]+$/g, "").slice(0, 100) || "Vorlage", Jc = (e = /* @__PURE__ */ new Date()) => {
 	let t = (e) => String(e).padStart(2, "0");
 	return [
 		e.getFullYear(),
@@ -6359,8 +6484,8 @@ ${Ws(t)}
 		t(e.getMinutes()),
 		t(e.getSeconds())
 	].join("");
-}, Kc = async (n, r, i) => {
-	let a = Wc(r), o = e.join(n, `${a}${i}`);
+}, Yc = async (n, r, i) => {
+	let a = qc(r), o = e.join(n, `${a}${i}`);
 	try {
 		await t(o);
 	} catch {
@@ -6374,8 +6499,8 @@ ${Ws(t)}
 			return o;
 		}
 	}
-	return e.join(n, `${a}_${Gc()}${i}`);
-}, qc = /* @__PURE__ */ k(((e) => {
+	return e.join(n, `${a}_${Jc()}${i}`);
+}, Xc = /* @__PURE__ */ k(((e) => {
 	function t(e, t, n) {
 		if (n === void 0 && (n = Array.prototype), e && typeof n.find == "function") return n.find.call(e, t);
 		for (var i = 0; i < e.length; i++) if (r(e, i)) {
@@ -6481,8 +6606,8 @@ ${Ws(t)}
 		XMLNS: "http://www.w3.org/2000/xmlns/"
 	});
 	e.assign = i, e.find = t, e.freeze = n, e.HTML_BOOLEAN_ATTRIBUTES = a, e.HTML_RAW_TEXT_ELEMENTS = l, e.HTML_VOID_ELEMENTS = s, e.hasDefaultHTMLNamespace = p, e.hasOwn = r, e.isHTMLBooleanAttribute = o, e.isHTMLRawTextElement = u, e.isHTMLEscapableRawTextElement = d, e.isHTMLMimeType = f, e.isHTMLVoidElement = c, e.isValidMimeType = g, e.MIME_TYPE = m, e.NAMESPACE = _;
-})), Jc = /* @__PURE__ */ k(((e) => {
-	var t = qc();
+})), Zc = /* @__PURE__ */ k(((e) => {
+	var t = Xc();
 	function n(e, t) {
 		e.prototype = Object.create(Error.prototype, {
 			constructor: { value: e },
@@ -6582,7 +6707,7 @@ ${Ws(t)}
 		this.message = e, this.locator = t, Error.captureStackTrace && Error.captureStackTrace(this, f);
 	}
 	n(f), e.DOMException = s, e.DOMExceptionName = r, e.ExceptionCode = c, e.ParseError = f;
-})), Yc = /* @__PURE__ */ k(((e) => {
+})), Qc = /* @__PURE__ */ k(((e) => {
 	function t(e) {
 		try {
 			typeof e != "function" && (e = RegExp);
@@ -6619,10 +6744,10 @@ ${Ws(t)}
 	n && (c = a("[", r(c), "\\u{10000}-\\u{10FFFF}", "]"));
 	var l = RegExp("[^" + r(c) + "]", n ? "u" : ""), u = /[\x20\x09\x0D\x0A]/, d = r(u), f = a(u, "+"), p = a(u, "*"), m = /[:_a-zA-Z\xC0-\xD6\xD8-\xF6\xF8-\u02FF\u0370-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
 	n && (m = a("[", r(m), "\\u{10000}-\\u{10FFFF}", "]"));
-	var h = a("[", r(m), r(/[-.0-9\xB7]/), r(/[\u0300-\u036F\u203F-\u2040]/), "]"), g = a(m, h, "*"), _ = a(h, "+"), v = o(a("&", g, ";"), "|", o(/&#[0-9]+;|&#x[0-9a-fA-F]+;/)), y = a("%", g, ";"), b = o(a("\"", o(/[^%&"]/, "|", y, "|", v), "*", "\""), "|", a("'", o(/[^%&']/, "|", y, "|", v), "*", "'")), x = o("\"", o(/[^<&"]/, "|", v), "*", "\"", "|", "'", o(/[^<&']/, "|", v), "*", "'"), S = a(i(m, ":"), i(h, ":"), "*"), C = a(S, o(":", S), "?"), w = a("^", C, "$"), T = a("(", C, ")"), E = o(/"[^"]*"|'[^']*'/), D = a(/^<\?/, "(", g, ")", o(f, "(", c, "*?)"), "?", /\?>/), O = /[\x20\x0D\x0Aa-zA-Z0-9-'()+,./:=?;!*#@$_%]/, k = o("\"", O, "*\"", "|", "'", i(O, "'"), "*'"), A = "<!--", j = "-->", M = a(A, o(i(c, "-"), "|", a("-", i(c, "-"))), "*", j), N = "#PCDATA", P = o("EMPTY", "|", "ANY", "|", o(a(/\(/, p, N, o(p, /\|/, p, C), "*", p, /\)\*/), "|", a(/\(/, p, N, p, /\)/)), "|", a(/\([^>]+\)/, /[?*+]?/)), F = a("<!ELEMENT", f, o(C, "|", y), f, o(P, "|", y), p, ">"), ee = a("<!ATTLIST", f, g, o(f, g, f, o(/CDATA|ID|IDREF|IDREFS|ENTITY|ENTITIES|NMTOKEN|NMTOKENS/, "|", o(a("NOTATION", f, /\(/, p, g, o(p, /\|/, p, g), "*", p, /\)/), "|", a(/\(/, p, _, o(p, /\|/, p, _), "*", p, /\)/))), f, o(/#REQUIRED|#IMPLIED/, "|", o(o("#FIXED", f), "?", x))), "*", p, ">"), I = "about:legacy-compat", L = o("\"" + I + "\"", "|", "'" + I + "'"), R = "SYSTEM", z = "PUBLIC", B = o(o(R, f, E), "|", o(z, f, k, f, E)), te = a("^", o(o(R, f, "(?<SystemLiteralOnly>", E, ")"), "|", o(z, f, "(?<PubidLiteral>", k, ")", f, "(?<SystemLiteral>", E, ")"))), V = a("^", k, "$"), ne = a("^", E, "$"), H = o(b, "|", o(B, o(f, "NDATA", f, g), "?")), re = "<!ENTITY", ie = o(a(re, f, g, f, H, p, ">"), "|", a(re, f, "%", f, g, f, o(b, "|", B), p, ">")), ae = a("<!NOTATION", f, g, f, o(B, "|", a(z, f, k)), p, ">"), U = a(p, "=", p), W = /1[.]\d+/, oe = a(f, "version", U, o("'", W, "'", "|", "\"", W, "\"")), G = /[A-Za-z][-A-Za-z0-9._]*/, se = a(/^<\?xml/, oe, o(f, "encoding", U, o("\"", G, "\"", "|", "'", G, "'")), "?", o(f, "standalone", U, o("'", o("yes", "|", "no"), "'", "|", "\"", o("yes", "|", "no"), "\"")), "?", p, /\?>/), ce = "<!DOCTYPE", le = "<![CDATA[", ue = "]]>", de = a(/<!\[CDATA\[/, a(c, "*?", /\]\]>/));
-	e.chars = r, e.chars_without = i, e.detectUnicodeSupport = t, e.reg = a, e.regg = o, e.ABOUT_LEGACY_COMPAT = I, e.ABOUT_LEGACY_COMPAT_SystemLiteral = L, e.AttlistDecl = ee, e.CDATA_START = le, e.CDATA_END = ue, e.CDSect = de, e.Char = c, e.Comment = M, e.COMMENT_START = A, e.COMMENT_END = j, e.DOCTYPE_DECL_START = ce, e.elementdecl = F, e.EntityDecl = ie, e.EntityValue = b, e.ExternalID = B, e.ExternalID_match = te, e.Name = g, e.NotationDecl = ae, e.Reference = v, e.PEReference = y, e.PI = D, e.PUBLIC = z, e.PubidLiteral = k, e.PubidLiteral_match = V, e.QName = C, e.QName_exact = w, e.QName_group = T, e.S = f, e.SChar_s = d, e.S_OPT = p, e.SYSTEM = R, e.SystemLiteral = E, e.SystemLiteral_match = ne, e.InvalidChar = l, e.UNICODE_REPLACEMENT_CHARACTER = s, e.UNICODE_SUPPORT = n, e.XMLDecl = se;
-})), Xc = /* @__PURE__ */ k(((e) => {
-	var t = qc(), n = t.find, r = t.hasDefaultHTMLNamespace, i = t.hasOwn, a = t.isHTMLMimeType, o = t.isHTMLRawTextElement, s = t.isHTMLVoidElement, c = t.MIME_TYPE, l = t.NAMESPACE, u = Symbol(), d = Jc(), f = d.DOMException, p = d.DOMExceptionName, m = Yc();
+	var h = a("[", r(m), r(/[-.0-9\xB7]/), r(/[\u0300-\u036F\u203F-\u2040]/), "]"), g = a(m, h, "*"), _ = a(h, "+"), v = o(a("&", g, ";"), "|", o(/&#[0-9]+;|&#x[0-9a-fA-F]+;/)), y = a("%", g, ";"), b = o(a("\"", o(/[^%&"]/, "|", y, "|", v), "*", "\""), "|", a("'", o(/[^%&']/, "|", y, "|", v), "*", "'")), x = o("\"", o(/[^<&"]/, "|", v), "*", "\"", "|", "'", o(/[^<&']/, "|", v), "*", "'"), S = a(i(m, ":"), i(h, ":"), "*"), C = a(S, o(":", S), "?"), w = a("^", C, "$"), T = a("(", C, ")"), E = o(/"[^"]*"|'[^']*'/), D = a(/^<\?/, "(", g, ")", o(f, "(", c, "*?)"), "?", /\?>/), O = /[\x20\x0D\x0Aa-zA-Z0-9-'()+,./:=?;!*#@$_%]/, k = o("\"", O, "*\"", "|", "'", i(O, "'"), "*'"), A = "<!--", j = "-->", M = a(A, o(i(c, "-"), "|", a("-", i(c, "-"))), "*", j), N = "#PCDATA", P = o("EMPTY", "|", "ANY", "|", o(a(/\(/, p, N, o(p, /\|/, p, C), "*", p, /\)\*/), "|", a(/\(/, p, N, p, /\)/)), "|", a(/\([^>]+\)/, /[?*+]?/)), F = a("<!ELEMENT", f, o(C, "|", y), f, o(P, "|", y), p, ">"), ee = a("<!ATTLIST", f, g, o(f, g, f, o(/CDATA|ID|IDREF|IDREFS|ENTITY|ENTITIES|NMTOKEN|NMTOKENS/, "|", o(a("NOTATION", f, /\(/, p, g, o(p, /\|/, p, g), "*", p, /\)/), "|", a(/\(/, p, _, o(p, /\|/, p, _), "*", p, /\)/))), f, o(/#REQUIRED|#IMPLIED/, "|", o(o("#FIXED", f), "?", x))), "*", p, ">"), I = "about:legacy-compat", L = o("\"" + I + "\"", "|", "'" + I + "'"), R = "SYSTEM", z = "PUBLIC", B = o(o(R, f, E), "|", o(z, f, k, f, E)), V = a("^", o(o(R, f, "(?<SystemLiteralOnly>", E, ")"), "|", o(z, f, "(?<PubidLiteral>", k, ")", f, "(?<SystemLiteral>", E, ")"))), H = a("^", k, "$"), te = a("^", E, "$"), U = o(b, "|", o(B, o(f, "NDATA", f, g), "?")), ne = "<!ENTITY", re = o(a(ne, f, g, f, U, p, ">"), "|", a(ne, f, "%", f, g, f, o(b, "|", B), p, ">")), ie = a("<!NOTATION", f, g, f, o(B, "|", a(z, f, k)), p, ">"), W = a(p, "=", p), G = /1[.]\d+/, ae = a(f, "version", W, o("'", G, "'", "|", "\"", G, "\"")), K = /[A-Za-z][-A-Za-z0-9._]*/, oe = a(/^<\?xml/, ae, o(f, "encoding", W, o("\"", K, "\"", "|", "'", K, "'")), "?", o(f, "standalone", W, o("'", o("yes", "|", "no"), "'", "|", "\"", o("yes", "|", "no"), "\"")), "?", p, /\?>/), se = "<!DOCTYPE", ce = "<![CDATA[", le = "]]>", ue = a(/<!\[CDATA\[/, a(c, "*?", /\]\]>/));
+	e.chars = r, e.chars_without = i, e.detectUnicodeSupport = t, e.reg = a, e.regg = o, e.ABOUT_LEGACY_COMPAT = I, e.ABOUT_LEGACY_COMPAT_SystemLiteral = L, e.AttlistDecl = ee, e.CDATA_START = ce, e.CDATA_END = le, e.CDSect = ue, e.Char = c, e.Comment = M, e.COMMENT_START = A, e.COMMENT_END = j, e.DOCTYPE_DECL_START = se, e.elementdecl = F, e.EntityDecl = re, e.EntityValue = b, e.ExternalID = B, e.ExternalID_match = V, e.Name = g, e.NotationDecl = ie, e.Reference = v, e.PEReference = y, e.PI = D, e.PUBLIC = z, e.PubidLiteral = k, e.PubidLiteral_match = H, e.QName = C, e.QName_exact = w, e.QName_group = T, e.S = f, e.SChar_s = d, e.S_OPT = p, e.SYSTEM = R, e.SystemLiteral = E, e.SystemLiteral_match = te, e.InvalidChar = l, e.UNICODE_REPLACEMENT_CHARACTER = s, e.UNICODE_SUPPORT = n, e.XMLDecl = oe;
+})), $c = /* @__PURE__ */ k(((e) => {
+	var t = Xc(), n = t.find, r = t.hasDefaultHTMLNamespace, i = t.hasOwn, a = t.isHTMLMimeType, o = t.isHTMLRawTextElement, s = t.isHTMLVoidElement, c = t.MIME_TYPE, l = t.NAMESPACE, u = Symbol(), d = Zc(), f = d.DOMException, p = d.DOMExceptionName, m = Qc();
 	function h(e) {
 		if (e !== u) throw TypeError("Illegal constructor");
 	}
@@ -6738,10 +6863,10 @@ ${Ws(t)}
 			}
 		};
 	};
-	function te(e, t) {
-		this._node = e, this._refresh = t, V(this);
+	function V(e, t) {
+		this._node = e, this._refresh = t, H(this);
 	}
-	function V(e) {
+	function H(e) {
 		var t = e._node._inc || e._node.ownerDocument._inc;
 		if (e._inc !== t) {
 			var n = e._refresh(e._node);
@@ -6749,34 +6874,34 @@ ${Ws(t)}
 			C(n, e), e._inc = t;
 		}
 	}
-	te.prototype.item = function(e) {
-		return V(this), this[e] || null;
-	}, w(te, B);
-	function ne() {}
-	function H(e, t) {
+	V.prototype.item = function(e) {
+		return H(this), this[e] || null;
+	}, w(V, B);
+	function te() {}
+	function U(e, t) {
 		for (var n = 0; n < e.length;) {
 			if (e[n] === t) return n;
 			n++;
 		}
 	}
-	function re(e, t, n, r) {
-		if (r ? t[H(t, r)] = n : (t[t.length] = n, t.length++), e) {
+	function ne(e, t, n, r) {
+		if (r ? t[U(t, r)] = n : (t[t.length] = n, t.length++), e) {
 			n.ownerElement = e;
 			var i = e.ownerDocument;
-			i && (r && le(i, e, r), ce(i, e, n));
+			i && (r && ce(i, e, r), se(i, e, n));
 		}
 	}
-	function ie(e, t, n) {
-		var r = H(t, n);
+	function re(e, t, n) {
+		var r = U(t, n);
 		if (r >= 0) {
 			for (var i = t.length - 1; r <= i;) t[r] = t[++r];
 			if (t.length = i, e) {
 				var a = e.ownerDocument;
-				a && le(a, e, n), n.ownerElement = null;
+				a && ce(a, e, n), n.ownerElement = null;
 			}
 		}
 	}
-	ne.prototype = {
+	te.prototype = {
 		length: 0,
 		item: B.prototype.item,
 		getNamedItem: function(e) {
@@ -6792,7 +6917,7 @@ ${Ws(t)}
 			var t = e.ownerElement;
 			if (t && t !== this._ownerElement) throw new f(f.INUSE_ATTRIBUTE_ERR);
 			var n = this.getNamedItemNS(e.namespaceURI, e.localName);
-			return n === e ? e : (re(this._ownerElement, this, e, n), n);
+			return n === e ? e : (ne(this._ownerElement, this, e, n), n);
 		},
 		setNamedItemNS: function(e) {
 			return this.setNamedItem(e);
@@ -6800,12 +6925,12 @@ ${Ws(t)}
 		removeNamedItem: function(e) {
 			var t = this.getNamedItem(e);
 			if (!t) throw new f(f.NOT_FOUND_ERR, e);
-			return ie(this._ownerElement, this, t), t;
+			return re(this._ownerElement, this, t), t;
 		},
 		removeNamedItemNS: function(e, t) {
 			var n = this.getNamedItemNS(e, t);
 			if (!n) throw new f(f.NOT_FOUND_ERR, e ? e + " : " + t : t);
-			return ie(this._ownerElement, this, n), n;
+			return re(this._ownerElement, this, n), n;
 		},
 		getNamedItemNS: function(e, t) {
 			e ||= null;
@@ -6816,7 +6941,7 @@ ${Ws(t)}
 			}
 			return null;
 		}
-	}, ne.prototype[Symbol.iterator] = function() {
+	}, te.prototype[Symbol.iterator] = function() {
 		var e = this, t = 0;
 		return {
 			next: function() {
@@ -6830,15 +6955,15 @@ ${Ws(t)}
 			}
 		};
 	};
-	function ae() {}
-	ae.prototype = {
+	function ie() {}
+	ie.prototype = {
 		hasFeature: function(e, t) {
 			return !0;
 		},
 		createDocument: function(e, t, n) {
 			var r = c.XML_APPLICATION;
 			e === l.HTML ? r = c.XML_XHTML_APPLICATION : e === l.SVG && (r = c.XML_SVG_IMAGE);
-			var i = new se(u, { contentType: r });
+			var i = new oe(u, { contentType: r });
 			if (i.implementation = this, i.childNodes = new B(), i.doctype = n || null, n && i.appendChild(n), t) {
 				var a = i.createElementNS(e, t);
 				i.appendChild(a);
@@ -6851,7 +6976,7 @@ ${Ws(t)}
 			return i.name = e, i.nodeName = e, i.publicId = t || "", i.systemId = n || "", i.internalSubset = r || "", i.childNodes = new B(), i;
 		},
 		createHTMLDocument: function(e) {
-			var t = new se(u, { contentType: c.HTML });
+			var t = new oe(u, { contentType: c.HTML });
 			if (t.implementation = this, t.childNodes = new B(), e !== !1) {
 				t.doctype = this.createDocumentType("html"), t.doctype.ownerDocument = t, t.appendChild(t.doctype);
 				var n = t.createElement("html");
@@ -6866,10 +6991,10 @@ ${Ws(t)}
 			return t;
 		}
 	};
-	function U(e) {
+	function W(e) {
 		h(e);
 	}
-	U.prototype = {
+	W.prototype = {
 		firstChild: null,
 		lastChild: null,
 		previousSibling: null,
@@ -6952,13 +7077,13 @@ ${Ws(t)}
 			return this === e;
 		},
 		insertBefore: function(e, t) {
-			return xe(this, e, t);
+			return be(this, e, t);
 		},
 		replaceChild: function(e, t) {
-			xe(this, e, t, be), t && this.removeChild(t);
+			be(this, e, t, ye), t && this.removeChild(t);
 		},
 		removeChild: function(e) {
-			return de(this, e);
+			return ue(this, e);
 		},
 		appendChild: function(e) {
 			return this.insertBefore(e, null);
@@ -6970,7 +7095,7 @@ ${Ws(t)}
 			return Re(this.ownerDocument || this, this, e);
 		},
 		normalize: function() {
-			G(this, null, { enter: function(e) {
+			K(this, null, { enter: function(e) {
 				for (var t = e.firstChild; t;) {
 					var n = t.nextSibling;
 					n !== null && n.nodeType === O && t.nodeType === O ? (e.removeChild(n), t.appendData(n.data)) : t = n;
@@ -7005,7 +7130,7 @@ ${Ws(t)}
 		compareDocumentPosition: function(e) {
 			if (this === e) return 0;
 			var t = e, n = this, r = null, i = null;
-			if (t instanceof Ce && (r = t, t = r.ownerElement), n instanceof Ce && (i = n, n = i.ownerElement, r && t && n === t)) for (var a = 0, o; o = n.attributes[a]; a++) {
+			if (t instanceof Se && (r = t, t = r.ownerElement), n instanceof Se && (i = n, n = i.ownerElement, r && t && n === t)) for (var a = 0, o; o = n.attributes[a]; a++) {
 				if (o === r) return L.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC + L.DOCUMENT_POSITION_PRECEDING;
 				if (o === i) return L.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC + L.DOCUMENT_POSITION_FOLLOWING;
 			}
@@ -7033,51 +7158,51 @@ ${Ws(t)}
 			return 0;
 		}
 	};
-	function W(e) {
+	function G(e) {
 		return e == "<" && "&lt;" || e == ">" && "&gt;" || e == "&" && "&amp;" || e == "\"" && "&quot;" || "&#" + e.charCodeAt() + ";";
 	}
-	C(T, U), C(T, U.prototype), C(L, U), C(L, U.prototype);
-	function oe(e, t) {
-		G(e, null, { enter: function(e) {
-			return !t(e) || G.STOP;
+	C(T, W), C(T, W.prototype), C(L, W), C(L, W.prototype);
+	function ae(e, t) {
+		K(e, null, { enter: function(e) {
+			return !t(e) || K.STOP;
 		} });
 	}
-	function G(e, t, n) {
+	function K(e, t, n) {
 		for (var r = [{
 			node: e,
 			context: t,
-			phase: G.ENTER
+			phase: K.ENTER
 		}]; r.length > 0;) {
 			var i = r.pop();
-			if (i.phase === G.ENTER) {
+			if (i.phase === K.ENTER) {
 				var a = n.enter(i.node, i.context);
-				if (a === G.STOP) return G.STOP;
+				if (a === K.STOP) return K.STOP;
 				if (r.push({
 					node: i.node,
 					context: a,
-					phase: G.EXIT
+					phase: K.EXIT
 				}), a == null) continue;
 				for (var o = i.node.lastChild; o;) r.push({
 					node: o,
 					context: a,
-					phase: G.ENTER
+					phase: K.ENTER
 				}), o = o.previousSibling;
 			} else n.exit && n.exit(i.node, i.context);
 		}
 	}
-	G.STOP = Symbol("walkDOM.STOP"), G.ENTER = 0, G.EXIT = 1;
-	function se(e, t) {
+	K.STOP = Symbol("walkDOM.STOP"), K.ENTER = 0, K.EXIT = 1;
+	function oe(e, t) {
 		h(e);
 		var n = t || {};
 		this.ownerDocument = this, this.contentType = n.contentType || c.XML_APPLICATION, this.type = a(this.contentType) ? "html" : "xml";
 	}
-	function ce(e, t, n) {
+	function se(e, t, n) {
 		e && e._inc++, n.namespaceURI === l.XMLNS && (t._nsMap[n.prefix ? n.localName : ""] = n.value);
 	}
-	function le(e, t, n, r) {
+	function ce(e, t, n, r) {
 		e && e._inc++, n.namespaceURI === l.XMLNS && delete t._nsMap[n.prefix ? n.localName : ""];
 	}
-	function ue(e, t, n) {
+	function le(e, t, n) {
 		if (e && e._inc) {
 			e._inc++;
 			var r = t.childNodes;
@@ -7088,80 +7213,80 @@ ${Ws(t)}
 			}
 		}
 	}
-	function de(e, t) {
+	function ue(e, t) {
 		if (e !== t.parentNode) throw new f(f.NOT_FOUND_ERR, "child's parent is not parent");
 		var n = t.previousSibling, r = t.nextSibling;
-		return n ? n.nextSibling = r : e.firstChild = r, r ? r.previousSibling = n : e.lastChild = n, ue(e.ownerDocument, e), t.parentNode = null, t.previousSibling = null, t.nextSibling = null, t;
+		return n ? n.nextSibling = r : e.firstChild = r, r ? r.previousSibling = n : e.lastChild = n, le(e.ownerDocument, e), t.parentNode = null, t.previousSibling = null, t.nextSibling = null, t;
 	}
-	function K(e) {
-		return e && (e.nodeType === U.DOCUMENT_NODE || e.nodeType === U.DOCUMENT_FRAGMENT_NODE || e.nodeType === U.ELEMENT_NODE);
+	function q(e) {
+		return e && (e.nodeType === W.DOCUMENT_NODE || e.nodeType === W.DOCUMENT_FRAGMENT_NODE || e.nodeType === W.ELEMENT_NODE);
+	}
+	function de(e) {
+		return e && (e.nodeType === W.CDATA_SECTION_NODE || e.nodeType === W.COMMENT_NODE || e.nodeType === W.DOCUMENT_FRAGMENT_NODE || e.nodeType === W.DOCUMENT_TYPE_NODE || e.nodeType === W.ELEMENT_NODE || e.nodeType === W.PROCESSING_INSTRUCTION_NODE || e.nodeType === W.TEXT_NODE);
 	}
 	function fe(e) {
-		return e && (e.nodeType === U.CDATA_SECTION_NODE || e.nodeType === U.COMMENT_NODE || e.nodeType === U.DOCUMENT_FRAGMENT_NODE || e.nodeType === U.DOCUMENT_TYPE_NODE || e.nodeType === U.ELEMENT_NODE || e.nodeType === U.PROCESSING_INSTRUCTION_NODE || e.nodeType === U.TEXT_NODE);
+		return e && e.nodeType === W.DOCUMENT_TYPE_NODE;
 	}
 	function pe(e) {
-		return e && e.nodeType === U.DOCUMENT_TYPE_NODE;
+		return e && e.nodeType === W.ELEMENT_NODE;
 	}
 	function me(e) {
-		return e && e.nodeType === U.ELEMENT_NODE;
+		return e && e.nodeType === W.TEXT_NODE;
 	}
-	function he(e) {
-		return e && e.nodeType === U.TEXT_NODE;
+	function he(e, t) {
+		var r = e.childNodes || [];
+		if (n(r, pe) || fe(t)) return !1;
+		var i = n(r, fe);
+		return !(t && i && r.indexOf(i) > r.indexOf(t));
 	}
 	function ge(e, t) {
 		var r = e.childNodes || [];
-		if (n(r, me) || pe(t)) return !1;
-		var i = n(r, pe);
-		return !(t && i && r.indexOf(i) > r.indexOf(t));
-	}
-	function _e(e, t) {
-		var r = e.childNodes || [];
 		function i(e) {
-			return me(e) && e !== t;
+			return pe(e) && e !== t;
 		}
 		if (n(r, i)) return !1;
-		var a = n(r, pe);
+		var a = n(r, fe);
 		return !(t && a && r.indexOf(a) > r.indexOf(t));
 	}
-	function ve(e, t, n) {
-		if (!K(e)) throw new f(f.HIERARCHY_REQUEST_ERR, "Unexpected parent node type " + e.nodeType);
+	function _e(e, t, n) {
+		if (!q(e)) throw new f(f.HIERARCHY_REQUEST_ERR, "Unexpected parent node type " + e.nodeType);
 		if (n && n.parentNode !== e) throw new f(f.NOT_FOUND_ERR, "child not in parent");
-		if (!fe(t) || pe(t) && e.nodeType !== U.DOCUMENT_NODE) throw new f(f.HIERARCHY_REQUEST_ERR, "Unexpected node type " + t.nodeType + " for parent node type " + e.nodeType);
+		if (!de(t) || fe(t) && e.nodeType !== W.DOCUMENT_NODE) throw new f(f.HIERARCHY_REQUEST_ERR, "Unexpected node type " + t.nodeType + " for parent node type " + e.nodeType);
 	}
-	function ye(e, t, r) {
+	function ve(e, t, r) {
 		var i = e.childNodes || [], a = t.childNodes || [];
-		if (t.nodeType === U.DOCUMENT_FRAGMENT_NODE) {
-			var o = a.filter(me);
-			if (o.length > 1 || n(a, he)) throw new f(f.HIERARCHY_REQUEST_ERR, "More than one element or text in fragment");
-			if (o.length === 1 && !ge(e, r)) throw new f(f.HIERARCHY_REQUEST_ERR, "Element in fragment can not be inserted before doctype");
+		if (t.nodeType === W.DOCUMENT_FRAGMENT_NODE) {
+			var o = a.filter(pe);
+			if (o.length > 1 || n(a, me)) throw new f(f.HIERARCHY_REQUEST_ERR, "More than one element or text in fragment");
+			if (o.length === 1 && !he(e, r)) throw new f(f.HIERARCHY_REQUEST_ERR, "Element in fragment can not be inserted before doctype");
 		}
-		if (me(t) && !ge(e, r)) throw new f(f.HIERARCHY_REQUEST_ERR, "Only one element can be added and only after doctype");
-		if (pe(t)) {
-			if (n(i, pe)) throw new f(f.HIERARCHY_REQUEST_ERR, "Only one doctype is allowed");
-			var s = n(i, me);
+		if (pe(t) && !he(e, r)) throw new f(f.HIERARCHY_REQUEST_ERR, "Only one element can be added and only after doctype");
+		if (fe(t)) {
+			if (n(i, fe)) throw new f(f.HIERARCHY_REQUEST_ERR, "Only one doctype is allowed");
+			var s = n(i, pe);
 			if (r && i.indexOf(s) < i.indexOf(r)) throw new f(f.HIERARCHY_REQUEST_ERR, "Doctype can only be inserted before an element");
 			if (!r && s) throw new f(f.HIERARCHY_REQUEST_ERR, "Doctype can not be appended since element is present");
 		}
 	}
-	function be(e, t, r) {
+	function ye(e, t, r) {
 		var i = e.childNodes || [], a = t.childNodes || [];
-		if (t.nodeType === U.DOCUMENT_FRAGMENT_NODE) {
-			var o = a.filter(me);
-			if (o.length > 1 || n(a, he)) throw new f(f.HIERARCHY_REQUEST_ERR, "More than one element or text in fragment");
-			if (o.length === 1 && !_e(e, r)) throw new f(f.HIERARCHY_REQUEST_ERR, "Element in fragment can not be inserted before doctype");
+		if (t.nodeType === W.DOCUMENT_FRAGMENT_NODE) {
+			var o = a.filter(pe);
+			if (o.length > 1 || n(a, me)) throw new f(f.HIERARCHY_REQUEST_ERR, "More than one element or text in fragment");
+			if (o.length === 1 && !ge(e, r)) throw new f(f.HIERARCHY_REQUEST_ERR, "Element in fragment can not be inserted before doctype");
 		}
-		if (me(t) && !_e(e, r)) throw new f(f.HIERARCHY_REQUEST_ERR, "Only one element can be added and only after doctype");
-		if (pe(t)) {
+		if (pe(t) && !ge(e, r)) throw new f(f.HIERARCHY_REQUEST_ERR, "Only one element can be added and only after doctype");
+		if (fe(t)) {
 			function e(e) {
-				return pe(e) && e !== r;
+				return fe(e) && e !== r;
 			}
 			if (n(i, e)) throw new f(f.HIERARCHY_REQUEST_ERR, "Only one doctype is allowed");
-			var s = n(i, me);
+			var s = n(i, pe);
 			if (r && i.indexOf(s) < i.indexOf(r)) throw new f(f.HIERARCHY_REQUEST_ERR, "Doctype can only be inserted before an element");
 		}
 	}
-	function xe(e, t, n, r) {
-		ve(e, t, n), e.nodeType === U.DOCUMENT_NODE && (r || ye)(e, t, n);
+	function be(e, t, n, r) {
+		_e(e, t, n), e.nodeType === W.DOCUMENT_NODE && (r || ve)(e, t, n);
 		var i = t.parentNode;
 		if (i && i.removeChild(t), t.nodeType === ee) {
 			var a = t.firstChild;
@@ -7173,9 +7298,9 @@ ${Ws(t)}
 		do
 			a.parentNode = e;
 		while (a !== o && (a = a.nextSibling));
-		return ue(e.ownerDocument || e, e, t), t.nodeType == ee && (t.firstChild = t.lastChild = null), t;
+		return le(e.ownerDocument || e, e, t), t.nodeType == ee && (t.firstChild = t.lastChild = null), t;
 	}
-	se.prototype = {
+	oe.prototype = {
 		implementation: null,
 		nodeName: "#document",
 		nodeType: P,
@@ -7190,28 +7315,28 @@ ${Ws(t)}
 				}
 				return e;
 			}
-			return xe(this, e, t), e.ownerDocument = this, this.documentElement === null && e.nodeType === E && (this.documentElement = e), e;
+			return be(this, e, t), e.ownerDocument = this, this.documentElement === null && e.nodeType === E && (this.documentElement = e), e;
 		},
 		removeChild: function(e) {
-			var t = de(this, e);
+			var t = ue(this, e);
 			return t === this.documentElement && (this.documentElement = null), t;
 		},
 		replaceChild: function(e, t) {
-			xe(this, e, t, be), e.ownerDocument = this, t && this.removeChild(t), me(e) && (this.documentElement = e);
+			be(this, e, t, ye), e.ownerDocument = this, t && this.removeChild(t), pe(e) && (this.documentElement = e);
 		},
 		importNode: function(e, t) {
 			return Le(this, e, t);
 		},
 		getElementById: function(e) {
 			var t = null;
-			return oe(this.documentElement, function(n) {
+			return ae(this.documentElement, function(n) {
 				if (n.nodeType == E && n.getAttribute("id") == e) return t = n, !0;
 			}), t;
 		},
 		createElement: function(e) {
-			var t = new Se(u);
+			var t = new xe(u);
 			t.ownerDocument = this, this.type === "html" && (e = e.toLowerCase()), r(this.contentType) && (t.namespaceURI = l.HTML), t.nodeName = e, t.tagName = e, t.localName = e, t.childNodes = new B();
-			var n = t.attributes = new ne();
+			var n = t.attributes = new te();
 			return n._ownerElement = t, t;
 		},
 		createDocumentFragment: function() {
@@ -7219,16 +7344,16 @@ ${Ws(t)}
 			return e.ownerDocument = this, e.childNodes = new B(), e;
 		},
 		createTextNode: function(e) {
-			var t = new Te(u);
+			var t = new we(u);
 			return t.ownerDocument = this, t.childNodes = new B(), t.appendData(e), t;
 		},
 		createComment: function(e) {
-			var t = new Ee(u);
+			var t = new Te(u);
 			return t.ownerDocument = this, t.childNodes = new B(), t.appendData(e), t;
 		},
 		createCDATASection: function(e) {
 			if (e.indexOf("]]>") !== -1) throw new f(f.INVALID_CHARACTER_ERR, "data contains \"]]>\"");
-			var t = new q(u);
+			var t = new Ee(u);
 			return t.ownerDocument = this, t.childNodes = new B(), t.appendData(e), t;
 		},
 		createProcessingInstruction: function(e, t) {
@@ -7240,7 +7365,7 @@ ${Ws(t)}
 			return this.type === "html" && (e = e.toLowerCase()), this._createAttribute(e);
 		},
 		_createAttribute: function(e) {
-			var t = new Ce(u);
+			var t = new Se(u);
 			return t.ownerDocument = this, t.childNodes = new B(), t.name = e, t.nodeName = e, t.localName = e, t.specified = !0, t;
 		},
 		createEntityReference: function(e) {
@@ -7250,18 +7375,18 @@ ${Ws(t)}
 			return t.ownerDocument = this, t.childNodes = new B(), t.nodeName = e, t;
 		},
 		createElementNS: function(e, t) {
-			var n = S(e, t), r = new Se(u), i = r.attributes = new ne();
+			var n = S(e, t), r = new xe(u), i = r.attributes = new te();
 			return r.childNodes = new B(), r.ownerDocument = this, r.nodeName = t, r.tagName = t, r.namespaceURI = n[0], r.prefix = n[1], r.localName = n[2], i._ownerElement = r, r;
 		},
 		createAttributeNS: function(e, t) {
-			var n = S(e, t), r = new Ce(u);
+			var n = S(e, t), r = new Se(u);
 			return r.ownerDocument = this, r.childNodes = new B(), r.nodeName = t, r.name = t, r.specified = !0, r.namespaceURI = n[0], r.prefix = n[1], r.localName = n[2], r;
 		}
-	}, w(se, U);
-	function Se(e) {
+	}, w(oe, W);
+	function xe(e) {
 		h(e), this._nsMap = Object.create(null);
 	}
-	Se.prototype = {
+	xe.prototype = {
 		nodeType: E,
 		attributes: null,
 		getQualifiedName: function() {
@@ -7321,9 +7446,9 @@ ${Ws(t)}
 		},
 		getElementsByClassName: function(e) {
 			var t = y(e);
-			return new te(this, function(n) {
+			return new V(this, function(n) {
 				var r = [];
-				return t.length > 0 && oe(n, function(i) {
+				return t.length > 0 && ae(n, function(i) {
 					if (i !== n && i.nodeType === E) {
 						var a = i.getAttribute("class");
 						if (a) {
@@ -7340,30 +7465,30 @@ ${Ws(t)}
 		},
 		getElementsByTagName: function(e) {
 			var t = (this.nodeType === P ? this : this.ownerDocument).type === "html", n = e.toLowerCase();
-			return new te(this, function(r) {
+			return new V(this, function(r) {
 				var i = [];
-				return oe(r, function(a) {
+				return ae(r, function(a) {
 					a === r || a.nodeType !== E || (e === "*" || a.getQualifiedName() === (t && a.namespaceURI === l.HTML ? n : e)) && i.push(a);
 				}), i;
 			});
 		},
 		getElementsByTagNameNS: function(e, t) {
-			return new te(this, function(n) {
+			return new V(this, function(n) {
 				var r = [];
-				return oe(n, function(i) {
+				return ae(n, function(i) {
 					i !== n && i.nodeType === E && (e === "*" || i.namespaceURI === e) && (t === "*" || i.localName == t) && r.push(i);
 				}), r;
 			});
 		}
-	}, se.prototype.getElementsByClassName = Se.prototype.getElementsByClassName, se.prototype.getElementsByTagName = Se.prototype.getElementsByTagName, se.prototype.getElementsByTagNameNS = Se.prototype.getElementsByTagNameNS, w(Se, U);
-	function Ce(e) {
+	}, oe.prototype.getElementsByClassName = xe.prototype.getElementsByClassName, oe.prototype.getElementsByTagName = xe.prototype.getElementsByTagName, oe.prototype.getElementsByTagNameNS = xe.prototype.getElementsByTagNameNS, w(xe, W);
+	function Se(e) {
 		h(e), this.namespaceURI = null, this.prefix = null, this.ownerElement = null;
 	}
-	Ce.prototype.nodeType = D, w(Ce, U);
-	function we(e) {
+	Se.prototype.nodeType = D, w(Se, W);
+	function Ce(e) {
 		h(e);
 	}
-	we.prototype = {
+	Ce.prototype = {
 		data: "",
 		substringData: function(e, t) {
 			return this.data.substring(e, e + t);
@@ -7381,11 +7506,11 @@ ${Ws(t)}
 			var r = this.data.substring(0, e), i = this.data.substring(e + t);
 			n = r + n + i, this.nodeValue = this.data = n, this.length = n.length;
 		}
-	}, w(we, U);
-	function Te(e) {
+	}, w(Ce, W);
+	function we(e) {
 		h(e);
 	}
-	Te.prototype = {
+	we.prototype = {
 		nodeName: "#text",
 		nodeType: O,
 		splitText: function(e) {
@@ -7394,49 +7519,49 @@ ${Ws(t)}
 			var r = this.ownerDocument.createTextNode(n);
 			return this.parentNode && this.parentNode.insertBefore(r, this.nextSibling), r;
 		}
-	}, w(Te, we);
+	}, w(we, Ce);
+	function Te(e) {
+		h(e);
+	}
+	Te.prototype = {
+		nodeName: "#comment",
+		nodeType: N
+	}, w(Te, Ce);
 	function Ee(e) {
 		h(e);
 	}
 	Ee.prototype = {
-		nodeName: "#comment",
-		nodeType: N
-	}, w(Ee, we);
-	function q(e) {
-		h(e);
-	}
-	q.prototype = {
 		nodeName: "#cdata-section",
 		nodeType: k
-	}, w(q, Te);
+	}, w(Ee, we);
 	function De(e) {
 		h(e);
 	}
-	De.prototype.nodeType = F, w(De, U);
+	De.prototype.nodeType = F, w(De, W);
 	function J(e) {
 		h(e);
 	}
-	J.prototype.nodeType = I, w(J, U);
+	J.prototype.nodeType = I, w(J, W);
 	function Oe(e) {
 		h(e);
 	}
-	Oe.prototype.nodeType = j, w(Oe, U);
+	Oe.prototype.nodeType = j, w(Oe, W);
 	function ke(e) {
 		h(e);
 	}
-	ke.prototype.nodeType = A, w(ke, U);
+	ke.prototype.nodeType = A, w(ke, W);
 	function Ae(e) {
 		h(e);
 	}
-	Ae.prototype.nodeName = "#document-fragment", Ae.prototype.nodeType = ee, w(Ae, U);
+	Ae.prototype.nodeName = "#document-fragment", Ae.prototype.nodeType = ee, w(Ae, W);
 	function je(e) {
 		h(e);
 	}
-	je.prototype.nodeType = M, w(je, we);
+	je.prototype.nodeType = M, w(je, Ce);
 	function Me() {}
 	Me.prototype.serializeToString = function(e, t) {
 		return Ne.call(e, t);
-	}, U.prototype.toString = Ne;
+	}, W.prototype.toString = Ne;
 	function Ne(e) {
 		var t = typeof e == "function" ? {
 			requireWellFormed: !1,
@@ -7470,12 +7595,12 @@ ${Ws(t)}
 		return !0;
 	}
 	function Fe(e, t, n) {
-		e.push(" ", t, "=\"", n.replace(/[<>&"\t\n\r]/g, W), "\"");
+		e.push(" ", t, "=\"", n.replace(/[<>&"\t\n\r]/g, G), "\"");
 	}
 	function Ie(e, t, n, r) {
 		n ||= [];
 		var i = r.nodeFilter, a = r.requireWellFormed, c = r.splitCDATASections, u = (e.nodeType === P ? e : e.ownerDocument).type === "html";
-		G(e, { ns: n }, {
+		K(e, { ns: n }, {
 			enter: function(e, n) {
 				var d = n.ns;
 				if (i) if (e = i(e), e) {
@@ -7551,7 +7676,7 @@ ${Ws(t)}
 					case D: return Fe(t, e.name, e.value), null;
 					case O:
 						if (a && m.InvalidChar.test(e.data)) throw new f("The Text node data contains characters outside the XML Char production", p.InvalidStateError);
-						return t.push(e.data.replace(/[<&>]/g, W)), null;
+						return t.push(e.data.replace(/[<&>]/g, G)), null;
 					case k:
 						if (a && e.data.indexOf("]]>") !== -1) throw new f("The CDATASection data contains \"]]>\"", p.InvalidStateError);
 						return c ? t.push(m.CDATA_START, e.data.replace(/]]>/g, "]]]]><![CDATA[>"), m.CDATA_END) : t.push(m.CDATA_START, e.data, m.CDATA_END), null;
@@ -7562,13 +7687,13 @@ ${Ws(t)}
 						}
 						return t.push(m.COMMENT_START, e.data, m.COMMENT_END), null;
 					case F:
-						var te = e.publicId, V = e.systemId;
+						var V = e.publicId, H = e.systemId;
 						if (a) {
-							if (te && !m.PubidLiteral_match.test(te)) throw new f("DocumentType publicId is not a valid PubidLiteral", p.InvalidStateError);
-							if (V && V !== "." && !m.SystemLiteral_match.test(V)) throw new f("DocumentType systemId is not a valid SystemLiteral", p.InvalidStateError);
+							if (V && !m.PubidLiteral_match.test(V)) throw new f("DocumentType publicId is not a valid PubidLiteral", p.InvalidStateError);
+							if (H && H !== "." && !m.SystemLiteral_match.test(H)) throw new f("DocumentType systemId is not a valid SystemLiteral", p.InvalidStateError);
 							if (e.internalSubset && e.internalSubset.indexOf("]>") !== -1) throw new f("DocumentType internalSubset contains \"]>\"", p.InvalidStateError);
 						}
-						return t.push(m.DOCTYPE_DECL_START, " ", e.name), te ? (t.push(" ", m.PUBLIC, " ", te), V && V !== "." && t.push(" ", V)) : V && V !== "." && t.push(" ", m.SYSTEM, " ", V), e.internalSubset && t.push(" [", e.internalSubset, "]"), t.push(">"), null;
+						return t.push(m.DOCTYPE_DECL_START, " ", e.name), V ? (t.push(" ", m.PUBLIC, " ", V), H && H !== "." && t.push(" ", H)) : H && H !== "." && t.push(" ", m.SYSTEM, " ", H), e.internalSubset && t.push(" [", e.internalSubset, "]"), t.push(">"), null;
 					case M:
 						if (a) {
 							if (e.target.indexOf(":") !== -1 || e.target.toLowerCase() === "xml") throw new f("The ProcessingInstruction target is not well-formed", p.InvalidStateError);
@@ -7587,14 +7712,14 @@ ${Ws(t)}
 	}
 	function Le(e, t, n) {
 		var r;
-		return G(t, null, { enter: function(t, i) {
+		return K(t, null, { enter: function(t, i) {
 			var a = t.cloneNode(!1);
 			return a.ownerDocument = e, a.parentNode = null, i === null ? r = a : i.appendChild(a), t.nodeType === D || n ? a : null;
 		} }), r;
 	}
 	function Re(e, t, n) {
 		var r;
-		return G(t, null, { enter: function(t, a) {
+		return K(t, null, { enter: function(t, a) {
 			var o = new t.constructor(u);
 			for (var s in t) if (i(t, s)) {
 				var c = t[s];
@@ -7604,7 +7729,7 @@ ${Ws(t)}
 			var l = n;
 			switch (o.nodeType) {
 				case E:
-					var d = t.attributes, f = o.attributes = new ne(), p = d.length;
+					var d = t.attributes, f = o.attributes = new te(), p = d.length;
 					f._ownerElement = o;
 					for (var m = 0; m < p; m++) o.setAttributeNode(Re(e, d.item(m), !0));
 					break;
@@ -7621,13 +7746,13 @@ ${Ws(t)}
 		return t;
 	}
 	try {
-		Object.defineProperty && (Object.defineProperty(te.prototype, "length", { get: function() {
-			return V(this), this.$$length;
-		} }), Object.defineProperty(U.prototype, "textContent", {
+		Object.defineProperty && (Object.defineProperty(V.prototype, "length", { get: function() {
+			return H(this), this.$$length;
+		} }), Object.defineProperty(W.prototype, "textContent", {
 			get: function() {
 				if (this.nodeType === E || this.nodeType === ee) {
 					var e = [];
-					return G(this, null, { enter: function(t) {
+					return K(this, null, { enter: function(t) {
 						if (t.nodeType === E || t.nodeType === ee) return !0;
 						if (t.nodeType === M || t.nodeType === N) return null;
 						e.push(t.nodeValue);
@@ -7645,19 +7770,19 @@ ${Ws(t)}
 					default: this.data = e, this.value = e, this.nodeValue = e;
 				}
 			}
-		}), Object.defineProperty(Se.prototype, "children", { get: function() {
-			return new te(this, Be);
-		} }), Object.defineProperty(se.prototype, "children", { get: function() {
-			return new te(this, Be);
+		}), Object.defineProperty(xe.prototype, "children", { get: function() {
+			return new V(this, Be);
+		} }), Object.defineProperty(oe.prototype, "children", { get: function() {
+			return new V(this, Be);
 		} }), Object.defineProperty(Ae.prototype, "children", { get: function() {
-			return new te(this, Be);
+			return new V(this, Be);
 		} }), ze = function(e, t, n) {
 			e["$$" + t] = n;
 		});
 	} catch {}
-	e._updateLiveList = V, e.Attr = Ce, e.CDATASection = q, e.CharacterData = we, e.Comment = Ee, e.Document = se, e.DocumentFragment = Ae, e.DocumentType = De, e.DOMImplementation = ae, e.Element = Se, e.Entity = Oe, e.EntityReference = ke, e.LiveNodeList = te, e.NamedNodeMap = ne, e.Node = U, e.NodeList = B, e.Notation = J, e.Text = Te, e.ProcessingInstruction = je, e.walkDOM = G, e.XMLSerializer = Me;
-})), Zc = /* @__PURE__ */ k(((e) => {
-	var t = qc().freeze;
+	e._updateLiveList = H, e.Attr = Se, e.CDATASection = Ee, e.CharacterData = Ce, e.Comment = Te, e.Document = oe, e.DocumentFragment = Ae, e.DocumentType = De, e.DOMImplementation = ie, e.Element = xe, e.Entity = Oe, e.EntityReference = ke, e.LiveNodeList = V, e.NamedNodeMap = te, e.Node = W, e.NodeList = B, e.Notation = J, e.Text = we, e.ProcessingInstruction = je, e.walkDOM = K, e.XMLSerializer = Me;
+})), el = /* @__PURE__ */ k(((e) => {
+	var t = Xc().freeze;
 	e.XML_ENTITIES = t({
 		amp: "&",
 		apos: "'",
@@ -9791,8 +9916,8 @@ ${Ws(t)}
 		zwj: "‍",
 		zwnj: "‌"
 	}), e.entityMap = e.HTML_ENTITIES;
-})), Qc = /* @__PURE__ */ k(((e) => {
-	var t = qc(), n = Yc(), r = Jc(), i = t.isHTMLEscapableRawTextElement, a = t.isHTMLMimeType, o = t.isHTMLRawTextElement, s = t.hasOwn, c = t.NAMESPACE, l = r.ParseError, u = r.DOMException, d = 0, f = 1, p = 2, m = 3, h = 4, g = 5, _ = 6, v = 7;
+})), tl = /* @__PURE__ */ k(((e) => {
+	var t = Xc(), n = Qc(), r = Zc(), i = t.isHTMLEscapableRawTextElement, a = t.isHTMLMimeType, o = t.isHTMLRawTextElement, s = t.hasOwn, c = t.NAMESPACE, l = r.ParseError, u = r.DOMException, d = 0, f = 1, p = 2, m = 3, h = 4, g = 5, _ = 6, v = 7;
 	function y() {}
 	y.prototype = { parse: function(e, t, n) {
 		var r = this.domBuilder;
@@ -9859,7 +9984,7 @@ ${Ws(t)}
 						var z = x.pop();
 						E.pop();
 						var B = z.localNSMap;
-						if (o.endElement(z.uri, z.localName, L), B) for (var te in B) s(B, te) && o.endPrefixMapping(te);
+						if (o.endElement(z.uri, z.localName, L), B) for (var V in B) s(B, V) && o.endPrefixMapping(V);
 						F++;
 						break;
 					case "?":
@@ -9870,15 +9995,15 @@ ${Ws(t)}
 						break;
 					default:
 						v && y(O);
-						var V = new j(), ne = x[x.length - 1].currentNSMap, F = C(e, O, V, ne, p, c, d), H = V.length;
-						if (V.closed || (d && t.isHTMLVoidElement(V.tagName) ? V.closed = !0 : E.push(V.tagName)), v && H) {
-							for (var re = S(v, {}), ie = 0; ie < H; ie++) {
-								var ae = V[ie];
-								y(ae.offset), ae.locator = S(v, {});
+						var H = new j(), te = x[x.length - 1].currentNSMap, F = C(e, O, H, te, p, c, d), U = H.length;
+						if (H.closed || (d && t.isHTMLVoidElement(H.tagName) ? H.closed = !0 : E.push(H.tagName)), v && U) {
+							for (var ne = S(v, {}), re = 0; re < U; re++) {
+								var ie = H[re];
+								y(ie.offset), ie.locator = S(v, {});
 							}
-							o.locator = re, w(V, o, ne) && x.push(V), o.locator = v;
-						} else w(V, o, ne) && x.push(V);
-						d && !V.closed ? F = T(e, F, V.tagName, p, o) : F++;
+							o.locator = ne, w(H, o, te) && x.push(H), o.locator = v;
+						} else w(H, o, te) && x.push(H);
+						d && !H.closed ? F = T(e, F, H.tagName, p, o) : F++;
 				}
 			} catch (e) {
 				if (e instanceof l) throw e;
@@ -10154,8 +10279,8 @@ ${Ws(t)}
 			return this[e].value;
 		}
 	}, e.XMLReader = y, e.parseUtils = D, e.parseDoctypeCommentOrCData = k;
-})), $c = /* @__PURE__ */ k(((e) => {
-	var t = qc(), n = Xc(), r = Jc(), i = Zc(), a = Qc(), o = n.DOMImplementation, s = t.hasDefaultHTMLNamespace, c = t.isHTMLMimeType, l = t.isValidMimeType, u = t.MIME_TYPE, d = t.NAMESPACE, f = r.ParseError, p = a.XMLReader;
+})), nl = /* @__PURE__ */ k(((e) => {
+	var t = Xc(), n = $c(), r = Zc(), i = el(), a = tl(), o = n.DOMImplementation, s = t.hasDefaultHTMLNamespace, c = t.isHTMLMimeType, l = t.isValidMimeType, u = t.MIME_TYPE, d = t.NAMESPACE, f = r.ParseError, p = a.XMLReader;
 	function m(e) {
 		return e.replace(/\r[\n\u0085]/g, "\n").replace(/[\r\u0085\u2028\u2029]/g, "\n");
 	}
@@ -10277,16 +10402,16 @@ ${Ws(t)}
 		throw "onWarningStopParsing";
 	}
 	e.__DOMHandler = g, e.DOMParser = h, e.normalizeLineEndings = m, e.onErrorStopParsing = x, e.onWarningStopParsing = S;
-})), el = /* @__PURE__ */ k(((e) => {
-	var t = qc();
+})), rl = /* @__PURE__ */ k(((e) => {
+	var t = Xc();
 	e.assign = t.assign, e.hasDefaultHTMLNamespace = t.hasDefaultHTMLNamespace, e.isHTMLMimeType = t.isHTMLMimeType, e.isValidMimeType = t.isValidMimeType, e.MIME_TYPE = t.MIME_TYPE, e.NAMESPACE = t.NAMESPACE;
-	var n = Jc();
+	var n = Zc();
 	e.DOMException = n.DOMException, e.DOMExceptionName = n.DOMExceptionName, e.ExceptionCode = n.ExceptionCode, e.ParseError = n.ParseError;
-	var r = Xc();
+	var r = $c();
 	e.Attr = r.Attr, e.CDATASection = r.CDATASection, e.CharacterData = r.CharacterData, e.Comment = r.Comment, e.Document = r.Document, e.DocumentFragment = r.DocumentFragment, e.DocumentType = r.DocumentType, e.DOMImplementation = r.DOMImplementation, e.Element = r.Element, e.Entity = r.Entity, e.EntityReference = r.EntityReference, e.LiveNodeList = r.LiveNodeList, e.NamedNodeMap = r.NamedNodeMap, e.Node = r.Node, e.NodeList = r.NodeList, e.Notation = r.Notation, e.ProcessingInstruction = r.ProcessingInstruction, e.Text = r.Text, e.XMLSerializer = r.XMLSerializer;
-	var i = $c();
+	var i = nl();
 	e.DOMParser = i.DOMParser, e.normalizeLineEndings = i.normalizeLineEndings, e.onErrorStopParsing = i.onErrorStopParsing, e.onWarningStopParsing = i.onWarningStopParsing;
-})), tl = /* @__PURE__ */ k(((e, t) => {
+})), il = /* @__PURE__ */ k(((e, t) => {
 	function n(e) {
 		return e[e.length - 1];
 	}
@@ -10297,7 +10422,7 @@ ${Ws(t)}
 		last: n,
 		first: r
 	};
-})), nl = /* @__PURE__ */ k(((e, t) => {
+})), al = /* @__PURE__ */ k(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -10349,7 +10474,7 @@ ${Ws(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = tl(), l = c.last, u = c.first;
+	var c = il(), l = c.last, u = c.first;
 	function d(e) {
 		this.name = "GenericError", this.message = e, this.stack = Error(e).stack;
 	}
@@ -10615,14 +10740,14 @@ ${Ws(t)}
 			explanation: "You should not call .render on a document that had compilation errors"
 		}, e;
 	}
-	function te() {
+	function V() {
 		var e = new h("You should not call .render twice on the same Docxtemplater instance");
 		throw e.properties = {
 			id: "render_twice",
 			explanation: "You should not call .render twice on the same Docxtemplater instance"
 		}, e;
 	}
-	function V(e, t) {
+	function H(e, t) {
 		var n = new f("An XML file has invalid xml");
 		throw n.properties = {
 			id: "file_has_invalid_xml",
@@ -10660,12 +10785,12 @@ ${Ws(t)}
 		throwRawTagShouldBeOnlyTextInParagraph: j,
 		throwUnimplementedTagType: L,
 		throwXmlTagNotFound: T,
-		throwXmlInvalid: V,
+		throwXmlInvalid: H,
 		throwResolveBeforeCompile: z,
 		throwRenderInvalidTemplate: B,
-		throwRenderTwice: te
+		throwRenderTwice: V
 	};
-})), rl = /* @__PURE__ */ k(((e, t) => {
+})), ol = /* @__PURE__ */ k(((e, t) => {
 	function n(e, t) {
 		return s(e) || o(e, t) || i(e, t) || r();
 	}
@@ -10708,7 +10833,7 @@ ${Ws(t)}
 	function s(e) {
 		if (Array.isArray(e)) return e;
 	}
-	var c = el(), l = c.DOMParser, u = c.XMLSerializer, d = nl().throwXmlTagNotFound, f = tl(), p = f.last, m = f.first, h = Object.prototype.hasOwnProperty, g = Function.prototype.bind, _ = Function.prototype.call, v = _.bind(_, g)(_, _, h);
+	var c = rl(), l = c.DOMParser, u = c.XMLSerializer, d = al().throwXmlTagNotFound, f = il(), p = f.last, m = f.first, h = Object.prototype.hasOwnProperty, g = Function.prototype.bind, _ = Function.prototype.call, v = _.bind(_, g)(_, _, h);
 	function y(e) {
 		return /^[ \n\r\t]+$/.test(e);
 	}
@@ -10844,18 +10969,18 @@ ${Ws(t)}
 		});
 		return n;
 	}
-	function te(e, t) {
+	function V(e, t) {
 		return e === "</" + t + ">";
 	}
-	function V(e, t) {
+	function H(e, t) {
 		return e.indexOf("<" + t) === 0 && [
 			">",
 			" ",
 			"/"
 		].indexOf(e[t.length + 1]) !== -1;
 	}
-	function ne(e, t, n) {
-		var r = H(e, t, n);
+	function te(e, t, n) {
+		var r = U(e, t, n);
 		if (r !== null) return r;
 		d({
 			position: "right",
@@ -10864,16 +10989,16 @@ ${Ws(t)}
 			index: n
 		});
 	}
-	function H(e, t, n) {
+	function U(e, t, n) {
 		typeof t == "string" && (t = [t]);
 		for (var r = 1, i = n, a = e.length; i < a; i++) for (var o = e[i], s = 0, c = t; s < c.length; s++) {
 			var l = c[s];
-			if (te(o.value, l) && r--, V(o.value, l) && r++, r === 0) return i;
+			if (V(o.value, l) && r--, H(o.value, l) && r++, r === 0) return i;
 		}
 		return null;
 	}
-	function re(e, t, n) {
-		var r = ie(e, t, n);
+	function ne(e, t, n) {
+		var r = re(e, t, n);
 		if (r !== null) return r;
 		d({
 			position: "left",
@@ -10882,23 +11007,23 @@ ${Ws(t)}
 			index: n
 		});
 	}
-	function ie(e, t, n) {
+	function re(e, t, n) {
 		typeof t == "string" && (t = [t]);
 		for (var r = 1, i = n; i >= 0; i--) for (var a = e[i], o = 0, s = t; o < s.length; o++) {
 			var c = s[o];
-			if (V(a.value, c) && r--, te(a.value, c) && r++, r === 0) return i;
+			if (H(a.value, c) && r--, V(a.value, c) && r++, r === 0) return i;
 		}
 		return null;
 	}
-	function ae(e, t) {
+	function ie(e, t) {
 		var n = t.type, r = t.tag, i = t.position;
 		return n === "tag" && r === e && (i === "start" || i === "selfclosing");
 	}
-	function U(e, t) {
+	function W(e, t) {
 		var n = t.type, r = t.tag, i = t.position;
 		return n === "tag" && r === e && i === "end";
 	}
-	function W(e) {
+	function G(e) {
 		var t = e.type, n = e.tag, r = e.position;
 		return [
 			"w:p",
@@ -10906,7 +11031,7 @@ ${Ws(t)}
 			"text:p"
 		].indexOf(n) !== -1 && t === "tag" && r === "start";
 	}
-	function oe(e) {
+	function ae(e) {
 		var t = e.type, n = e.tag, r = e.position;
 		return [
 			"w:p",
@@ -10914,34 +11039,34 @@ ${Ws(t)}
 			"text:p"
 		].indexOf(n) !== -1 && t === "tag" && r === "end";
 	}
-	function G(e) {
+	function K(e) {
 		var t = e.type, n = e.tag, r = e.position;
 		return ["w:br", "a:br"].indexOf(n) !== -1 && t === "tag" && (r === "start" || r === "selfclosing");
 	}
-	function se(e) {
+	function oe(e) {
 		var t = e.type, n = e.position;
 		return e.text && t === "tag" && n === "start";
 	}
-	function ce(e) {
+	function se(e) {
 		var t = e.type, n = e.position;
 		return e.text && t === "tag" && n === "end";
 	}
-	function le(e) {
+	function ce(e) {
 		var t = e.type, n = e.position;
 		return t === "placeholder" || t === "content" && n === "insidetag";
 	}
-	function ue(e, t) {
+	function le(e, t) {
 		var n = e.module, r = e.type;
 		return t instanceof Array || (t = [t]), r === "placeholder" && t.indexOf(n) !== -1;
 	}
-	var de = /[\x00-\x08\x0B\x0C\x0E-\x1F]/g;
-	function K(e) {
-		return de.lastIndex = 0, de.test(e);
+	var ue = /[\x00-\x08\x0B\x0C\x0E-\x1F]/g;
+	function q(e) {
+		return ue.lastIndex = 0, ue.test(e);
+	}
+	function de(e) {
+		return typeof e != "string" && (e = String(e)), e.replace(ue, "");
 	}
 	function fe(e) {
-		return typeof e != "string" && (e = String(e)), e.replace(de, "");
-	}
-	function pe(e) {
 		var t = {};
 		for (var n in e) {
 			var r = e[n];
@@ -10949,7 +11074,7 @@ ${Ws(t)}
 		}
 		return t;
 	}
-	function me(e, t) {
+	function pe(e, t) {
 		for (var n = [], r = 0; r < e.length; r++) n.push({
 			item: e[r],
 			index: r
@@ -10960,24 +11085,24 @@ ${Ws(t)}
 		for (var i = [], a = 0; a < n.length; a++) i.push(n[a].item);
 		return i;
 	}
-	function he(e, t) {
+	function me(e, t) {
 		return t.delimiters.start + e.raw + t.delimiters.end;
 	}
 	t.exports = {
-		getPartWithDelimiters: he,
+		getPartWithDelimiters: me,
 		endsWith: T,
 		startsWith: E,
-		isContent: le,
-		isParagraphStart: W,
-		isParagraphEnd: oe,
-		isBreakTag: G,
-		isTagStart: ae,
-		isTagEnd: U,
-		isTextStart: se,
-		isTextEnd: ce,
-		isStarting: V,
-		isEnding: te,
-		isModule: ue,
+		isContent: ce,
+		isParagraphStart: G,
+		isParagraphEnd: ae,
+		isBreakTag: K,
+		isTagStart: ie,
+		isTagEnd: W,
+		isTextStart: oe,
+		isTextEnd: se,
+		isStarting: H,
+		isEnding: V,
+		isModule: le,
 		uniq: O,
 		getDuplicates: D,
 		chunkBy: k,
@@ -10985,28 +11110,28 @@ ${Ws(t)}
 		first: m,
 		xml2str: j,
 		str2xml: M,
-		getRightOrNull: H,
-		getRight: ne,
-		getLeftOrNull: ie,
-		getLeft: re,
+		getRightOrNull: U,
+		getRight: te,
+		getLeftOrNull: re,
+		getLeft: ne,
 		pregMatchAll: B,
 		convertSpaces: z,
 		charMapRegexes: P,
-		hasCorruptCharacters: K,
-		removeCorruptCharacters: fe,
+		hasCorruptCharacters: q,
+		removeCorruptCharacters: de,
 		getDefaults: A,
 		wordToUtf8: F,
 		utf8ToWord: ee,
 		concatArrays: I,
 		pushArray: L,
-		invertMap: pe,
+		invertMap: fe,
 		charMap: N,
 		getSingleAttribute: w,
 		setSingleAttribute: C,
 		isWhiteSpace: y,
-		stableSort: me
+		stableSort: pe
 	};
-})), il = /* @__PURE__ */ k(((e, t) => {
+})), sl = /* @__PURE__ */ k(((e, t) => {
 	function n(e, t) {
 		return s(e) || o(e, t) || i(e, t) || r();
 	}
@@ -11316,8 +11441,8 @@ ${Ws(t)}
 			}
 		]);
 	}();
-})), al = /* @__PURE__ */ k(((e, t) => {
-	var n = rl().str2xml, r = "_rels/.rels";
+})), cl = /* @__PURE__ */ k(((e, t) => {
+	var n = ol().str2xml, r = "_rels/.rels";
 	function i(e) {
 		for (var t = e.files[r], i = t ? n(t.asText()) : null, a = i ? i.getElementsByTagName("Relationship") : [], o = {}, s = 0; s < a.length; s++) {
 			var c = a[s];
@@ -11326,8 +11451,8 @@ ${Ws(t)}
 		return o;
 	}
 	t.exports = { getRelsTypes: i };
-})), ol = /* @__PURE__ */ k(((e, t) => {
-	var n = rl().str2xml, r = "[Content_Types].xml";
+})), ll = /* @__PURE__ */ k(((e, t) => {
+	var n = ol().str2xml, r = "[Content_Types].xml";
 	function i(e, t, n) {
 		for (var i = {}, a = 0; a < e.length; a++) {
 			var o = e[a], s = o.getAttribute("ContentType"), c = o.getAttribute("PartName").substr(1);
@@ -11354,8 +11479,8 @@ ${Ws(t)}
 		collectContentTypes: i,
 		getContentTypes: a
 	};
-})), sl = /* @__PURE__ */ k(((e, t) => {
-	var n = nl().XTInternalError;
+})), ul = /* @__PURE__ */ k(((e, t) => {
+	var n = al().XTInternalError;
 	function r() {}
 	function i(e) {
 		return e;
@@ -11393,7 +11518,7 @@ ${Ws(t)}
 		for (var o in t) e[o] || (e[o] = t[o]);
 		return e;
 	};
-})), cl = /* @__PURE__ */ k(((e, t) => {
+})), dl = /* @__PURE__ */ k(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -11499,7 +11624,7 @@ ${Ws(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var v = rl(), y = v.getRightOrNull, b = v.getRight, x = v.getLeft, S = v.getLeftOrNull, C = v.chunkBy, w = v.isTagStart, T = v.isTagEnd, E = v.isContent, D = v.last, O = v.first, k = nl(), A = k.XTTemplateError, j = k.throwExpandNotFound, M = k.getLoopPositionProducesInvalidXMLError;
+	var v = ol(), y = v.getRightOrNull, b = v.getRight, x = v.getLeft, S = v.getLeftOrNull, C = v.chunkBy, w = v.isTagStart, T = v.isTagEnd, E = v.isContent, D = v.last, O = v.first, k = al(), A = k.XTTemplateError, j = k.throwExpandNotFound, M = k.getLoopPositionProducesInvalidXMLError;
 	function N(e, t) {
 		return e.length !== 0 && D(e).substr(1).indexOf(t) === 0;
 	}
@@ -11599,7 +11724,7 @@ ${Ws(t)}
 			inner: d
 		};
 	}
-	function te(e, t) {
+	function V(e, t) {
 		var n = [];
 		e.errors && (n = e.errors, e = e.postparsed);
 		for (var i = [], a = 0, o = e.length; a < o; a++) {
@@ -11648,10 +11773,10 @@ ${Ws(t)}
 		};
 	}
 	t.exports = {
-		expandToOne: te,
+		expandToOne: V,
 		getExpandToDefault: ee
 	};
-})), ll = /* @__PURE__ */ k(((e, t) => {
+})), fl = /* @__PURE__ */ k(((e, t) => {
 	var n = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml", r = "application/vnd.ms-word.document.macroEnabled.main+xml", i = "application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml", a = "application/vnd.ms-word.template.macroEnabledTemplate.main+xml", o = "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml", s = "application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml", c = "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml", l = "application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml", u = "application/vnd.openxmlformats-officedocument.presentationml.slide+xml", d = "application/vnd.openxmlformats-officedocument.presentationml.slideMaster+xml", f = "application/vnd.openxmlformats-officedocument.presentationml.slideLayout+xml", p = "application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml", m = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml", h = "application/vnd.ms-excel.sheet.macroEnabled.main+xml", g = "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml", _ = [
 		n,
 		r,
@@ -11677,7 +11802,7 @@ ${Ws(t)}
 			g
 		]
 	};
-})), ul = /* @__PURE__ */ k(((e, t) => {
+})), pl = /* @__PURE__ */ k(((e, t) => {
 	t.exports = {
 		settingsContentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml",
 		coreContentType: "application/vnd.openxmlformats-package.core-properties+xml",
@@ -11686,7 +11811,7 @@ ${Ws(t)}
 		diagramDataContentType: "application/vnd.openxmlformats-officedocument.drawingml.diagramData+xml",
 		diagramDrawingContentType: "application/vnd.ms-office.drawingml.diagramDrawing+xml"
 	};
-})), dl = /* @__PURE__ */ k(((e, t) => {
+})), ml = /* @__PURE__ */ k(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -11721,7 +11846,7 @@ ${Ws(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = rl().pushArray, l = sl(), u = ll(), d = ul(), f = [
+	var c = ol().pushArray, l = ul(), u = fl(), d = pl(), f = [
 		d.settingsContentType,
 		d.coreContentType,
 		d.appContentType,
@@ -11760,7 +11885,7 @@ ${Ws(t)}
 	t.exports = function() {
 		return l(new p());
 	};
-})), fl = /* @__PURE__ */ k(((e, t) => {
+})), hl = /* @__PURE__ */ k(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -11795,7 +11920,7 @@ ${Ws(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = nl().getScopeParserExecutionError, l = tl().last, u = rl().concatArrays;
+	var c = al().getScopeParserExecutionError, l = il().last, u = ol().concatArrays;
 	function d(e, t) {
 		for (var n = e.length >>> 0, r, i = 0; i < n; i++) if (r = e[i], t.call(this, r, i, e)) return r;
 	}
@@ -11962,7 +12087,7 @@ ${Ws(t)}
 	t.exports = function(e) {
 		return e.scopePath = [], e.scopePathItem = [], e.scopePathLength = [], e.scopeTypes = [], e.scopeLindex = [], e.scopeList = [e.tags], new m(e);
 	};
-})), pl = /* @__PURE__ */ k(((e, t) => {
+})), gl = /* @__PURE__ */ k(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -12056,7 +12181,7 @@ ${Ws(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var m = nl(), h = m.getUnclosedTagException, g = m.getUnopenedTagException, _ = m.getDuplicateOpenTagException, v = m.getDuplicateCloseTagException, y = m.throwMalformedXml, b = m.throwXmlInvalid, x = m.XTTemplateError, S = rl(), C = S.isTextStart, w = S.isTextEnd, T = S.wordToUtf8, E = S.pushArray, D = 0, O = 1, k = 2, A = 3;
+	var m = al(), h = m.getUnclosedTagException, g = m.getUnopenedTagException, _ = m.getDuplicateOpenTagException, v = m.getDuplicateCloseTagException, y = m.throwMalformedXml, b = m.throwXmlInvalid, x = m.XTTemplateError, S = ol(), C = S.isTextStart, w = S.isTextEnd, T = S.wordToUtf8, E = S.pushArray, D = 0, O = 1, k = 2, A = 3;
 	function j(e, t) {
 		return e[0] <= t.offset && t.offset < e[1];
 	}
@@ -12242,7 +12367,7 @@ ${Ws(t)}
 	function B(e) {
 		return e.filter(z);
 	}
-	function te(e, t) {
+	function V(e, t) {
 		for (var n = !1, r = 0; r < e.length; r++) {
 			var i = e[r];
 			n = M(i, n), i.type === "content" && (i.position = n ? "insidetag" : "outsidetag"), t !== "text" && z(i) && (i.value = i.value.replace(/>/g, "&gt;"));
@@ -12251,7 +12376,7 @@ ${Ws(t)}
 	t.exports = {
 		parseDelimiters: R,
 		parse: function(e, t, n, r) {
-			te(e, r);
+			V(e, r);
 			for (var i = R(B(e), t, n), a = i.parsed, o = i.errors, s = [], c = 0, l = 0, u = 0; u < e.length; u++) {
 				var d = e[u];
 				if (z(d)) {
@@ -12281,7 +12406,7 @@ ${Ws(t)}
 			}), i;
 		}
 	};
-})), ml = /* @__PURE__ */ k(((e, t) => {
+})), _l = /* @__PURE__ */ k(((e, t) => {
 	function n(e) {
 		return o(e) || a(e) || i(e) || r();
 	}
@@ -12371,8 +12496,8 @@ ${Ws(t)}
 		getTags: l,
 		isPlaceholder: c
 	};
-})), hl = /* @__PURE__ */ k(((e, t) => {
-	var n = rl().pushArray;
+})), vl = /* @__PURE__ */ k(((e, t) => {
+	var n = ol().pushArray;
 	function r(e, t) {
 		return t instanceof Error ? n(Object.getOwnPropertyNames(t), ["stack"]).reduce(function(e, n) {
 			return e[n] = t[n], n === "stack" && (e[n] = t[n].toString()), e;
@@ -12387,13 +12512,13 @@ ${Ws(t)}
 		}
 	}
 	t.exports = i;
-})), gl = /* @__PURE__ */ k(((e, t) => {
-	var n = rl().pregMatchAll;
+})), yl = /* @__PURE__ */ k(((e, t) => {
+	var n = ol().pregMatchAll;
 	t.exports = function(e, t) {
 		var r = { content: e }, i = t.join("|");
 		return r.matches = n(RegExp(`(?:(<(?:${i})[^>]*>)([^<>]*)</(?:${i})>)|(<(?:${i})[^>]*/>)`, "g"), r.content), r;
 	};
-})), _l = /* @__PURE__ */ k(((e, t) => {
+})), bl = /* @__PURE__ */ k(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -12429,7 +12554,7 @@ ${Ws(t)}
 		getValue: o,
 		getValues: s
 	};
-})), vl = /* @__PURE__ */ k(((e, t) => {
+})), xl = /* @__PURE__ */ k(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -12523,7 +12648,7 @@ ${Ws(t)}
 	function p(e) {
 		if (Array.isArray(e)) return e;
 	}
-	var m = rl(), h = m.wordToUtf8, g = m.pushArray, _ = m.isParagraphStart, v = m.isBreakTag, y = _l(), b = y.match, x = y.getValue, S = y.getValues;
+	var m = ol(), h = m.wordToUtf8, g = m.pushArray, _ = m.isParagraphStart, v = m.isBreakTag, y = bl(), b = y.match, x = y.getValue, S = y.getValues;
 	function C(e, t) {
 		for (var n = [], r = 0; r < e.length; r++) {
 			var i = e[r];
@@ -12627,15 +12752,15 @@ ${Ws(t)}
 			};
 		}
 	};
-})), yl = /* @__PURE__ */ k(((e, t) => {
+})), Sl = /* @__PURE__ */ k(((e, t) => {
 	function n(e, t) {
 		if (e.lIndex == null) return null;
 		var n = t.scopeManager.scopePathItem;
 		return e.parentPart && (n = n.slice(0, n.length - 1)), t.filePath + "@" + e.lIndex.toString() + "-" + n.join("-");
 	}
 	t.exports = n;
-})), bl = /* @__PURE__ */ k(((e, t) => {
-	var n = nl(), r = n.throwUnimplementedTagType, i = n.XTScopeParserError, a = rl().pushArray, o = yl();
+})), Cl = /* @__PURE__ */ k(((e, t) => {
+	var n = al(), r = n.throwUnimplementedTagType, i = n.XTScopeParserError, a = ol().pushArray, o = Sl();
 	function s(e, t) {
 		for (var n = 0, r = t.modules; n < r.length; n++) {
 			var i = r[n].render(e, t);
@@ -12681,7 +12806,7 @@ ${Ws(t)}
 		};
 	}
 	t.exports = c;
-})), xl = /* @__PURE__ */ k(((e, t) => {
+})), wl = /* @__PURE__ */ k(((e, t) => {
 	function n(e) {
 		var t, n, r, i, a = 0, o = e.length;
 		for (r = 0; r < o; r++) t = e.charCodeAt(r), (t & 64512) == 55296 && r + 1 < o && (n = e.charCodeAt(r + 1), (n & 64512) == 56320 && (t = 65536 + (t - 55296 << 10) + (n - 56320), r++)), a += t < 128 ? 1 : t < 2048 ? 2 : t < 65536 ? 3 : 4;
@@ -12708,7 +12833,7 @@ ${Ws(t)}
 		return g;
 	}
 	t.exports = r;
-})), Sl = /* @__PURE__ */ k(((e, t) => {
+})), Tl = /* @__PURE__ */ k(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -12760,7 +12885,7 @@ ${Ws(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = rl().pushArray, l = yl();
+	var c = ol().pushArray, l = Sl();
 	function u(e, t) {
 		for (var n = 0, r = t.modules; n < r.length; n++) {
 			var i = r[n].resolve(e, t);
@@ -12824,8 +12949,8 @@ ${Ws(t)}
 		});
 	}
 	t.exports = f;
-})), Cl = /* @__PURE__ */ k(((e, t) => {
-	var n = rl(), r = n.startsWith, i = n.endsWith, a = n.isStarting, o = n.isEnding, s = n.isWhiteSpace, c = ll();
+})), El = /* @__PURE__ */ k(((e, t) => {
+	var n = ol(), r = n.startsWith, i = n.endsWith, a = n.isStarting, o = n.isEnding, s = n.isWhiteSpace, c = fl();
 	function l(e) {
 		for (var t = "", n = 0, a = e.length; n < a; n++) {
 			var o = e[n];
@@ -12869,7 +12994,7 @@ ${Ws(t)}
 		return e;
 	}
 	t.exports = u;
-})), wl = /* @__PURE__ */ k(((e, t) => {
+})), Dl = /* @__PURE__ */ k(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -12904,7 +13029,7 @@ ${Ws(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = rl(), l = c.pushArray, u = c.wordToUtf8, d = c.convertSpaces, f = gl(), p = pl(), m = vl(), h = bl(), g = xl(), _ = Sl(), v = Cl(), y = Function.prototype.bind, b = Function.prototype.call, x = b.bind(b, y);
+	var c = ol(), l = c.pushArray, u = c.wordToUtf8, d = c.convertSpaces, f = yl(), p = gl(), m = xl(), h = Cl(), g = wl(), _ = Tl(), v = El(), y = Function.prototype.bind, b = Function.prototype.call, x = b.bind(b, y);
 	function S(e, t) {
 		for (var n = f(e, t), r = [], i = 0, a = n.matches; i < a.length; i++) {
 			var o = a[i];
@@ -13060,7 +13185,7 @@ ${Ws(t)}
 			}
 		]);
 	}();
-})), Tl = /* @__PURE__ */ k(((e, t) => {
+})), Ol = /* @__PURE__ */ k(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -13166,7 +13291,7 @@ ${Ws(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var _ = rl(), v = _.chunkBy, y = _.last, b = _.isParagraphStart, x = _.isModule, S = _.pushArray, C = _.isParagraphEnd, w = _.isContent, T = _.startsWith, E = _.isTagEnd, D = _.isTagStart, O = _.getSingleAttribute, k = _.setSingleAttribute, A = ll(), j = sl(), M = rl().isWhiteSpace, N = "loop";
+	var _ = ol(), v = _.chunkBy, y = _.last, b = _.isParagraphStart, x = _.isModule, S = _.pushArray, C = _.isParagraphEnd, w = _.isContent, T = _.startsWith, E = _.isTagEnd, D = _.isTagStart, O = _.getSingleAttribute, k = _.setSingleAttribute, A = fl(), j = ul(), M = ol().isWhiteSpace, N = "loop";
 	function P(e) {
 		for (var t = 0; t < e.length; t++) {
 			var n = e[t];
@@ -13201,64 +13326,64 @@ ${Ws(t)}
 	function B(e) {
 		e.parts.unshift("<w:p><w:r><w:br w:type=\"page\"/></w:r></w:p>");
 	}
-	function te(e) {
+	function V(e) {
 		for (var t = 0; t < e.length; t++) {
 			var n = e[t];
 			if (D("w:type", n) && n.value.indexOf("continuous") !== -1) return !0;
 		}
 		return !1;
 	}
-	function V(e) {
+	function H(e) {
 		for (var t = 0; t < e.length; t++) {
 			var n = e[t];
 			if (D("w:type", n) && n.value.indexOf("w:val=\"nextPage\"") !== -1) return !0;
 		}
 		return !1;
 	}
-	function ne(e, t) {
+	function te(e, t) {
 		for (var n = "", r = 0; r < t.length; r++) {
 			var i = t[r].value;
 			n += i;
 		}
 		e.unshift(`<w:p><w:pPr>${n}</w:pPr></w:p>`);
 	}
-	function H(e) {
+	function U(e) {
 		for (var t = !1, n = !1, r = 0; r < e.length; r++) {
 			var i = e[r];
 			!t && T(i, "<w:sectPr") && (n = !0), n && (T(i, "<w:type") && (t = !0), !t && T(i, "</w:sectPr") && (e.splice(r, 0, "<w:type w:val=\"continuous\"/>"), r++));
 		}
 		return e;
 	}
-	function re(e) {
+	function ne(e) {
 		for (var t = 0, n = 0; n < e.length; n++) !T(e[n], "<w:headerReference") && !T(e[n], "<w:footerReference") && (e[t] = e[n], t++);
 		return e.length = t, e;
 	}
-	function ie(e) {
+	function re(e) {
 		for (var t = 0; t < e.length; t++) {
 			var n = e[t];
 			if (n.tag === "w:br" && n.value.indexOf("w:type=\"page\"") !== -1) return !0;
 		}
 		return !1;
 	}
-	function ae(e) {
+	function ie(e) {
 		for (var t = 0; t < e.length; t++) if (e[t].tag === "w:drawing") return !0;
 		return !1;
 	}
-	function U(e) {
+	function W(e) {
 		for (var t = [], n = null, r = 0; r < e.length; r++) {
 			var i = e[r];
 			D("w:sectPr", i) && (n = [], t.push(n)), n !== null && n.push(i), E("w:sectPr", i) && (n = null);
 		}
 		return t;
 	}
-	function W(e) {
+	function G(e) {
 		for (var t = !1, n = 0, r = 0; r < e.length; r++) {
 			var i = e[r];
 			D("w:sectPr", i) && (t = !0), t && (i.tag === "w:headerReference" || i.tag === "w:footerReference") && (n++, t = !1), E("w:sectPr", i) && (t = !1);
 		}
 		return n;
 	}
-	function oe(e) {
+	function ae(e) {
 		for (var t = [], n = !1, r = e.length - 1; r >= 0; r--) {
 			var i = e[r];
 			if (E("w:sectPr", i) && (n = !0), D("w:sectPr", i) && (t.unshift(i.value), n = !1), n && t.unshift(i.value), b(i)) {
@@ -13268,7 +13393,7 @@ ${Ws(t)}
 		}
 		return "";
 	}
-	var G = /*#__PURE__*/ function() {
+	var K = /*#__PURE__*/ function() {
 		function e() {
 			f(this, e), this.name = "LoopModule", this.inXfrm = !1, this.totalSectPr = 0, this.prefix = {
 				start: "#",
@@ -13288,7 +13413,7 @@ ${Ws(t)}
 				key: "preparse",
 				value: function(e, t) {
 					var n = t.contentType;
-					A.main.indexOf(n) !== -1 && (this.sects = U(e));
+					A.main.indexOf(n) !== -1 && (this.sects = W(e));
 				}
 			},
 			{
@@ -13355,26 +13480,26 @@ ${Ws(t)}
 				value: function(e, t) {
 					var n = t.basePart;
 					if (n && this.docxtemplater.fileType === "docx" && e.length > 0) {
-						n.sectPrCount = W(e), this.totalSectPr += n.sectPrCount;
+						n.sectPrCount = G(e), this.totalSectPr += n.sectPrCount;
 						for (var r = this.sects, i = 0, a = r.length; i < a; i++) {
 							var o = r[i];
 							if (n.lIndex < o[0].lIndex) {
-								i + 1 < r.length && te(r[i + 1]) && (n.addContinuousType = !0);
+								i + 1 < r.length && V(r[i + 1]) && (n.addContinuousType = !0);
 								break;
 							}
 							if (e[0].lIndex < o[0].lIndex && o[0].lIndex < n.lIndex) {
-								V(r[i]) && (n.addNextPage = { index: i });
+								H(r[i]) && (n.addNextPage = { index: i });
 								break;
 							}
 						}
-						n.lastParagrapSectPr = oe(e);
+						n.lastParagrapSectPr = ae(e);
 					}
 					if (!n || n.expandTo !== "auto" || n.module !== N || !L(e)) return e;
 					n.paragraphLoop = !0;
 					var s = 0, c = v(e, function(e) {
 						return b(e) && (s++, s === 1) ? "start" : C(e) && (s--, s === 0) ? "end" : null;
 					}), l = c[0], u = y(c), d = R(l), f = R(u);
-					return d > 0 && c[1][0].type === "content" && M(c[1][0].value) && (d += 1), f > 0 && y(c[c.length - 2]).type === "content" && M(y(c[c.length - 2]).value) && (f += 1), n.hasPageBreakBeginning = ie(l), n.hasPageBreak = ie(u), ae(l) && (d = 0), ae(u) && (f = 0), e.slice(d, e.length - f);
+					return d > 0 && c[1][0].type === "content" && M(c[1][0].value) && (d += 1), f > 0 && y(c[c.length - 2]).type === "content" && M(y(c[c.length - 2]).value) && (f += 1), n.hasPageBreakBeginning = re(l), n.hasPageBreak = re(u), ie(l) && (d = 0), ie(u) && (f = 0), e.slice(d, e.length - f);
 				}
 			},
 			{
@@ -13442,7 +13567,7 @@ ${Ws(t)}
 						}));
 						e.hasPageBreak && d === f - 1 && u && z(v), p.scopePathItem.some(function(e) {
 							return e !== 0;
-						}) ? (e.sectPrCount === 1 && (v.parts = re(v.parts)), e.addContinuousType && (v.parts = H(v.parts))) : e.addNextPage && ne(v.parts, n.sects[e.addNextPage.index]), e.addNextPage && z(v), e.hasPageBreakBeginning && u && B(v);
+						}) ? (e.sectPrCount === 1 && (v.parts = ne(v.parts)), e.addContinuousType && (v.parts = U(v.parts))) : e.addNextPage && te(v.parts, n.sects[e.addNextPage.index]), e.addNextPage && z(v), e.hasPageBreakBeginning && u && B(v);
 						for (var y = 0, b = v.parts; y < b.length; y++) {
 							var x = b[y];
 							r.push(x);
@@ -13467,9 +13592,9 @@ ${Ws(t)}
 		]);
 	}();
 	t.exports = function() {
-		return j(new G());
+		return j(new K());
 	};
-})), El = /* @__PURE__ */ k(((e, t) => {
+})), kl = /* @__PURE__ */ k(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -13504,7 +13629,7 @@ ${Ws(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = sl(), l = rl(), u = l.isTextStart, d = l.isTextEnd, f = l.endsWith, p = l.startsWith, m = l.pushArray, h = "<w:t xml:space=\"preserve\">", g = h.length, _ = "</w:t>", v = _.length;
+	var c = ul(), l = ol(), u = l.isTextStart, d = l.isTextEnd, f = l.endsWith, p = l.startsWith, m = l.pushArray, h = "<w:t xml:space=\"preserve\">", g = h.length, _ = "</w:t>", v = _.length;
 	function y(e) {
 		return u(e) && e.tag === "w:t";
 	}
@@ -13545,7 +13670,7 @@ ${Ws(t)}
 	t.exports = function() {
 		return c(new S());
 	};
-})), Dl = /* @__PURE__ */ k(((e, t) => {
+})), Al = /* @__PURE__ */ k(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -13580,7 +13705,7 @@ ${Ws(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = cl(), l = rl(), u = l.isContent, d = l.getPartWithDelimiters, f = nl(), p = f.throwRawTagShouldBeOnlyTextInParagraph, m = f.getInvalidRawXMLValueException, h = sl(), g = "rawxml";
+	var c = dl(), l = ol(), u = l.isContent, d = l.getPartWithDelimiters, f = al(), p = f.throwRawTagShouldBeOnlyTextInParagraph, m = f.getInvalidRawXMLValueException, h = ul(), g = "rawxml";
 	function _(e) {
 		for (var t = e.part, n = e.left, r = e.right, i = e.postparsed, a = e.index, o = i.slice(n + 1, r), s = 0, c = o.length; s < c; s++) if (s !== a - n - 1) {
 			var l = o[s];
@@ -13650,7 +13775,7 @@ ${Ws(t)}
 	t.exports = function() {
 		return h(new v());
 	};
-})), Ol = /* @__PURE__ */ k(((e, t) => {
+})), jl = /* @__PURE__ */ k(((e, t) => {
 	function n(e, t) {
 		for (var n = -1, r = 0, i = e.length; r < i; r++) t[r] >= e[r].length || (n === -1 || e[r][t[r]].offset < e[n][t[n]].offset) && (n = r);
 		return n;
@@ -13671,7 +13796,7 @@ ${Ws(t)}
 		}
 		return o;
 	};
-})), kl = /* @__PURE__ */ k(((e, t) => {
+})), Ml = /* @__PURE__ */ k(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -13706,7 +13831,7 @@ ${Ws(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = Ol(), l = rl(), u = l.getLeft, d = l.getRight, f = l.pushArray, p = sl(), m = cl().getExpandToDefault, h = nl(), g = h.getUnmatchedLoopException, _ = h.getClosingTagNotMatchOpeningTag, v = h.getUnbalancedLoopException;
+	var c = jl(), l = ol(), u = l.getLeft, d = l.getRight, f = l.pushArray, p = ul(), m = dl().getExpandToDefault, h = al(), g = h.getUnmatchedLoopException, _ = h.getClosingTagNotMatchOpeningTag, v = h.getUnbalancedLoopException;
 	function y(e) {
 		switch (e.location) {
 			case "start": return 1;
@@ -13844,7 +13969,7 @@ ${Ws(t)}
 	t.exports = function() {
 		return p(new C());
 	};
-})), Al = /* @__PURE__ */ k(((e, t) => {
+})), Nl = /* @__PURE__ */ k(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -13879,7 +14004,7 @@ ${Ws(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = sl(), l = nl(), u = l.getScopeCompilationError, d = l.getCorruptCharactersException, f = rl(), p = f.utf8ToWord, m = f.hasCorruptCharacters, h = f.removeCorruptCharacters, g = ul(), _ = [
+	var c = ul(), l = al(), u = l.getScopeCompilationError, d = l.getCorruptCharactersException, f = ol(), p = f.utf8ToWord, m = f.hasCorruptCharacters, h = f.removeCorruptCharacters, g = pl(), _ = [
 		g.settingsContentType,
 		g.coreContentType,
 		g.appContentType,
@@ -13983,8 +14108,8 @@ ${Ws(t)}
 	t.exports = function() {
 		return c(new y());
 	};
-})), jl = /* @__PURE__ */ k(((e, t) => {
-	var n = Tl(), r = El(), i = Dl(), a = kl(), o = Al();
+})), Pl = /* @__PURE__ */ k(((e, t) => {
+	var n = Ol(), r = kl(), i = Al(), a = Ml(), o = Nl();
 	function s() {
 		return {
 			getTemplatedFiles: function() {
@@ -14151,7 +14276,7 @@ ${Ws(t)}
 		docx: s,
 		pptx: c
 	};
-})), Ml = /* @__PURE__ */ k(((e, t) => {
+})), Fl = /* @__PURE__ */ k(((e, t) => {
 	var n = ["modules"];
 	function r(e, t) {
 		var n = Object.keys(e);
@@ -14276,7 +14401,7 @@ ${Ws(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var b = rl(), x = il(), S = x.object({
+	var b = ol(), x = sl(), S = x.object({
 		allowUnopenedTag: x.boolean().optional(),
 		allowUnclosedTag: x.boolean().optional(),
 		allowUnbalancedLoops: x.boolean().optional(),
@@ -14295,36 +14420,36 @@ ${Ws(t)}
 		syntax: S.optional(),
 		stripInvalidXMLChars: x.boolean().optional(),
 		warnFn: x.function().optional()
-	}).strict(), w = al().getRelsTypes, T = ol(), E = T.collectContentTypes, D = T.getContentTypes, O = sl(), k = cl(), A = dl(), j = fl(), M = pl(), N = ml().getTags, P = hl(), F = nl(), ee = F.throwMultiError, I = F.throwResolveBeforeCompile, L = F.throwRenderInvalidTemplate, R = F.throwRenderTwice, z = F.XTInternalError, B = F.XTTemplateError, te = F.throwFileTypeNotIdentified, V = F.throwFileTypeNotHandled, ne = F.throwApiVersionError;
+	}).strict(), w = cl().getRelsTypes, T = ll(), E = T.collectContentTypes, D = T.getContentTypes, O = ul(), k = dl(), A = ml(), j = hl(), M = gl(), N = _l().getTags, P = vl(), F = al(), ee = F.throwMultiError, I = F.throwResolveBeforeCompile, L = F.throwRenderInvalidTemplate, R = F.throwRenderTwice, z = F.XTInternalError, B = F.XTTemplateError, V = F.throwFileTypeNotIdentified, H = F.throwFileTypeNotHandled, te = F.throwApiVersionError;
 	b.getRelsTypes = w, b.traits = k, b.moduleWrapper = O, b.collectContentTypes = E, b.getContentTypes = D;
-	var H = b.getDefaults, re = b.str2xml, ie = b.xml2str, ae = b.concatArrays, U = b.uniq, W = b.getDuplicates, oe = b.stableSort, G = b.pushArray, se = b.utf8ToWord, ce = b.invertMap, le = "[Content_Types].xml", ue = "_rels/.rels", de = [
+	var U = b.getDefaults, ne = b.str2xml, re = b.xml2str, ie = b.concatArrays, W = b.uniq, G = b.getDuplicates, ae = b.stableSort, K = b.pushArray, oe = b.utf8ToWord, se = b.invertMap, ce = "[Content_Types].xml", le = "_rels/.rels", ue = [
 		3,
 		47,
 		2
 	];
-	function K(e) {
+	function q(e) {
 		for (var t = [], n = 0; n < e.length; n++) {
 			var r = e[n];
 			t.push(r.name);
 		}
-		var i = W(t);
+		var i = G(t);
 		if (i.length > 0) throw new z(`Detected duplicate module "${i[0]}"`);
 	}
-	function fe(e) {
+	function de(e) {
 		for (var t = 0, n = e.modules; t < n.length; t++) for (var r = n[t], i = 0, a = r.xmlContentTypes || []; i < a.length; i++) for (var o = a[i], s = e.invertedContentTypes[o] || [], c = 0; c < s.length; c++) {
 			var l = s[c];
 			e.zip.files[l] && e.options.xmlFileNames.push(l);
 		}
 	}
-	function pe(e) {
-		return oe(e, function(e, t) {
+	function fe(e) {
+		return ae(e, function(e, t) {
 			return (t.priority || 0) - (e.priority || 0);
 		});
 	}
-	function me(e) {
+	function pe(e) {
 		var t = [];
 		for (var n in e) t.push(n);
-		for (var r = [le, ue], i = [
+		for (var r = [ce, le], i = [
 			"word/",
 			"xl/",
 			"ppt/"
@@ -14338,13 +14463,13 @@ ${Ws(t)}
 		}
 		return r;
 	}
-	function he(e, t) {
+	function me(e, t) {
 		e.hideDeprecations !== !0 && console.warn(t);
 	}
-	function ge(e, t) {
-		if (e.hideDeprecations !== !0) return he(e, `Deprecated method ".${t}", view upgrade guide : https://docxtemplater.com/docs/api/#upgrade-guide, stack : ${(/* @__PURE__ */ Error()).stack}`);
+	function he(e, t) {
+		if (e.hideDeprecations !== !0) return me(e, `Deprecated method ".${t}", view upgrade guide : https://docxtemplater.com/docs/api/#upgrade-guide, stack : ${(/* @__PURE__ */ Error()).stack}`);
 	}
-	function _e(e) {
+	function ge(e) {
 		e.modules = e.modules.filter(function(t) {
 			if (!t.supportedFileTypes) return !0;
 			if (!Array.isArray(t.supportedFileTypes)) throw Error("The supportedFileTypes field of the module must be an array");
@@ -14352,21 +14477,21 @@ ${Ws(t)}
 			return n || t.on("detached"), n;
 		});
 	}
-	function ve(e) {
+	function _e(e) {
 		var t = e.compiled;
-		e.errors = ae(Object.keys(t).map(function(e) {
+		e.errors = ie(Object.keys(t).map(function(e) {
 			return t[e].allErrors;
 		})), e.errors.length !== 0 && (e.options.errorLogging && P(e.errors, e.options.errorLogging), ee(e.errors));
 	}
-	function ye(e) {
+	function ve(e) {
 		return typeof Buffer < "u" && typeof Buffer.isBuffer == "function" && Buffer.isBuffer(e);
 	}
-	var be = /*#__PURE__*/ function() {
+	var ye = /*#__PURE__*/ function() {
 		function e(t) {
 			var r = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {}, i = r.modules, a = i === void 0 ? [] : i, o = p(r, n);
-			if (h(this, e), this.targets = [], this.rendered = !1, this.scopeManagers = {}, this.compiled = {}, this.modules = [A()], this.xmlDocuments = {}, arguments.length === 0) he(this, `Deprecated docxtemplater constructor with no arguments, view upgrade guide : https://docxtemplater.com/docs/api/#upgrade-guide, stack : ${(/* @__PURE__ */ Error()).stack}`), this.hideDeprecations = !0, this.setOptions(o);
+			if (h(this, e), this.targets = [], this.rendered = !1, this.scopeManagers = {}, this.compiled = {}, this.modules = [A()], this.xmlDocuments = {}, arguments.length === 0) me(this, `Deprecated docxtemplater constructor with no arguments, view upgrade guide : https://docxtemplater.com/docs/api/#upgrade-guide, stack : ${(/* @__PURE__ */ Error()).stack}`), this.hideDeprecations = !0, this.setOptions(o);
 			else {
-				if (this.hideDeprecations = !0, this.setOptions(o), ye(t)) throw Error("You passed a Buffer to the Docxtemplater constructor. The first argument of docxtemplater's constructor must be a valid zip file (jszip v2 or pizzip v3)");
+				if (this.hideDeprecations = !0, this.setOptions(o), ve(t)) throw Error("You passed a Buffer to the Docxtemplater constructor. The first argument of docxtemplater's constructor must be a valid zip file (jszip v2 or pizzip v3)");
 				if (!t || !t.files || typeof t.file != "function") throw Error("The first argument of docxtemplater's constructor must be a valid zip file (jszip v2 or pizzip v3)");
 				if (!Array.isArray(a)) throw Error("The modules argument of docxtemplater's constructor must be an array");
 				for (var s = 0; s < a.length; s++) {
@@ -14383,21 +14508,21 @@ ${Ws(t)}
 				value: function(e) {
 					e = e.split(".");
 					for (var t = 0; t < e.length; t++) e[t] = parseInt(e[t], 10);
-					return e.length !== 3 && ne("neededVersion is not a valid version", {
+					return e.length !== 3 && te("neededVersion is not a valid version", {
 						neededVersion: e,
 						explanation: "the neededVersion must be an array of length 3"
-					}), e[0] !== de[0] && ne("The major api version do not match, you probably have to update docxtemplater with npm install --save docxtemplater", {
+					}), e[0] !== ue[0] && te("The major api version do not match, you probably have to update docxtemplater with npm install --save docxtemplater", {
 						neededVersion: e,
-						currentModuleApiVersion: de,
-						explanation: `moduleAPIVersionMismatch : needed=${e.join(".")}, current=${de.join(".")}`
-					}), e[1] > de[1] && ne("The minor api version is not uptodate, you probably have to update docxtemplater with npm install --save docxtemplater", {
+						currentModuleApiVersion: ue,
+						explanation: `moduleAPIVersionMismatch : needed=${e.join(".")}, current=${ue.join(".")}`
+					}), e[1] > ue[1] && te("The minor api version is not uptodate, you probably have to update docxtemplater with npm install --save docxtemplater", {
 						neededVersion: e,
-						currentModuleApiVersion: de,
-						explanation: `moduleAPIVersionMismatch : needed=${e.join(".")}, current=${de.join(".")}`
-					}), e[1] === de[1] && e[2] > de[2] && ne("The patch api version is not uptodate, you probably have to update docxtemplater with npm install --save docxtemplater", {
+						currentModuleApiVersion: ue,
+						explanation: `moduleAPIVersionMismatch : needed=${e.join(".")}, current=${ue.join(".")}`
+					}), e[1] === ue[1] && e[2] > ue[2] && te("The patch api version is not uptodate, you probably have to update docxtemplater with npm install --save docxtemplater", {
 						neededVersion: e,
-						currentModuleApiVersion: de,
-						explanation: `moduleAPIVersionMismatch : needed=${e.join(".")}, current=${de.join(".")}`
+						currentModuleApiVersion: ue,
+						explanation: `moduleAPIVersionMismatch : needed=${e.join(".")}, current=${ue.join(".")}`
 					}), !0;
 				}
 			},
@@ -14417,7 +14542,7 @@ ${Ws(t)}
 				key: "attachModule",
 				value: function(e) {
 					if (this.v4Constructor) throw new z("attachModule() should not be called manually when using the v4 constructor");
-					ge(this, "attachModule");
+					he(this, "attachModule");
 					var t = f(e);
 					if (t === "function") throw new z("Cannot attach a class/function as a module. Most probably you forgot to instantiate the module by using `new` on the module.");
 					if (!e || t !== "object") throw new z("Cannot attachModule with a falsy value");
@@ -14425,7 +14550,7 @@ ${Ws(t)}
 					else throw Error(`Cannot attach a module that was already attached : "${e.name}". The most likely cause is that you are instantiating the module at the root level, and using it for multiple instances of Docxtemplater`);
 					e.attached = !0;
 					var n = O(e);
-					return this.modules.push(n), n.on("attached"), this.fileType && _e(this), this;
+					return this.modules.push(n), n.on("attached"), this.fileType && ge(this), this;
 				}
 			},
 			{
@@ -14445,28 +14570,28 @@ ${Ws(t)}
 					if (!e) throw Error("setOptions should be called with an object as first parameter");
 					var r = C.validate(e);
 					if (r.success === !1) throw Error(r.error);
-					ge(this, "setOptions"), this.options = {};
-					var i = H();
+					he(this, "setOptions"), this.options = {};
+					var i = U();
 					for (var a in i) {
 						var o = i[a];
 						this.options[a] = e[a] == null ? this[a] || o : e[a], this[a] = this.options[a];
 					}
-					return (t = this.delimiters).start && (t.start = se(this.delimiters.start)), (n = this.delimiters).end && (n.end = se(this.delimiters.end)), this;
+					return (t = this.delimiters).start && (t.start = oe(this.delimiters.start)), (n = this.delimiters).end && (n.end = oe(this.delimiters.end)), this;
 				}
 			},
 			{
 				key: "loadZip",
 				value: function(e) {
 					if (this.v4Constructor) throw Error("loadZip() should not be called manually when using the v4 constructor");
-					if (ge(this, "loadZip"), e.loadAsync) throw new z("Docxtemplater doesn't handle JSZip version >=3, please use pizzip");
-					e.xtRendered && this.options.warnFn([/* @__PURE__ */ Error("This zip file appears to be the outcome of a previous docxtemplater generation. This typically indicates that docxtemplater was integrated by reusing the same zip file. It is recommended to create a new Pizzip instance for each docxtemplater generation.")]), this.zip = e, this.updateFileTypeConfig(), this.modules = ae([this.fileTypeConfig.baseModules.map(function(e) {
+					if (he(this, "loadZip"), e.loadAsync) throw new z("Docxtemplater doesn't handle JSZip version >=3, please use pizzip");
+					e.xtRendered && this.options.warnFn([/* @__PURE__ */ Error("This zip file appears to be the outcome of a previous docxtemplater generation. This typically indicates that docxtemplater was integrated by reusing the same zip file. It is recommended to create a new Pizzip instance for each docxtemplater generation.")]), this.zip = e, this.updateFileTypeConfig(), this.modules = ie([this.fileTypeConfig.baseModules.map(function(e) {
 						return e();
 					}), this.modules]);
 					for (var t = 0, n = this.modules; t < n.length; t++) {
 						var r = n[t];
 						r.zip = this.zip, r.docxtemplater = this, r.fileTypeConfig = this.fileTypeConfig, r.fileType = this.fileType, r.xtOptions = this.options, r.modules = this.modules;
 					}
-					return _e(this), this;
+					return ge(this), this;
 				}
 			},
 			{
@@ -14497,7 +14622,7 @@ ${Ws(t)}
 				key: "resolveData",
 				value: function(e) {
 					var t = this;
-					ge(this, "resolveData");
+					he(this, "resolveData");
 					var n = [];
 					return Object.keys(this.compiled).length || I(), Promise.resolve(e).then(function(e) {
 						t.data = e, t.setModules({
@@ -14513,12 +14638,12 @@ ${Ws(t)}
 								return i.filePath = e, i.scopeManager = t.getScopeManager(e, i, r), i.resolveTags(r).then(function(e) {
 									return i.scopeManager.finishedResolving = !0, e;
 								}, function(e) {
-									G(n, e);
+									K(n, e);
 								});
 							}));
 						}, a = 0, o = Object.keys(t.mapper); a < o.length; a++) i();
 						return Promise.all(r).then(function(e) {
-							return n.length !== 0 && (t.options.errorLogging && P(n, t.options.errorLogging), ee(n)), ae(e);
+							return n.length !== 0 && (t.options.errorLogging && P(n, t.options.errorLogging), ee(n)), ie(e);
 						});
 					});
 				}
@@ -14526,12 +14651,12 @@ ${Ws(t)}
 			{
 				key: "compile",
 				value: function() {
-					if (ge(this, "compile"), this.updateFileTypeConfig(), K(this.modules), this.modules = pe(this.modules), Object.keys(this.compiled).length) return this;
+					if (he(this, "compile"), this.updateFileTypeConfig(), q(this.modules), this.modules = fe(this.modules), Object.keys(this.compiled).length) return this;
 					for (var e = this.options, t = 0, n = this.modules; t < n.length; t++) e = n[t].optionsTransformer(e, this);
-					this.options = e, this.options.xmlFileNames = U(this.options.xmlFileNames);
+					this.options = e, this.options.xmlFileNames = W(this.options.xmlFileNames);
 					for (var r = 0, i = this.options.xmlFileNames; r < i.length; r++) {
 						var a = i[r], o = this.zip.files[a].asText();
-						this.xmlDocuments[a] = re(o);
+						this.xmlDocuments[a] = ne(o);
 					}
 					this.setModules({
 						zip: this.zip,
@@ -14556,7 +14681,7 @@ ${Ws(t)}
 						var v = _[g];
 						this.zip.files[v] != null && this.compiled[v].postparse();
 					}
-					return this.sendEvent("after-postparse"), this.setModules({ compiled: this.compiled }), ve(this), this;
+					return this.sendEvent("after-postparse"), this.setModules({ compiled: this.compiled }), _e(this), this;
 				}
 			},
 			{
@@ -14564,7 +14689,7 @@ ${Ws(t)}
 				value: function() {
 					this.relsTypes = w(this.zip);
 					var t = D(this.zip), n = t.overrides, r = t.defaults, i = t.contentTypes, a = t.contentTypeXml;
-					a && (this.filesContentTypes = E(n, r, this.zip), this.invertedContentTypes = ce(this.filesContentTypes), this.setModules({
+					a && (this.filesContentTypes = E(n, r, this.zip), this.invertedContentTypes = se(this.filesContentTypes), this.setModules({
 						contentTypes: this.contentTypes,
 						invertedContentTypes: this.invertedContentTypes
 					}));
@@ -14578,7 +14703,7 @@ ${Ws(t)}
 						defaults: r,
 						doc: this
 					}) || o;
-					if (this.fileType = o, o === "odt" && V(o), o || te(this.zip), fe(this), _e(this), this.fileTypeConfig = this.options.fileTypeConfig || this.fileTypeConfig, !this.fileTypeConfig) if (e.FileTypeConfig[this.fileType]) this.fileTypeConfig = e.FileTypeConfig[this.fileType]();
+					if (this.fileType = o, o === "odt" && H(o), o || V(this.zip), de(this), ge(this), this.fileTypeConfig = this.options.fileTypeConfig || this.fileTypeConfig, !this.fileTypeConfig) if (e.FileTypeConfig[this.fileType]) this.fileTypeConfig = e.FileTypeConfig[this.fileType]();
 					else {
 						var l = `Filetype "${this.fileType}" is not supported`, u = "filetype_not_supported";
 						this.fileType === "xlsx" && (l = `Filetype "${this.fileType}" is supported only with the paid XlsxModule`, u = "xlsx_filetype_needs_xlsx_module");
@@ -14631,7 +14756,7 @@ ${Ws(t)}
 						var v = o(t[_], 2), y = v[0], b = v[1];
 						this.zip.file(y, b, { createFolders: !0 });
 					}
-					return ve(this), this.sendEvent("syncing-zip"), this.syncZip(), this.sendEvent("synced-zip"), this;
+					return _e(this), this.sendEvent("syncing-zip"), this.syncZip(), this.sendEvent("synced-zip"), this;
 				}
 			},
 			{
@@ -14639,7 +14764,7 @@ ${Ws(t)}
 				value: function() {
 					for (var e in this.xmlDocuments) {
 						this.zip.remove(e);
-						var t = ie(this.xmlDocuments[e]);
+						var t = re(this.xmlDocuments[e]);
 						this.zip.file(e, t, { createFolders: !0 });
 					}
 				}
@@ -14647,7 +14772,7 @@ ${Ws(t)}
 			{
 				key: "setData",
 				value: function(e) {
-					return ge(this, "setData"), this.data = e, this;
+					return he(this, "setData"), this.data = e, this;
 				}
 			},
 			{
@@ -14670,7 +14795,7 @@ ${Ws(t)}
 						filePath: n,
 						contentType: this.filesContentTypes[n],
 						relsType: this.relsTypes[n]
-					}, i = H(), a = G(Object.keys(i), [
+					}, i = U(), a = K(Object.keys(i), [
 						"filesContentTypes",
 						"fileTypeConfig",
 						"fileType",
@@ -14691,7 +14816,7 @@ ${Ws(t)}
 			{
 				key: "getTemplatedFiles",
 				value: function() {
-					this.templatedFiles = this.fileTypeConfig.getTemplatedFiles(this.zip), G(this.templatedFiles, this.targets);
+					this.templatedFiles = this.fileTypeConfig.getTemplatedFiles(this.zip), K(this.templatedFiles, this.targets);
 					var e = this.fileTypeConfig.templatedNs || [];
 					if (e.length > 0) {
 						for (var t in this.filesContentTypes) if (/^customXml\/item\d+\.xml$/.test(t)) for (var n = 0; n < e.length; n++) {
@@ -14699,7 +14824,7 @@ ${Ws(t)}
 							this.zip.file(t).asText().indexOf(`xmlns="${r}"`) !== -1 && this.templatedFiles.push(t);
 						}
 					}
-					return this.templatedFiles = U(this.templatedFiles), this.templatedFiles;
+					return this.templatedFiles = W(this.templatedFiles), this.templatedFiles;
 				}
 			},
 			{
@@ -14730,7 +14855,7 @@ ${Ws(t)}
 				value: function(e) {
 					return this.zip.generate(i(i({
 						compression: "DEFLATE",
-						fileOrder: me
+						fileOrder: pe
 					}, e), {}, { type: "nodebuffer" }));
 				}
 			},
@@ -14739,7 +14864,7 @@ ${Ws(t)}
 				value: function(e) {
 					return this.zip.generate(i(i({
 						compression: "DEFLATE",
-						fileOrder: me
+						fileOrder: pe
 					}, e), {}, { type: "blob" }));
 				}
 			},
@@ -14748,7 +14873,7 @@ ${Ws(t)}
 				value: function(e) {
 					return this.zip.generate(i(i({
 						compression: "DEFLATE",
-						fileOrder: me
+						fileOrder: pe
 					}, e), {}, { type: "base64" }));
 				}
 			},
@@ -14757,7 +14882,7 @@ ${Ws(t)}
 				value: function(e) {
 					return this.zip.generate(i(i({
 						compression: "DEFLATE",
-						fileOrder: me
+						fileOrder: pe
 					}, e), {}, { type: "uint8array" }));
 				}
 			},
@@ -14766,14 +14891,14 @@ ${Ws(t)}
 				value: function(e) {
 					return this.zip.generate(i(i({
 						compression: "DEFLATE",
-						fileOrder: me
+						fileOrder: pe
 					}, e), {}, { type: "arraybuffer" }));
 				}
 			}
 		]);
 	}();
-	be.DocUtils = b, be.Errors = nl(), be.XmlTemplater = wl(), be.FileTypeConfig = jl(), be.XmlMatcher = gl(), t.exports = be, t.exports.default = be;
-})), Nl = /* @__PURE__ */ k(((e) => {
+	ye.DocUtils = b, ye.Errors = al(), ye.XmlTemplater = Dl(), ye.FileTypeConfig = Pl(), ye.XmlMatcher = yl(), t.exports = ye, t.exports.default = ye;
+})), Il = /* @__PURE__ */ k(((e) => {
 	var t = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 	e.encode = function(e) {
 		for (var n = "", r, i, a, o, s, c, l, u = 0; u < e.length;) r = e.charCodeAt(u++), i = e.charCodeAt(u++), a = e.charCodeAt(u++), o = r >> 2, s = (r & 3) << 4 | i >> 4, c = (i & 15) << 2 | a >> 6, l = a & 63, isNaN(i) ? c = l = 64 : isNaN(a) && (l = 64), n = n + t.charAt(o) + t.charAt(s) + t.charAt(c) + t.charAt(l);
@@ -14783,7 +14908,7 @@ ${Ws(t)}
 		for (e = e.replace(/[^A-Za-z0-9\+\/\=]/g, ""); u < e.length;) o = t.indexOf(e.charAt(u++)), s = t.indexOf(e.charAt(u++)), c = t.indexOf(e.charAt(u++)), l = t.indexOf(e.charAt(u++)), r = o << 2 | s >> 4, i = (s & 15) << 4 | c >> 2, a = (c & 3) << 6 | l, n += String.fromCharCode(r), c !== 64 && (n += String.fromCharCode(i)), l !== 64 && (n += String.fromCharCode(a));
 		return n;
 	};
-})), Pl = /* @__PURE__ */ k(((e) => {
+})), Ll = /* @__PURE__ */ k(((e) => {
 	if (e.base64 = !0, e.array = !0, e.string = !0, e.arraybuffer = typeof ArrayBuffer < "u" && typeof Uint8Array < "u", e.nodebuffer = typeof Buffer < "u", e.uint8array = typeof Uint8Array < "u", typeof ArrayBuffer > "u") e.blob = !1;
 	else {
 		var t = /* @__PURE__ */ new ArrayBuffer(0);
@@ -14798,7 +14923,7 @@ ${Ws(t)}
 			}
 		}
 	}
-})), Fl = /* @__PURE__ */ k(((e, t) => {
+})), Rl = /* @__PURE__ */ k(((e, t) => {
 	(function(n, r) {
 		typeof e == "object" && t !== void 0 ? r(e) : typeof define == "function" && define.amd ? define(["exports"], r) : r((n = typeof globalThis < "u" ? globalThis : n || self).pako = {});
 	})(e, (function(e) {
@@ -15103,13 +15228,13 @@ ${Ws(t)}
 			Z_TEXT: 1,
 			Z_UNKNOWN: 2,
 			Z_DEFLATED: 8
-		}, z = P._tr_init, B = P._tr_stored_block, te = P._tr_flush_block, V = P._tr_tally, ne = P._tr_align, H = R.Z_NO_FLUSH, re = R.Z_PARTIAL_FLUSH, ie = R.Z_FULL_FLUSH, ae = R.Z_FINISH, U = R.Z_BLOCK, W = R.Z_OK, oe = R.Z_STREAM_END, G = R.Z_STREAM_ERROR, se = R.Z_DATA_ERROR, ce = R.Z_BUF_ERROR, le = R.Z_DEFAULT_COMPRESSION, ue = R.Z_FILTERED, de = R.Z_HUFFMAN_ONLY, K = R.Z_RLE, fe = R.Z_FIXED, pe = R.Z_DEFAULT_STRATEGY, me = R.Z_UNKNOWN, he = R.Z_DEFLATED, ge = 258, _e = 262, ve = 42, ye = 113, be = 666, xe = function(e, t) {
+		}, z = P._tr_init, B = P._tr_stored_block, V = P._tr_flush_block, H = P._tr_tally, te = P._tr_align, U = R.Z_NO_FLUSH, ne = R.Z_PARTIAL_FLUSH, re = R.Z_FULL_FLUSH, ie = R.Z_FINISH, W = R.Z_BLOCK, G = R.Z_OK, ae = R.Z_STREAM_END, K = R.Z_STREAM_ERROR, oe = R.Z_DATA_ERROR, se = R.Z_BUF_ERROR, ce = R.Z_DEFAULT_COMPRESSION, le = R.Z_FILTERED, ue = R.Z_HUFFMAN_ONLY, q = R.Z_RLE, de = R.Z_FIXED, fe = R.Z_DEFAULT_STRATEGY, pe = R.Z_UNKNOWN, me = R.Z_DEFLATED, he = 258, ge = 262, _e = 42, ve = 113, ye = 666, be = function(e, t) {
 			return e.msg = L[t], t;
-		}, Se = function(e) {
+		}, xe = function(e) {
 			return 2 * e - (e > 4 ? 9 : 0);
-		}, Ce = function(e) {
+		}, Se = function(e) {
 			for (var t = e.length; --t >= 0;) e[t] = 0;
-		}, we = function(e) {
+		}, Ce = function(e) {
 			var t, n, r, i = e.w_size;
 			r = t = e.hash_size;
 			do
@@ -15119,22 +15244,22 @@ ${Ws(t)}
 			do
 				n = e.prev[--r], e.prev[r] = n >= i ? n - i : 0;
 			while (--t);
-		}, Te = function(e, t, n) {
+		}, we = function(e, t, n) {
 			return (t << e.hash_shift ^ n) & e.hash_mask;
-		}, Ee = function(e, t) {
+		}, Te = function(e, t) {
 			var n;
-			if (e.legacy_hash) n = e.ins_h = Te(e, e.ins_h, e.window[t + 3 - 1]);
+			if (e.legacy_hash) n = e.ins_h = we(e, e.ins_h, e.window[t + 3 - 1]);
 			else {
 				var r = e.window, i = r[t] | r[t + 1] << 8 | r[t + 2] << 16 | r[t + 3] << 24;
 				n = e.ins_h = Math.imul(i, 66521) + 66521 >>> 16 & e.hash_mask;
 			}
 			var a = e.prev[t & e.w_mask] = e.head[n];
 			return e.head[n] = t, a;
-		}, q = function(e) {
+		}, Ee = function(e) {
 			var t = e.state, n = t.pending;
 			n > e.avail_out && (n = e.avail_out), n !== 0 && (e.output.set(t.pending_buf.subarray(t.pending_out, t.pending_out + n), e.next_out), e.next_out += n, t.pending_out += n, e.total_out += n, e.avail_out -= n, t.pending -= n, t.pending === 0 && (t.pending_out = 0));
 		}, De = function(e, t) {
-			te(e, e.block_start >= 0 ? e.block_start : -1, e.strstart - e.block_start, t), e.block_start = e.strstart, q(e.strm);
+			V(e, e.block_start >= 0 ? e.block_start : -1, e.strstart - e.block_start, t), e.block_start = e.strstart, Ee(e.strm);
 		}, J = function(e, t) {
 			e.pending_buf[e.pending++] = t;
 		}, Oe = function(e, t) {
@@ -15143,14 +15268,14 @@ ${Ws(t)}
 			var i = e.avail_in;
 			return i > r && (i = r), i === 0 ? 0 : (e.avail_in -= i, t.set(e.input.subarray(e.next_in, e.next_in + i), n), e.state.wrap === 1 ? e.adler = F(e.adler, t, i, n) : e.state.wrap === 2 && (e.adler = I(e.adler, t, i, n)), e.next_in += i, e.total_in += i, i);
 		}, Ae = function(e, t) {
-			var n, r, i = e.max_chain_length, a = e.strstart, o = e.prev_length, s = e.nice_match, c = e.strstart > e.w_size - _e ? e.strstart - (e.w_size - _e) : 0, l = e.window, u = e.w_mask, d = e.prev, f = e.strstart + ge, p = l[a + o - 1], m = l[a + o];
+			var n, r, i = e.max_chain_length, a = e.strstart, o = e.prev_length, s = e.nice_match, c = e.strstart > e.w_size - ge ? e.strstart - (e.w_size - ge) : 0, l = e.window, u = e.w_mask, d = e.prev, f = e.strstart + he, p = l[a + o - 1], m = l[a + o];
 			e.prev_length >= e.good_match && (i >>= 2), s > e.lookahead && (s = e.lookahead);
 			do
 				if (l[(n = t) + o] === m && l[n + o - 1] === p && l[n] === l[a] && l[++n] === l[a + 1]) {
 					a += 2, n++;
 					do					;
 while (l[++a] === l[++n] && l[++a] === l[++n] && l[++a] === l[++n] && l[++a] === l[++n] && l[++a] === l[++n] && l[++a] === l[++n] && l[++a] === l[++n] && l[++a] === l[++n] && a < f);
-					if (r = ge - (f - a), a = f - ge, r > o) {
+					if (r = he - (f - a), a = f - he, r > o) {
 						if (e.match_start = t, o = r, r >= s) break;
 						p = l[a + o - 1], m = l[a + o];
 					}
@@ -15160,52 +15285,52 @@ while (l[++a] === l[++n] && l[++a] === l[++n] && l[++a] === l[++n] && l[++a] ===
 		}, je = function(e) {
 			var t, n, r, i = e.w_size;
 			do {
-				if (n = e.window_size - e.lookahead - e.strstart, e.strstart >= i + (i - _e) && (e.window.set(e.window.subarray(i, i + i - n), 0), e.match_start -= i, e.strstart -= i, e.block_start -= i, e.insert > e.strstart && (e.insert = e.strstart), we(e), n += i), e.strm.avail_in === 0) break;
+				if (n = e.window_size - e.lookahead - e.strstart, e.strstart >= i + (i - ge) && (e.window.set(e.window.subarray(i, i + i - n), 0), e.match_start -= i, e.strstart -= i, e.block_start -= i, e.insert > e.strstart && (e.insert = e.strstart), Ce(e), n += i), e.strm.avail_in === 0) break;
 				if (t = ke(e.strm, e.window, e.strstart + e.lookahead, n), e.lookahead += t, e.legacy_hash) {
-					if (e.lookahead + e.insert >= 3) for (r = e.strstart - e.insert, e.ins_h = e.window[r], e.ins_h = Te(e, e.ins_h, e.window[r + 1]); e.insert && (Ee(e, r), r++, e.insert--, !(e.lookahead + e.insert < 3)););
-				} else if (e.lookahead + e.insert > 3) for (r = e.strstart - e.insert; e.insert && (Ee(e, r), r++, e.insert--, !(e.lookahead + e.insert <= 3)););
-			} while (e.lookahead < _e && e.strm.avail_in !== 0);
+					if (e.lookahead + e.insert >= 3) for (r = e.strstart - e.insert, e.ins_h = e.window[r], e.ins_h = we(e, e.ins_h, e.window[r + 1]); e.insert && (Te(e, r), r++, e.insert--, !(e.lookahead + e.insert < 3)););
+				} else if (e.lookahead + e.insert > 3) for (r = e.strstart - e.insert; e.insert && (Te(e, r), r++, e.insert--, !(e.lookahead + e.insert <= 3)););
+			} while (e.lookahead < ge && e.strm.avail_in !== 0);
 		}, Me = function(e, t) {
 			var n, r, i, a = e.pending_buf_size - 5 > e.w_size ? e.w_size : e.pending_buf_size - 5, o = 0, s = e.strm.avail_in;
 			do {
-				if (n = 65535, i = e.bi_valid + 42 >> 3, e.strm.avail_out < i || (i = e.strm.avail_out - i, n > (r = e.strstart - e.block_start) + e.strm.avail_in && (n = r + e.strm.avail_in), n > i && (n = i), n < a && (n === 0 && t !== ae || t === H || n !== r + e.strm.avail_in))) break;
-				o = +(t === ae && n === r + e.strm.avail_in), B(e, 0, 0, o), e.pending_buf[e.pending - 4] = n, e.pending_buf[e.pending - 3] = n >> 8, e.pending_buf[e.pending - 2] = ~n, e.pending_buf[e.pending - 1] = ~n >> 8, q(e.strm), r && (r > n && (r = n), e.strm.output.set(e.window.subarray(e.block_start, e.block_start + r), e.strm.next_out), e.strm.next_out += r, e.strm.avail_out -= r, e.strm.total_out += r, e.block_start += r, n -= r), n && (ke(e.strm, e.strm.output, e.strm.next_out, n), e.strm.next_out += n, e.strm.avail_out -= n, e.strm.total_out += n);
+				if (n = 65535, i = e.bi_valid + 42 >> 3, e.strm.avail_out < i || (i = e.strm.avail_out - i, n > (r = e.strstart - e.block_start) + e.strm.avail_in && (n = r + e.strm.avail_in), n > i && (n = i), n < a && (n === 0 && t !== ie || t === U || n !== r + e.strm.avail_in))) break;
+				o = +(t === ie && n === r + e.strm.avail_in), B(e, 0, 0, o), e.pending_buf[e.pending - 4] = n, e.pending_buf[e.pending - 3] = n >> 8, e.pending_buf[e.pending - 2] = ~n, e.pending_buf[e.pending - 1] = ~n >> 8, Ee(e.strm), r && (r > n && (r = n), e.strm.output.set(e.window.subarray(e.block_start, e.block_start + r), e.strm.next_out), e.strm.next_out += r, e.strm.avail_out -= r, e.strm.total_out += r, e.block_start += r, n -= r), n && (ke(e.strm, e.strm.output, e.strm.next_out, n), e.strm.next_out += n, e.strm.avail_out -= n, e.strm.total_out += n);
 			} while (o === 0);
-			return (s -= e.strm.avail_in) && (s >= e.w_size ? (e.matches = 2, e.window.set(e.strm.input.subarray(e.strm.next_in - e.w_size, e.strm.next_in), 0), e.strstart = e.w_size, e.insert = e.strstart) : (e.window_size - e.strstart <= s && (e.strstart -= e.w_size, e.window.set(e.window.subarray(e.w_size, e.w_size + e.strstart), 0), e.matches < 2 && e.matches++, e.insert > e.strstart && (e.insert = e.strstart)), e.window.set(e.strm.input.subarray(e.strm.next_in - s, e.strm.next_in), e.strstart), e.strstart += s, e.insert += s > e.w_size - e.insert ? e.w_size - e.insert : s), e.block_start = e.strstart), e.high_water < e.strstart && (e.high_water = e.strstart), o ? 4 : t !== H && t !== ae && e.strm.avail_in === 0 && e.strstart === e.block_start ? 2 : (i = e.window_size - e.strstart, e.strm.avail_in > i && e.block_start >= e.w_size && (e.block_start -= e.w_size, e.strstart -= e.w_size, e.window.set(e.window.subarray(e.w_size, e.w_size + e.strstart), 0), e.matches < 2 && e.matches++, i += e.w_size, e.insert > e.strstart && (e.insert = e.strstart)), i > e.strm.avail_in && (i = e.strm.avail_in), i && (ke(e.strm, e.window, e.strstart, i), e.strstart += i, e.insert += i > e.w_size - e.insert ? e.w_size - e.insert : i), e.high_water < e.strstart && (e.high_water = e.strstart), i = e.bi_valid + 42 >> 3, a = (i = e.pending_buf_size - i > 65535 ? 65535 : e.pending_buf_size - i) > e.w_size ? e.w_size : i, ((r = e.strstart - e.block_start) >= a || (r || t === ae) && t !== H && e.strm.avail_in === 0 && r <= i) && (n = r > i ? i : r, o = +(t === ae && e.strm.avail_in === 0 && n === r), B(e, e.block_start, n, o), e.block_start += n, q(e.strm)), o ? 3 : 1);
+			return (s -= e.strm.avail_in) && (s >= e.w_size ? (e.matches = 2, e.window.set(e.strm.input.subarray(e.strm.next_in - e.w_size, e.strm.next_in), 0), e.strstart = e.w_size, e.insert = e.strstart) : (e.window_size - e.strstart <= s && (e.strstart -= e.w_size, e.window.set(e.window.subarray(e.w_size, e.w_size + e.strstart), 0), e.matches < 2 && e.matches++, e.insert > e.strstart && (e.insert = e.strstart)), e.window.set(e.strm.input.subarray(e.strm.next_in - s, e.strm.next_in), e.strstart), e.strstart += s, e.insert += s > e.w_size - e.insert ? e.w_size - e.insert : s), e.block_start = e.strstart), e.high_water < e.strstart && (e.high_water = e.strstart), o ? 4 : t !== U && t !== ie && e.strm.avail_in === 0 && e.strstart === e.block_start ? 2 : (i = e.window_size - e.strstart, e.strm.avail_in > i && e.block_start >= e.w_size && (e.block_start -= e.w_size, e.strstart -= e.w_size, e.window.set(e.window.subarray(e.w_size, e.w_size + e.strstart), 0), e.matches < 2 && e.matches++, i += e.w_size, e.insert > e.strstart && (e.insert = e.strstart)), i > e.strm.avail_in && (i = e.strm.avail_in), i && (ke(e.strm, e.window, e.strstart, i), e.strstart += i, e.insert += i > e.w_size - e.insert ? e.w_size - e.insert : i), e.high_water < e.strstart && (e.high_water = e.strstart), i = e.bi_valid + 42 >> 3, a = (i = e.pending_buf_size - i > 65535 ? 65535 : e.pending_buf_size - i) > e.w_size ? e.w_size : i, ((r = e.strstart - e.block_start) >= a || (r || t === ie) && t !== U && e.strm.avail_in === 0 && r <= i) && (n = r > i ? i : r, o = +(t === ie && e.strm.avail_in === 0 && n === r), B(e, e.block_start, n, o), e.block_start += n, Ee(e.strm)), o ? 3 : 1);
 		}, Ne = function(e, t) {
 			for (var n, r;;) {
-				if (e.lookahead < _e) {
-					if (je(e), e.lookahead < _e && t === H) return 1;
+				if (e.lookahead < ge) {
+					if (je(e), e.lookahead < ge && t === U) return 1;
 					if (e.lookahead === 0) break;
 				}
-				if (n = 0, e.lookahead >= 3 && (n = Ee(e, e.strstart)), n !== 0 && e.strstart - n <= e.w_size - _e && (e.match_length = Ae(e, n)), e.match_length >= 3) if (r = V(e, e.strstart - e.match_start, e.match_length - 3), e.lookahead -= e.match_length, e.match_length <= e.max_lazy_match && e.lookahead >= 3) {
+				if (n = 0, e.lookahead >= 3 && (n = Te(e, e.strstart)), n !== 0 && e.strstart - n <= e.w_size - ge && (e.match_length = Ae(e, n)), e.match_length >= 3) if (r = H(e, e.strstart - e.match_start, e.match_length - 3), e.lookahead -= e.match_length, e.match_length <= e.max_lazy_match && e.lookahead >= 3) {
 					e.match_length--;
 					do
-						e.strstart++, n = Ee(e, e.strstart);
+						e.strstart++, n = Te(e, e.strstart);
 					while (--e.match_length != 0);
 					e.strstart++;
-				} else e.strstart += e.match_length, e.match_length = 0, e.legacy_hash && (e.ins_h = e.window[e.strstart], e.ins_h = Te(e, e.ins_h, e.window[e.strstart + 1]));
-				else r = V(e, 0, e.window[e.strstart]), e.lookahead--, e.strstart++;
+				} else e.strstart += e.match_length, e.match_length = 0, e.legacy_hash && (e.ins_h = e.window[e.strstart], e.ins_h = we(e, e.ins_h, e.window[e.strstart + 1]));
+				else r = H(e, 0, e.window[e.strstart]), e.lookahead--, e.strstart++;
 				if (r && (De(e, !1), e.strm.avail_out === 0)) return 1;
 			}
-			return e.insert = e.strstart < 2 ? e.strstart : 2, t === ae ? (De(e, !0), e.strm.avail_out === 0 ? 3 : 4) : e.sym_next && (De(e, !1), e.strm.avail_out === 0) ? 1 : 2;
+			return e.insert = e.strstart < 2 ? e.strstart : 2, t === ie ? (De(e, !0), e.strm.avail_out === 0 ? 3 : 4) : e.sym_next && (De(e, !1), e.strm.avail_out === 0) ? 1 : 2;
 		}, Pe = function(e, t) {
 			for (var n, r, i;;) {
-				if (e.lookahead < _e) {
-					if (je(e), e.lookahead < _e && t === H) return 1;
+				if (e.lookahead < ge) {
+					if (je(e), e.lookahead < ge && t === U) return 1;
 					if (e.lookahead === 0) break;
 				}
-				if (n = 0, e.lookahead >= 3 && (n = Ee(e, e.strstart)), e.prev_length = e.match_length, e.prev_match = e.match_start, e.match_length = 2, n !== 0 && e.prev_length < e.max_lazy_match && e.strstart - n <= e.w_size - _e && (e.match_length = Ae(e, n), e.match_length <= 5 && (e.strategy === ue || e.match_length === 3 && e.strstart - e.match_start > 4096) && (e.match_length = 2)), e.prev_length >= 3 && e.match_length <= e.prev_length) {
-					i = e.strstart + e.lookahead - 3, r = V(e, e.strstart - 1 - e.prev_match, e.prev_length - 3), e.lookahead -= e.prev_length - 1, e.prev_length -= 2;
+				if (n = 0, e.lookahead >= 3 && (n = Te(e, e.strstart)), e.prev_length = e.match_length, e.prev_match = e.match_start, e.match_length = 2, n !== 0 && e.prev_length < e.max_lazy_match && e.strstart - n <= e.w_size - ge && (e.match_length = Ae(e, n), e.match_length <= 5 && (e.strategy === le || e.match_length === 3 && e.strstart - e.match_start > 4096) && (e.match_length = 2)), e.prev_length >= 3 && e.match_length <= e.prev_length) {
+					i = e.strstart + e.lookahead - 3, r = H(e, e.strstart - 1 - e.prev_match, e.prev_length - 3), e.lookahead -= e.prev_length - 1, e.prev_length -= 2;
 					do
-						++e.strstart <= i && (n = Ee(e, e.strstart));
+						++e.strstart <= i && (n = Te(e, e.strstart));
 					while (--e.prev_length != 0);
 					if (e.match_available = 0, e.match_length = 2, e.strstart++, r && (De(e, !1), e.strm.avail_out === 0)) return 1;
 				} else if (e.match_available) {
-					if ((r = V(e, 0, e.window[e.strstart - 1])) && De(e, !1), e.strstart++, e.lookahead--, e.strm.avail_out === 0) return 1;
+					if ((r = H(e, 0, e.window[e.strstart - 1])) && De(e, !1), e.strstart++, e.lookahead--, e.strm.avail_out === 0) return 1;
 				} else e.match_available = 1, e.strstart++, e.lookahead--;
 			}
-			return e.match_available &&= (r = V(e, 0, e.window[e.strstart - 1]), 0), e.insert = e.strstart < 2 ? e.strstart : 2, t === ae ? (De(e, !0), e.strm.avail_out === 0 ? 3 : 4) : e.sym_next && (De(e, !1), e.strm.avail_out === 0) ? 1 : 2;
+			return e.match_available &&= (r = H(e, 0, e.window[e.strstart - 1]), 0), e.insert = e.strstart < 2 ? e.strstart : 2, t === ie ? (De(e, !0), e.strm.avail_out === 0 ? 3 : 4) : e.sym_next && (De(e, !1), e.strm.avail_out === 0) ? 1 : 2;
 		};
 		function Fe(e, t, n, r, i) {
 			this.good_length = e, this.max_lazy = t, this.nice_length = n, this.max_chain = r, this.func = i;
@@ -15223,59 +15348,59 @@ while (l[++a] === l[++n] && l[++a] === l[++n] && l[++a] === l[++n] && l[++a] ===
 			new Fe(32, 258, 258, 4096, Pe)
 		];
 		function Le() {
-			this.strm = null, this.status = 0, this.pending_buf = null, this.pending_buf_size = 0, this.pending_out = 0, this.pending = 0, this.wrap = 0, this.gzhead = null, this.gzindex = 0, this.method = he, this.last_flush = -1, this.w_size = 0, this.w_bits = 0, this.w_mask = 0, this.window = null, this.window_size = 0, this.prev = null, this.head = null, this.ins_h = 0, this.legacy_hash = 0, this.hash_size = 0, this.hash_bits = 0, this.hash_mask = 0, this.hash_shift = 0, this.block_start = 0, this.match_length = 0, this.prev_match = 0, this.match_available = 0, this.strstart = 0, this.match_start = 0, this.lookahead = 0, this.prev_length = 0, this.max_chain_length = 0, this.max_lazy_match = 0, this.level = 0, this.strategy = 0, this.good_match = 0, this.nice_match = 0, this.dyn_ltree = /* @__PURE__ */ new Uint16Array(1146), this.dyn_dtree = /* @__PURE__ */ new Uint16Array(122), this.bl_tree = /* @__PURE__ */ new Uint16Array(78), Ce(this.dyn_ltree), Ce(this.dyn_dtree), Ce(this.bl_tree), this.l_desc = null, this.d_desc = null, this.bl_desc = null, this.bl_count = /* @__PURE__ */ new Uint16Array(16), this.heap = /* @__PURE__ */ new Uint16Array(573), Ce(this.heap), this.heap_len = 0, this.heap_max = 0, this.depth = /* @__PURE__ */ new Uint16Array(573), Ce(this.depth), this.sym_buf = 0, this.lit_bufsize = 0, this.sym_next = 0, this.sym_end = 0, this.opt_len = 0, this.static_len = 0, this.matches = 0, this.insert = 0, this.bi_buf = 0, this.bi_valid = 0;
+			this.strm = null, this.status = 0, this.pending_buf = null, this.pending_buf_size = 0, this.pending_out = 0, this.pending = 0, this.wrap = 0, this.gzhead = null, this.gzindex = 0, this.method = me, this.last_flush = -1, this.w_size = 0, this.w_bits = 0, this.w_mask = 0, this.window = null, this.window_size = 0, this.prev = null, this.head = null, this.ins_h = 0, this.legacy_hash = 0, this.hash_size = 0, this.hash_bits = 0, this.hash_mask = 0, this.hash_shift = 0, this.block_start = 0, this.match_length = 0, this.prev_match = 0, this.match_available = 0, this.strstart = 0, this.match_start = 0, this.lookahead = 0, this.prev_length = 0, this.max_chain_length = 0, this.max_lazy_match = 0, this.level = 0, this.strategy = 0, this.good_match = 0, this.nice_match = 0, this.dyn_ltree = /* @__PURE__ */ new Uint16Array(1146), this.dyn_dtree = /* @__PURE__ */ new Uint16Array(122), this.bl_tree = /* @__PURE__ */ new Uint16Array(78), Se(this.dyn_ltree), Se(this.dyn_dtree), Se(this.bl_tree), this.l_desc = null, this.d_desc = null, this.bl_desc = null, this.bl_count = /* @__PURE__ */ new Uint16Array(16), this.heap = /* @__PURE__ */ new Uint16Array(573), Se(this.heap), this.heap_len = 0, this.heap_max = 0, this.depth = /* @__PURE__ */ new Uint16Array(573), Se(this.depth), this.sym_buf = 0, this.lit_bufsize = 0, this.sym_next = 0, this.sym_end = 0, this.opt_len = 0, this.static_len = 0, this.matches = 0, this.insert = 0, this.bi_buf = 0, this.bi_valid = 0;
 		}
 		var Re = function(e) {
 			if (!e) return 1;
 			var t = e.state;
-			return +(!t || t.strm !== e || t.status !== ve && t.status !== 57 && t.status !== 69 && t.status !== 73 && t.status !== 91 && t.status !== 103 && t.status !== ye && t.status !== be);
+			return +(!t || t.strm !== e || t.status !== _e && t.status !== 57 && t.status !== 69 && t.status !== 73 && t.status !== 91 && t.status !== 103 && t.status !== ve && t.status !== ye);
 		}, ze = function(e) {
-			if (Re(e)) return xe(e, G);
-			e.total_in = e.total_out = 0, e.data_type = me;
+			if (Re(e)) return be(e, K);
+			e.total_in = e.total_out = 0, e.data_type = pe;
 			var t = e.state;
-			return t.pending = 0, t.pending_out = 0, t.wrap < 0 && (t.wrap = -t.wrap), t.status = t.wrap === 2 ? 57 : t.wrap ? ve : ye, e.adler = t.wrap === 2 ? 0 : 1, t.last_flush = -2, z(t), W;
+			return t.pending = 0, t.pending_out = 0, t.wrap < 0 && (t.wrap = -t.wrap), t.status = t.wrap === 2 ? 57 : t.wrap ? _e : ve, e.adler = t.wrap === 2 ? 0 : 1, t.last_flush = -2, z(t), G;
 		}, Be = function(e) {
 			var t, n = ze(e);
-			return n === W && ((t = e.state).window_size = 2 * t.w_size, Ce(t.head), t.max_lazy_match = Ie[t.level].max_lazy, t.good_match = Ie[t.level].good_length, t.nice_match = Ie[t.level].nice_length, t.max_chain_length = Ie[t.level].max_chain, t.strstart = 0, t.block_start = 0, t.lookahead = 0, t.insert = 0, t.match_length = t.prev_length = 2, t.match_available = 0, t.ins_h = 0), n;
+			return n === G && ((t = e.state).window_size = 2 * t.w_size, Se(t.head), t.max_lazy_match = Ie[t.level].max_lazy, t.good_match = Ie[t.level].good_length, t.nice_match = Ie[t.level].nice_length, t.max_chain_length = Ie[t.level].max_chain, t.strstart = 0, t.block_start = 0, t.lookahead = 0, t.insert = 0, t.match_length = t.prev_length = 2, t.match_available = 0, t.ins_h = 0), n;
 		}, Ve = function(e, t, n, r, i, a, o) {
-			if (!e) return G;
+			if (!e) return K;
 			var s = 1;
-			if (t === le && (t = 6), r < 0 ? (s = 0, r = -r) : r > 15 && (s = 2, r -= 16), i < 1 || i > 9 || n !== he || r < 8 || r > 15 || t < 0 || t > 9 || a < 0 || a > fe || r === 8 && s !== 1) return xe(e, G);
+			if (t === ce && (t = 6), r < 0 ? (s = 0, r = -r) : r > 15 && (s = 2, r -= 16), i < 1 || i > 9 || n !== me || r < 8 || r > 15 || t < 0 || t > 9 || a < 0 || a > de || r === 8 && s !== 1) return be(e, K);
 			r === 8 && (r = 9);
 			var c = new Le();
-			return e.state = c, c.strm = e, c.status = ve, c.wrap = s, c.gzhead = null, c.w_bits = r, c.w_size = 1 << c.w_bits, c.w_mask = c.w_size - 1, c.legacy_hash = +!!o, c.hash_bits = i + 7, !c.legacy_hash && c.hash_bits < 15 && (c.hash_bits = 15), c.hash_size = 1 << c.hash_bits, c.hash_mask = c.hash_size - 1, c.hash_shift = ~~((c.hash_bits + 3 - 1) / 3), c.window = new Uint8Array(2 * c.w_size), c.head = new Uint16Array(c.hash_size), c.prev = new Uint16Array(c.w_size), c.lit_bufsize = 1 << i + 6, c.pending_buf_size = 4 * c.lit_bufsize, c.pending_buf = new Uint8Array(c.pending_buf_size), c.sym_buf = c.lit_bufsize, c.sym_end = 3 * (c.lit_bufsize - 1), c.level = t, c.strategy = a, c.method = n, Be(e);
+			return e.state = c, c.strm = e, c.status = _e, c.wrap = s, c.gzhead = null, c.w_bits = r, c.w_size = 1 << c.w_bits, c.w_mask = c.w_size - 1, c.legacy_hash = +!!o, c.hash_bits = i + 7, !c.legacy_hash && c.hash_bits < 15 && (c.hash_bits = 15), c.hash_size = 1 << c.hash_bits, c.hash_mask = c.hash_size - 1, c.hash_shift = ~~((c.hash_bits + 3 - 1) / 3), c.window = new Uint8Array(2 * c.w_size), c.head = new Uint16Array(c.hash_size), c.prev = new Uint16Array(c.w_size), c.lit_bufsize = 1 << i + 6, c.pending_buf_size = 4 * c.lit_bufsize, c.pending_buf = new Uint8Array(c.pending_buf_size), c.sym_buf = c.lit_bufsize, c.sym_end = 3 * (c.lit_bufsize - 1), c.level = t, c.strategy = a, c.method = n, Be(e);
 		}, He = {
 			deflateInit: function(e, t) {
-				return Ve(e, t, he, 15, 8, pe);
+				return Ve(e, t, me, 15, 8, fe);
 			},
 			deflateInit2: Ve,
 			deflateReset: Be,
 			deflateResetKeep: ze,
 			deflateSetHeader: function(e, t) {
-				return Re(e) || e.state.wrap !== 2 ? G : (e.state.gzhead = t, W);
+				return Re(e) || e.state.wrap !== 2 ? K : (e.state.gzhead = t, G);
 			},
 			deflate: function(e, t) {
-				if (Re(e) || t > U || t < 0) return e ? xe(e, G) : G;
+				if (Re(e) || t > W || t < 0) return e ? be(e, K) : K;
 				var n = e.state;
-				if (!e.output || e.avail_in !== 0 && !e.input || n.status === be && t !== ae) return xe(e, e.avail_out === 0 ? ce : G);
+				if (!e.output || e.avail_in !== 0 && !e.input || n.status === ye && t !== ie) return be(e, e.avail_out === 0 ? se : K);
 				var r = n.last_flush;
 				if (n.last_flush = t, n.pending !== 0) {
-					if (q(e), e.avail_out === 0) return n.last_flush = -1, W;
-				} else if (e.avail_in === 0 && Se(t) <= Se(r) && t !== ae) return xe(e, ce);
-				if (n.status === be && e.avail_in !== 0) return xe(e, ce);
-				if (n.status === ve && n.wrap === 0 && (n.status = ye), n.status === ve) {
-					var i = he + (n.w_bits - 8 << 4) << 8;
-					if (i |= (n.strategy >= de || n.level < 2 ? 0 : n.level < 6 ? 1 : n.level === 6 ? 2 : 3) << 6, n.strstart !== 0 && (i |= 32), Oe(n, i += 31 - i % 31), n.strstart !== 0 && (Oe(n, e.adler >>> 16), Oe(n, 65535 & e.adler)), e.adler = 1, n.status = ye, q(e), n.pending !== 0) return n.last_flush = -1, W;
+					if (Ee(e), e.avail_out === 0) return n.last_flush = -1, G;
+				} else if (e.avail_in === 0 && xe(t) <= xe(r) && t !== ie) return be(e, se);
+				if (n.status === ye && e.avail_in !== 0) return be(e, se);
+				if (n.status === _e && n.wrap === 0 && (n.status = ve), n.status === _e) {
+					var i = me + (n.w_bits - 8 << 4) << 8;
+					if (i |= (n.strategy >= ue || n.level < 2 ? 0 : n.level < 6 ? 1 : n.level === 6 ? 2 : 3) << 6, n.strstart !== 0 && (i |= 32), Oe(n, i += 31 - i % 31), n.strstart !== 0 && (Oe(n, e.adler >>> 16), Oe(n, 65535 & e.adler)), e.adler = 1, n.status = ve, Ee(e), n.pending !== 0) return n.last_flush = -1, G;
 				}
 				if (n.status === 57) {
-					if (e.adler = 0, J(n, 31), J(n, 139), J(n, 8), n.gzhead) J(n, +!!n.gzhead.text + (n.gzhead.hcrc ? 2 : 0) + (n.gzhead.extra ? 4 : 0) + (n.gzhead.name ? 8 : 0) + (n.gzhead.comment ? 16 : 0)), J(n, 255 & n.gzhead.time), J(n, n.gzhead.time >> 8 & 255), J(n, n.gzhead.time >> 16 & 255), J(n, n.gzhead.time >> 24 & 255), J(n, n.level === 9 ? 2 : n.strategy >= de || n.level < 2 ? 4 : 0), J(n, 255 & n.gzhead.os), n.gzhead.extra && n.gzhead.extra.length && (J(n, 255 & n.gzhead.extra.length), J(n, n.gzhead.extra.length >> 8 & 255)), n.gzhead.hcrc && (e.adler = I(e.adler, n.pending_buf, n.pending, 0)), n.gzindex = 0, n.status = 69;
-					else if (J(n, 0), J(n, 0), J(n, 0), J(n, 0), J(n, 0), J(n, n.level === 9 ? 2 : n.strategy >= de || n.level < 2 ? 4 : 0), J(n, 3), n.status = ye, q(e), n.pending !== 0) return n.last_flush = -1, W;
+					if (e.adler = 0, J(n, 31), J(n, 139), J(n, 8), n.gzhead) J(n, +!!n.gzhead.text + (n.gzhead.hcrc ? 2 : 0) + (n.gzhead.extra ? 4 : 0) + (n.gzhead.name ? 8 : 0) + (n.gzhead.comment ? 16 : 0)), J(n, 255 & n.gzhead.time), J(n, n.gzhead.time >> 8 & 255), J(n, n.gzhead.time >> 16 & 255), J(n, n.gzhead.time >> 24 & 255), J(n, n.level === 9 ? 2 : n.strategy >= ue || n.level < 2 ? 4 : 0), J(n, 255 & n.gzhead.os), n.gzhead.extra && n.gzhead.extra.length && (J(n, 255 & n.gzhead.extra.length), J(n, n.gzhead.extra.length >> 8 & 255)), n.gzhead.hcrc && (e.adler = I(e.adler, n.pending_buf, n.pending, 0)), n.gzindex = 0, n.status = 69;
+					else if (J(n, 0), J(n, 0), J(n, 0), J(n, 0), J(n, 0), J(n, n.level === 9 ? 2 : n.strategy >= ue || n.level < 2 ? 4 : 0), J(n, 3), n.status = ve, Ee(e), n.pending !== 0) return n.last_flush = -1, G;
 				}
 				if (n.status === 69) {
 					if (n.gzhead.extra) {
 						for (var a = n.pending, o = (65535 & n.gzhead.extra.length) - n.gzindex; n.pending + o > n.pending_buf_size;) {
 							var s = n.pending_buf_size - n.pending;
-							if (n.pending_buf.set(n.gzhead.extra.subarray(n.gzindex, n.gzindex + s), n.pending), n.pending = n.pending_buf_size, n.gzhead.hcrc && n.pending > a && (e.adler = I(e.adler, n.pending_buf, n.pending - a, a)), n.gzindex += s, q(e), n.pending !== 0) return n.last_flush = -1, W;
+							if (n.pending_buf.set(n.gzhead.extra.subarray(n.gzindex, n.gzindex + s), n.pending), n.pending = n.pending_buf_size, n.gzhead.hcrc && n.pending > a && (e.adler = I(e.adler, n.pending_buf, n.pending - a, a)), n.gzindex += s, Ee(e), n.pending !== 0) return n.last_flush = -1, G;
 							a = 0, o -= s;
 						}
 						var c = new Uint8Array(n.gzhead.extra);
@@ -15288,7 +15413,7 @@ while (l[++a] === l[++n] && l[++a] === l[++n] && l[++a] === l[++n] && l[++a] ===
 						var l, u = n.pending;
 						do {
 							if (n.pending === n.pending_buf_size) {
-								if (n.gzhead.hcrc && n.pending > u && (e.adler = I(e.adler, n.pending_buf, n.pending - u, u)), q(e), n.pending !== 0) return n.last_flush = -1, W;
+								if (n.gzhead.hcrc && n.pending > u && (e.adler = I(e.adler, n.pending_buf, n.pending - u, u)), Ee(e), n.pending !== 0) return n.last_flush = -1, G;
 								u = 0;
 							}
 							l = n.gzindex < n.gzhead.name.length ? 255 & n.gzhead.name.charCodeAt(n.gzindex++) : 0, J(n, l);
@@ -15302,7 +15427,7 @@ while (l[++a] === l[++n] && l[++a] === l[++n] && l[++a] === l[++n] && l[++a] ===
 						var d, f = n.pending;
 						do {
 							if (n.pending === n.pending_buf_size) {
-								if (n.gzhead.hcrc && n.pending > f && (e.adler = I(e.adler, n.pending_buf, n.pending - f, f)), q(e), n.pending !== 0) return n.last_flush = -1, W;
+								if (n.gzhead.hcrc && n.pending > f && (e.adler = I(e.adler, n.pending_buf, n.pending - f, f)), Ee(e), n.pending !== 0) return n.last_flush = -1, G;
 								f = 0;
 							}
 							d = n.gzindex < n.gzhead.comment.length ? 255 & n.gzhead.comment.charCodeAt(n.gzindex++) : 0, J(n, d);
@@ -15313,54 +15438,54 @@ while (l[++a] === l[++n] && l[++a] === l[++n] && l[++a] === l[++n] && l[++a] ===
 				}
 				if (n.status === 103) {
 					if (n.gzhead.hcrc) {
-						if (n.pending + 2 > n.pending_buf_size && (q(e), n.pending !== 0)) return n.last_flush = -1, W;
+						if (n.pending + 2 > n.pending_buf_size && (Ee(e), n.pending !== 0)) return n.last_flush = -1, G;
 						J(n, 255 & e.adler), J(n, e.adler >> 8 & 255), e.adler = 0;
 					}
-					if (n.status = ye, q(e), n.pending !== 0) return n.last_flush = -1, W;
+					if (n.status = ve, Ee(e), n.pending !== 0) return n.last_flush = -1, G;
 				}
-				if (e.avail_in !== 0 || n.lookahead !== 0 || t !== H && n.status !== be) {
-					var p = n.level === 0 ? Me(n, t) : n.strategy === de ? function(e, t) {
+				if (e.avail_in !== 0 || n.lookahead !== 0 || t !== U && n.status !== ye) {
+					var p = n.level === 0 ? Me(n, t) : n.strategy === ue ? function(e, t) {
 						for (var n;;) {
 							if (e.lookahead === 0 && (je(e), e.lookahead === 0)) {
-								if (t === H) return 1;
+								if (t === U) return 1;
 								break;
 							}
-							if (e.match_length = 0, n = V(e, 0, e.window[e.strstart]), e.lookahead--, e.strstart++, n && (De(e, !1), e.strm.avail_out === 0)) return 1;
+							if (e.match_length = 0, n = H(e, 0, e.window[e.strstart]), e.lookahead--, e.strstart++, n && (De(e, !1), e.strm.avail_out === 0)) return 1;
 						}
-						return e.insert = 0, t === ae ? (De(e, !0), e.strm.avail_out === 0 ? 3 : 4) : e.sym_next && (De(e, !1), e.strm.avail_out === 0) ? 1 : 2;
-					}(n, t) : n.strategy === K ? function(e, t) {
+						return e.insert = 0, t === ie ? (De(e, !0), e.strm.avail_out === 0 ? 3 : 4) : e.sym_next && (De(e, !1), e.strm.avail_out === 0) ? 1 : 2;
+					}(n, t) : n.strategy === q ? function(e, t) {
 						for (var n, r, i, a, o = e.window;;) {
-							if (e.lookahead <= ge) {
-								if (je(e), e.lookahead <= ge && t === H) return 1;
+							if (e.lookahead <= he) {
+								if (je(e), e.lookahead <= he && t === U) return 1;
 								if (e.lookahead === 0) break;
 							}
 							if (e.match_length = 0, e.lookahead >= 3 && e.strstart > 0 && (r = o[i = e.strstart - 1]) === o[++i] && r === o[++i] && r === o[++i]) {
-								a = e.strstart + ge;
+								a = e.strstart + he;
 								do								;
 while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && i < a);
-								e.match_length = ge - (a - i), e.match_length > e.lookahead && (e.match_length = e.lookahead);
+								e.match_length = he - (a - i), e.match_length > e.lookahead && (e.match_length = e.lookahead);
 							}
-							if (e.match_length >= 3 ? (n = V(e, 1, e.match_length - 3), e.lookahead -= e.match_length, e.strstart += e.match_length, e.match_length = 0) : (n = V(e, 0, e.window[e.strstart]), e.lookahead--, e.strstart++), n && (De(e, !1), e.strm.avail_out === 0)) return 1;
+							if (e.match_length >= 3 ? (n = H(e, 1, e.match_length - 3), e.lookahead -= e.match_length, e.strstart += e.match_length, e.match_length = 0) : (n = H(e, 0, e.window[e.strstart]), e.lookahead--, e.strstart++), n && (De(e, !1), e.strm.avail_out === 0)) return 1;
 						}
-						return e.insert = 0, t === ae ? (De(e, !0), e.strm.avail_out === 0 ? 3 : 4) : e.sym_next && (De(e, !1), e.strm.avail_out === 0) ? 1 : 2;
+						return e.insert = 0, t === ie ? (De(e, !0), e.strm.avail_out === 0 ? 3 : 4) : e.sym_next && (De(e, !1), e.strm.avail_out === 0) ? 1 : 2;
 					}(n, t) : Ie[n.level].func(n, t);
-					if (p !== 3 && p !== 4 || (n.status = be), p === 1 || p === 3) return e.avail_out === 0 && (n.last_flush = -1), W;
-					if (p === 2 && (t === re ? ne(n) : t !== U && (B(n, 0, 0, !1), t === ie && (Ce(n.head), n.lookahead === 0 && (n.strstart = 0, n.block_start = 0, n.insert = 0))), q(e), e.avail_out === 0)) return n.last_flush = -1, W;
+					if (p !== 3 && p !== 4 || (n.status = ye), p === 1 || p === 3) return e.avail_out === 0 && (n.last_flush = -1), G;
+					if (p === 2 && (t === ne ? te(n) : t !== W && (B(n, 0, 0, !1), t === re && (Se(n.head), n.lookahead === 0 && (n.strstart = 0, n.block_start = 0, n.insert = 0))), Ee(e), e.avail_out === 0)) return n.last_flush = -1, G;
 				}
-				return t === ae ? n.wrap <= 0 ? oe : (n.wrap === 2 ? (J(n, 255 & e.adler), J(n, e.adler >> 8 & 255), J(n, e.adler >> 16 & 255), J(n, e.adler >> 24 & 255), J(n, 255 & e.total_in), J(n, e.total_in >> 8 & 255), J(n, e.total_in >> 16 & 255), J(n, e.total_in >> 24 & 255)) : (Oe(n, e.adler >>> 16), Oe(n, 65535 & e.adler)), q(e), n.wrap > 0 && (n.wrap = -n.wrap), n.pending === 0 ? oe : W) : W;
+				return t === ie ? n.wrap <= 0 ? ae : (n.wrap === 2 ? (J(n, 255 & e.adler), J(n, e.adler >> 8 & 255), J(n, e.adler >> 16 & 255), J(n, e.adler >> 24 & 255), J(n, 255 & e.total_in), J(n, e.total_in >> 8 & 255), J(n, e.total_in >> 16 & 255), J(n, e.total_in >> 24 & 255)) : (Oe(n, e.adler >>> 16), Oe(n, 65535 & e.adler)), Ee(e), n.wrap > 0 && (n.wrap = -n.wrap), n.pending === 0 ? ae : G) : G;
 			},
 			deflateEnd: function(e) {
-				if (Re(e)) return G;
+				if (Re(e)) return K;
 				var t = e.state.status;
-				return e.state = null, t === ye ? xe(e, se) : W;
+				return e.state = null, t === ve ? be(e, oe) : G;
 			},
 			deflateSetDictionary: function(e, t) {
 				var n = t.length;
-				if (Re(e)) return G;
+				if (Re(e)) return K;
 				var r = e.state, i = r.wrap;
-				if (i === 2 || i === 1 && r.status !== ve || r.lookahead) return G;
+				if (i === 2 || i === 1 && r.status !== _e || r.lookahead) return K;
 				if (i === 1 && (e.adler = F(e.adler, t, n, 0)), r.wrap = 0, n >= r.w_size) {
-					i === 0 && (Ce(r.head), r.strstart = 0, r.block_start = 0, r.insert = 0);
+					i === 0 && (Se(r.head), r.strstart = 0, r.block_start = 0, r.insert = 0);
 					var a = new Uint8Array(r.w_size);
 					a.set(t.subarray(n - r.w_size, n), 0), t = a, n = r.w_size;
 				}
@@ -15368,11 +15493,11 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 				for (e.avail_in = n, e.next_in = 0, e.input = t, je(r); r.lookahead >= 3;) {
 					var l = r.strstart, u = r.lookahead - 2;
 					do
-						Ee(r, l), l++;
+						Te(r, l), l++;
 					while (--u);
 					r.strstart = l, r.lookahead = 2, je(r);
 				}
-				return r.strstart += r.lookahead, r.block_start = r.strstart, r.insert = r.lookahead, r.lookahead = 0, r.match_length = r.prev_length = 2, r.match_available = 0, e.next_in = s, e.input = c, e.avail_in = o, r.wrap = i, W;
+				return r.strstart += r.lookahead, r.block_start = r.strstart, r.insert = r.lookahead, r.lookahead = 0, r.match_length = r.prev_length = 2, r.match_available = 0, e.next_in = s, e.input = c, e.avail_in = o, r.wrap = i, G;
 			},
 			deflateInfo: "pako deflate (from Nodeca project)"
 		};
@@ -15442,7 +15567,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			return n < 0 || n === 0 ? t : n + Je[e[n]] > t ? n : t;
 		}, $e = function() {
 			this.input = null, this.next_in = 0, this.avail_in = 0, this.total_in = 0, this.output = null, this.next_out = 0, this.avail_out = 0, this.total_out = 0, this.msg = "", this.state = null, this.data_type = 2, this.adler = 0;
-		}, et = Object.prototype.toString, tt = R.Z_NO_FLUSH, Y = R.Z_SYNC_FLUSH, nt = R.Z_FULL_FLUSH, rt = R.Z_FINISH, it = R.Z_OK, at = R.Z_STREAM_END, ot = {
+		}, et = Object.prototype.toString, tt = R.Z_NO_FLUSH, nt = R.Z_SYNC_FLUSH, rt = R.Z_FULL_FLUSH, it = R.Z_FINISH, at = R.Z_OK, Y = R.Z_STREAM_END, ot = {
 			level: R.Z_DEFAULT_COMPRESSION,
 			method: R.Z_DEFLATED,
 			chunkSize: 16384,
@@ -15456,10 +15581,10 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			var t = this.options;
 			t.raw && t.windowBits > 0 ? t.windowBits = -t.windowBits : t.gzip && t.windowBits > 0 && t.windowBits < 16 && (t.windowBits += 16), this.err = 0, this.msg = "", this.ended = !1, this.chunks = [], this.strm = new $e(), this.strm.avail_out = 0;
 			var n = He.deflateInit2(this.strm, t.level, t.method, t.windowBits, t.memLevel, t.strategy, t.legacyHash);
-			if (n !== it) throw Error(L[n]);
+			if (n !== at) throw Error(L[n]);
 			if (t.header && He.deflateSetHeader(this.strm, t.header), t.dictionary) {
 				var r;
-				if (r = typeof t.dictionary == "string" ? Xe(t.dictionary) : et.call(t.dictionary) === "[object ArrayBuffer]" ? new Uint8Array(t.dictionary) : t.dictionary, (n = He.deflateSetDictionary(this.strm, r)) !== it) throw Error(L[n]);
+				if (r = typeof t.dictionary == "string" ? Xe(t.dictionary) : et.call(t.dictionary) === "[object ArrayBuffer]" ? new Uint8Array(t.dictionary) : t.dictionary, (n = He.deflateSetDictionary(this.strm, r)) !== at) throw Error(L[n]);
 				this._dict_set = !0;
 			}
 		}
@@ -15471,9 +15596,9 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		st.prototype.push = function(e, t) {
 			var n, r, i = this.strm, a = this.options.chunkSize;
 			if (this.ended) return !1;
-			for (r = t === ~~t ? t : !0 === t ? rt : tt, typeof e == "string" ? i.input = Xe(e) : et.call(e) === "[object ArrayBuffer]" ? i.input = new Uint8Array(e) : i.input = e, i.next_in = 0, i.avail_in = i.input.length;;) if (i.avail_out === 0 && (i.output = new Uint8Array(a), i.next_out = 0, i.avail_out = a), (r === Y || r === nt) && i.avail_out <= 6) this.onData(i.output.subarray(0, i.next_out)), i.avail_out = 0;
+			for (r = t === ~~t ? t : !0 === t ? it : tt, typeof e == "string" ? i.input = Xe(e) : et.call(e) === "[object ArrayBuffer]" ? i.input = new Uint8Array(e) : i.input = e, i.next_in = 0, i.avail_in = i.input.length;;) if (i.avail_out === 0 && (i.output = new Uint8Array(a), i.next_out = 0, i.avail_out = a), (r === nt || r === rt) && i.avail_out <= 6) this.onData(i.output.subarray(0, i.next_out)), i.avail_out = 0;
 			else {
-				if ((n = He.deflate(i, r)) === at) return i.next_out > 0 && this.onData(i.output.subarray(0, i.next_out)), n = He.deflateEnd(this.strm), this.onEnd(n), this.ended = !0, n === it;
+				if ((n = He.deflate(i, r)) === Y) return i.next_out > 0 && this.onData(i.output.subarray(0, i.next_out)), n = He.deflateEnd(this.strm), this.onEnd(n), this.ended = !0, n === at;
 				if (i.avail_out !== 0) {
 					if (r > 0 && i.next_out > 0) this.onData(i.output.subarray(0, i.next_out)), i.avail_out = 0;
 					else if (i.avail_in === 0) break;
@@ -15483,7 +15608,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		}, st.prototype.onData = function(e) {
 			this.chunks.push(e);
 		}, st.prototype.onEnd = function(e) {
-			e === it && (this.result = Ke(this.chunks)), this.chunks = [], this.err = e, this.msg = this.strm.msg;
+			e === at && (this.result = Ke(this.chunks)), this.chunks = [], this.err = e, this.msg = this.strm.msg;
 		};
 		var lt = {
 			Deflate: st,
@@ -16253,14 +16378,14 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		};
 		e.Deflate = fn, e.Inflate = gn, e.constants = bn, e.default = xn, e.deflate = pn, e.deflateRaw = mn, e.gzip = hn, e.inflate = _n, e.inflateRaw = vn, e.ungzip = yn, Object.defineProperty(e, "__esModule", { value: !0 });
 	}));
-})), Il = /* @__PURE__ */ k(((e) => {
-	var t = typeof Uint8Array < "u" && typeof Uint16Array < "u" && typeof Uint32Array < "u", n = Fl();
+})), zl = /* @__PURE__ */ k(((e) => {
+	var t = typeof Uint8Array < "u" && typeof Uint16Array < "u" && typeof Uint32Array < "u", n = Rl();
 	e.uncompressInputType = t ? "uint8array" : "array", e.compressInputType = t ? "uint8array" : "array", e.magic = "\b\0", e.compress = function(e, t) {
 		return n.deflateRaw(e, { level: t.level || -1 });
 	}, e.uncompress = function(e) {
 		return n.inflateRaw(e);
 	};
-})), Ll = /* @__PURE__ */ k(((e) => {
+})), Bl = /* @__PURE__ */ k(((e) => {
 	e.STORE = {
 		magic: "\0\0",
 		compress: function(e) {
@@ -16271,14 +16396,14 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		},
 		compressInputType: null,
 		uncompressInputType: null
-	}, e.DEFLATE = Il();
-})), Rl = /* @__PURE__ */ k(((e, t) => {
+	}, e.DEFLATE = zl();
+})), Vl = /* @__PURE__ */ k(((e, t) => {
 	t.exports = function(e, t) {
 		return typeof e == "number" ? Buffer.alloc(e) : Buffer.from(e, t);
 	}, t.exports.test = function(e) {
 		return Buffer.isBuffer(e);
 	};
-})), zl = /* @__PURE__ */ k(((e) => {
+})), Hl = /* @__PURE__ */ k(((e) => {
 	function t(e) {
 		"@babel/helpers - typeof";
 		return t = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -16287,7 +16412,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			return e && typeof Symbol == "function" && e.constructor === Symbol && e !== Symbol.prototype ? "symbol" : typeof e;
 		}, t(e);
 	}
-	var n = Pl(), r = Ll(), i = Rl();
+	var n = Ll(), r = Bl(), i = Vl();
 	e.string2binary = function(e) {
 		for (var t = "", n = 0; n < e.length; n++) t += String.fromCharCode(e.charCodeAt(n) & 255);
 		return t;
@@ -16437,8 +16562,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		for (t = 0; t < arguments.length; t++) for (n in arguments[t]) arguments[t].hasOwnProperty(n) && e[n] === void 0 && (e[n] = arguments[t][n]);
 		return e;
 	};
-})), Bl = /* @__PURE__ */ k(((e, t) => {
-	var n = zl(), r = [
+})), Ul = /* @__PURE__ */ k(((e, t) => {
+	var n = Hl(), r = [
 		0,
 		1996959894,
 		3993919788,
@@ -16705,11 +16830,11 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		for (var c = 0, l = e.length; c < l; c++) s = i ? e[c] : e.charCodeAt(c), o = (t ^ s) & 255, a = r[o], t = t >>> 8 ^ a;
 		return t ^ -1;
 	};
-})), Vl = /* @__PURE__ */ k(((e) => {
+})), Wl = /* @__PURE__ */ k(((e) => {
 	e.LOCAL_FILE_HEADER = "PK", e.CENTRAL_FILE_HEADER = "PK", e.CENTRAL_DIRECTORY_END = "PK", e.ZIP64_CENTRAL_DIRECTORY_LOCATOR = "PK\x07", e.ZIP64_CENTRAL_DIRECTORY_END = "PK", e.DATA_DESCRIPTOR = "PK\x07\b";
-})), Hl = /* @__PURE__ */ k(((e) => {
+})), Gl = /* @__PURE__ */ k(((e) => {
 	e.base64 = !1, e.binary = !1, e.dir = !1, e.createFolders = !1, e.date = null, e.compression = null, e.compressionOptions = null, e.comment = null, e.unixPermissions = null, e.dosPermissions = null;
-})), Ul = /* @__PURE__ */ k(((e, t) => {
+})), Kl = /* @__PURE__ */ k(((e, t) => {
 	function n() {
 		this.compressedSize = 0, this.uncompressedSize = 0, this.crc32 = 0, this.compressionMethod = null, this.compressedContent = null;
 	}
@@ -16721,8 +16846,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			return null;
 		}
 	}, t.exports = n;
-})), Wl = /* @__PURE__ */ k(((e) => {
-	for (var t = zl(), n = Pl(), r = Rl(), i = Array(256), a = 0; a < 256; a++) i[a] = a >= 252 ? 6 : a >= 248 ? 5 : a >= 240 ? 4 : a >= 224 ? 3 : a >= 192 ? 2 : 1;
+})), ql = /* @__PURE__ */ k(((e) => {
+	for (var t = Hl(), n = Ll(), r = Vl(), i = Array(256), a = 0; a < 256; a++) i[a] = a >= 252 ? 6 : a >= 248 ? 5 : a >= 240 ? 4 : a >= 224 ? 3 : a >= 192 ? 2 : 1;
 	i[254] = i[254] = 1;
 	function o(e) {
 		var t, r, i, a, o, s = 0, c = e.length;
@@ -16766,8 +16891,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		}
 		return r.join("");
 	};
-})), Gl = /* @__PURE__ */ k(((e, t) => {
-	var n = zl();
+})), Jl = /* @__PURE__ */ k(((e, t) => {
+	var n = Hl();
 	function r() {
 		this.data = [];
 	}
@@ -16779,8 +16904,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			return this.data.join("");
 		}
 	}, t.exports = r;
-})), Kl = /* @__PURE__ */ k(((e, t) => {
-	var n = zl();
+})), Yl = /* @__PURE__ */ k(((e, t) => {
+	var n = Hl();
 	function r(e) {
 		this.data = new Uint8Array(e), this.index = 0;
 	}
@@ -16792,7 +16917,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			return this.data;
 		}
 	}, t.exports = r;
-})), ql = /* @__PURE__ */ k(((e, t) => {
+})), Xl = /* @__PURE__ */ k(((e, t) => {
 	function n(e, t) {
 		var n = typeof Symbol < "u" && e[Symbol.iterator] || e["@@iterator"];
 		if (!n) {
@@ -16848,7 +16973,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		for (var n = 0, r = Array(t); n < t; n++) r[n] = e[n];
 		return r;
 	}
-	var a = Pl(), o = zl(), s = Bl(), c = Vl(), l = Hl(), u = Nl(), d = Ll(), f = Ul(), p = Rl(), m = Wl(), h = Gl(), g = Kl();
+	var a = Ll(), o = Hl(), s = Ul(), c = Wl(), l = Gl(), u = Il(), d = Bl(), f = Kl(), p = Vl(), m = ql(), h = Jl(), g = Yl();
 	function _(e) {
 		if (e._data instanceof f && (e._data = e._data.getContent(), e.options.binary = !0, e.options.base64 = !1, o.getTypeOf(e._data) === "uint8array")) {
 			var t = e._data;
@@ -17040,8 +17165,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		};
 	}
 	t.exports = y;
-})), Jl = /* @__PURE__ */ k(((e, t) => {
-	var n = zl();
+})), Zl = /* @__PURE__ */ k(((e, t) => {
+	var n = Hl();
 	function r() {
 		this.data = null, this.length = 0, this.index = 0, this.zero = 0;
 	}
@@ -17074,8 +17199,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			return new Date((e >> 25 & 127) + 1980, (e >> 21 & 15) - 1, e >> 16 & 31, e >> 11 & 31, e >> 5 & 63, (e & 31) << 1);
 		}
 	}, t.exports = r;
-})), Yl = /* @__PURE__ */ k(((e, t) => {
-	var n = Jl(), r = zl();
+})), Ql = /* @__PURE__ */ k(((e, t) => {
+	var n = Zl(), r = Hl();
 	function i(e, t) {
 		this.data = e, t || (this.data = r.string2binary(this.data)), this.length = this.data.length, this.index = 0, this.zero = 0;
 	}
@@ -17088,8 +17213,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		var t = this.data.slice(this.zero + this.index, this.zero + this.index + e);
 		return this.index += e, t;
 	}, t.exports = i;
-})), Xl = /* @__PURE__ */ k(((e, t) => {
-	var n = Jl();
+})), $l = /* @__PURE__ */ k(((e, t) => {
+	var n = Zl();
 	function r(e) {
 		if (e) {
 			this.data = e, this.length = this.data.length, this.index = 0, this.zero = 0;
@@ -17106,8 +17231,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		var t = this.data.slice(this.zero + this.index, this.zero + this.index + e);
 		return this.index += e, t;
 	}, t.exports = r;
-})), Zl = /* @__PURE__ */ k(((e, t) => {
-	var n = Xl();
+})), eu = /* @__PURE__ */ k(((e, t) => {
+	var n = $l();
 	function r(e) {
 		e && (this.data = e, this.length = this.data.length, this.index = 0, this.zero = 0);
 	}
@@ -17116,8 +17241,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		var t = this.data.subarray(this.zero + this.index, this.zero + this.index + e);
 		return this.index += e, t;
 	}, t.exports = r;
-})), Ql = /* @__PURE__ */ k(((e, t) => {
-	var n = Zl();
+})), tu = /* @__PURE__ */ k(((e, t) => {
+	var n = eu();
 	function r(e) {
 		this.data = e, this.length = this.data.length, this.index = 0, this.zero = 0;
 	}
@@ -17126,8 +17251,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		var t = this.data.slice(this.zero + this.index, this.zero + this.index + e);
 		return this.index += e, t;
 	}, t.exports = r;
-})), $l = /* @__PURE__ */ k(((e, t) => {
-	var n = Yl(), r = zl(), i = Ul(), a = ql(), o = Pl(), s = 0, c = 3;
+})), nu = /* @__PURE__ */ k(((e, t) => {
+	var n = Ql(), r = Hl(), i = Kl(), a = Xl(), o = Ll(), s = 0, c = 3;
 	function l(e, t) {
 		this.options = e, this.loadOptions = t;
 	}
@@ -17219,8 +17344,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			return null;
 		}
 	}, t.exports = l;
-})), eu = /* @__PURE__ */ k(((e, t) => {
-	var n = Yl(), r = Ql(), i = Zl(), a = Xl(), o = zl(), s = Vl(), c = $l(), l = Pl();
+})), ru = /* @__PURE__ */ k(((e, t) => {
+	var n = Ql(), r = tu(), i = eu(), a = $l(), o = Hl(), s = Wl(), c = nu(), l = Ll();
 	function u(e, t) {
 		this.files = [], this.loadOptions = t, e && this.load(e);
 	}
@@ -17288,8 +17413,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			this.prepareReader(e), this.readEndOfCentral(), this.readCentralDir(), this.readLocalFiles();
 		}
 	}, t.exports = u;
-})), tu = /* @__PURE__ */ k(((e, t) => {
-	var n = Nl(), r = Wl(), i = zl(), a = eu();
+})), iu = /* @__PURE__ */ k(((e, t) => {
+	var n = Il(), r = ql(), i = Hl(), a = ru();
 	t.exports = function(e, t) {
 		var o, s;
 		t = i.extend(t || {}, {
@@ -17312,8 +17437,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		});
 		return c.zipComment.length && (this.comment = c.zipComment), this;
 	};
-})), nu = /* @__PURE__ */ k(((e) => {
-	var t = zl();
+})), au = /* @__PURE__ */ k(((e) => {
+	var t = Hl();
 	e.string2binary = function(e) {
 		return t.string2binary(e);
 	}, e.string2Uint8Array = function(e) {
@@ -17338,8 +17463,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 	}, e.isRegExp = function(e) {
 		return t.isRegExp(e);
 	};
-})), ru = /* @__PURE__ */ k(((e, t) => {
-	var n = Nl();
+})), ou = /* @__PURE__ */ k(((e, t) => {
+	var n = Il();
 	function r(e, t) {
 		if (!(this instanceof r)) return new r(e, t);
 		this.files = {}, this.comment = null, this.root = "", e && this.load(e, t), this.clone = function() {
@@ -17353,15 +17478,15 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			return e;
 		};
 	}
-	r.prototype = ql(), r.prototype.load = tu(), r.support = Pl(), r.defaults = Hl(), r.utils = nu(), r.base64 = {
+	r.prototype = Xl(), r.prototype.load = iu(), r.support = Ll(), r.defaults = Gl(), r.utils = au(), r.base64 = {
 		encode: function(e) {
 			return n.encode(e);
 		},
 		decode: function(e) {
 			return n.decode(e);
 		}
-	}, r.compressions = Ll(), t.exports = r, t.exports.default = r;
-})), iu = /* @__PURE__ */ j(Ml(), 1), au = /* @__PURE__ */ j(ru(), 1), ou = /^data:image\/png;base64,([a-z0-9+/=\s]+)$/i, su = (e) => e.replaceAll("&amp;", "&").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&quot;", "\"").replaceAll("&apos;", "'"), cu = (e) => e.replace(/<w:p\b[\s\S]*?<\/w:p>/g, (e) => e.includes("w:pStyle w:val=\"CellTerminator\"") || e.includes("<w:drawing") || Array.from(e.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g), (e) => su(e[1]).trim()).join("") ? e : ""), lu = (e) => {
+	}, r.compressions = Bl(), t.exports = r, t.exports.default = r;
+})), su = /* @__PURE__ */ j(Fl(), 1), cu = /* @__PURE__ */ j(ou(), 1), lu = /^data:image\/png;base64,([a-z0-9+/=\s]+)$/i, uu = (e) => e.replaceAll("&amp;", "&").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&quot;", "\"").replaceAll("&apos;", "'"), du = (e) => e.replace(/<w:p\b[\s\S]*?<\/w:p>/g, (e) => e.includes("w:pStyle w:val=\"CellTerminator\"") || e.includes("<w:drawing") || Array.from(e.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g), (e) => uu(e[1]).trim()).join("") ? e : ""), fu = (e) => {
 	if (e.length < 24 || e.toString("ascii", 1, 4) !== "PNG") return {
 		left: 0,
 		top: 0,
@@ -17391,31 +17516,31 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		right: 0,
 		bottom: r
 	};
-}, uu = (e, t) => {
+}, pu = (e, t) => {
 	let n = e?.replace("#", "").toUpperCase();
 	return n && /^[0-9A-F]{6}$/.test(n) ? n : t;
-}, du = (e, t, n) => {
-	let r = e === Mc.id ? /* @__PURE__ */ new Map([["073C8C", uu(n.DESIGN_PRIMARY, "073C8C")], ["FF6A00", uu(n.DESIGN_ACCENT, "FF6A00")]]) : e === Nc.id ? /* @__PURE__ */ new Map([
-		["0A3485", uu(n.DESIGN_PRIMARY, "0A3485")],
-		["FF6500", uu(n.DESIGN_ACCENT, "FF6500")],
-		["FFD8BF", uu(n.DESIGN_SOFT_ACCENT, "FFD8BF")]
+}, mu = (e, t, n) => {
+	let r = e === Fc.id ? /* @__PURE__ */ new Map([["073C8C", pu(n.DESIGN_PRIMARY, "073C8C")], ["FF6A00", pu(n.DESIGN_ACCENT, "FF6A00")]]) : e === Ic.id ? /* @__PURE__ */ new Map([
+		["0A3485", pu(n.DESIGN_PRIMARY, "0A3485")],
+		["FF6500", pu(n.DESIGN_ACCENT, "FF6500")],
+		["FFD8BF", pu(n.DESIGN_SOFT_ACCENT, "FFD8BF")]
+	]) : e === Lc.id ? /* @__PURE__ */ new Map([
+		["36B873", pu(n.DESIGN_PRIMARY, "36B873")],
+		["075E50", pu(n.DESIGN_ACCENT, "075E50")],
+		["D9F2E5", pu(n.DESIGN_SOFT_ACCENT, "D9F2E5")]
+	]) : e === Rc.id ? /* @__PURE__ */ new Map([
+		["073B8F", pu(n.DESIGN_PRIMARY, "073B8F")],
+		["4AA7F5", pu(n.DESIGN_ACCENT, "4AA7F5")],
+		["EAF6FD", pu(n.DESIGN_SOFT_ACCENT, "EAF6FD")]
 	]) : e === Pc.id ? /* @__PURE__ */ new Map([
-		["36B873", uu(n.DESIGN_PRIMARY, "36B873")],
-		["075E50", uu(n.DESIGN_ACCENT, "075E50")],
-		["D9F2E5", uu(n.DESIGN_SOFT_ACCENT, "D9F2E5")]
-	]) : e === Fc.id ? /* @__PURE__ */ new Map([
-		["073B8F", uu(n.DESIGN_PRIMARY, "073B8F")],
-		["4AA7F5", uu(n.DESIGN_ACCENT, "4AA7F5")],
-		["EAF6FD", uu(n.DESIGN_SOFT_ACCENT, "EAF6FD")]
-	]) : e === jc.id ? /* @__PURE__ */ new Map([
-		["154F45", uu(n.DESIGN_PRIMARY, "154F45")],
-		["39B774", uu(n.DESIGN_PRIMARY, "39B774")],
-		["E4EBE8", uu(n.DESIGN_SOFT_ACCENT, "E4EBE8")]
+		["154F45", pu(n.DESIGN_PRIMARY, "154F45")],
+		["39B774", pu(n.DESIGN_PRIMARY, "39B774")],
+		["E4EBE8", pu(n.DESIGN_SOFT_ACCENT, "E4EBE8")]
 	]) : /* @__PURE__ */ new Map([
-		["0F5B4A", uu(n.DESIGN_PRIMARY, "0F5B4A")],
-		["36B779", uu(n.DESIGN_ACCENT, "36B779")],
-		["CDEEDF", uu(n.DESIGN_SOFT_ACCENT, "CDEEDF")],
-		["9DDBB9", uu(n.DESIGN_TITLE_BACKGROUND, "9DDBB9")]
+		["0F5B4A", pu(n.DESIGN_PRIMARY, "0F5B4A")],
+		["36B779", pu(n.DESIGN_ACCENT, "36B779")],
+		["CDEEDF", pu(n.DESIGN_SOFT_ACCENT, "CDEEDF")],
+		["9DDBB9", pu(n.DESIGN_TITLE_BACKGROUND, "9DDBB9")]
 	]), i = n.DESIGN_FONT?.trim() || "Arial";
 	for (let e of Object.keys(t.files)) {
 		if (!/^word\/.*\.xml$/i.test(e)) continue;
@@ -17425,10 +17550,10 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		for (let [e, t] of r) a = a.replaceAll(e, t);
 		a = a.replaceAll("w:ascii=\"Arial\"", `w:ascii="${i}"`).replaceAll("w:hAnsi=\"Arial\"", `w:hAnsi="${i}"`).replaceAll("w:cs=\"Arial\"", `w:cs="${i}"`), t.file(e, a);
 	}
-}, fu = (e) => e.replaceAll("&", "&amp;").replaceAll("\"", "&quot;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"), pu = (e) => {
+}, hu = (e) => e.replaceAll("&", "&amp;").replaceAll("\"", "&quot;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"), gu = (e) => {
 	let t = e.trim();
 	return t ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t) ? `mailto:${t}` : /^\+?[\d\s()./-]{7,}$/.test(t) ? `tel:${t.replace(/[^\d+]/g, "")}` : /^https?:\/\//i.test(t) ? t : /^(?:www\.|linkedin\.com\/|github\.com\/|[\w.-]+\.[a-z]{2,}\/)/i.test(t) ? `https://${t}` : null : null;
-}, mu = (e, t) => {
+}, _u = (e, t) => {
 	let n = e.file("word/document.xml"), r = e.file("word/_rels/document.xml.rels");
 	if (!n || !r) return;
 	let i = n.asText(), a = r.asText(), o = Number(t.DESIGN_MARGIN_VERTICAL_MM), s = Number(t.DESIGN_MARGIN_HORIZONTAL_MM);
@@ -17438,31 +17563,31 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 	}
 	if (t.DEKORATION_AKTIV?.trim().toLowerCase() === "false") {
 		let e = i.match(/<w:drawing>[\s\S]*?<\/w:drawing>/g)?.find((e) => e.includes("KOMPAKT_DEKORATION"));
-		e && (i = cu(i.replace(e, "")));
+		e && (i = du(i.replace(e, "")));
 	}
 	let c = 0;
 	i = i.replace(/<w:p\b[\s\S]*?<\/w:p>/g, (e) => {
 		if (!e.includes("w:pStyle w:val=\"ContactLink\"") || e.includes("<w:hyperlink")) return e;
-		let t = pu(Array.from(e.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g), (e) => su(e[1])).join("").trim());
+		let t = gu(Array.from(e.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g), (e) => uu(e[1])).join("").trim());
 		if (!t) return e;
 		c += 1;
 		let n = `rIdKompaktLink${c}`;
-		return a = a.replace("</Relationships>", `<Relationship Id="${n}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="${fu(t)}" TargetMode="External"/></Relationships>`), e.replace(/(<w:r\b[\s\S]*?<\/w:r>)/, `<w:hyperlink r:id="${n}" w:history="1">$1</w:hyperlink>`);
+		return a = a.replace("</Relationships>", `<Relationship Id="${n}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="${hu(t)}" TargetMode="External"/></Relationships>`), e.replace(/(<w:r\b[\s\S]*?<\/w:r>)/, `<w:hyperlink r:id="${n}" w:history="1">$1</w:hyperlink>`);
 	}), e.file("word/document.xml", i), e.file("word/_rels/document.xml.rels", a);
-}, hu = (t, n) => {
+}, vu = (t, n) => {
 	let r = t.file("word/document.xml"), i = t.file("word/_rels/document.xml.rels");
 	if (!r || !i) return { found: !1 };
 	let a = r.asText(), o = a.match(/<w:drawing>[\s\S]*?<\/w:drawing>/g)?.find((e) => /<wp:docPr\b[^>]*(?:descr|title)="PROFILFOTO"[^>]*\/>/.test(e));
 	if (!o) return { found: !1 };
-	let s = o.match(/<a:blip\b[^>]*r:embed="([^"]+)"/)?.[1], c = n.match(ou)?.[1];
-	if (!s || !c) return a = a.replace(o, ""), t.file("word/document.xml", cu(a)), { found: !0 };
+	let s = o.match(/<a:blip\b[^>]*r:embed="([^"]+)"/)?.[1], c = n.match(lu)?.[1];
+	if (!s || !c) return a = a.replace(o, ""), t.file("word/document.xml", du(a)), { found: !0 };
 	let l = i.asText(), u = s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), d = l.match(RegExp(`<Relationship\\b(?=[^>]*\\bId="${u}")(?=[^>]*\\bTarget="([^"]+)")[^>]*/>`))?.[1];
-	if (!d) return a = a.replace(o, ""), t.file("word/document.xml", cu(a)), { found: !0 };
+	if (!d) return a = a.replace(o, ""), t.file("word/document.xml", du(a)), { found: !0 };
 	let f = Buffer.from(c.replace(/\s/g, ""), "base64");
 	t.file(e.posix.join("word", d), f);
-	let p = lu(f), m = `<a:srcRect l="${p.left}" t="${p.top}" r="${p.right}" b="${p.bottom}"/>`, h = o.replace(/(<a:blip\b[^>]*\/>)(?:<a:srcRect\b[^>]*\/>)?/, `$1${m}`);
-	return a = a.replace(o, h), t.file("word/document.xml", cu(a)), { found: !0 };
-}, gu = class {
+	let p = fu(f), m = `<a:srcRect l="${p.left}" t="${p.top}" r="${p.right}" b="${p.bottom}"/>`, h = o.replace(/(<a:blip\b[^>]*\/>)(?:<a:srcRect\b[^>]*\/>)?/, `$1${m}`);
+	return a = a.replace(o, h), t.file("word/document.xml", du(a)), { found: !0 };
+}, yu = class {
 	async createDocument(t, r, i) {
 		if (t.extension === ".doc") return await n(t.filePath, r), {
 			templateId: t.id,
@@ -17473,12 +17598,12 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			warning: "Das ältere DOC-Format wurde sicher kopiert. Platzhalter werden in DOC-Dateien nicht automatisch ersetzt."
 		};
 		try {
-			let n = new au.default(await a(t.filePath));
+			let n = new cu.default(await a(t.filePath));
 			if (t.extension === ".dotx") {
 				let e = n.file("[Content_Types].xml");
 				e && n.file("[Content_Types].xml", e.asText().replace("application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"));
 			}
-			let o = new iu.default(n, {
+			let o = new su.default(n, {
 				paragraphLoop: !0,
 				linebreaks: !0,
 				delimiters: {
@@ -17486,17 +17611,17 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 					end: "}}"
 				},
 				nullGetter: (e) => `{{${e.value}}}`
-			}), s = o.getFullText(), c = Object.keys(Lc), l = Object.fromEntries([
+			}), s = o.getFullText(), c = Object.keys(Bc), l = Object.fromEntries([
 				...Object.entries(i),
-				...Vc.map((e) => [e, i[e] ?? ""]),
-				...c.map((e) => [e, i[e] ?? i[Lc[e]] ?? ""])
-			]), d = [...Vc, ...c].filter((e) => s.includes(`{{${e}}}`));
+				...Wc.map((e) => [e, i[e] ?? ""]),
+				...c.map((e) => [e, i[e] ?? i[Bc[e]] ?? ""])
+			]), d = [...Wc, ...c].filter((e) => s.includes(`{{${e}}}`));
 			o.render(l);
 			let f = o.getZip();
-			if ((t.id === Oc.id || t.id === jc.id || t.id === Mc.id || t.id === Nc.id || t.id === Pc.id || t.id === Fc.id || t.id === kc.id) && du(t.id, f, i), t.id === Nc.id && mu(f, i), hu(f, i.PROFILFOTO ?? "").found) d.push("PROFILFOTO");
+			if ((t.id === jc.id || t.id === Pc.id || t.id === Fc.id || t.id === Ic.id || t.id === Lc.id || t.id === Rc.id || t.id === Mc.id) && mu(t.id, f, i), t.id === Ic.id && _u(f, i), vu(f, i.PROFILFOTO ?? "").found) d.push("PROFILFOTO");
 			else {
 				let e = f.file("word/document.xml");
-				e && f.file("word/document.xml", cu(e.asText()));
+				e && f.file("word/document.xml", du(e.asText()));
 			}
 			return await u(r, f.generate({
 				type: "nodebuffer",
@@ -17509,16 +17634,16 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 				replacedPlaceholders: d
 			};
 		} catch (e) {
-			throw e instanceof Hc ? e : new Hc(`Die Word-Vorlage ist beschädigt oder enthält ungültige Platzhalter. ${Uc(e).message}`, "CORRUPT");
+			throw e instanceof Gc ? e : new Gc(`Die Word-Vorlage ist beschädigt oder enthält ungültige Platzhalter. ${Kc(e).message}`, "CORRUPT");
 		}
 	}
-}, _u = (e) => e.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;"), vu = class {
+}, bu = (e) => e.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;"), xu = class {
 	constructor(e) {
 		this.paths = e;
 	}
 	async generate(t) {
 		await r(this.paths.previewCache, { recursive: !0 });
-		let n = new Date(t.modifiedAt ?? 0).getTime(), i = t.id === Dc.id ? Dc : t.id === Oc.id ? Oc : t.id === jc.id ? jc : t.id === Mc.id ? Mc : t.id === Nc.id ? Nc : t.id === Pc.id ? Pc : t.id === Fc.id ? Fc : t.id === kc.id ? kc : void 0;
+		let n = new Date(t.modifiedAt ?? 0).getTime(), i = t.id === Ac.id ? Ac : t.id === jc.id ? jc : t.id === Pc.id ? Pc : t.id === Fc.id ? Fc : t.id === Ic.id ? Ic : t.id === Lc.id ? Lc : t.id === Rc.id ? Rc : t.id === Mc.id ? Mc : void 0;
 		if (i && this.paths.bundledTemplatesRoot) try {
 			let r = await a(e.join(this.paths.bundledTemplatesRoot, i.previewFileName)), o = e.join(this.paths.previewCache, `${t.id}-${n}.png`);
 			return await u(o, r), {
@@ -17529,20 +17654,20 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		let o = `${t.id}-${n}.svg`, s = e.join(this.paths.previewCache, o), l = t.documentType === "anschreiben" ? "ANSCHREIBEN" : t.documentType === "deckblatt" ? "DECKBLATT" : "LEBENSLAUF", d = t.modifiedAt ? new Intl.DateTimeFormat("de-DE", {
 			dateStyle: "medium",
 			timeStyle: "short"
-		}).format(new Date(t.modifiedAt)) : "Änderungsdatum unbekannt", f = wc[t.source], p = `<svg xmlns="http://www.w3.org/2000/svg" width="420" height="594" viewBox="0 0 420 594">
+		}).format(new Date(t.modifiedAt)) : "Änderungsdatum unbekannt", f = Dc[t.source], p = `<svg xmlns="http://www.w3.org/2000/svg" width="420" height="594" viewBox="0 0 420 594">
       <rect width="420" height="594" rx="8" fill="#fff"/>
       <rect x="34" y="38" width="352" height="5" rx="2.5" fill="#2b579a"/>
       <text x="34" y="76" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#2b579a">${l}</text>
       <rect x="34" y="92" width="44" height="50" rx="4" fill="#2b579a"/>
       <text x="48" y="126" font-family="Arial,sans-serif" font-size="26" font-weight="700" fill="#fff">W</text>
-      <text x="92" y="116" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#1d2927">${_u(t.name.slice(0, 23))}</text>
-      <text x="92" y="138" font-family="Arial,sans-serif" font-size="11" fill="#71807c">${_u(t.format.toUpperCase())} &#183; ${_u(f)}</text>
+      <text x="92" y="116" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#1d2927">${bu(t.name.slice(0, 23))}</text>
+      <text x="92" y="138" font-family="Arial,sans-serif" font-size="11" fill="#71807c">${bu(t.format.toUpperCase())} &#183; ${bu(f)}</text>
       <rect x="34" y="160" width="330" height="6" rx="3" fill="#e5ebe9"/>
       <rect x="34" y="174" width="310" height="6" rx="3" fill="#e5ebe9"/>
       <rect x="34" y="218" width="170" height="9" rx="4" fill="#9aaba6"/>
       ${Array.from({ length: 12 }, (e, t) => `<rect x="34" y="${246 + t * 20}" width="${t % 3 == 0 ? 330 : 300}" height="6" rx="3" fill="#e5ebe9"/>`).join("")}
-      <text x="34" y="540" font-family="Arial,sans-serif" font-size="12" fill="#71807c">Geändert: ${_u(d)}</text>
-      <text x="34" y="560" font-family="Arial,sans-serif" font-size="12" fill="#71807c">${_u(t.format.toUpperCase())} &#183; ${_u(f)}</text>
+      <text x="34" y="540" font-family="Arial,sans-serif" font-size="12" fill="#71807c">Geändert: ${bu(d)}</text>
+      <text x="34" y="560" font-family="Arial,sans-serif" font-size="12" fill="#71807c">${bu(t.format.toUpperCase())} &#183; ${bu(f)}</text>
     </svg>`;
 		try {
 			await a(s);
@@ -17556,10 +17681,10 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			previewDataUrl: `data:image/svg+xml;base64,${Buffer.from(p).toString("base64")}`
 		};
 	}
-}, yu = (t) => S("sha256").update(e.resolve(t).toLocaleLowerCase("de-DE")).digest("hex"), bu = ({ filePath: t, extension: n, documentType: r, source: i, fileSize: a, createdAt: o, modifiedAt: s, metadata: c }) => {
+}, Su = (t) => S("sha256").update(e.resolve(t).toLocaleLowerCase("de-DE")).digest("hex"), Cu = ({ filePath: t, extension: n, documentType: r, source: i, fileSize: a, createdAt: o, modifiedAt: s, metadata: c }) => {
 	let l = e.basename(t), u = e.basename(t, n).replaceAll("_", " ").replaceAll("-", " ");
 	return {
-		id: c.id?.trim() || yu(t),
+		id: c.id?.trim() || Su(t),
 		name: c.name?.trim() || u,
 		fileName: l,
 		filePath: t,
@@ -17587,29 +17712,29 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		supportsAtsMode: c.supportsAtsMode ?? !1,
 		emphasis: c.emphasis?.trim() || void 0
 	};
-}, xu = (t) => {
+}, wu = (t) => {
 	let n = e.extname(t).toLowerCase();
-	if (!Cc.has(n)) throw new Hc("Dieses Dateiformat wird nicht als Word-Vorlage unterstützt.", "INVALID_FORMAT");
+	if (!Ec.has(n)) throw new Gc("Dieses Dateiformat wird nicht als Word-Vorlage unterstützt.", "INVALID_FORMAT");
 	return n;
-}, Su = (t, n) => {
+}, Tu = (t, n) => {
 	let r = e.resolve(t), i = e.resolve(n);
 	return i === r || i.startsWith(`${r}${e.sep}`);
-}, Cu = (e, t) => {
+}, Eu = (e, t) => {
 	if (![
 		e.anschreibenTemplates,
 		e.deckblattTemplates,
 		e.lebenslaufTemplates,
 		e.anschreibenDocuments,
 		e.systemTemplateCache
-	].some((e) => Su(e, t))) throw new Hc("Ungültiger Vorlagenpfad.", "INVALID_PATH");
-	xu(t);
-}, wu = async (e, t) => {
-	Cu(e, t);
+	].some((e) => Tu(e, t))) throw new Gc("Ungültiger Vorlagenpfad.", "INVALID_PATH");
+	wu(t);
+}, Du = async (e, t) => {
+	Eu(e, t);
 	let n = await l(t);
-	if (!n.isFile()) throw new Hc("Die Vorlage ist keine Datei.", "INVALID_FORMAT");
-	if (n.size > 26214400) throw new Hc("Die Vorlage darf höchstens 25 MB groß sein.", "FILE_TOO_LARGE");
+	if (!n.isFile()) throw new Gc("Die Vorlage ist keine Datei.", "INVALID_FORMAT");
+	if (n.size > 26214400) throw new Gc("Die Vorlage darf höchstens 25 MB groß sein.", "FILE_TOO_LARGE");
 	return n;
-}, Tu = async (e, t = 3) => {
+}, Ou = async (e, t = 3) => {
 	let n;
 	for (let r = 0; r < t; r += 1) try {
 		return await e();
@@ -17625,10 +17750,10 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		].includes(t)) break;
 		await new Promise((e) => setTimeout(e, 120 * (r + 1)));
 	}
-	throw Uc(n);
-}, Eu = (t) => `${t.slice(0, -e.extname(t).length)}.template.json`, Du = async (e) => {
+	throw Kc(n);
+}, ku = (t) => `${t.slice(0, -e.extname(t).length)}.template.json`, Au = async (e) => {
 	try {
-		let t = JSON.parse(await a(Eu(e), "utf8"));
+		let t = JSON.parse(await a(ku(e), "utf8"));
 		if (!t || typeof t != "object") return {};
 		let n = t;
 		return {
@@ -17657,7 +17782,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 	} catch {
 		return {};
 	}
-}, Ou = async (t) => {
+}, ju = async (t) => {
 	let n = [], r = [t];
 	for (; r.length;) {
 		let t = r.pop(), i = await o(t, { withFileTypes: !0 });
@@ -17667,30 +17792,30 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		}
 	}
 	return n;
-}, ku = (e) => {
-	let t = e.filter((e) => e.id !== Ec.id && e.id !== Oc.id && e.id !== jc.id && e.id !== Nc.id && e.id !== kc.id && e.id !== Ac.id).sort((e, t) => e.sortOrder - t.sortOrder || e.name.localeCompare(t.name, "de")), n = [
+}, Mu = (e) => {
+	let t = e.filter((e) => e.id !== kc.id && e.id !== jc.id && e.id !== Pc.id && e.id !== Ic.id && e.id !== Mc.id && e.id !== Nc.id).sort((e, t) => e.sortOrder - t.sortOrder || e.name.localeCompare(t.name, "de")), n = [
 		{
-			id: Ec.id,
+			id: kc.id,
 			index: 1
 		},
 		{
-			id: Oc.id,
+			id: jc.id,
 			index: 2
 		},
 		{
-			id: jc.id,
+			id: Pc.id,
 			index: 3
 		},
 		{
-			id: Nc.id,
+			id: Ic.id,
 			index: 4
 		},
 		{
-			id: kc.id,
+			id: Mc.id,
 			index: 5
 		},
 		{
-			id: Ac.id,
+			id: Nc.id,
 			index: 6
 		}
 	], r = [...t];
@@ -17699,7 +17824,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		n && r.splice(Math.min(t.index, r.length), 0, n);
 	}
 	return r;
-}, Au = class {
+}, Nu = class {
 	constructor(e) {
 		this.paths = e;
 	}
@@ -17732,7 +17857,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		for (let r of this.locations()) {
 			let i = [];
 			try {
-				i = await Tu(() => Ou(r.root));
+				i = await Ou(() => ju(r.root));
 			} catch (t) {
 				n.push(t instanceof Error ? `${e.basename(r.root)}: ${t.message}` : `${e.basename(r.root)} konnte nicht gelesen werden.`);
 				continue;
@@ -17740,14 +17865,14 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			for (let a of i) {
 				let i;
 				try {
-					i = xu(a);
+					i = wu(a);
 				} catch {
 					continue;
 				}
 				try {
-					let e = await Tu(() => wu(this.paths, a));
+					let e = await Ou(() => Du(this.paths, a));
 					if (e.size > 26214400) continue;
-					t.push(bu({
+					t.push(Cu({
 						filePath: a,
 						extension: i,
 						documentType: r.documentType,
@@ -17755,7 +17880,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 						fileSize: e.size,
 						createdAt: e.birthtime.toISOString(),
 						modifiedAt: e.mtime.toISOString(),
-						metadata: await Du(a)
+						metadata: await Au(a)
 					}));
 				} catch (t) {
 					n.push(t instanceof Error ? `${e.basename(a)}: ${t.message}` : `${e.basename(a)} konnte nicht gelesen werden.`);
@@ -17763,7 +17888,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			}
 		}
 		return {
-			templates: ku(t),
+			templates: Mu(t),
 			warnings: n
 		};
 	}
@@ -17773,9 +17898,9 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 	async scanExistingAnschreiben() {
 		return (await this.scanAllTemplates()).templates.filter((e) => e.source === "existing-document");
 	}
-}, ju = (e) => typeof e == "object" && e && "code" in e ? String(e.code) : "", Mu = class {
+}, Pu = (e) => typeof e == "object" && e && "code" in e ? String(e.code) : "", Fu = class {
 	constructor(e) {
-		this.paths = e, this.templates = [], this.scanner = new Au(e), this.previewService = new vu(e);
+		this.paths = e, this.templates = [], this.scanner = new Nu(e), this.previewService = new xu(e);
 	}
 	async initialize() {
 		return await Promise.all([
@@ -17789,81 +17914,81 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		].map((e) => r(e, { recursive: !0 }))), await this.ensureWordMusterTemplate(), await this.ensureZeitgenoessischLebenslaufTemplate(), await this.ensureKreativLebenslaufTemplate(), await this.ensureIvyLeagueLebenslaufTemplate(), await this.ensureKompaktLebenslaufTemplate(), await this.ensureStilvollLebenslaufTemplate(), await this.ensureEinfachLebenslaufTemplate(), await this.ensureElegantLebenslaufTemplate(), await this.ensureGepflegtLebenslaufTemplate(), await this.ensureModernLebenslaufTemplate(), this.refresh();
 	}
 	async ensureWordMusterTemplate() {
-		let r = e.join(this.paths.anschreibenTemplates, Ec.fileName);
+		let r = e.join(this.paths.anschreibenTemplates, kc.fileName);
 		try {
 			await t(r);
 		} catch {
-			let i = e.join(this.paths.anschreibenDocuments, Ec.fileName);
+			let i = e.join(this.paths.anschreibenDocuments, kc.fileName);
 			try {
 				await t(i);
 			} catch {
 				return;
 			}
-			await Tu(() => n(i, r));
+			await Ou(() => n(i, r));
 		}
 		await this.writeMetadata(r, {
-			id: Ec.id,
-			name: Ec.name,
-			documentType: Ec.documentType,
-			format: Ec.format,
-			source: Ec.source,
-			sortOrder: Ec.sortOrder,
-			description: Ec.description,
-			tags: [...Ec.tags],
-			isSystemTemplate: Ec.isSystemTemplate,
-			supportsPreview: Ec.supportsPreview,
-			supportsPlaceholders: Ec.supportsPlaceholders,
-			editableInWord: Ec.editableInWord,
-			isProtected: Ec.isProtected
+			id: kc.id,
+			name: kc.name,
+			documentType: kc.documentType,
+			format: kc.format,
+			source: kc.source,
+			sortOrder: kc.sortOrder,
+			description: kc.description,
+			tags: [...kc.tags],
+			isSystemTemplate: kc.isSystemTemplate,
+			supportsPreview: kc.supportsPreview,
+			supportsPlaceholders: kc.supportsPlaceholders,
+			editableInWord: kc.editableInWord,
+			isProtected: kc.isProtected
 		});
 	}
 	async copyBundledTemplateIfMissing(r, i) {
 		try {
 			return await t(i), !0;
 		} catch (e) {
-			if (ju(e) !== "ENOENT") throw e;
+			if (Pu(e) !== "ENOENT") throw e;
 		}
 		if (!this.paths.bundledTemplatesRoot) return !1;
 		let a = e.join(this.paths.bundledTemplatesRoot, r);
 		try {
 			await t(a);
 		} catch (e) {
-			if (ju(e) === "ENOENT") return !1;
+			if (Pu(e) === "ENOENT") return !1;
 			throw e;
 		}
-		return await Tu(async () => {
+		return await Ou(async () => {
 			try {
 				await n(a, i, x.COPYFILE_EXCL);
 			} catch (e) {
-				if (ju(e) !== "EEXIST") throw e;
+				if (Pu(e) !== "EEXIST") throw e;
 			}
 		}), !0;
 	}
 	async ensureElegantLebenslaufTemplate() {
-		let t = e.join(this.paths.lebenslaufTemplates, Dc.fileName);
-		await this.copyBundledTemplateIfMissing(Dc.fileName, t) && (await this.copyBundledTemplateIfMissing(Dc.atsFileName, e.join(this.paths.systemTemplateCache, Dc.atsFileName)), await this.writeMetadata(t, {
-			id: Dc.id,
-			name: Dc.name,
-			documentType: Dc.documentType,
-			format: Dc.format,
-			source: Dc.source,
-			sortOrder: Dc.sortOrder,
-			description: Dc.description,
-			tags: [...Dc.tags],
-			isSystemTemplate: Dc.isSystemTemplate,
-			supportsPreview: Dc.supportsPreview,
-			supportsPlaceholders: Dc.supportsPlaceholders,
-			editableInWord: Dc.editableInWord,
-			isProtected: Dc.isProtected,
-			category: Dc.category,
-			layout: Dc.layout,
-			atsFriendly: Dc.atsFriendly,
-			supportsPhoto: Dc.supportsPhoto,
-			supportsAtsMode: Dc.supportsAtsMode
+		let t = e.join(this.paths.lebenslaufTemplates, Ac.fileName);
+		await this.copyBundledTemplateIfMissing(Ac.fileName, t) && (await this.copyBundledTemplateIfMissing(Ac.atsFileName, e.join(this.paths.systemTemplateCache, Ac.atsFileName)), await this.writeMetadata(t, {
+			id: Ac.id,
+			name: Ac.name,
+			documentType: Ac.documentType,
+			format: Ac.format,
+			source: Ac.source,
+			sortOrder: Ac.sortOrder,
+			description: Ac.description,
+			tags: [...Ac.tags],
+			isSystemTemplate: Ac.isSystemTemplate,
+			supportsPreview: Ac.supportsPreview,
+			supportsPlaceholders: Ac.supportsPlaceholders,
+			editableInWord: Ac.editableInWord,
+			isProtected: Ac.isProtected,
+			category: Ac.category,
+			layout: Ac.layout,
+			atsFriendly: Ac.atsFriendly,
+			supportsPhoto: Ac.supportsPhoto,
+			supportsAtsMode: Ac.supportsAtsMode
 		}));
 	}
 	async ensureZeitgenoessischLebenslaufTemplate() {
-		let t = Oc, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
+		let t = jc, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
 		await this.copyBundledTemplateIfMissing(t.fileName, n) && (await this.copyBundledTemplateIfMissing(t.atsFileName, e.join(this.paths.systemTemplateCache, t.atsFileName)), await this.writeMetadata(n, {
 			id: t.id,
 			name: t.name,
@@ -17886,7 +18011,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		}));
 	}
 	async ensureKreativLebenslaufTemplate() {
-		let t = jc, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
+		let t = Pc, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
 		await this.copyBundledTemplateIfMissing(t.fileName, n) && (await this.copyBundledTemplateIfMissing(t.atsFileName, e.join(this.paths.systemTemplateCache, t.atsFileName)), await this.writeMetadata(n, {
 			id: t.id,
 			name: t.name,
@@ -17911,7 +18036,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		}));
 	}
 	async ensureIvyLeagueLebenslaufTemplate() {
-		let t = Mc, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
+		let t = Fc, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
 		await this.copyBundledTemplateIfMissing(t.fileName, n) && (await this.copyBundledTemplateIfMissing(t.atsFileName, e.join(this.paths.systemTemplateCache, t.atsFileName)), await this.writeMetadata(n, {
 			id: t.id,
 			name: t.name,
@@ -17936,7 +18061,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		}));
 	}
 	async ensureKompaktLebenslaufTemplate() {
-		let t = Nc, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
+		let t = Ic, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
 		await this.copyBundledTemplateIfMissing(t.fileName, n) && (await this.copyBundledTemplateIfMissing(t.atsFileName, e.join(this.paths.systemTemplateCache, t.atsFileName)), await this.writeMetadata(n, {
 			id: t.id,
 			name: t.name,
@@ -17961,10 +18086,10 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		}));
 	}
 	async ensureStilvollLebenslaufTemplate() {
-		await this.ensureManagedResumeTemplate(Pc);
+		await this.ensureManagedResumeTemplate(Lc);
 	}
 	async ensureEinfachLebenslaufTemplate() {
-		await this.ensureManagedResumeTemplate(Fc);
+		await this.ensureManagedResumeTemplate(Rc);
 	}
 	async ensureManagedResumeTemplate(t) {
 		let n = e.join(this.paths.lebenslaufTemplates, t.fileName);
@@ -17992,7 +18117,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		}));
 	}
 	async ensureGepflegtLebenslaufTemplate() {
-		let t = kc, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
+		let t = Mc, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
 		await this.copyBundledTemplateIfMissing(t.fileName, n) && (await this.copyBundledTemplateIfMissing(t.atsFileName, e.join(this.paths.systemTemplateCache, t.atsFileName)), await this.writeMetadata(n, {
 			id: t.id,
 			name: t.name,
@@ -18015,7 +18140,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		}));
 	}
 	async ensureModernLebenslaufTemplate() {
-		let t = Ac, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
+		let t = Nc, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
 		await this.copyBundledTemplateIfMissing(t.fileName, n) && (await this.copyBundledTemplateIfMissing(t.atsFileName, e.join(this.paths.systemTemplateCache, t.atsFileName)), await this.writeMetadata(n, {
 			id: t.id,
 			name: t.name,
@@ -18063,7 +18188,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 	}
 	async readMetadata(e) {
 		try {
-			return JSON.parse(await a(Eu(e), "utf8"));
+			return JSON.parse(await a(ku(e), "utf8"));
 		} catch {
 			return {};
 		}
@@ -18073,11 +18198,11 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			...await this.readMetadata(e),
 			...t
 		};
-		await Tu(() => u(Eu(e), JSON.stringify(n, null, 2), "utf8"));
+		await Ou(() => u(ku(e), JSON.stringify(n, null, 2), "utf8"));
 	}
-}, Nu = class {
+}, Iu = class {
 	constructor(e) {
-		this.paths = e, this.placeholderService = new gu(), this.repository = new Mu(e);
+		this.paths = e, this.placeholderService = new yu(), this.repository = new Fu(e);
 	}
 	initialize() {
 		return this.repository.initialize();
@@ -18098,59 +18223,59 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		return e === "anschreiben" ? this.paths.anschreibenTemplates : e === "deckblatt" ? this.paths.deckblattTemplates : this.paths.lebenslaufTemplates;
 	}
 	async addExternalTemplate(t, i, a) {
-		let o = xu(t), s = await l(t);
-		if (!s.isFile()) throw new Hc("Die ausgewählte Vorlage ist keine Datei.", "INVALID_FORMAT");
-		if (s.size > 26214400) throw new Hc("Die Vorlage darf höchstens 25 MB groß sein.", "FILE_TOO_LARGE");
+		let o = wu(t), s = await l(t);
+		if (!s.isFile()) throw new Gc("Die ausgewählte Vorlage ist keine Datei.", "INVALID_FORMAT");
+		if (s.size > 26214400) throw new Gc("Die Vorlage darf höchstens 25 MB groß sein.", "FILE_TOO_LARGE");
 		let c = this.rootForType(i);
 		await r(c, { recursive: !0 });
-		let u = a || e.basename(t, o), d = await Kc(c, u, o);
-		await Tu(() => n(t, d)), await this.repository.writeMetadata(d, {
+		let u = a || e.basename(t, o), d = await Yc(c, u, o);
+		await Ou(() => n(t, d)), await this.repository.writeMetadata(d, {
 			name: u.replaceAll("_", " "),
 			documentType: i,
 			tags: [],
 			isFavorite: !1,
 			isSystemTemplate: !1,
-			sortOrder: Tc,
+			sortOrder: Oc,
 			supportsPreview: !0,
 			supportsPlaceholders: o !== ".doc",
 			editableInWord: !0,
 			isProtected: !1
 		}), await this.repository.refresh();
 		let f = this.repository.list().find((e) => e.filePath === d);
-		if (!f) throw new Hc("Die Vorlage konnte nicht hinzugefügt werden.", "NOT_FOUND");
+		if (!f) throw new Gc("Die Vorlage konnte nicht hinzugefügt werden.", "NOT_FOUND");
 		return f;
 	}
 	async copyExistingDocumentToTemplates(e, t) {
-		Cu(this.paths, e);
+		Eu(this.paths, e);
 		let n = this.repository.list().find((t) => t.filePath === e && t.source === "existing-document");
-		if (!n) throw new Hc("Das Anschreiben wurde nicht in den eigenen Dokumenten gefunden.", "NOT_FOUND");
+		if (!n) throw new Gc("Das Anschreiben wurde nicht in den eigenen Dokumenten gefunden.", "NOT_FOUND");
 		return this.addExternalTemplate(n.filePath, "anschreiben", t || n.name);
 	}
 	async copyExistingTemplateById(e, t) {
 		let n = await this.requireTemplate(e);
-		if (n.source !== "existing-document") throw new Hc("Nur eigene Anschreiben können zu Muster hinzugefügt werden.", "INVALID_PATH");
+		if (n.source !== "existing-document") throw new Gc("Nur eigene Anschreiben können zu Muster hinzugefügt werden.", "INVALID_PATH");
 		return this.copyExistingDocumentToTemplates(n.filePath, t);
 	}
 	async duplicateTemplate(t) {
-		let r = await this.requireTemplate(t), i = await Kc(r.source === "existing-document" ? this.paths.anschreibenDocuments : e.dirname(r.filePath), `${e.basename(r.fileName, r.extension)}_Kopie`, r.extension);
-		return await Tu(() => n(r.filePath, i)), r.source !== "existing-document" && await this.repository.writeMetadata(i, {
+		let r = await this.requireTemplate(t), i = await Yc(r.source === "existing-document" ? this.paths.anschreibenDocuments : e.dirname(r.filePath), `${e.basename(r.fileName, r.extension)}_Kopie`, r.extension);
+		return await Ou(() => n(r.filePath, i)), r.source !== "existing-document" && await this.repository.writeMetadata(i, {
 			...await this.repository.readMetadata(r.filePath),
 			id: void 0,
 			name: `${r.name} Kopie`,
 			source: "muster-folder",
-			sortOrder: Tc,
+			sortOrder: Oc,
 			isSystemTemplate: !1,
 			isProtected: !1
 		}), await this.repository.refresh(), this.repository.list().find((e) => e.filePath === i) ?? null;
 	}
 	async createDocumentFromTemplate(t, n, i, a, o = {}) {
 		let s = await this.requireTemplate(t);
-		if (!Su(e.join(this.paths.dataRoot, "Bewerbungen"), n)) throw new Hc("Ungültiger Zielordner.", "INVALID_PATH");
-		let c = s, l, u = s.id === Dc.id ? Dc : s.id === Oc.id ? Oc : s.id === jc.id ? jc : s.id === Mc.id ? Mc : s.id === Nc.id ? Nc : s.id === Pc.id ? Pc : s.id === Fc.id ? Fc : s.id === kc.id ? kc : void 0;
+		if (!Tu(e.join(this.paths.dataRoot, "Bewerbungen"), n)) throw new Gc("Ungültiger Zielordner.", "INVALID_PATH");
+		let c = s, l, u = s.id === Ac.id ? Ac : s.id === jc.id ? jc : s.id === Pc.id ? Pc : s.id === Fc.id ? Fc : s.id === Ic.id ? Ic : s.id === Lc.id ? Lc : s.id === Rc.id ? Rc : s.id === Mc.id ? Mc : void 0;
 		if (u && o.atsMode) {
 			let t = e.join(this.paths.systemTemplateCache, u.atsFileName);
 			try {
-				await wu(this.paths, t), c = {
+				await Du(this.paths, t), c = {
 					...s,
 					filePath: t
 				};
@@ -18158,8 +18283,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 				l = `Die ATS-Variante war nicht verfügbar. Die Standardvorlage „${u.name}“ wurde verwendet.`;
 			}
 		}
-		await wu(this.paths, c.filePath), await r(n, { recursive: !0 });
-		let d = s.extension === ".doc" ? ".doc" : ".docx", f = await Kc(n, `${Wc(u ? `Lebenslauf_${a.VORNAME ?? ""}_${a.NACHNAME ?? ""}` : i)}_${Gc()}`, d), p = await Tu(() => this.placeholderService.createDocument(c, f, a)), m = Object.entries(a).filter(([e]) => /^(ZUSAMMENFASSUNG|BESCHREIBUNG_\d+|ERFOLG_\d+_\d+|ERFOLG_HIGHLIGHT_\d+_(?:TITEL|BESCHREIBUNG)|STAERKE_\d+_BESCHREIBUNG|KENNTNIS_EINTRAEGE_\d+)$/.test(e)).reduce((e, [, t]) => e + t.trim().length, 0), h = Array.from({ length: 8 }, (e, t) => a[`POSITION_${t + 1}`]?.trim() ?? "").filter(Boolean).length, g = s.id === jc.id && !o.atsMode && (m > 3200 || h > 4) ? "Der Inhalt passt möglicherweise nicht vollständig auf eine Seite. Bitte kürzen Sie einzelne Beschreibungen oder erlauben Sie eine zweite Seite." : void 0, _ = s.id === Nc.id && !o.atsMode && (m > 3700 || h > 5) ? "Der Inhalt passt nicht vollständig auf eine Seite. Bitte kürzen Sie einzelne Beschreibungen oder erlauben Sie eine zweite Seite." : void 0, v = s.id === Nc.id && (a.ZUSAMMENFASSUNG?.trim().length ?? 0) > 600 ? "Die Zusammenfassung überschreitet die empfohlenen 600 Zeichen." : void 0, y = (e) => e.toLocaleLowerCase("de-DE").replace(/[^\p{L}\p{N}]+/gu, " ").trim(), b = new Set(Object.entries(a).filter(([e, t]) => /^ERFOLG_\d+_\d+$/.test(e) && !!t.trim()).map(([, e]) => y(e))), x = s.id === Nc.id && Object.entries(a).filter(([e, t]) => /^ERFOLG_HIGHLIGHT_\d+_BESCHREIBUNG$/.test(e) && !!t.trim()).some(([, e]) => b.has(y(e))) ? "Ein hervorgehobener Erfolg wird bereits in der Berufserfahrung verwendet." : void 0, S = [
+		await Du(this.paths, c.filePath), await r(n, { recursive: !0 });
+		let d = s.extension === ".doc" ? ".doc" : ".docx", f = await Yc(n, `${qc(u ? `Lebenslauf_${a.VORNAME ?? ""}_${a.NACHNAME ?? ""}` : i)}_${Jc()}`, d), p = await Ou(() => this.placeholderService.createDocument(c, f, a)), m = Object.entries(a).filter(([e]) => /^(ZUSAMMENFASSUNG|BESCHREIBUNG_\d+|ERFOLG_\d+_\d+|ERFOLG_HIGHLIGHT_\d+_(?:TITEL|BESCHREIBUNG)|STAERKE_\d+_BESCHREIBUNG|KENNTNIS_EINTRAEGE_\d+)$/.test(e)).reduce((e, [, t]) => e + t.trim().length, 0), h = Array.from({ length: 8 }, (e, t) => a[`POSITION_${t + 1}`]?.trim() ?? "").filter(Boolean).length, g = s.id === Pc.id && !o.atsMode && (m > 3200 || h > 4) ? "Der Inhalt passt möglicherweise nicht vollständig auf eine Seite. Bitte kürzen Sie einzelne Beschreibungen oder erlauben Sie eine zweite Seite." : void 0, _ = s.id === Ic.id && !o.atsMode && (m > 3700 || h > 5) ? "Der Inhalt passt nicht vollständig auf eine Seite. Bitte kürzen Sie einzelne Beschreibungen oder erlauben Sie eine zweite Seite." : void 0, v = s.id === Ic.id && (a.ZUSAMMENFASSUNG?.trim().length ?? 0) > 600 ? "Die Zusammenfassung überschreitet die empfohlenen 600 Zeichen." : void 0, y = (e) => e.toLocaleLowerCase("de-DE").replace(/[^\p{L}\p{N}]+/gu, " ").trim(), b = new Set(Object.entries(a).filter(([e, t]) => /^ERFOLG_\d+_\d+$/.test(e) && !!t.trim()).map(([, e]) => y(e))), x = s.id === Ic.id && Object.entries(a).filter(([e, t]) => /^ERFOLG_HIGHLIGHT_\d+_BESCHREIBUNG$/.test(e) && !!t.trim()).some(([, e]) => b.has(y(e))) ? "Ein hervorgehobener Erfolg wird bereits in der Berufserfahrung verwendet." : void 0, S = [
 			l,
 			g,
 			_,
@@ -18177,23 +18302,23 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 	}
 	async deleteCustomTemplate(e) {
 		let t = await this.requireTemplate(e);
-		if (t.isProtected) throw new Hc("Diese Word-Vorlage ist geschützt und kann nicht gelöscht werden.", "PROTECTED_TEMPLATE");
-		if (t.isSystemTemplate) throw new Hc("Systemvorlagen können nicht gelöscht werden.", "SYSTEM_TEMPLATE");
-		if (t.source !== "muster-folder") throw new Hc("Eigene Dokumente werden an dieser Stelle nicht gelöscht.", "INVALID_PATH");
-		return await c(t.filePath), await c(Eu(t.filePath), { force: !0 }), this.repository.refresh();
+		if (t.isProtected) throw new Gc("Diese Word-Vorlage ist geschützt und kann nicht gelöscht werden.", "PROTECTED_TEMPLATE");
+		if (t.isSystemTemplate) throw new Gc("Systemvorlagen können nicht gelöscht werden.", "SYSTEM_TEMPLATE");
+		if (t.source !== "muster-folder") throw new Gc("Eigene Dokumente werden an dieser Stelle nicht gelöscht.", "INVALID_PATH");
+		return await c(t.filePath), await c(ku(t.filePath), { force: !0 }), this.repository.refresh();
 	}
 	async generateTemplatePreview(e) {
 		return (await this.requireTemplate(e)).previewDataUrl ?? null;
 	}
 	async requireTemplate(e) {
 		let t = await this.repository.getById(e);
-		if (!t) throw new Hc("Vorlage wurde nicht gefunden.", "NOT_FOUND");
+		if (!t) throw new Gc("Vorlage wurde nicht gefunden.", "NOT_FOUND");
 		return t;
 	}
-}, Pu = null, Fu, Iu, Lu = /* @__PURE__ */ new Set(), Ru = "de.bewerbungsmanager.desktop", zu = d(import.meta.url), Bu = e.dirname(zu), Vu = !!process.env.VITE_DEV_SERVER_URL;
-process.platform === "win32" && h.setAppUserModelId(Ru);
-var Hu = async () => {
-	Pu = new p({
+}, Lu = null, Ru, zu, Bu = /* @__PURE__ */ new Set(), Vu = "de.bewerbungsmanager.desktop", Hu = d(import.meta.url), Uu = e.dirname(Hu), Wu = !!process.env.VITE_DEV_SERVER_URL;
+process.platform === "win32" && h.setAppUserModelId(Vu);
+var Gu = async () => {
+	Lu = new p({
 		width: 1480,
 		height: 940,
 		minWidth: 1060,
@@ -18202,27 +18327,27 @@ var Hu = async () => {
 		backgroundColor: "#f3f1ec",
 		titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "default",
 		webPreferences: {
-			preload: e.join(Bu, "preload.mjs"),
+			preload: e.join(Uu, "preload.mjs"),
 			contextIsolation: !0,
 			nodeIntegration: !1,
 			sandbox: !0,
 			webSecurity: !0
 		}
-	}), Pu.webContents.setWindowOpenHandler(({ url: e }) => (/^https?:\/\//i.test(e) && y.openExternal(e), { action: "deny" })), Pu.webContents.on("will-navigate", (t, n) => {
-		(Vu ? n.startsWith(process.env.VITE_DEV_SERVER_URL) : n.startsWith(f(e.join(Bu, "../dist/index.html")).toString())) || t.preventDefault();
-	}), Pu.once("ready-to-show", () => Pu?.show()), Vu ? await Pu.loadURL(process.env.VITE_DEV_SERVER_URL) : await Pu.loadFile(e.join(Bu, "../dist/index.html"));
-}, Uu = () => {
-	_.handle("workspace:get", () => Fu.getWorkspace()), _.handle("applications:create", (e, t) => Fu.createApplication(is.parse(t))), _.handle("applications:save", (e, t) => Fu.saveApplication(rs.parse(t))), _.handle("applications:remove", (e, t) => Fu.removeApplication(String(t))), _.handle("applications:duplicate", (e, t) => Fu.duplicateApplication(String(t))), _.handle("applications:change-status", (e, t, n, r) => {
+	}), Lu.webContents.setWindowOpenHandler(({ url: e }) => (/^https?:\/\//i.test(e) && y.openExternal(e), { action: "deny" })), Lu.webContents.on("will-navigate", (t, n) => {
+		(Wu ? n.startsWith(process.env.VITE_DEV_SERVER_URL) : n.startsWith(f(e.join(Uu, "../dist/index.html")).toString())) || t.preventDefault();
+	}), Lu.once("ready-to-show", () => Lu?.show()), Wu ? await Lu.loadURL(process.env.VITE_DEV_SERVER_URL) : await Lu.loadFile(e.join(Uu, "../dist/index.html"));
+}, Ku = () => {
+	_.handle("workspace:get", () => Ru.getWorkspace()), _.handle("applications:create", (e, t) => Ru.createApplication(is.parse(t))), _.handle("applications:save", (e, t) => Ru.saveApplication(rs.parse(t))), _.handle("applications:remove", (e, t) => Ru.removeApplication(String(t))), _.handle("applications:duplicate", (e, t) => Ru.duplicateApplication(String(t))), _.handle("applications:change-status", (e, t, n, r) => {
 		let i = Uo.find((e) => e === n), a = Wo.find((e) => e === r);
 		if (!i) throw Error("Ungültiger Bewerbungsstatus.");
-		return Fu.changeStatus(String(t), i, a);
+		return Ru.changeStatus(String(t), i, a);
 	}), _.handle("applications:open-folder", async (e, t) => {
-		let n = await y.openPath(Fu.getApplicationPath(String(t)));
+		let n = await y.openPath(Ru.getApplicationPath(String(t)));
 		if (n) throw Error(n);
-	}), _.handle("profiles:save", (e, t) => Fu.saveProfile(as.parse(t))), _.handle("templates:scan", () => Iu.scanAllTemplates()), _.handle("templates:add", async (e, t) => {
+	}), _.handle("profiles:save", (e, t) => Ru.saveProfile(as.parse(t))), _.handle("templates:scan", () => zu.scanAllTemplates()), _.handle("templates:add", async (e, t) => {
 		let n = t ?? {};
 		if (n.documentType !== "anschreiben" && n.documentType !== "deckblatt" && n.documentType !== "lebenslauf") throw Error("Ungültiger Dokumenttyp.");
-		let r = await g.showOpenDialog(Pu, {
+		let r = await g.showOpenDialog(Lu, {
 			title: "Word-Vorlage hinzufügen",
 			properties: ["openFile"],
 			filters: [{
@@ -18234,33 +18359,33 @@ var Hu = async () => {
 				]
 			}]
 		}), i = r.filePaths[0];
-		return r.canceled || !i ? null : Iu.addExternalTemplate(i, n.documentType, typeof n.requestedName == "string" ? n.requestedName : void 0);
+		return r.canceled || !i ? null : zu.addExternalTemplate(i, n.documentType, typeof n.requestedName == "string" ? n.requestedName : void 0);
 	}), _.handle("templates:use", async (e, t) => {
 		let n = t ?? {};
 		if (!n.templateId || !n.applicationId) throw Error("Vorlage und Bewerbung sind erforderlich.");
-		let r = await Iu.getTemplateById(n.templateId);
+		let r = await zu.getTemplateById(n.templateId);
 		if (!r) throw Error("Vorlage wurde nicht gefunden.");
-		let i = Fu.getTemplateDocumentContext(n.applicationId);
+		let i = Ru.getTemplateDocumentContext(n.applicationId);
 		if (r.supportsPhoto && i.data.PROFILFOTO) {
 			let e = v.createFromDataURL(i.data.PROFILFOTO);
 			i.data.PROFILFOTO = e.isEmpty() ? "" : `data:image/png;base64,${e.toPNG().toString("base64")}`;
 		}
-		let a = await Iu.createDocumentFromTemplate(r.id, i.targetDirectories[r.documentType], i.requestedBaseName, i.data, { atsMode: n.atsMode === !0 }), o = await y.openPath(a.filePath);
+		let a = await zu.createDocumentFromTemplate(r.id, i.targetDirectories[r.documentType], i.requestedBaseName, i.data, { atsMode: n.atsMode === !0 }), o = await y.openPath(a.filePath);
 		if (o) throw Error(o);
 		return a;
-	}), _.handle("templates:duplicate", (e, t) => Iu.duplicateTemplate(String(t))), _.handle("templates:copy-to-muster", (e, t) => Iu.copyExistingTemplateById(String(t))), _.handle("templates:toggle-favorite", (e, t) => Iu.toggleTemplateFavorite(String(t))), _.handle("templates:remove", (e, t) => Iu.deleteCustomTemplate(String(t))), _.handle("templates:open", async (e, t) => {
-		let n = await Iu.getTemplateById(String(t));
+	}), _.handle("templates:duplicate", (e, t) => zu.duplicateTemplate(String(t))), _.handle("templates:copy-to-muster", (e, t) => zu.copyExistingTemplateById(String(t))), _.handle("templates:toggle-favorite", (e, t) => zu.toggleTemplateFavorite(String(t))), _.handle("templates:remove", (e, t) => zu.deleteCustomTemplate(String(t))), _.handle("templates:open", async (e, t) => {
+		let n = await zu.getTemplateById(String(t));
 		if (!n) throw Error("Vorlage wurde nicht gefunden.");
 		let r = await y.openPath(n.filePath);
 		if (r) throw Error(r);
 	}), _.handle("templates:open-folder", async (e, t) => {
-		let n = await Iu.getTemplateById(String(t));
+		let n = await zu.getTemplateById(String(t));
 		if (!n) throw Error("Vorlage wurde nicht gefunden.");
 		y.showItemInFolder(n.filePath);
 	}), _.handle("media:pick-profile-image", async (e, t) => {
 		let n = t === "photo" || t === "signature" ? t : null;
 		if (!n) throw Error("Ungültiger Bildtyp.");
-		let r = await g.showOpenDialog(Pu, {
+		let r = await g.showOpenDialog(Lu, {
 			title: n === "photo" ? "Bewerbungsfoto auswählen" : "Unterschrift auswählen",
 			properties: ["openFile"],
 			filters: [{
@@ -18281,10 +18406,10 @@ var Hu = async () => {
 			dataUrl: `data:${s === "png" ? "image/png" : s === "webp" ? "image/webp" : "image/jpeg"};base64,${o.toString("base64")}`,
 			fileName: i.split(/[\\/]/).pop() ?? "Bild"
 		};
-	}), _.handle("settings:save", (e, t) => Fu.saveSettings(cs.parse(t))), _.handle("events:save", (e, t) => Fu.saveEvent(os.parse(t))), _.handle("attachments:add", async (e, t, n) => {
+	}), _.handle("settings:save", (e, t) => Ru.saveSettings(cs.parse(t))), _.handle("events:save", (e, t) => Ru.saveEvent(os.parse(t))), _.handle("attachments:add", async (e, t, n) => {
 		let r = qo.find((e) => e === n);
 		if (!r) throw Error("Ungültige Dokumentkategorie.");
-		let i = await g.showOpenDialog(Pu, {
+		let i = await g.showOpenDialog(Lu, {
 			title: `${r} hinzufügen`,
 			properties: ["openFile"],
 			filters: [{
@@ -18292,13 +18417,13 @@ var Hu = async () => {
 				extensions: ["pdf"]
 			}]
 		});
-		return i.canceled || !i.filePaths[0] ? Fu.getWorkspace() : Fu.addAttachment(String(t), r, i.filePaths[0]);
-	}), _.handle("attachments:save", (e, t) => Fu.saveAttachment(ss.parse(t))), _.handle("attachments:move", (e, t, n) => {
+		return i.canceled || !i.filePaths[0] ? Ru.getWorkspace() : Ru.addAttachment(String(t), r, i.filePaths[0]);
+	}), _.handle("attachments:save", (e, t) => Ru.saveAttachment(ss.parse(t))), _.handle("attachments:move", (e, t, n) => {
 		let r = Number(n);
 		if (r !== -1 && r !== 1) throw Error("Ungültige Sortierrichtung.");
-		return Fu.moveAttachment(String(t), r);
-	}), _.handle("attachments:remove", (e, t) => Fu.removeAttachment(String(t))), _.handle("attachments:open", async (e, t) => {
-		let n = await y.openPath(Fu.getAttachmentPathById(String(t)));
+		return Ru.moveAttachment(String(t), r);
+	}), _.handle("attachments:remove", (e, t) => Ru.removeAttachment(String(t))), _.handle("attachments:open", async (e, t) => {
+		let n = await y.openPath(Ru.getAttachmentPathById(String(t)));
 		if (n) throw Error(n);
 	}), _.handle("export:pdf", async (e, t, n, r) => {
 		let i = [
@@ -18310,9 +18435,9 @@ var Hu = async () => {
 		if (!i) throw Error("Ungültiges Exportziel.");
 		let o = String(t), s = r === void 0 ? void 0 : rs.parse(r);
 		if (s && s.id !== o) throw Error("Die Exportdaten gehören nicht zur ausgewählten Bewerbung.");
-		let c = await g.showSaveDialog(Pu, {
+		let c = await g.showSaveDialog(Lu, {
 			title: "PDF exportieren",
-			defaultPath: Fu.getExportDefaultName(o, i),
+			defaultPath: Ru.getExportDefaultName(o, i),
 			filters: [{
 				name: "PDF",
 				extensions: ["pdf"]
@@ -18328,7 +18453,7 @@ var Hu = async () => {
 			}
 		});
 		try {
-			let e = Fu.getExportHtml(o, i, s);
+			let e = Ru.getExportHtml(o, i, s);
 			await l.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(e)}`);
 			let t = await l.webContents.printToPDF({
 				pageSize: "A4",
@@ -18340,7 +18465,7 @@ var Hu = async () => {
 					bottom: 0,
 					left: 0
 				}
-			}), n = i === "mappe" ? await Sc(t, await Promise.all(Fu.getPackageAttachmentPaths(o).map(async (e) => ({
+			}), n = i === "mappe" ? await Tc(t, await Promise.all(Ru.getPackageAttachmentPaths(o).map(async (e) => ({
 				fileName: e.fileName,
 				bytes: await a(e.path)
 			})))) : t;
@@ -18349,7 +18474,7 @@ var Hu = async () => {
 			l.destroy();
 		}
 	}), _.handle("export:backup", async () => {
-		let e = await g.showSaveDialog(Pu, {
+		let e = await g.showSaveDialog(Lu, {
 			title: "JSON-Sicherung exportieren",
 			defaultPath: `BewerbungsManager_Backup_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.json`,
 			filters: [{
@@ -18357,9 +18482,9 @@ var Hu = async () => {
 				extensions: ["json"]
 			}]
 		});
-		return e.canceled || !e.filePath ? null : (await Fu.writeBackup(e.filePath), e.filePath);
+		return e.canceled || !e.filePath ? null : (await Ru.writeBackup(e.filePath), e.filePath);
 	}), _.handle("export:import-backup", async () => {
-		let e = await g.showOpenDialog(Pu, {
+		let e = await g.showOpenDialog(Lu, {
 			title: "JSON-Sicherung wiederherstellen",
 			properties: ["openFile"],
 			filters: [{
@@ -18367,9 +18492,9 @@ var Hu = async () => {
 				extensions: ["json"]
 			}]
 		});
-		return e.canceled || !e.filePaths[0] ? null : Fu.importBackup(e.filePaths[0]);
+		return e.canceled || !e.filePaths[0] ? null : Ru.importBackup(e.filePaths[0]);
 	}), _.handle("export:settings", async () => {
-		let e = await g.showSaveDialog(Pu, {
+		let e = await g.showSaveDialog(Lu, {
 			title: "Einstellungen exportieren",
 			defaultPath: "BewerbungsManager_Einstellungen.json",
 			filters: [{
@@ -18377,9 +18502,9 @@ var Hu = async () => {
 				extensions: ["json"]
 			}]
 		});
-		return e.canceled || !e.filePath ? null : (await Fu.writeSettings(e.filePath), e.filePath);
+		return e.canceled || !e.filePath ? null : (await Ru.writeSettings(e.filePath), e.filePath);
 	}), _.handle("export:import-settings", async () => {
-		let e = await g.showOpenDialog(Pu, {
+		let e = await g.showOpenDialog(Lu, {
 			title: "Einstellungen importieren",
 			properties: ["openFile"],
 			filters: [{
@@ -18387,14 +18512,14 @@ var Hu = async () => {
 				extensions: ["json"]
 			}]
 		});
-		return e.canceled || !e.filePaths[0] ? null : Fu.importSettings(e.filePaths[0]);
+		return e.canceled || !e.filePaths[0] ? null : Ru.importSettings(e.filePaths[0]);
 	}), _.handle("system:open-external", async (e, t) => {
 		let n = new URL(String(t));
 		if (!["http:", "https:"].includes(n.protocol)) throw Error("Nur HTTP- und HTTPS-Links sind erlaubt.");
 		await y.openExternal(n.toString());
-	}), _.handle("system:data-path", () => Fu.dataPath);
-}, Wu = () => {
-	let e = Fu.getWorkspace();
+	}), _.handle("system:data-path", () => Ru.dataPath);
+}, qu = () => {
+	let e = Ru.getWorkspace();
 	if (!e.settings.notificationsEnabled || !m.isSupported()) return;
 	let t = Date.now();
 	e.events.filter((e) => !e.cancelled && !e.completed).forEach((e) => {
@@ -18402,15 +18527,15 @@ var Hu = async () => {
 			let r = n - e * 6e4;
 			return r <= t && r > t - 65e3;
 		}), i = `${e.id}:${Math.floor(t / 6e4)}`;
-		r && !Lu.has(i) && (Lu.add(i), new m({
+		r && !Bu.has(i) && (Bu.add(i), new m({
 			title: "BewerbungsManager",
 			body: e.title
 		}).show());
 	});
 };
 h.whenReady().then(async () => {
-	Fu = new bc(h.getPath("documents")), await Fu.initialize(), Iu = new Nu(ds(h.getPath("documents"), e.join(Bu, Vu ? "../public/templates" : "../dist/templates"))), await Iu.initialize(), Uu(), await Hu(), Wu(), setInterval(Wu, 6e4).unref(), h.on("activate", () => {
-		p.getAllWindows().length === 0 && Hu();
+	Ru = new Cc(h.getPath("documents")), await Ru.initialize(), zu = new Iu(ds(h.getPath("documents"), e.join(Uu, Wu ? "../public/templates" : "../dist/templates"))), await zu.initialize(), Ku(), await Gu(), qu(), setInterval(qu, 6e4).unref(), h.on("activate", () => {
+		p.getAllWindows().length === 0 && Gu();
 	});
 }), h.on("window-all-closed", () => {
 	process.platform !== "darwin" && h.quit();

@@ -588,6 +588,29 @@ describe("Lebenslauf-Dokumente", () => {
     const mediaProfile = profileSchema.parse({
       ...profile,
       photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      experiences: Array.from({ length: 3 }, (_, index) => ({
+        id: crypto.randomUUID(),
+        from: `01/202${index}`,
+        to: `12/202${index}`,
+        role: `Softwareentwicklerin ${index + 1}`,
+        company: `Beispielunternehmen ${index + 1}`,
+        city: "Berlin",
+        achievements: [
+          "Automatisierte Abläufe entwickelt und zuverlässig eingeführt.",
+          "Qualität und Bearbeitungszeit messbar verbessert.",
+          "Technische Ergebnisse nachvollziehbar dokumentiert.",
+        ],
+      })),
+      education: [
+        {
+          id: crypto.randomUUID(),
+          from: "10/2016",
+          to: "09/2020",
+          degree: "B.Sc. Informatik",
+          institution: "Technische Universität Berlin",
+          city: "Berlin",
+        },
+      ],
     });
 
     const html = buildDocumentHtml(
@@ -603,6 +626,8 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).toContain("kreativ-pdf-background");
     expect(body).toContain('<main class="kreativ-pdf-left">');
     expect(body).toContain('<aside class="kreativ-pdf-right">');
+    expect(body.match(/data-resume-page=/g)).toHaveLength(1);
+    expect(body).toContain('data-density="standard"');
     expect(body).toContain("Zusammenfassung");
     expect(body).toContain("Erfahrung");
     expect(body).toContain("Fähigkeiten");
@@ -1208,5 +1233,99 @@ describe("Lebenslauf-Dokumente", () => {
     );
 
     expect(html.match(/data-resume-page="/g)).toHaveLength(1);
+  });
+
+  it("renders the Tabellarisch PDF as a one-column timeline with strengths", () => {
+    const tabellarischApplication = applicationSchema.parse({
+      ...application,
+      templateId: "tabellarisch",
+      accentColor: "#C78300",
+      secondaryColor: "#17263D",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "timeline",
+        resumeOutputMode: "visual",
+        backgroundId: "white",
+      },
+    });
+    const timelineProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      linkedin: "linkedin.com/in/mina-kaya",
+      birthDate: "01.03.1990",
+      birthPlace: "Berlin",
+      experiences: Array.from({ length: 3 }, (_, index) => ({
+        id: crypto.randomUUID(),
+        from: `${2012 + index * 4}`,
+        to: `${2016 + index * 4}`,
+        role: `Projektrolle ${index + 1}`,
+        company: `Unternehmen ${index + 1}`,
+        city: "Berlin",
+        achievements: Array.from(
+          { length: 3 },
+          (_, achievementIndex) =>
+            `Messbares Projektergebnis ${achievementIndex + 1} erfolgreich erreicht.`,
+        ),
+      })),
+      education: Array.from({ length: 3 }, (_, index) => ({
+        id: crypto.randomUUID(),
+        from: `${2006 + index * 2}`,
+        to: `${2008 + index * 2}`,
+        degree: `Abschluss ${index + 1}`,
+        institution: `Hochschule ${index + 1}`,
+        city: "Berlin",
+      })),
+    });
+    const html = buildDocumentHtml(
+      tabellarischApplication,
+      timelineProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body.match(/data-resume-page="/g)).toHaveLength(1);
+    expect(body).toContain('data-template="tabellarisch"');
+    expect(body).toContain('data-no-fit="true"');
+    expect(body).toContain("tabellarisch-pdf-background");
+    expect(body).toContain("tabellarisch-pdf-strengths");
+    expect(body).toContain("tabellarisch-pdf-timeline");
+    expect(body).toContain('<img class="tabellarisch-pdf-photo"');
+    expect(body.indexOf(">Zusammenfassung<")).toBeLessThan(
+      body.indexOf(">Stärken<"),
+    );
+    expect(body.indexOf(">Stärken<")).toBeLessThan(
+      body.indexOf(">Erfahrung<"),
+    );
+    expect(body).not.toContain("column-timeline");
+  });
+
+  it("renders Tabellarisch ATS without photo, geometry, or timeline rail", () => {
+    const tabellarischApplication = applicationSchema.parse({
+      ...application,
+      templateId: "tabellarisch",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "compact-ats",
+        resumeOutputMode: "ats",
+      },
+    });
+    const mediaProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+    });
+    const html = buildDocumentHtml(
+      tabellarischApplication,
+      mediaProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain("tabellarisch-pdf-ats");
+    expect(body).not.toContain("tabellarisch-pdf-background");
+    expect(body).not.toContain("tabellarisch-pdf-rail");
+    expect(body).not.toContain("<img");
+    expect(body.indexOf("Zusammenfassung")).toBeLessThan(
+      body.indexOf("Erfahrung"),
+    );
   });
 });

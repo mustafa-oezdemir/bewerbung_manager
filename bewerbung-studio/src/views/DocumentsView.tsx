@@ -37,6 +37,7 @@ import {
   kompaktPaginationOptions,
   kreativPaginationOptions,
   modernPaginationOptions,
+  tabellarischPaginationOptions,
   type ResumePagePlan,
   zweispaltigPaginationOptions,
 } from "../shared/documentPagination";
@@ -370,6 +371,8 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
         ? kompaktPaginationOptions
         : template.id === "kreativ"
           ? kreativPaginationOptions
+          : template.id === "tabellarisch"
+            ? tabellarischPaginationOptions
           : template.id === "modern"
             ? modernPaginationOptions
             : undefined,

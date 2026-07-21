@@ -12,7 +12,7 @@ export function TabellarischSummary({ text }: TabellarischSummaryProps) {
       className="tabellarisch-section tabellarisch-summary"
       data-element-id="tabellarisch.summary"
     >
-      <h2 className="tabellarisch-section__title">Kurzprofil</h2>
+      <h2 className="tabellarisch-section__title">Zusammenfassung</h2>
       <p className="tabellarisch-summary__text">{text}</p>
     </section>
   );

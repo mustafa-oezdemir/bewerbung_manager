@@ -88,8 +88,8 @@ export const templates: TemplateDefinition[] = [
     name: "Zweispaltig",
     description:
       "Kostenlose, zweispaltige Lebenslauf-Vorlage. Perfekt für jede Branche.",
-    accent: "#165DAA",
-    secondary: "#EAF2FA",
+    accent: "#0B3D86",
+    secondary: "#58B5F7",
     font: "Source Sans 3",
     layout: "split-clean",
     features: ["Zwei klare Spalten", "A4-optimiert", "ATS-Variante"],
@@ -455,9 +455,14 @@ export const templates: TemplateDefinition[] = [
     supportsAtsMode: true,
     supportsPhoto: true,
     supportsFreeform: true,
+    supportsMultiplePages: true,
     atsInfo:
       "Tabellarisch-Template unterstützt ATS-Modus mit einspaltigem Layout und ausgeblendeten Designelementen wie Timeline-Grafiken.",
     designDefaults: {
+      marginLevel: 3,
+      sectionSpacingLevel: 3,
+      fontSize: "medium",
+      lineHeightLevel: 3,
       columnLayout: "timeline",
       resumeOutputMode: "visual",
       backgroundId: "white",

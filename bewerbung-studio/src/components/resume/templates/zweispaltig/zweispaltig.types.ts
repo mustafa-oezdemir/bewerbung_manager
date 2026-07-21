@@ -11,6 +11,13 @@ export type ZweispaltigCareerItem = {
   achievements?: string[];
 };
 
+export type ZweispaltigLanguage = {
+  raw: string;
+  name: string;
+  level: string;
+  score: number;
+};
+
 export type ZweispaltigResumeProps = {
   profile: ApplicantProfile | undefined;
   name: string;

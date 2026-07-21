@@ -1,10 +1,20 @@
-/**
- * Tabellarisch Template - Header Component
- */
-
-import type { ApplicantProfile } from "../../../../shared/schema";
+import {
+  CakeSlice,
+  Link,
+  Mail,
+  MapPin,
+  Phone,
+  type LucideIcon,
+} from "lucide-react";
 import { toExternalHref } from "./tabellarisch.model";
 import type { TabellarischHeaderProps } from "./tabellarisch.types";
+
+type HeaderContact = {
+  label: string;
+  value: string;
+  href: string;
+  Icon: LucideIcon;
+};
 
 export function TabellarischHeader({
   name,
@@ -12,9 +22,48 @@ export function TabellarischHeader({
   photoSource,
   atsMode,
 }: TabellarischHeaderProps) {
-  const expertise = Array.from(
-    new Set((profile?.skills ?? []).map((skill) => skill.trim()).filter(Boolean)),
-  ).slice(0, 3);
+  const location = [profile?.city, profile?.country]
+    .filter(Boolean)
+    .join(", ");
+  const birth = [profile?.birthDate, profile?.birthPlace]
+    .filter(Boolean)
+    .join(" in ");
+  const profileLink =
+    profile?.linkedin || profile?.portfolio || profile?.github || "";
+  const contacts: HeaderContact[] = [
+    {
+      label: "Telefon",
+      value: profile?.phone || "",
+      href: profile?.phone
+        ? `tel:${profile.phone.replace(/[^\d+]/g, "")}`
+        : "",
+      Icon: Phone,
+    },
+    {
+      label: "E-Mail",
+      value: profile?.email || "",
+      href: profile?.email ? `mailto:${profile.email}` : "",
+      Icon: Mail,
+    },
+    {
+      label: "Profil",
+      value: profileLink,
+      href: profileLink ? toExternalHref(profileLink) : "",
+      Icon: Link,
+    },
+    {
+      label: "Wohnort",
+      value: location,
+      href: "",
+      Icon: MapPin,
+    },
+    {
+      label: "Geboren",
+      value: birth,
+      href: "",
+      Icon: CakeSlice,
+    },
+  ].filter((contact) => contact.value.trim());
 
   return (
     <header
@@ -22,73 +71,46 @@ export function TabellarischHeader({
       data-element-id="tabellarisch.header"
     >
       <div className="tabellarisch-header__identity">
-        <p className="tabellarisch-header__kicker">Lebenslauf</p>
         <h1 className="tabellarisch-header__name">{name}</h1>
-
-        {profile?.title && (
-          <p className="tabellarisch-header__title">
-            {profile.title}
-          </p>
-        )}
-
-        {expertise.length > 0 && (
-          <p className="tabellarisch-header__expertise">
-            {expertise.join(" · ")}
-          </p>
-        )}
-
-        {(profile?.phone ||
-          profile?.email ||
-          profile?.linkedin ||
-          profile?.github ||
-          profile?.city) && (
+        {profile?.title ? (
+          <p className="tabellarisch-header__title">{profile.title}</p>
+        ) : null}
+        {contacts.length ? (
           <address className="tabellarisch-header__contacts">
-            {profile?.phone && (
-              <p className="tabellarisch-header__contact-item">
-                <strong>Telefon</strong>
-                <a href={`tel:${profile.phone.replace(/[^\d+]/g, "")}`}>
-                  {profile.phone}
+            {contacts.map(({ Icon, ...contact }) => {
+              const content = (
+                <>
+                  {!atsMode ? <Icon aria-hidden="true" /> : null}
+                  {atsMode ? <strong>{contact.label}:</strong> : null}
+                  <span>{contact.value}</span>
+                </>
+              );
+              return contact.href ? (
+                <a
+                  aria-label={`${contact.label}: ${contact.value}`}
+                  href={contact.href}
+                  key={contact.label}
+                >
+                  {content}
                 </a>
-              </p>
-            )}
-            {profile?.email && (
-              <p className="tabellarisch-header__contact-item">
-                <strong>E-Mail</strong>
-                <a href={`mailto:${profile.email}`}>{profile.email}</a>
-              </p>
-            )}
-            {profile?.linkedin && (
-              <p className="tabellarisch-header__contact-item">
-                <strong>LinkedIn</strong>
-                <a href={toExternalHref(profile.linkedin)}>
-                  {profile.linkedin}
-                </a>
-              </p>
-            )}
-            {profile?.github && (
-              <p className="tabellarisch-header__contact-item">
-                <strong>GitHub</strong>
-                <a href={toExternalHref(profile.github)}>{profile.github}</a>
-              </p>
-            )}
-            {profile?.city && (
-              <p className="tabellarisch-header__contact-item">
-                <strong>Ort</strong>
-                <span>
-                  {profile.city}
-                  {profile.country ? `, ${profile.country}` : ""}
+              ) : (
+                <span
+                  aria-label={`${contact.label}: ${contact.value}`}
+                  key={contact.label}
+                >
+                  {content}
                 </span>
-              </p>
-            )}
+              );
+            })}
           </address>
-        )}
+        ) : null}
       </div>
 
-      {photoSource && !atsMode && (
-        <div className="tabellarisch-header__photo">
+      {photoSource && !atsMode ? (
+        <figure className="tabellarisch-header__photo">
           <img src={photoSource} alt={`Bewerbungsfoto von ${name}`} />
-        </div>
-      )}
+        </figure>
+      ) : null}
     </header>
   );
 }

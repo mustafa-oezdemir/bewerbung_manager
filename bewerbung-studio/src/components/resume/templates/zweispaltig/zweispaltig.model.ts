@@ -1,6 +1,9 @@
 import type { ResumePagePlan } from "../../../../shared/documentPagination";
 import type { ApplicantProfile } from "../../../../shared/schema";
-import type { ZweispaltigCareerItem } from "./zweispaltig.types";
+import type {
+  ZweispaltigCareerItem,
+  ZweispaltigLanguage,
+} from "./zweispaltig.types";
 
 export type ZweispaltigPageData = {
   education: ZweispaltigCareerItem[];
@@ -80,3 +83,27 @@ export const toZweispaltigExternalHref = (value: string) => {
 
 export const uniqueZweispaltigValues = (values: string[]) =>
   Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
+
+const languageScore = (level: string) => {
+  const normalized = level.toLocaleLowerCase("de-DE");
+  if (/muttersprache|native|c2/.test(normalized)) return 5;
+  if (/verhandlung|fließ|fliess|c1/.test(normalized)) return 4;
+  if (/b2|fortgeschritten|versiert/.test(normalized)) return 3;
+  if (/b1|a2|grundkennt/.test(normalized)) return 2;
+  if (/a1|anfänger|anfaenger/.test(normalized)) return 1;
+  return 3;
+};
+
+export const parseZweispaltigLanguage = (
+  raw: string,
+): ZweispaltigLanguage => {
+  const normalized = raw.trim();
+  const [name, ...levelParts] = normalized.split(/\s+[–—-]\s+/);
+  const level = levelParts.join(" – ").trim();
+  return {
+    raw: normalized,
+    name: name.trim() || normalized,
+    level,
+    score: languageScore(level),
+  };
+};

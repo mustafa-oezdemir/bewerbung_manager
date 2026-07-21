@@ -5,7 +5,9 @@
 export { TabellarischResume } from "./TabellarischResume";
 export { TabellarischPage } from "./TabellarischPage";
 export { TabellarischHeader } from "./TabellarischHeader";
+export { TabellarischBackground } from "./TabellarischBackground";
 export { TabellarischSummary } from "./TabellarischSummary";
+export { TabellarischStrengths } from "./TabellarischStrengths";
 export { TabellarischKnowledge } from "./TabellarischKnowledge";
 export { TabellarischAdditionalSections } from "./TabellarischAdditionalSections";
 export { TabellarischTimeline } from "./TabellarischTimeline";
