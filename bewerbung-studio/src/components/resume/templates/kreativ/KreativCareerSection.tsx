@@ -1,3 +1,4 @@
+import { CalendarDays, MapPin } from "lucide-react";
 import { formatKreativDateRange } from "./kreativ.model";
 import type { KreativCareerSectionProps } from "./kreativ.types";
 import { KreativSectionHeading } from "./KreativSectionHeading";
@@ -27,8 +28,16 @@ export function KreativCareerSection({
             <h3>{item.title}</h3>
             <h4>{item.organization}</h4>
             <p className="kreativ-career-entry__meta">
-              <span>{formatKreativDateRange(item.from, item.to)}</span>
-              {item.city ? <span>{item.city}</span> : null}
+              <span>
+                <CalendarDays aria-hidden="true" />
+                {formatKreativDateRange(item.from, item.to)}
+              </span>
+              {item.city ? (
+                <span>
+                  <MapPin aria-hidden="true" />
+                  {item.city}
+                </span>
+              ) : null}
             </p>
             {item.achievements?.length ? (
               <ul>

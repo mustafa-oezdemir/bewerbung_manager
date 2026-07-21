@@ -9,12 +9,14 @@ import { constants as fsConstants } from "node:fs";
 import path from "node:path";
 import type { ApplicationPaths } from "../../src/config/application-paths";
 import {
+  einfachLebenslaufTemplateConfig,
   elegantLebenslaufTemplateConfig,
   ivyLeagueLebenslaufTemplateConfig,
   gepflegtLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   modernLebenslaufTemplateConfig,
+  stilvollLebenslaufTemplateConfig,
   zeitgenoessischLebenslaufTemplateConfig,
   wordMusterTemplateConfig,
 } from "../../src/features/templates/template.constants";
@@ -60,6 +62,8 @@ export class TemplateRepository {
     await this.ensureKreativLebenslaufTemplate();
     await this.ensureIvyLeagueLebenslaufTemplate();
     await this.ensureKompaktLebenslaufTemplate();
+    await this.ensureStilvollLebenslaufTemplate();
+    await this.ensureEinfachLebenslaufTemplate();
     await this.ensureElegantLebenslaufTemplate();
     await this.ensureGepflegtLebenslaufTemplate();
     await this.ensureModernLebenslaufTemplate();
@@ -302,6 +306,75 @@ export class TemplateRepository {
     );
     if (!available) return;
 
+    await this.copyBundledTemplateIfMissing(
+      config.atsFileName,
+      path.join(this.paths.systemTemplateCache, config.atsFileName),
+    );
+    await this.writeMetadata(targetPath, {
+      id: config.id,
+      name: config.name,
+      documentType: config.documentType,
+      format: config.format,
+      source: config.source,
+      sortOrder: config.sortOrder,
+      description: config.description,
+      tags: [...config.tags],
+      isSystemTemplate: config.isSystemTemplate,
+      supportsPreview: config.supportsPreview,
+      supportsPlaceholders: config.supportsPlaceholders,
+      editableInWord: config.editableInWord,
+      isProtected: config.isProtected,
+      category: config.category,
+      layout: config.layout,
+      atsFriendly: config.atsFriendly,
+      supportsPhoto: config.supportsPhoto,
+      supportsBackground: config.supportsBackground,
+      supportsAtsMode: config.supportsAtsMode,
+      emphasis: config.emphasis,
+    });
+  }
+
+  private async ensureStilvollLebenslaufTemplate() {
+    await this.ensureManagedResumeTemplate(stilvollLebenslaufTemplateConfig);
+  }
+
+  private async ensureEinfachLebenslaufTemplate() {
+    await this.ensureManagedResumeTemplate(einfachLebenslaufTemplateConfig);
+  }
+
+  private async ensureManagedResumeTemplate(config: {
+    id: string;
+    fileName: string;
+    atsFileName: string;
+    name: string;
+    documentType: "lebenslauf";
+    format: "docx";
+    source: "system-word-template";
+    sortOrder: number;
+    description: string;
+    tags: readonly string[];
+    isSystemTemplate: true;
+    supportsPreview: true;
+    supportsPlaceholders: true;
+    editableInWord: true;
+    isProtected: true;
+    category: string;
+    layout: string;
+    atsFriendly: true;
+    supportsPhoto: boolean;
+    supportsBackground: true;
+    supportsAtsMode: true;
+    emphasis: string;
+  }) {
+    const targetPath = path.join(
+      this.paths.lebenslaufTemplates,
+      config.fileName,
+    );
+    const available = await this.copyBundledTemplateIfMissing(
+      config.fileName,
+      targetPath,
+    );
+    if (!available) return;
     await this.copyBundledTemplateIfMissing(
       config.atsFileName,
       path.join(this.paths.systemTemplateCache, config.atsFileName),

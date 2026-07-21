@@ -3,17 +3,19 @@
  */
 
 import type { ApplicantProfile } from "../../../../shared/schema";
+import type { ResumePagePlan } from "../../../../shared/documentPagination";
 
 export interface ModernResumeProps {
   profile?: ApplicantProfile;
   name: string;
   atsMode: boolean;
-  pageNumber: number;
+  plan: ResumePagePlan;
   totalPages: number;
   accentColor: string;
   secondaryColor: string;
   photoSource?: string;
-  isContinuation?: boolean;
+  resumeProfile: string;
+  sections: ApplicantProfile["resumeSections"];
 }
 
 export interface ModernHeaderProps {
@@ -22,11 +24,13 @@ export interface ModernHeaderProps {
   accentColor: string;
   photoSource?: string;
   atsMode: boolean;
+  compact?: boolean;
 }
 
 export interface ModernLeftColumnProps {
   profile?: ApplicantProfile;
   atsMode: boolean;
+  showSummary?: boolean;
 }
 
 export interface ModernRightColumnProps {
@@ -39,6 +43,7 @@ export interface ModernContactSectionProps {
   profile?: ApplicantProfile;
   accentColor: string;
   atsMode: boolean;
+  inline?: boolean;
 }
 
 export interface ModernSummarySectionProps {

@@ -321,6 +321,86 @@ export const kompaktLebenslaufTemplateConfig = {
   ],
 } as const;
 
+export const stilvollLebenslaufTemplateConfig = {
+  id: "word-lebenslauf-stilvoll",
+  fileName: "Stilvoll_Lebenslauf_Muster.docx",
+  atsFileName: "Stilvoll_Lebenslauf_ATS.docx",
+  previewFileName: "Stilvoll_Lebenslauf_Muster.preview.png",
+  name: "Stilvoll",
+  documentType: "lebenslauf",
+  format: "docx",
+  source: "system-word-template",
+  sortOrder: 10,
+  category: "modern-professional",
+  layout: "two-column-right-wide",
+  atsFriendly: true,
+  supportsPhoto: true,
+  supportsBackground: true,
+  supportsPlaceholders: true,
+  supportsPreview: true,
+  supportsAtsMode: true,
+  editableInWord: true,
+  isSystemTemplate: true,
+  isProtected: true,
+  emphasis: "skills-and-career",
+  description:
+    "Stilvolle Word-Lebenslaufvorlage mit kompakter linker Informationsspalte, breiter Karrierespalte und geometrischem Hintergrund.",
+  tags: [
+    "Stilvoll",
+    "Word",
+    "DOCX",
+    "Lebenslauf",
+    "ATS",
+    "Foto",
+    "Zweispaltig",
+    "Grün",
+  ],
+  cardHighlights: [
+    "Kompakte Profilspalte und breite Karrierespalte",
+    "Geometrisches Muster · Mit Foto · ATS-freundlich",
+  ],
+} as const;
+
+export const einfachLebenslaufTemplateConfig = {
+  id: "word-lebenslauf-einfach",
+  fileName: "Einfach_Lebenslauf_Muster.docx",
+  atsFileName: "Einfach_Lebenslauf_ATS.docx",
+  previewFileName: "Einfach_Lebenslauf_Muster.preview.png",
+  name: "Einfach",
+  documentType: "lebenslauf",
+  format: "docx",
+  source: "system-word-template",
+  sortOrder: 11,
+  category: "simple-professional",
+  layout: "single-column",
+  atsFriendly: true,
+  supportsPhoto: true,
+  supportsBackground: true,
+  supportsPlaceholders: true,
+  supportsPreview: true,
+  supportsAtsMode: true,
+  editableInWord: true,
+  isSystemTemplate: true,
+  isProtected: true,
+  emphasis: "simple-ats",
+  description:
+    "Einfache einspaltige Word-Lebenslaufvorlage mit klarer blauer Hierarchie und separater ATS-Ausgabe.",
+  tags: [
+    "Einfach",
+    "Word",
+    "DOCX",
+    "Lebenslauf",
+    "ATS",
+    "Foto",
+    "Einspaltig",
+    "Blau",
+  ],
+  cardHighlights: [
+    "Klare Einspaltenstruktur mit kräftigen Abschnittslinien",
+    "Mit Foto · Geometrisches Dekor · ATS-freundlich",
+  ],
+} as const;
+
 const coreTemplatePlaceholderKeys = [
   "BEWERBER_NAME",
   "BEWERBER_VORNAME",
@@ -477,7 +557,7 @@ export const elegantTemplatePlaceholderKeys: readonly string[] = [
     { length: 3 },
     (_, offset) => `SPRACHE_${offset + 1}_PUNKTE`,
   ),
-  ...Array.from({ length: 3 }, (_, offset) => [
+  ...Array.from({ length: 4 }, (_, offset) => [
     `STAERKE_${offset + 1}_TITEL`,
     `STAERKE_${offset + 1}_BESCHREIBUNG`,
   ]).flat(),

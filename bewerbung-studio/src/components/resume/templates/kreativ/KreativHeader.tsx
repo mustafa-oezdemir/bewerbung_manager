@@ -1,5 +1,20 @@
+import {
+  CakeSlice,
+  Linkedin,
+  Mail,
+  MapPin,
+  Phone,
+  type LucideIcon,
+} from "lucide-react";
 import { toKreativExternalHref } from "./kreativ.model";
 import type { KreativHeaderProps } from "./kreativ.types";
+
+type KreativContact = {
+  label: string;
+  value: string | undefined;
+  href: string;
+  Icon: LucideIcon;
+};
 
 export function KreativHeader({
   profile,
@@ -14,18 +29,20 @@ export function KreativHeader({
   const birth = [profile?.birthDate, profile?.birthPlace]
     .filter(Boolean)
     .join(", ");
-  const contacts = [
+  const contacts: KreativContact[] = [
     {
       label: "Telefon",
       value: profile?.phone,
       href: profile?.phone
         ? `tel:${profile.phone.replace(/[^\d+]/g, "")}`
         : "",
+      Icon: Phone,
     },
     {
       label: "E-Mail",
       value: profile?.email,
       href: profile?.email ? `mailto:${profile.email}` : "",
+      Icon: Mail,
     },
     {
       label: "LinkedIn",
@@ -33,9 +50,20 @@ export function KreativHeader({
       href: profile?.linkedin
         ? toKreativExternalHref(profile.linkedin)
         : "",
+      Icon: Linkedin,
     },
-    { label: "Wohnort", value: location, href: "" },
-    { label: "Geboren", value: birth, href: "" },
+    {
+      label: "Wohnort",
+      value: location,
+      href: "",
+      Icon: MapPin,
+    },
+    {
+      label: "Geboren",
+      value: birth,
+      href: "",
+      Icon: CakeSlice,
+    },
   ].filter((contact) => contact.value?.trim());
 
   return (
@@ -53,19 +81,31 @@ export function KreativHeader({
         {profile?.title ? <h2>{profile.title}</h2> : null}
         {!compact && contacts.length ? (
           <address className="kreativ-header__contacts">
-            {contacts.map((contact) =>
-              contact.href ? (
-                <a href={contact.href} key={contact.label}>
-                  <strong>{contact.label}</strong>
+            {contacts.map(({ Icon, ...contact }) => {
+              const content = (
+                <>
+                  <Icon aria-hidden="true" />
                   <span>{contact.value}</span>
+                </>
+              );
+
+              return contact.href ? (
+                <a
+                  aria-label={`${contact.label}: ${contact.value}`}
+                  href={contact.href}
+                  key={contact.label}
+                >
+                  {content}
                 </a>
               ) : (
-                <span key={contact.label}>
-                  <strong>{contact.label}</strong>
-                  <span>{contact.value}</span>
+                <span
+                  aria-label={`${contact.label}: ${contact.value}`}
+                  key={contact.label}
+                >
+                  {content}
                 </span>
-              ),
-            )}
+              );
+            })}
           </address>
         ) : null}
       </div>

@@ -20,10 +20,13 @@ import { TemplateThumbnail } from "../components/TemplateThumbnail";
 import { KnowledgeSectionRenderer } from "../components/document/KnowledgeSectionRenderer";
 import { DocumentBackgroundLayer } from "../components/document/DocumentBackgroundLayer";
 import { ElegantResume } from "../components/resume/templates/elegant";
+import { EinfachResume } from "../components/resume/templates/einfach";
 import { GepflegtResume } from "../components/resume/templates/gepflegt";
+import { KompaktResume } from "../components/resume/templates/kompakt";
 import { KreativResume } from "../components/resume/templates/kreativ";
 import { IvyLeagueResume } from "../components/resume/templates/ivy-league";
 import { ModernResume } from "../components/resume/templates/modern";
+import { StilvollResume } from "../components/resume/templates/stilvoll";
 import { TabellarischResume } from "../components/resume/templates/tabellarisch";
 import { ZeitgenoessischResume } from "../components/resume/templates/zeitgenoessisch";
 import { ZweispaltigResume } from "../components/resume/templates/zweispaltig";
@@ -31,6 +34,9 @@ import { analyzeKeywordMatch } from "../lib/keywordMatch";
 import {
   createResumePagePlan,
   getLetterPageStatus,
+  kompaktPaginationOptions,
+  kreativPaginationOptions,
+  modernPaginationOptions,
   type ResumePagePlan,
   zweispaltigPaginationOptions,
 } from "../shared/documentPagination";
@@ -360,7 +366,13 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
     docs.resumeProfile,
     template.id === "zweispaltig"
       ? zweispaltigPaginationOptions
-      : undefined,
+      : template.id === "kompakt"
+        ? kompaktPaginationOptions
+        : template.id === "kreativ"
+          ? kreativPaginationOptions
+          : template.id === "modern"
+            ? modernPaginationOptions
+            : undefined,
   );
   const letterStatus = getLetterPageStatus(docs);
   const isAtsMode =
@@ -1182,7 +1194,48 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                   backgroundId={design.settings.backgroundId}
                   atsMode={isAtsMode}
                 />
-                {template.id === "ivy-league" ? (
+                {template.id === "stilvoll" ? (
+                  <StilvollResume
+                    profile={profile}
+                    name={name}
+                    atsMode={isAtsMode}
+                    plan={plan}
+                    totalPages={resumePlan.length}
+                    accentColor={design.accentColor}
+                    secondaryColor={design.secondaryColor}
+                    backgroundId={design.settings.backgroundId}
+                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    resumeProfile={docs.resumeProfile}
+                    sections={sections}
+                  />
+                ) : template.id === "kompakt" ? (
+                  <KompaktResume
+                    profile={profile}
+                    name={name}
+                    atsMode={isAtsMode}
+                    plan={plan}
+                    totalPages={resumePlan.length}
+                    accentColor={design.accentColor}
+                    secondaryColor={design.secondaryColor}
+                    backgroundId={design.settings.backgroundId}
+                    resumeProfile={docs.resumeProfile}
+                    sections={sections}
+                  />
+                ) : template.id === "einfach" ? (
+                  <EinfachResume
+                    profile={profile}
+                    name={name}
+                    atsMode={isAtsMode}
+                    plan={plan}
+                    totalPages={resumePlan.length}
+                    accentColor={design.accentColor}
+                    secondaryColor={design.secondaryColor}
+                    backgroundId={design.settings.backgroundId}
+                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    resumeProfile={docs.resumeProfile}
+                    sections={sections}
+                  />
+                ) : template.id === "ivy-league" ? (
                   <IvyLeagueResume
                     profile={profile}
                     name={name}
@@ -1276,12 +1329,13 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                     profile={profile}
                     name={name}
                     atsMode={isAtsMode}
-                    pageNumber={plan.pageNumber}
+                    plan={plan}
                     totalPages={resumePlan.length}
                     accentColor={design.accentColor}
                     secondaryColor={design.secondaryColor}
                     photoSource={getProfileMediaSource(profile?.photoPath)}
-                    isContinuation={plan.pageNumber === 2}
+                    resumeProfile={docs.resumeProfile}
+                    sections={sections}
                   />
                 ) : (
                   <ResumePreviewPage

@@ -1,110 +1,203 @@
-/**
- * ModernResume component
- * Main component for the Modern template - combines all sections with A4 layout
- */
-
-import React from "react";
+import type { CSSProperties } from "react";
+import {
+  getTemplateKnowledge,
+  parseTemplateStrengths,
+  resolveTemplateSummary,
+  uniqueTemplateValues,
+} from "../resume-template-data";
 import type { ModernResumeProps } from "./modern.types";
+import { ModernContactSection } from "./ModernContactSection";
+import { ModernEducationSection } from "./ModernEducationSection";
+import { ModernExperienceSection } from "./ModernExperienceSection";
+import { ModernFooter } from "./ModernFooter";
 import { ModernHeader } from "./ModernHeader";
+import { ModernLanguagesSection } from "./ModernLanguagesSection";
 import { ModernLeftColumn } from "./ModernLeftColumn";
 import { ModernRightColumn } from "./ModernRightColumn";
-import { ModernFooter } from "./ModernFooter";
+import { ModernStrengthsSection } from "./ModernStrengthsSection";
+import { ModernSummarySection } from "./ModernSummarySection";
 import "./modern.css";
 
 export function ModernResume({
   profile,
   name,
   atsMode,
-  pageNumber,
+  plan,
   totalPages,
   accentColor,
   secondaryColor,
   photoSource,
-  isContinuation = false,
+  resumeProfile,
+  sections,
 }: ModernResumeProps) {
-  // CSS variables for dynamic theming
+  const isContinuation = plan.pageNumber > 1;
+  const isLastPage = plan.pageNumber === totalPages;
+  const experienceIds = new Set(
+    plan.items
+      .filter((item) => item.kind === "experience")
+      .map((item) => item.id),
+  );
+  const educationIds = new Set(
+    plan.items
+      .filter((item) => item.kind === "education")
+      .map((item) => item.id),
+  );
+  const pageProfile = profile
+    ? {
+        ...profile,
+        summary: sections.profile
+          ? resolveTemplateSummary(profile, resumeProfile)
+          : "",
+        experiences: sections.experience
+          ? profile.experiences.filter((item) => experienceIds.has(item.id))
+          : [],
+        education: sections.education
+          ? profile.education.filter((item) => educationIds.has(item.id))
+          : [],
+        skills: sections.skills ? profile.skills : [],
+        languages: sections.languages ? profile.languages : [],
+        certifications: sections.certifications
+          ? profile.certifications
+          : [],
+      }
+    : undefined;
   const cssVariables = {
     "--modern-primary": accentColor,
     "--modern-primary-soft": secondaryColor,
-  } as React.CSSProperties;
-
+  } as CSSProperties;
   const portfolio =
-    profile?.portfolio || "portfolio.example.com";
+    profile?.portfolio || profile?.github || profile?.linkedin || "";
+
+  if (atsMode) {
+    const knowledge = getTemplateKnowledge(profile);
+    const strengths = parseTemplateStrengths(profile, 4);
+    const certifications = uniqueTemplateValues(
+      profile?.certifications ?? [],
+    );
+    return (
+      <article
+        className="modern-resume-page modern-resume-page--ats"
+        data-ats-mode="true"
+        data-continuation={isContinuation}
+        data-density={plan.density}
+        style={cssVariables}
+      >
+        <div className="modern-resume-container">
+          <main className="modern-resume-content modern-resume-ats">
+            <ModernHeader
+              name={name}
+              profile={profile}
+              accentColor={accentColor}
+              atsMode
+              compact={isContinuation}
+            />
+            {!isContinuation ? (
+              <>
+                <ModernContactSection
+                  profile={profile}
+                  accentColor={accentColor}
+                  atsMode
+                />
+                {sections.profile ? (
+                  <ModernSummarySection profile={pageProfile} />
+                ) : null}
+              </>
+            ) : null}
+            {sections.experience ? (
+              <ModernExperienceSection profile={pageProfile} />
+            ) : null}
+            {sections.education ? (
+              <ModernEducationSection profile={pageProfile} />
+            ) : null}
+            {isLastPage && sections.skills && knowledge.length ? (
+              <section className="modern-section">
+                <h2 className="modern-section__title">Kenntnisse</h2>
+                <p className="modern-summary-text">{knowledge.join(" · ")}</p>
+              </section>
+            ) : null}
+            {isLastPage && sections.languages ? (
+              <ModernLanguagesSection
+                profile={pageProfile}
+                accentColor={accentColor}
+                atsMode
+              />
+            ) : null}
+            {isLastPage && sections.skills && strengths.length ? (
+              <ModernStrengthsSection profile={pageProfile} />
+            ) : null}
+            {isLastPage && sections.certifications && certifications.length ? (
+              <section className="modern-section">
+                <h2 className="modern-section__title">Zertifikate</h2>
+                <ul className="modern-ats-list">
+                  {certifications.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+          </main>
+          <ModernFooter
+            pageNumber={plan.pageNumber}
+            totalPages={totalPages}
+            portfolio={portfolio}
+            atsMode
+          />
+        </div>
+      </article>
+    );
+  }
 
   return (
-    <div
+    <article
       className="modern-resume-page"
-      data-ats-mode={atsMode}
+      data-ats-mode="false"
       data-continuation={isContinuation}
+      data-density={plan.density}
       style={cssVariables}
     >
       <div className="modern-resume-container">
-        {/* Background waves (decorative only, not in ATS) */}
-        {!atsMode && (
-          <div className="modern-background-waves">
-            <svg
-              className="modern-wave-svg modern-wave-top"
-              viewBox="0 0 400 200"
-              preserveAspectRatio="none"
-            >
-              <path
-                d="M0,50 Q100,100 200,80 T400,60 L400,0 L0,0 Z"
-                fill="currentColor"
-              />
-              <path
-                d="M0,80 Q100,120 200,100 T400,90 L400,0 L0,0 Z"
-                fill="white"
-                opacity="0.1"
-              />
-            </svg>
-            <svg
-              className="modern-wave-svg modern-wave-bottom"
-              viewBox="0 0 200 200"
-              preserveAspectRatio="none"
-            >
-              <path
-                d="M200,0 Q150,50 100,30 T0,50 L0,200 L200,200 Z"
-                fill="currentColor"
-              />
-              <path
-                d="M200,30 Q150,80 100,60 T0,80 L0,200 L200,200 Z"
-                fill="white"
-                opacity="0.1"
-              />
-            </svg>
-          </div>
-        )}
-
-        {/* Main content */}
         <div className="modern-resume-content">
-          {/* Header */}
           <ModernHeader
             name={name}
             profile={profile}
             accentColor={accentColor}
             photoSource={photoSource}
-            atsMode={atsMode}
+            atsMode={false}
+            compact={isContinuation}
           />
-
-          {/* Two-column main content */}
-          <div className="modern-resume-main">
-            <ModernLeftColumn profile={profile} atsMode={atsMode} />
-            <ModernRightColumn
+          {!isContinuation ? (
+            <ModernContactSection
               profile={profile}
               accentColor={accentColor}
-              atsMode={atsMode}
+              atsMode={false}
+              inline
             />
+          ) : null}
+          <div
+            className="modern-resume-main"
+            data-continuation={isContinuation}
+          >
+            <ModernLeftColumn
+              profile={pageProfile}
+              atsMode={false}
+              showSummary={!isContinuation && sections.profile}
+            />
+            {!isContinuation ? (
+              <ModernRightColumn
+                profile={pageProfile}
+                accentColor={accentColor}
+                atsMode={false}
+              />
+            ) : null}
           </div>
         </div>
-
-        {/* Footer */}
         <ModernFooter
-          pageNumber={pageNumber}
+          pageNumber={plan.pageNumber}
           totalPages={totalPages}
           portfolio={portfolio}
-          atsMode={atsMode}
+          atsMode={false}
         />
       </div>
-    </div>
+    </article>
   );
 }

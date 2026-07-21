@@ -829,4 +829,384 @@ describe("Lebenslauf-Dokumente", () => {
       body.indexOf("Zertifikate"),
     );
   });
+
+  it("renders Stilvoll with photo, chevrons, and the asymmetric visual grid", () => {
+    const stilvollApplication = applicationSchema.parse({
+      ...application,
+      templateId: "stilvoll",
+      accentColor: "#36B873",
+      secondaryColor: "#075E50",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "two-column-right-wide",
+        resumeOutputMode: "visual",
+        backgroundId: "geometric",
+      },
+    });
+    const mediaProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      certifications: ["Professional Scrum Master I"],
+    });
+    const html = buildDocumentHtml(
+      stilvollApplication,
+      mediaProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain('data-template="stilvoll"');
+    expect(body).toContain("stilvoll-pdf-columns");
+    expect(body).toContain("stilvoll-pdf-chevron");
+    expect(body).toContain('<img class="stilvoll-pdf-photo"');
+    expect(body).toContain("Zusammenfassung");
+    expect(body).toContain("Erfahrung");
+  });
+
+  it("renders Stilvoll ATS linearly without photo, chevrons, or rating dots", () => {
+    const stilvollApplication = applicationSchema.parse({
+      ...application,
+      templateId: "stilvoll",
+      designSettings: {
+        ...application.designSettings,
+        resumeOutputMode: "ats",
+        backgroundId: "geometric",
+      },
+    });
+    const mediaProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      education: [
+        {
+          id: crypto.randomUUID(),
+          from: "2015",
+          to: "2019",
+          degree: "B.Sc. Informatik",
+          institution: "Beispiel Universität",
+          city: "Berlin",
+        },
+      ],
+      certifications: ["Professional Scrum Master I"],
+    });
+    const html = buildDocumentHtml(
+      stilvollApplication,
+      mediaProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain("managed-pdf-ats");
+    expect(body).not.toContain("stilvoll-pdf-chevron");
+    expect(body).not.toContain("<img");
+    expect(body).not.toContain("managed-pdf-dots");
+    expect(body.indexOf("Zusammenfassung")).toBeLessThan(
+      body.indexOf("Berufserfahrung"),
+    );
+    expect(body.indexOf("Berufserfahrung")).toBeLessThan(
+      body.indexOf("Ausbildung"),
+    );
+    expect(body.indexOf("Ausbildung")).toBeLessThan(
+      body.indexOf("Kenntnisse"),
+    );
+    expect(body.indexOf("Kenntnisse")).toBeLessThan(
+      body.indexOf("Sprachen"),
+    );
+    expect(body.indexOf("Sprachen")).toBeLessThan(
+      body.indexOf("Stärken"),
+    );
+  });
+
+  it("renders Kompakt as a photo-free high-density two-column document", () => {
+    const kompaktApplication = applicationSchema.parse({
+      ...application,
+      templateId: "kompakt",
+      accentColor: "#073D96",
+      secondaryColor: "#FF6200",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "two-column-left-wide",
+        resumeOutputMode: "visual",
+        backgroundId: "abstract",
+      },
+    });
+    const mediaProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      certifications: ["Prozessqualität verbessert"],
+    });
+    const html = buildDocumentHtml(
+      kompaktApplication,
+      mediaProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain('data-template="kompakt"');
+    expect(body).toContain("kompakt-pdf-columns");
+    expect(body).toContain('class="managed-pdf-background"');
+    expect(body).toContain("kompakt-pdf-skills");
+    expect(body).not.toContain("<img");
+  });
+
+  it("renders Kompakt ATS without flow lines, skill tags, or rating dots", () => {
+    const kompaktApplication = applicationSchema.parse({
+      ...application,
+      templateId: "kompakt",
+      designSettings: {
+        ...application.designSettings,
+        resumeOutputMode: "ats",
+        backgroundId: "abstract",
+      },
+    });
+    const html = buildDocumentHtml(
+      kompaktApplication,
+      profile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain("managed-pdf-ats");
+    expect(body).not.toContain("kompakt-pdf-background");
+    expect(body).not.toContain("kompakt-pdf-skills");
+    expect(body).not.toContain("managed-pdf-dots");
+    expect(body.indexOf("Zusammenfassung")).toBeLessThan(
+      body.indexOf("Berufserfahrung"),
+    );
+    expect(body.indexOf("Berufserfahrung")).toBeLessThan(
+      body.indexOf("Kenntnisse"),
+    );
+  });
+
+  it("renders Einfach as a geometric one-column document with a round photo", () => {
+    const einfachApplication = applicationSchema.parse({
+      ...application,
+      templateId: "einfach",
+      accentColor: "#073B8F",
+      secondaryColor: "#4AA7F5",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "single",
+        resumeOutputMode: "visual",
+        backgroundId: "geometric",
+      },
+    });
+    const mediaProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      certifications: ["Professional Scrum Master I"],
+    });
+    const html = buildDocumentHtml(
+      einfachApplication,
+      mediaProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain('data-template="einfach"');
+    expect(body).toContain("einfach-pdf-inner");
+    expect(body).toContain('class="managed-pdf-background"');
+    expect(body).toContain('<img class="einfach-pdf-photo"');
+    expect(body).toContain("einfach-pdf-strengths");
+  });
+
+  it("renders Einfach ATS in logical order without photo or geometry", () => {
+    const einfachApplication = applicationSchema.parse({
+      ...application,
+      templateId: "einfach",
+      designSettings: {
+        ...application.designSettings,
+        resumeOutputMode: "ats",
+        backgroundId: "geometric",
+      },
+    });
+    const mediaProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      education: [
+        {
+          id: crypto.randomUUID(),
+          from: "2015",
+          to: "2019",
+          degree: "B.Sc. Informatik",
+          institution: "Beispiel Universität",
+          city: "Berlin",
+        },
+      ],
+      certifications: ["Professional Scrum Master I"],
+    });
+    const html = buildDocumentHtml(
+      einfachApplication,
+      mediaProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain("managed-pdf-ats");
+    expect(body).not.toContain("einfach-pdf-background");
+    expect(body).not.toContain("<img");
+    expect(body).not.toContain("managed-pdf-dots");
+    expect(body.indexOf("Zusammenfassung")).toBeLessThan(
+      body.indexOf("Berufserfahrung"),
+    );
+    expect(body.indexOf("Berufserfahrung")).toBeLessThan(
+      body.indexOf("Ausbildung"),
+    );
+    expect(body.indexOf("Ausbildung")).toBeLessThan(
+      body.indexOf("Kenntnisse"),
+    );
+    expect(body.indexOf("Kenntnisse")).toBeLessThan(
+      body.indexOf("Sprachen"),
+    );
+    expect(body.indexOf("Sprachen")).toBeLessThan(
+      body.indexOf("Stärken"),
+    );
+    expect(body.indexOf("Stärken")).toBeLessThan(
+      body.indexOf("Zertifikate"),
+    );
+  });
+
+  it("renders Modern with a clean contact header, round photo, and two columns", () => {
+    const modernApplication = applicationSchema.parse({
+      ...application,
+      templateId: "modern",
+      accentColor: "#06B6C9",
+      secondaryColor: "#C7F1F5",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "two-column-left-wide",
+        resumeOutputMode: "visual",
+        backgroundId: "white",
+        showBackgroundInPrint: false,
+      },
+    });
+    const mediaProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      birthDate: "01.03.1990",
+      birthPlace: "München",
+      certifications: ["Professional Scrum Master I"],
+    });
+    const html = buildDocumentHtml(
+      modernApplication,
+      mediaProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain('data-template="modern"');
+    expect(body).not.toContain("modern-pdf-background");
+    expect(body).toContain("modern-pdf-contacts inline");
+    expect(body).toContain("modern-pdf-columns");
+    expect(body).toContain('<img class="modern-pdf-photo"');
+    expect(body).toContain("Zusammenfassung");
+    expect(body).toContain("Erfahrung");
+    expect(body).toContain("Fähigkeiten");
+    expect(body.indexOf("Zusammenfassung")).toBeLessThan(
+      body.indexOf("Erfahrung"),
+    );
+    expect(body).not.toContain("cv-sidebar-right");
+  });
+
+  it("renders Modern ATS linearly without waves, photo, icons, or rating dots", () => {
+    const modernApplication = applicationSchema.parse({
+      ...application,
+      templateId: "modern",
+      designSettings: {
+        ...application.designSettings,
+        resumeOutputMode: "ats",
+        backgroundId: "waves",
+      },
+    });
+    const mediaProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      education: [
+        {
+          id: crypto.randomUUID(),
+          from: "2015",
+          to: "2019",
+          degree: "B.Sc. Informatik",
+          institution: "Beispiel Universität",
+          city: "Berlin",
+        },
+      ],
+      certifications: ["Professional Scrum Master I"],
+    });
+    const html = buildDocumentHtml(
+      modernApplication,
+      mediaProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain("modern-pdf-ats");
+    expect(body).not.toContain("modern-pdf-background");
+    expect(body).not.toContain("<img");
+    expect(body).not.toContain("modern-pdf-dots");
+    expect(body.indexOf("Persönliche Daten")).toBeLessThan(
+      body.indexOf("Zusammenfassung"),
+    );
+    expect(body.indexOf("Zusammenfassung")).toBeLessThan(
+      body.indexOf("Berufserfahrung"),
+    );
+    expect(body.indexOf("Berufserfahrung")).toBeLessThan(
+      body.indexOf("Ausbildung"),
+    );
+    expect(body.indexOf("Ausbildung")).toBeLessThan(
+      body.indexOf("Kenntnisse"),
+    );
+    expect(body.indexOf("Kenntnisse")).toBeLessThan(
+      body.indexOf("Sprachen"),
+    );
+    expect(body.indexOf("Sprachen")).toBeLessThan(
+      body.indexOf("Stärken"),
+    );
+    expect(body.indexOf("Stärken")).toBeLessThan(
+      body.indexOf("Zertifikate"),
+    );
+  });
+
+  it("keeps a reference-density Modern resume on one A4 page", () => {
+    const modernApplication = applicationSchema.parse({
+      ...application,
+      templateId: "modern",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "two-column-left-wide",
+        resumeOutputMode: "visual",
+        backgroundId: "waves",
+      },
+    });
+    const denseProfile = profileSchema.parse({
+      ...profile,
+      experiences: Array.from({ length: 3 }, (_, index) => ({
+        id: crypto.randomUUID(),
+        from: `${2012 + index * 4}`,
+        to: `${2016 + index * 4}`,
+        role: `Projektrolle ${index + 1}`,
+        company: `Unternehmen ${index + 1}`,
+        city: "Berlin",
+        achievements: Array.from(
+          { length: 3 },
+          (_, achievementIndex) =>
+            `Messbares Projektergebnis ${achievementIndex + 1} erfolgreich erreicht.`,
+        ),
+      })),
+      education: Array.from({ length: 3 }, (_, index) => ({
+        id: crypto.randomUUID(),
+        from: `${2006 + index * 2}`,
+        to: `${2008 + index * 2}`,
+        degree: `Abschluss ${index + 1}`,
+        institution: `Hochschule ${index + 1}`,
+        city: "Berlin",
+      })),
+    });
+    const html = buildDocumentHtml(
+      modernApplication,
+      denseProfile,
+      "lebenslauf",
+    );
+
+    expect(html.match(/data-resume-page="/g)).toHaveLength(1);
+  });
 });

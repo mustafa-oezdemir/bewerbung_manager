@@ -13,10 +13,12 @@ export type TemplateCategory =
   | "ats"
   | "business"
   | "classic-professional"
+  | "compact-professional"
   | "creative"
   | "creative-professional"
   | "modern"
   | "modern-professional"
+  | "simple-professional"
   | "executive";
 
 export type TemplateDesignDefaults = Partial<DocumentDesignSettings>;
@@ -214,6 +216,98 @@ export const templates: TemplateDefinition[] = [
     },
   },
   {
+    id: "stilvoll",
+    name: "Stilvoll",
+    description:
+      "Eine stilvolle, übersichtliche Lebenslaufvorlage für Professionals mit umfangreichen Fähigkeiten und Berufserfahrung.",
+    accent: "#36B873",
+    secondary: "#075E50",
+    font: "Source Sans 3",
+    layout: "split-clean",
+    features: ["Links kompakt", "Karriere rechts", "Geometrisches Muster"],
+    category: "modern-professional",
+    supportsAtsMode: true,
+    supportsPhoto: true,
+    supportsFreeform: true,
+    supportsMultiplePages: true,
+    sidebarWidthRatio: 0.3,
+    atsInfo:
+      "Stilvoll bietet eine lineare ATS-Ausgabe ohne Foto, Geometriemuster, Symbole oder grafische Sprachniveaus.",
+    designDefaults: {
+      marginLevel: 3,
+      sectionSpacingLevel: 4,
+      fontSize: "small",
+      lineHeightLevel: 2,
+      columnLayout: "two-column-right-wide",
+      resumeOutputMode: "visual",
+      backgroundId: "geometric",
+      showBackgroundInPrint: true,
+      fontId: "source-sans",
+      headingFontId: "source-sans",
+    },
+  },
+  {
+    id: "kompakt",
+    name: "Kompakt",
+    description:
+      "Einseitige Lebenslaufvorlage mit kleineren Seitenrändern und platzsparender Informationsstruktur.",
+    accent: "#073D96",
+    secondary: "#FF6200",
+    font: "Source Sans 3",
+    layout: "bold-grid",
+    features: ["Einseitig optimiert", "Hohe Informationsdichte", "ATS-Variante"],
+    category: "compact-professional",
+    supportsAtsMode: true,
+    supportsPhoto: false,
+    supportsFreeform: true,
+    supportsMultiplePages: true,
+    sidebarWidthRatio: 0.36,
+    atsInfo:
+      "Kompakt bietet eine lineare ATS-Ausgabe ohne Flusslinien, Symbole, Skill-Tags oder Sprachniveau-Punkte.",
+    designDefaults: {
+      marginLevel: 1,
+      sectionSpacingLevel: 2,
+      fontSize: "small",
+      lineHeightLevel: 1,
+      columnLayout: "two-column-left-wide",
+      resumeOutputMode: "visual",
+      backgroundId: "abstract",
+      showBackgroundInPrint: true,
+      fontId: "source-sans",
+      headingFontId: "source-sans",
+    },
+  },
+  {
+    id: "einfach",
+    name: "Einfach",
+    description:
+      "Kostenlose, einfache Lebenslauf-Vorlage. Durchläuft mühelos die ATS-Prüfungen.",
+    accent: "#073B8F",
+    secondary: "#4AA7F5",
+    font: "Source Sans 3",
+    layout: "centered",
+    features: ["Einspaltig", "Klarer Profilkopf", "ATS-freundlich"],
+    category: "simple-professional",
+    supportsAtsMode: true,
+    supportsPhoto: true,
+    supportsFreeform: true,
+    supportsMultiplePages: true,
+    atsInfo:
+      "Einfach bietet eine lineare ATS-Ausgabe ohne Foto, geometrische Flächen, Symbole oder Sprachniveau-Punkte.",
+    designDefaults: {
+      marginLevel: 3,
+      sectionSpacingLevel: 4,
+      fontSize: "small",
+      lineHeightLevel: 2,
+      columnLayout: "single",
+      resumeOutputMode: "visual",
+      backgroundId: "geometric",
+      showBackgroundInPrint: true,
+      fontId: "source-sans",
+      headingFontId: "source-sans",
+    },
+  },
+  {
     id: "gepflegt",
     name: "Gepflegt",
     description:
@@ -277,17 +371,19 @@ export const templates: TemplateDefinition[] = [
     secondary: "#C7F1F5",
     font: "Source Sans 3",
     layout: "split-clean",
-    features: ["Zwei Spalten", "Türkise Wellen", "Professionell"],
+    features: ["Zwei Spalten", "Klare Kontaktzeile", "Professionell"],
     category: "creative-professional",
     supportsAtsMode: true,
     supportsPhoto: true,
     supportsFreeform: true,
+    supportsMultiplePages: true,
     atsInfo:
       "Modern-Template unterstützt ATS-freundliche Ausgabe mit einspaltigem Layout und entfernten visuellen Elementen.",
     designDefaults: {
-      columnLayout: "two-column-equal",
+      columnLayout: "two-column-left-wide",
       resumeOutputMode: "visual",
       backgroundId: "white",
+      showBackgroundInPrint: false,
       fontId: "source-sans",
       headingFontId: "source-sans",
     },

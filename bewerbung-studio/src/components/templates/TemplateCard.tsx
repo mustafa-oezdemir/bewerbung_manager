@@ -9,11 +9,13 @@ import {
   Trash2,
 } from "lucide-react";
 import {
+  einfachLebenslaufTemplateConfig,
   elegantLebenslaufTemplateConfig,
   gepflegtLebenslaufTemplateConfig,
   ivyLeagueLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
+  stilvollLebenslaufTemplateConfig,
   templateSourceLabels,
   templateTypeLabels,
   zeitgenoessischLebenslaufTemplateConfig,
@@ -59,6 +61,10 @@ export function TemplateCard({
     template.id === ivyLeagueLebenslaufTemplateConfig.id;
   const isKompakt =
     template.id === kompaktLebenslaufTemplateConfig.id;
+  const isStilvoll =
+    template.id === stilvollLebenslaufTemplateConfig.id;
+  const isEinfach =
+    template.id === einfachLebenslaufTemplateConfig.id;
   const isGepflegt = template.id === gepflegtLebenslaufTemplateConfig.id;
   const showsManagedFacts =
     isWordMuster ||
@@ -67,6 +73,8 @@ export function TemplateCard({
     isKreativ ||
     isIvyLeague ||
     isKompakt ||
+    isStilvoll ||
+    isEinfach ||
     isGepflegt;
   const modifiedLabel = template.modifiedAt
     ? new Intl.DateTimeFormat("de-DE", {
@@ -178,6 +186,24 @@ export function TemplateCard({
             {kompaktLebenslaufTemplateConfig.cardHighlights.map((highlight) => (
               <li key={highlight}>{highlight}</li>
             ))}
+          </ul>
+        ) : null}
+        {isStilvoll ? (
+          <ul className="managed-template-highlights contemporary">
+            {stilvollLebenslaufTemplateConfig.cardHighlights.map(
+              (highlight) => (
+                <li key={highlight}>{highlight}</li>
+              ),
+            )}
+          </ul>
+        ) : null}
+        {isEinfach ? (
+          <ul className="managed-template-highlights contemporary">
+            {einfachLebenslaufTemplateConfig.cardHighlights.map(
+              (highlight) => (
+                <li key={highlight}>{highlight}</li>
+              ),
+            )}
           </ul>
         ) : null}
         {isGepflegt ? (

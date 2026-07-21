@@ -3,6 +3,8 @@ import { profileSchema } from "./schema";
 import {
   createResumePagePlan,
   getLetterPageStatus,
+  kreativPaginationOptions,
+  modernPaginationOptions,
   zweispaltigPaginationOptions,
 } from "./documentPagination";
 
@@ -92,6 +94,98 @@ describe("A4 document pagination", () => {
         zweispaltigPaginationOptions,
       ),
     ).toHaveLength(1);
+  });
+
+  it("keeps long but one-page Modern and Kreativ profiles together", () => {
+    const profile = profileSchema.parse({
+      id: crypto.randomUUID(),
+      isDefault: true,
+      firstName: "Mustafa",
+      lastName: "Ã–zdemir",
+      experiences: [
+        [128, 170, 58],
+        [80, 0, 105, 0, 121],
+        [111, 0, 120, 0, 69],
+      ].map((lengths, index) => ({
+        id: crypto.randomUUID(),
+        from: `${2012 + index * 4}`,
+        to: `${2016 + index * 4}`,
+        role: `Position ${index + 1}`,
+        company: `Unternehmen ${index + 1}`,
+        achievements: lengths.map((length) => "A".repeat(length)),
+      })),
+      education: Array.from({ length: 3 }, (_, index) => ({
+        id: crypto.randomUUID(),
+        from: `${2006 + index * 2}`,
+        to: `${2008 + index * 2}`,
+        degree: `Abschluss ${index + 1}`,
+        institution: `Hochschule ${index + 1}`,
+      })),
+      updatedAt: now,
+    });
+
+    const plan = createResumePagePlan(
+      profile,
+      "",
+      modernPaginationOptions,
+    );
+
+    expect(plan).toHaveLength(1);
+    expect(plan[0].items).toHaveLength(6);
+    expect(plan[0].density).toBe("compact");
+
+    const kreativPlan = createResumePagePlan(
+      profile,
+      "",
+      kreativPaginationOptions,
+    );
+
+    expect(kreativPlan).toHaveLength(1);
+    expect(kreativPlan[0].items).toHaveLength(6);
+    expect(kreativPlan[0].density).toBe("compact");
+  });
+
+  it("keeps Modern career items in reading order after a page split", () => {
+    const profile = profileSchema.parse({
+      id: crypto.randomUUID(),
+      isDefault: true,
+      firstName: "Mina",
+      lastName: "Kaya",
+      experiences: Array.from({ length: 3 }, (_, index) => ({
+        id: crypto.randomUUID(),
+        from: `${2012 + index}`,
+        to: `${2013 + index}`,
+        role: `Position ${index + 1}`,
+        company: `Unternehmen ${index + 1}`,
+        achievements: ["Messbares Ergebnis erreicht."],
+      })),
+      education: [
+        {
+          id: crypto.randomUUID(),
+          from: "2008",
+          to: "2012",
+          degree: "Bachelor",
+          institution: "Hochschule",
+        },
+      ],
+      updatedAt: now,
+    });
+
+    const plan = createResumePagePlan(profile, "", {
+      firstPageCapacity: 17,
+      secondPageCapacity: 40,
+      preserveItemOrder: true,
+    });
+
+    expect(plan).toHaveLength(2);
+    expect(plan[0].items.map((item) => item.kind)).toEqual([
+      "experience",
+      "experience",
+    ]);
+    expect(plan[1].items.map((item) => item.kind)).toEqual([
+      "experience",
+      "education",
+    ]);
   });
 
   it("marks long cover letters for dense one-page rendering", () => {

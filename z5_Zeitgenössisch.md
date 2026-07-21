@@ -5,6 +5,8 @@
 * Kullanılacak framework: RASCEF
 * Senin yazacağın prompt:
 
+![Ein zweispaltiger Lebenslauf mit blauer Akzentfarbe und Fokus auf Erfahrung und Leistungen.](https://cdn.enhancv.com/predefined-examples/XHiNXHD5CWUGCGVKQTJArS7MY8iHn7Awe5tqWOpY/image.png)
+
 Sen Electron, React, TypeScript, modern CSS, A4 belge tasarımı, PDF üretimi, ATS uyumluluğu ve görsel karşılaştırmalı frontend geliştirme konusunda uzman kıdemli bir yazılım geliştiricisisin.
 
 “Bewerbung Studio” uygulamam için **Zeitgenössisch** adlı Lebenslauf şablonunu oluşturacaksın.

@@ -25,6 +25,7 @@ export type LetterPageStatus = {
 export type ResumePaginationOptions = {
   firstPageCapacity?: number;
   secondPageCapacity?: number;
+  preserveItemOrder?: boolean;
 };
 
 const FIRST_PAGE_CAPACITY = 30;
@@ -36,6 +37,23 @@ export const zweispaltigPaginationOptions: ResumePaginationOptions = {
   secondPageCapacity: 42,
 };
 
+export const kompaktPaginationOptions: ResumePaginationOptions = {
+  firstPageCapacity: 43,
+  secondPageCapacity: 46,
+};
+
+export const kreativPaginationOptions: ResumePaginationOptions = {
+  firstPageCapacity: 50,
+  secondPageCapacity: 54,
+  preserveItemOrder: true,
+};
+
+export const modernPaginationOptions: ResumePaginationOptions = {
+  firstPageCapacity: 50,
+  secondPageCapacity: 54,
+  preserveItemOrder: true,
+};
+
 const textWeight = (value: string, charactersPerUnit = 95) =>
   Math.max(0, Math.ceil(value.trim().length / charactersPerUnit));
 
@@ -44,7 +62,7 @@ const experienceWeight = (
 ) =>
   4 +
   textWeight(`${experience.role} ${experience.company}`, 70) +
-  experience.achievements.reduce(
+  experience.achievements.filter((achievement) => achievement.trim()).reduce(
     (total, achievement) => total + 1 + textWeight(achievement),
     0,
   );
@@ -123,16 +141,19 @@ export const createResumePagePlan = (
   const pageOneItems: ResumePageItem[] = [];
   const pageTwoItems: ResumePageItem[] = [];
   let pageOneWeight = 0;
+  let continueOnSecondPage = false;
 
   for (const item of items) {
     if (
-      pageOneItems.length === 0 ||
-      pageOneWeight + item.weight <= firstPageCapacity
+      !continueOnSecondPage &&
+      (pageOneItems.length === 0 ||
+        pageOneWeight + item.weight <= firstPageCapacity)
     ) {
       pageOneItems.push(item);
       pageOneWeight += item.weight;
     } else {
       pageTwoItems.push(item);
+      continueOnSecondPage = options.preserveItemOrder ?? false;
     }
   }
 

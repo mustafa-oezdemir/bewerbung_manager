@@ -40,14 +40,46 @@
   --modern-icon-bg: #f2f3f3;
   --modern-page-bg: #ffffff;
   --modern-font-family: "Source Sans 3", "Segoe UI", Arial, sans-serif;
-  --modern-name-size: 23pt;
-  --modern-profession-size: 12.5pt;
+  --modern-name-size: 24pt;
+  --modern-profession-size: 12pt;
   --modern-section-title-size: 9.2pt;
   --modern-entry-title-size: 11pt;
   --modern-company-size: 9.2pt;
   --modern-body-size: 8.4pt;
   --modern-small-size: 7.9pt;
   --modern-line-height: 1.27;
+}
+
+.modern-resume-page[data-density="compact"] {
+  --modern-body-size: 8.1pt;
+  --modern-small-size: 7.6pt;
+  --modern-line-height: 1.23;
+}
+
+.modern-resume-page[data-density="compact"] .modern-resume-left-column,
+.modern-resume-page[data-density="compact"] .modern-resume-right-column {
+  gap: 5mm;
+}
+
+.modern-resume-page[data-density="compact"] .modern-experience-list,
+.modern-resume-page[data-density="compact"] .modern-education-list {
+  gap: 3.7mm;
+}
+
+.modern-resume-page[data-density="dense"] {
+  --modern-body-size: 7.7pt;
+  --modern-small-size: 7.3pt;
+  --modern-line-height: 1.2;
+}
+
+.modern-resume-page[data-density="dense"] .modern-resume-left-column,
+.modern-resume-page[data-density="dense"] .modern-resume-right-column {
+  gap: 4mm;
+}
+
+.modern-resume-page[data-density="dense"] .modern-experience-list,
+.modern-resume-page[data-density="dense"] .modern-education-list {
+  gap: 3mm;
 }
 
 /* ============================================================================
@@ -76,22 +108,23 @@
 
 .modern-wave-svg {
   position: absolute;
-  fill: var(--modern-primary);
-  opacity: 0.08;
+  color: var(--modern-primary-soft);
+  fill: currentColor;
+  opacity: 0.92;
 }
 
 .modern-wave-top {
   top: 0;
   right: 0;
-  width: 160mm;
-  height: 55mm;
+  width: 210mm;
+  height: 60mm;
 }
 
 .modern-wave-bottom {
   bottom: 0;
   left: 0;
-  width: 55mm;
-  height: 65mm;
+  width: 80mm;
+  height: 70mm;
 }
 
 [data-ats-mode="true"] .modern-background-waves {
@@ -105,10 +138,10 @@
 .modern-resume-content {
   position: relative;
   z-index: 2;
-  width: 176mm; /* 210 - 17 - 17 */
-  margin-left: 17mm;
-  margin-right: 17mm;
-  margin-top: 15mm;
+  width: 180mm; /* 210 - 15 - 15 */
+  margin-left: 15mm;
+  margin-right: 15mm;
+  margin-top: 14mm;
   margin-bottom: 14mm;
 }
 
@@ -122,14 +155,43 @@
   grid-template-columns: minmax(0, 1fr) 32mm;
   column-gap: 10mm;
   align-items: start;
-  min-height: 36mm;
-  margin-bottom: 12mm;
+  min-height: 25mm;
+  margin-bottom: 0;
   page-break-after: avoid;
   break-after: avoid;
 }
 
 .modern-resume-header[data-no-photo="true"] {
   grid-template-columns: 1fr;
+}
+
+.modern-resume-header--compact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 1mm 5mm;
+  min-height: auto;
+  margin-bottom: 7mm;
+  padding-bottom: 3mm;
+  border-bottom: 0.35mm solid var(--modern-divider);
+}
+
+.modern-resume-header__kicker {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--modern-primary);
+  font-size: 7pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.modern-resume-header--compact .modern-resume-header__name {
+  font-size: 15pt;
+}
+
+.modern-resume-header--compact .modern-resume-header__profession {
+  margin: 0;
+  font-size: 9pt;
 }
 
 .modern-resume-header__identity {
@@ -191,7 +253,7 @@
 
 .modern-resume-main {
   display: grid;
-  grid-template-columns: minmax(0, 101mm) minmax(0, 64mm);
+  grid-template-columns: minmax(0, 102mm) minmax(0, 67mm);
   column-gap: 11mm;
   align-items: start;
 }
@@ -204,14 +266,18 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 6mm;
+  gap: 7mm;
 }
 
 .modern-resume-right-column {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 6mm;
+  gap: 7mm;
+}
+
+.modern-resume-main[data-continuation="true"] {
+  grid-template-columns: 1fr;
 }
 
 [data-ats-mode="true"] .modern-resume-right-column {
@@ -227,8 +293,8 @@
   flex-direction: column;
   gap: 4mm;
   margin-bottom: 0;
-  page-break-inside: avoid;
-  break-inside: avoid;
+  page-break-inside: auto;
+  break-inside: auto;
 }
 
 .modern-section__title {
@@ -252,6 +318,52 @@
 .modern-contact-list {
   display: grid;
   gap: 3.2mm;
+}
+
+.modern-contact-section--inline {
+  position: relative;
+  z-index: 3;
+  width: calc(100% - 34mm);
+  margin-top: -7mm;
+  margin-bottom: 8mm;
+}
+
+.modern-contact-section--inline .modern-contact-list {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 1.8mm;
+  min-width: 0;
+}
+
+.modern-contact-section--inline .modern-contact-item {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 0.8mm;
+  min-width: 0;
+}
+
+.modern-contact-section--inline .modern-contact-item__icon {
+  display: block;
+  width: 3.2mm;
+  height: 3.2mm;
+  color: var(--modern-muted) !important;
+  background: transparent;
+}
+
+.modern-contact-section--inline .modern-contact-item__icon svg {
+  width: 3.2mm;
+  height: 3.2mm;
+}
+
+.modern-contact-section--inline .modern-contact-item__value {
+  max-width: 44mm;
+  overflow: hidden;
+  color: var(--modern-muted);
+  font-size: 7.4pt;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .modern-contact-item {
@@ -311,15 +423,31 @@
 }
 
 .modern-strengths-item {
+  display: grid;
+  grid-template-columns: 10mm minmax(0, 1fr);
+  gap: 3mm;
+  align-items: start;
   page-break-inside: avoid;
   break-inside: avoid;
+}
+
+.modern-strengths-item__icon {
+  display: grid;
+  width: 9mm;
+  height: 9mm;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--modern-primary);
+  background: var(--modern-icon-bg);
+  font-size: 10pt;
+  font-weight: 700;
 }
 
 .modern-strengths-item__title {
   margin: 0 0 0.5mm;
   padding: 0;
   color: var(--modern-heading);
-  font-size: var(--modern-body-size);
+  font-size: 9.5pt;
   font-weight: 600;
   line-height: 1.2;
 }
@@ -331,6 +459,50 @@
   font-size: var(--modern-body-size);
   line-height: var(--modern-line-height);
   overflow-wrap: anywhere;
+}
+
+.modern-knowledge__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.5mm 3mm;
+}
+
+.modern-knowledge__item {
+  padding: 0 2mm 1mm;
+  border-bottom: 0.3mm solid var(--modern-divider);
+  color: var(--modern-text);
+  font-size: var(--modern-body-size);
+  line-height: 1.15;
+}
+
+.modern-achievements__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4mm;
+}
+
+.modern-achievements__item {
+  display: grid;
+  grid-template-columns: 9mm minmax(0, 1fr);
+  gap: 3mm;
+  align-items: start;
+}
+
+.modern-achievements__item > span {
+  display: grid;
+  width: 9mm;
+  height: 9mm;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--modern-primary);
+  background: var(--modern-icon-bg);
+  font-size: 8pt;
+}
+
+.modern-achievements__item p {
+  margin: 0;
+  font-size: var(--modern-body-size);
+  line-height: var(--modern-line-height);
 }
 
 /* ============================================================================
@@ -399,8 +571,8 @@
 }
 
 .modern-experience-entry {
-  page-break-inside: avoid;
-  break-inside: avoid;
+  page-break-inside: auto;
+  break-inside: auto;
 }
 
 .modern-experience-entry__role {
@@ -410,6 +582,8 @@
   font-size: var(--modern-entry-title-size);
   font-weight: 500;
   line-height: 1.15;
+  page-break-after: avoid;
+  break-after: avoid;
 }
 
 .modern-experience-entry__meta {
@@ -420,6 +594,8 @@
   margin-bottom: 1.5mm;
   color: var(--modern-muted);
   font-size: var(--modern-small-size);
+  page-break-after: avoid;
+  break-after: avoid;
 }
 
 .modern-experience-entry__company {
@@ -431,12 +607,18 @@
 }
 
 .modern-experience-entry__date {
+  display: inline-flex;
+  align-items: center;
+  gap: 1mm;
   margin: 0;
   padding: 0;
   flex-shrink: 0;
 }
 
 .modern-experience-entry__location {
+  display: inline-flex;
+  align-items: center;
+  gap: 1mm;
   margin: 0;
   padding: 0;
   flex-shrink: 0;
@@ -462,6 +644,8 @@
 .modern-experience-entry__achievements li {
   margin: 0.35mm 0;
   padding-left: 0.5mm;
+  page-break-inside: avoid;
+  break-inside: avoid;
 }
 
 /* ============================================================================
@@ -475,8 +659,8 @@
 }
 
 .modern-education-entry {
-  page-break-inside: avoid;
-  break-inside: avoid;
+  page-break-inside: auto;
+  break-inside: auto;
 }
 
 .modern-education-entry__degree {
@@ -507,12 +691,18 @@
 }
 
 .modern-education-entry__date {
+  display: inline-flex;
+  align-items: center;
+  gap: 1mm;
   margin: 0;
   padding: 0;
   flex-shrink: 0;
 }
 
 .modern-education-entry__location {
+  display: inline-flex;
+  align-items: center;
+  gap: 1mm;
   margin: 0;
   padding: 0;
   flex-shrink: 0;
@@ -548,10 +738,9 @@
 }
 
 [data-ats-mode="true"] .modern-resume-footer {
-  position: static;
-  margin-top: 6mm;
-  justify-content: flex-start;
-  gap: 20mm;
+  right: 17mm;
+  bottom: 6mm;
+  left: 17mm;
 }
 
 /* ============================================================================
@@ -633,6 +822,59 @@
   grid-template-columns: 1fr;
 }
 
+.modern-resume-page--ats {
+  font-family: Arial, sans-serif;
+}
+
+.modern-resume-ats {
+  height: 100%;
+  margin-top: 0;
+  padding-top: 14mm;
+  padding-bottom: 16mm;
+}
+
+.modern-resume-ats .modern-resume-header {
+  min-height: auto;
+  margin-bottom: 5mm;
+  padding-bottom: 3mm;
+  border-bottom: 0.35mm solid var(--modern-divider);
+}
+
+.modern-resume-ats .modern-resume-header__name {
+  font-size: 19pt;
+}
+
+.modern-resume-ats .modern-resume-header__profession {
+  color: var(--modern-heading);
+  font-size: 10pt;
+}
+
+.modern-resume-ats .modern-section {
+  gap: 2.2mm;
+  margin-bottom: 5mm;
+}
+
+.modern-resume-ats .modern-section__title {
+  color: var(--modern-heading);
+  font-size: 10.5pt;
+  font-weight: 700;
+}
+
+.modern-resume-ats .modern-contact-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1mm 5mm;
+}
+
+.modern-resume-ats .modern-contact-item {
+  display: block;
+}
+
+.modern-ats-list {
+  margin: 0;
+  padding-left: 4.5mm;
+}
+
 /* ============================================================================
    Pagination Helpers
    ========================================================================= */
@@ -663,14 +905,4 @@
   color: var(--modern-muted);
   font-size: 8pt;
   line-height: 1;
-}
-
-.modern-resume-page[data-continuation="true"] .modern-resume-header {
-  display: none;
-}
-
-.modern-resume-page[data-continuation="true"] .modern-resume-content::before {
-  content: "";
-  display: block;
-  height: 0;
 }

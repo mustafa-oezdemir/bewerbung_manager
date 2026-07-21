@@ -2,6 +2,8 @@ import type { ApplicantProfile, Application } from "../src/shared/schema";
 import {
   createResumePagePlan,
   getLetterPageStatus,
+  kompaktPaginationOptions,
+  modernPaginationOptions,
   type ResumePagePlan,
   zweispaltigPaginationOptions,
 } from "../src/shared/documentPagination";
@@ -487,6 +489,35 @@ const ivyLeagueDocumentCss = `
   @media print{.no-print-background .ivy-pdf-watercolor{display:none!important}}
 `;
 
+const extendedResumeDocumentCss = `
+  .managed-pdf{position:relative;width:100%;height:100%;overflow:hidden;color:var(--managed-text);background:#fff;font-family:var(--body-font);font-size:var(--body-size);line-height:var(--body-line)}
+  .managed-pdf *{box-sizing:border-box}.managed-pdf a{color:inherit;text-decoration:none}.managed-pdf-content{position:relative;z-index:2;height:100%}.managed-pdf-background{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none}.managed-pdf-section{min-width:0;margin:0 0 var(--managed-section-gap);break-inside:avoid}.managed-pdf-title{margin:0 0 3mm;color:var(--managed-muted);font-size:9pt;font-weight:500;line-height:1;text-transform:uppercase;break-after:avoid}.managed-pdf-list{display:flex;flex-direction:column;gap:var(--managed-entry-gap)}.managed-pdf-entry{break-inside:avoid}.managed-pdf-entry h3,.managed-pdf-entry h4{margin:0;overflow-wrap:anywhere}.managed-pdf-entry ul,.managed-pdf-ats ul{margin:1mm 0 0;padding-left:4mm}.managed-pdf-entry li,.managed-pdf-ats li{margin:.25mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.managed-pdf-footer{position:absolute;right:var(--managed-margin);bottom:6mm;left:var(--managed-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--managed-muted);font-size:7pt}.managed-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}
+  .stilvoll-pdf{--managed-primary:var(--accent);--managed-dark:var(--secondary);--managed-text:#465156;--managed-muted:#6d777c;--managed-divider:#aeb8b5;--managed-pattern:#dce2df;--managed-margin:max(15mm,var(--doc-margin));--managed-section-gap:var(--section-gap);--managed-entry-gap:5mm}.stilvoll-pdf .managed-pdf-background{color:var(--managed-pattern);opacity:.62}.stilvoll-pdf .managed-pdf-background path{fill:none;stroke:currentColor;stroke-width:.45}.stilvoll-pdf-header{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) 28mm;gap:10mm;min-height:36mm;padding:14mm var(--managed-margin) 0}.stilvoll-pdf-header.no-photo{grid-template-columns:1fr}.stilvoll-pdf-header h1{margin:0;color:var(--managed-dark);font-size:23pt;font-weight:400;line-height:1;letter-spacing:.015em;text-transform:uppercase;overflow-wrap:anywhere}.stilvoll-pdf-header h2{margin:2mm 0 2.5mm;color:var(--managed-primary);font-size:12pt;font-weight:400;line-height:1.2}.stilvoll-pdf-contacts{display:flex;flex-wrap:wrap;gap:1mm 3.5mm;margin:0;color:var(--managed-text);font-size:7.8pt;font-style:normal}.stilvoll-pdf-contacts span{display:inline-flex;gap:1mm}.stilvoll-pdf-contacts i{color:var(--managed-muted);font-style:normal}.stilvoll-pdf-photo{width:26mm;height:26mm;overflow:hidden;border-radius:1.5mm;object-fit:cover}.stilvoll-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:24mm;padding-top:11mm;padding-bottom:3mm;border-bottom:.3mm solid var(--managed-divider)}.stilvoll-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-primary);font-size:7pt;text-transform:uppercase}.stilvoll-pdf-header.compact h1{font-size:15pt}.stilvoll-pdf-header.compact h2{margin:0;font-size:8.5pt}.stilvoll-pdf-columns{display:grid;grid-template-columns:54mm minmax(0,115mm);gap:11mm;padding:10mm var(--managed-margin) 16mm}.stilvoll-pdf-columns.continuation{display:block;padding-top:6mm}.stilvoll-pdf .managed-pdf-title{padding-bottom:1mm;border-bottom:.3mm solid var(--managed-divider)}.stilvoll-pdf-strength{display:grid;grid-template-columns:9mm minmax(0,1fr);gap:3mm;margin-bottom:5mm}.stilvoll-pdf-strength i{display:grid;place-items:center;width:8mm;height:8mm;border-radius:50%;color:var(--managed-primary);background:#f1f3f2;font-style:normal}.stilvoll-pdf-strength h3{margin:0 0 1mm;color:var(--managed-dark);font-size:9.5pt;font-weight:500}.stilvoll-pdf-strength p{margin:0}.stilvoll-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) 11mm;gap:2mm;align-items:center;margin-bottom:3mm}.managed-pdf-dots{display:flex;gap:.6mm}.managed-pdf-dots i{display:block;width:1.5mm;height:1.5mm;border-radius:50%;background:#dde2e0}.managed-pdf-dots i.filled{background:var(--managed-dark)}.stilvoll-pdf-entry h3{color:var(--managed-dark);font-size:11pt;font-weight:400}.stilvoll-pdf-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm}.stilvoll-pdf-meta strong{margin-right:auto;color:var(--managed-primary);font-size:9.8pt;font-weight:400}.stilvoll-pdf-meta span{color:var(--managed-muted);font-size:7.8pt}
+  .kompakt-pdf{--managed-primary:var(--accent);--managed-accent:var(--secondary);--managed-text:#3f494f;--managed-muted:#6d757a;--managed-divider:#aeb6ba;--managed-pattern:#ffd7bc;--managed-margin:max(13mm,calc(var(--doc-margin) - 1mm));--managed-section-gap:max(3.5mm,calc(var(--section-gap) - 1mm));--managed-entry-gap:4mm}.kompakt-pdf .managed-pdf-background{color:var(--managed-pattern);opacity:.72}.kompakt-pdf .managed-pdf-background path,.kompakt-pdf .managed-pdf-background circle{fill:none;stroke:currentColor;stroke-width:.7}.kompakt-pdf-header{position:relative;z-index:2;min-height:22mm;padding:13mm var(--managed-margin) 0}.kompakt-pdf-header h1{max-width:112mm;margin:0;color:var(--managed-primary);font-size:20pt;font-weight:450;line-height:1}.kompakt-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 4mm;padding-top:10mm;border-bottom:.25mm solid var(--managed-divider)}.kompakt-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-accent);font-size:7pt;text-transform:uppercase}.kompakt-pdf-header.compact h1{font-size:14pt}.kompakt-pdf-header h2{margin:0;color:var(--managed-muted);font-size:8.5pt}.kompakt-pdf-columns{display:grid;grid-template-columns:108mm 66mm;gap:10mm;padding:9mm var(--managed-margin) 15mm}.kompakt-pdf-columns.continuation{display:block;padding-top:6mm}.kompakt-pdf-entry h3{color:var(--managed-primary);font-size:10.5pt;font-weight:550}.kompakt-pdf-meta{display:flex;flex-wrap:wrap;gap:.7mm 4mm;margin:.7mm 0 1mm;color:var(--managed-muted);font-size:7.4pt}.kompakt-pdf-meta strong{color:var(--managed-accent);font-size:8.4pt}.kompakt-pdf-contacts{display:grid;gap:3.5mm;margin:0;font-style:normal}.kompakt-pdf-contact{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;align-items:center;color:var(--managed-primary);font-size:8.8pt}.kompakt-pdf-contact i{color:var(--managed-accent);font-size:11pt;font-style:normal}.kompakt-pdf-strength{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;margin-bottom:4mm}.kompakt-pdf-strength i{color:var(--managed-accent);font-size:11pt;font-style:normal}.kompakt-pdf-strength h3{margin:0 0 1mm;color:var(--managed-primary);font-size:9pt}.kompakt-pdf-strength p{margin:0}.kompakt-pdf-skills{display:flex;flex-wrap:wrap;gap:2mm 3mm}.kompakt-pdf-skill{padding:0 1.5mm 1mm;border-bottom:.3mm solid var(--managed-divider);color:var(--managed-primary);font-size:7.8pt;font-weight:700}.kompakt-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 8mm}.kompakt-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:1.5mm;align-items:center}.kompakt-pdf-language strong{color:var(--managed-primary)}.kompakt-pdf-language .managed-pdf-dots i{width:2.2mm;height:2.2mm}.kompakt-pdf-language .managed-pdf-dots i.filled{background:var(--managed-accent)}
+  .einfach-pdf{--managed-primary:var(--accent);--managed-accent:var(--secondary);--managed-text:#424b50;--managed-muted:#667177;--managed-divider:var(--accent);--managed-pattern:#eaf6fd;--managed-margin:max(15mm,var(--doc-margin));--managed-section-gap:var(--section-gap);--managed-entry-gap:4.5mm}.einfach-pdf .managed-pdf-background{color:var(--managed-pattern);opacity:.78}.einfach-pdf .managed-pdf-background path{fill:none;stroke:currentColor;stroke-width:4.2}.einfach-pdf-inner{height:100%;padding:14mm var(--managed-margin) 16mm}.einfach-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 32mm;gap:9mm;min-height:36mm;margin-bottom:7mm}.einfach-pdf-header.no-photo{grid-template-columns:1fr}.einfach-pdf-header h1{margin:0;color:var(--managed-primary);font-size:24pt;font-weight:750;line-height:1;text-transform:uppercase}.einfach-pdf-header h2{margin:2mm 0;color:var(--managed-accent);font-size:11.5pt}.einfach-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 8mm;max-width:118mm;margin:0;font-size:7.8pt;font-style:normal}.einfach-pdf-contact{display:grid;grid-template-columns:4mm minmax(0,1fr);gap:1mm}.einfach-pdf-contact i{color:var(--managed-accent);font-style:normal}.einfach-pdf-photo{width:30mm;height:30mm;border-radius:50%;object-fit:cover}.einfach-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:auto;margin-bottom:6mm;padding-bottom:3mm;border-bottom:.5mm solid var(--managed-primary)}.einfach-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-accent);font-size:7pt;text-transform:uppercase}.einfach-pdf-header.compact h1{font-size:16pt}.einfach-pdf-header.compact h2{margin:0;font-size:9pt}.einfach-pdf .managed-pdf-title{padding-bottom:1mm;border-bottom:.65mm solid var(--managed-primary);color:var(--managed-primary);font-size:14pt;font-weight:750}.einfach-pdf-strengths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4mm 15mm}.einfach-pdf-strength{display:grid;grid-template-columns:7mm minmax(0,1fr);gap:2mm}.einfach-pdf-strength i{color:var(--managed-accent);font-size:14pt;font-style:normal}.einfach-pdf-strength h3{margin:0 0 1.5mm;color:var(--managed-primary);font-size:9.5pt}.einfach-pdf-strength p{margin:0}.einfach-pdf-entry{padding-bottom:3mm;border-bottom:.25mm dashed #d4d9dc}.einfach-pdf-entry:last-child{border-bottom:0}.einfach-pdf-entry h3{color:var(--managed-primary);font-size:11pt;font-weight:500}.einfach-pdf-entry h4{margin-top:1mm;color:var(--managed-accent);font-size:9.5pt}.einfach-pdf-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm;color:var(--managed-muted);font-size:7.8pt}.einfach-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 15mm}.einfach-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:3mm;align-items:center}.einfach-pdf-language strong{color:var(--managed-primary)}.einfach-pdf-language .managed-pdf-dots{gap:1mm}.einfach-pdf-language .managed-pdf-dots i{width:2.3mm;height:2.3mm}.einfach-pdf-language .managed-pdf-dots i.filled{background:var(--managed-accent)}
+  .managed-pdf[data-density="compact"]{--managed-entry-gap:max(3.2mm,calc(var(--managed-entry-gap) - 1mm));--managed-section-gap:max(4mm,calc(var(--managed-section-gap) - 1mm))}.managed-pdf[data-density="dense"]{--managed-entry-gap:3mm;--managed-section-gap:4mm}.kompakt-pdf[data-density="dense"]{--managed-entry-gap:2.5mm;--managed-section-gap:3.5mm;font-size:max(7.5pt,calc(var(--body-size) - .5pt));line-height:max(1.18,calc(var(--body-line) - .07))}
+  .managed-pdf-ats{--managed-primary:#173b63;--managed-dark:#173b63;--managed-accent:#173b63;--managed-text:#303b42;--managed-muted:#626e75;--managed-divider:#aeb8bf;padding:14mm var(--managed-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.managed-pdf-ats .managed-pdf-header{display:block;min-height:auto;margin:0;padding:0 0 4mm;border-bottom:.3mm solid var(--managed-divider)}.managed-pdf-ats .managed-pdf-header h1{max-width:none;font-size:19pt}.managed-pdf-ats .managed-pdf-header h2{margin-top:1mm;color:var(--managed-primary);font-size:10pt}.managed-pdf-ats .managed-pdf-section{margin-top:var(--managed-section-gap);margin-bottom:0}.managed-pdf-ats .managed-pdf-title{margin-bottom:2mm;padding-bottom:1mm;border-bottom:.3mm solid var(--managed-divider);color:var(--managed-primary);font-size:10.5pt;font-weight:700}.managed-pdf-ats .managed-pdf-list{gap:var(--managed-entry-gap)}
+  @media print{.no-print-background .managed-pdf-background{display:none!important}}
+`;
+
+const modernDocumentCss = `
+  .modern-pdf{--modern-primary:var(--accent);--modern-soft:var(--secondary);--modern-heading:#303437;--modern-text:#444b4f;--modern-muted:#686f73;--modern-divider:#aeb4b6;--modern-icon-bg:#f2f3f3;--modern-margin:15mm;--modern-section-gap:7mm;--modern-entry-gap:4.5mm;position:relative;width:100%;height:100%;overflow:hidden;color:var(--modern-text);background:#fff;font-family:var(--body-font);font-size:8.4pt;line-height:1.27}
+  .modern-pdf *{box-sizing:border-box}.modern-pdf a{color:inherit;text-decoration:none}.modern-pdf-content{position:relative;z-index:2;height:100%;padding:14mm var(--modern-margin) 14mm}
+  .modern-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 29mm;gap:9mm;align-items:start;min-height:25mm;margin-bottom:4mm}.modern-pdf-header.no-photo{grid-template-columns:1fr}.modern-pdf-identity{min-width:0}.modern-pdf-header h1{margin:0;color:var(--modern-heading);font-size:24pt;font-weight:700;letter-spacing:.01em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.modern-pdf-header h2{margin:2mm 0 0;color:var(--modern-primary);font-size:12pt;font-weight:500;line-height:1.18;overflow-wrap:anywhere}.modern-pdf-photo{justify-self:end;width:25mm;height:25mm;border-radius:50%;object-fit:cover;background:var(--modern-icon-bg)}
+  .modern-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:auto;margin-bottom:7mm;padding-bottom:3mm;border-bottom:.35mm solid var(--modern-divider)}.modern-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--modern-primary);font-size:7pt;letter-spacing:.08em;text-transform:uppercase}.modern-pdf-header.compact h1{font-size:15pt}.modern-pdf-header.compact h2{margin:0;font-size:9pt}
+  .modern-pdf-columns{display:grid;grid-template-columns:102mm 67mm;gap:11mm;align-items:start}.modern-pdf-columns.continuation{display:block}.modern-pdf-left,.modern-pdf-right{display:flex;min-width:0;flex-direction:column;gap:var(--modern-section-gap)}
+  .modern-pdf-section{min-width:0;break-inside:auto}.modern-pdf-title{margin:0 0 3.2mm;padding-bottom:1mm;border-bottom:.35mm solid var(--modern-divider);color:var(--modern-muted);font-size:9.2pt;font-weight:500;letter-spacing:.025em;line-height:1;text-transform:uppercase;break-after:avoid}.modern-pdf-list{display:flex;flex-direction:column;gap:var(--modern-entry-gap)}
+  .modern-pdf-entry{break-inside:auto}.modern-pdf-entry h3{margin:0 0 1mm;color:var(--modern-heading);font-size:11pt;font-weight:500;line-height:1.15;overflow-wrap:anywhere;break-after:avoid}.modern-pdf-entry-meta{display:flex;flex-wrap:wrap;align-items:center;gap:1mm 4mm;margin:0 0 1.5mm;color:var(--modern-muted);font-size:7.9pt;line-height:1.2;break-after:avoid}.modern-pdf-entry-meta strong{margin-right:auto;color:var(--modern-primary);font-weight:600}.modern-pdf-entry-meta span{display:flex;align-items:center;gap:1mm;white-space:nowrap}.modern-pdf-entry-meta i{color:var(--modern-muted);font-size:6.8pt;font-style:normal}.modern-pdf-entry ul,.modern-pdf-certifications,.modern-pdf-ats ul{margin:0;padding-left:4mm}.modern-pdf-entry li,.modern-pdf-certifications li,.modern-pdf-ats li{margin:.35mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word;break-inside:avoid}
+  .modern-pdf-contacts{display:grid;gap:3.2mm;margin:0;font-style:normal}.modern-pdf-contact{display:grid;grid-template-columns:8.5mm minmax(0,1fr);gap:3mm;align-items:center;min-width:0}.modern-pdf-contact i{display:grid;place-items:center;width:8.5mm;height:8.5mm;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:7pt;font-style:normal;font-weight:700}.modern-pdf-contact span,.modern-pdf-contact a{min-width:0;color:var(--modern-text);font-size:8.4pt;line-height:1.2;overflow-wrap:anywhere}
+  .modern-pdf-contacts.inline{display:flex;flex-wrap:nowrap;align-items:center;gap:1.8mm;max-width:145mm;margin-top:3mm}.modern-pdf-contacts.inline .modern-pdf-contact{display:flex;flex:0 0 auto;grid-template-columns:none;gap:.8mm;min-width:0}.modern-pdf-contacts.inline .modern-pdf-contact i{display:block;width:3.2mm;height:auto;border-radius:0;color:var(--modern-muted);background:transparent;font-size:6.8pt;line-height:1.2}.modern-pdf-contacts.inline .modern-pdf-contact span,.modern-pdf-contacts.inline .modern-pdf-contact a{display:block;max-width:44mm;overflow:hidden;color:var(--modern-muted);font-size:7.4pt;text-overflow:ellipsis;white-space:nowrap}
+  .modern-pdf-summary{margin:0;hyphens:auto;overflow-wrap:break-word}.modern-pdf-strengths{display:flex;flex-direction:column;gap:4mm}.modern-pdf-strength{display:grid;grid-template-columns:10mm minmax(0,1fr);gap:3mm;align-items:start}.modern-pdf-strength>i{display:grid;width:9mm;height:9mm;place-items:center;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:10pt;font-style:normal;font-weight:700}.modern-pdf-strength h3{margin:0 0 .5mm;color:var(--modern-heading);font-size:9.5pt;font-weight:600}.modern-pdf-strength p{margin:0;hyphens:auto;overflow-wrap:break-word}.modern-pdf-languages{display:flex;flex-direction:column;gap:2.5mm}.modern-pdf-language{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4mm;align-items:center}.modern-pdf-language>div{display:flex;min-width:0;justify-content:space-between;gap:2mm}.modern-pdf-language strong{color:var(--modern-heading);font-weight:600}.modern-pdf-language em{color:var(--modern-muted);font-size:7.9pt;font-style:normal}.modern-pdf-dots{display:flex;gap:1.1mm;color:var(--modern-primary);font-size:6pt;white-space:nowrap}
+  .modern-pdf-knowledge{display:flex;flex-wrap:wrap;gap:2.5mm 3mm}.modern-pdf-knowledge span{padding:0 2mm 1mm;border-bottom:.3mm solid var(--modern-divider);color:var(--modern-text);font-size:8.2pt;line-height:1.15}.modern-pdf-achievements{display:flex;flex-direction:column;gap:4mm}.modern-pdf-achievements article{display:grid;grid-template-columns:9mm minmax(0,1fr);gap:3mm;align-items:start}.modern-pdf-achievements i{display:grid;width:9mm;height:9mm;place-items:center;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:8pt;font-style:normal}.modern-pdf-achievements p{margin:0;line-height:1.25}
+  .modern-pdf-footer{position:absolute;right:var(--modern-margin);bottom:6mm;left:var(--modern-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--modern-muted);font-size:7.2pt}.modern-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}
+  .modern-pdf[data-density="compact"]{--modern-section-gap:5mm;--modern-entry-gap:3.7mm;font-size:8.1pt}.modern-pdf[data-density="dense"]{--modern-section-gap:4mm;--modern-entry-gap:3mm;font-size:7.7pt;line-height:1.2}.modern-pdf[data-density="dense"] .modern-pdf-title{margin-bottom:2.5mm}.modern-pdf[data-density="dense"] .modern-pdf-contacts{gap:2.5mm}.modern-pdf[data-density="dense"] .modern-pdf-strengths{gap:3mm}
+  .modern-pdf-ats{--modern-primary:#173b63;--modern-heading:#26343e;--modern-text:#303b42;--modern-muted:#626e75;--modern-divider:#aeb8bf;padding:14mm var(--modern-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.modern-pdf-ats .modern-pdf-header{display:block;min-height:auto;margin-bottom:5mm;padding-bottom:3mm;border-bottom:.35mm solid var(--modern-divider)}.modern-pdf-ats .modern-pdf-header h1{font-size:19pt}.modern-pdf-ats .modern-pdf-header h2{margin-top:1mm;color:var(--modern-heading);font-size:10pt}.modern-pdf-ats .modern-pdf-section{margin-bottom:5mm}.modern-pdf-ats .modern-pdf-title{margin-bottom:2mm;color:var(--modern-heading);font-size:10.5pt;font-weight:700}.modern-pdf-ats .modern-pdf-contacts{display:flex;flex-wrap:wrap;gap:1mm 5mm}.modern-pdf-ats .modern-pdf-contact{display:block}.modern-pdf-ats .modern-pdf-contact i{display:none}.modern-pdf-ats .modern-pdf-language{display:block}.modern-pdf-ats .modern-pdf-dots{display:none}
+  @media print{.no-print-background .modern-pdf-background{display:none!important}}
+`;
+
 const pageFitScript = `
   <script>
     (() => {
@@ -636,7 +667,11 @@ export const buildDocumentHtml = (
     docs.resumeProfile,
     template.id === "zweispaltig"
       ? zweispaltigPaginationOptions
-      : undefined,
+      : template.id === "kompakt"
+        ? kompaktPaginationOptions
+        : template.id === "modern"
+          ? modernPaginationOptions
+        : undefined,
   );
 
   const renderExperience = (id: string) => {
@@ -1906,6 +1941,491 @@ export const buildDocumentHtml = (
     </section>`;
   };
 
+  const managedSummary =
+    docs.resumeProfile ||
+    profile?.summary ||
+    "Kurzprofil im Dokumenteditor ergänzen.";
+  const managedPortfolio =
+    profile?.portfolio || profile?.github || profile?.linkedin || "";
+  const managedStrengths = uniqueValues(profile?.skills ?? [])
+    .slice(0, 4)
+    .map((value) => {
+      const [title, ...description] = value.split(/\s+(?:–|—|:)\s+/);
+      return {
+        title: title.trim(),
+        description: description.join(" – ").trim(),
+      };
+    });
+  const managedContactValues = [
+    {
+      icon: "☎",
+      value: profile?.phone || "",
+      href: profile?.phone
+        ? `tel:${profile.phone.replace(/[^\d+]/g, "")}`
+        : "",
+    },
+    {
+      icon: "@",
+      value: profile?.email || "",
+      href: profile?.email ? `mailto:${profile.email}` : "",
+    },
+    {
+      icon: "↗",
+      value: profile?.linkedin || "",
+      href: profile?.linkedin ? externalHref(profile.linkedin) : "",
+    },
+    {
+      icon: "⌖",
+      value: profile?.portfolio || profile?.github || "",
+      href:
+        profile?.portfolio || profile?.github
+          ? externalHref(profile?.portfolio || profile?.github || "")
+          : "",
+    },
+    {
+      icon: "◆",
+      value: [profile?.city, profile?.country].filter(Boolean).join(", "),
+      href: "",
+    },
+    {
+      icon: "☆",
+      value:
+        profile?.birthDate || profile?.birthPlace
+          ? `Geb. ${profile?.birthDate || ""}${profile?.birthPlace ? ` in ${profile.birthPlace}` : ""}`.trim()
+          : "",
+      href: "",
+    },
+  ].filter((contact) => contact.value.trim());
+  const managedProfession = [
+    profile?.title || role,
+    ...managedStrengths.slice(0, 3).map((strength) => strength.title),
+  ]
+    .filter(Boolean)
+    .join(" | ");
+  const managedFooter = (plan: ResumePagePlan) =>
+    `<footer class="managed-pdf-footer">${
+      managedPortfolio
+        ? `<a href="${escapeHtml(externalHref(managedPortfolio))}">${escapeHtml(managedPortfolio)}</a>`
+        : "<span></span>"
+    }<span>Seite ${plan.pageNumber} / ${resumePlan.length}</span></footer>`;
+  const managedDots = (score: number) =>
+    `<span class="managed-pdf-dots">${Array.from(
+      { length: 5 },
+      (_, index) => `<i class="${index < score ? "filled" : ""}"></i>`,
+    ).join("")}</span>`;
+  const renderManagedCareerEntry = (
+    id: string,
+    kind: "experience" | "education",
+    variant: "stilvoll" | "kompakt" | "einfach",
+  ) => {
+    const item =
+      kind === "experience"
+        ? (() => {
+            const experience = experienceById.get(id);
+            return experience
+              ? {
+                  from: experience.from,
+                  to: experience.to,
+                  title: experience.role,
+                  organization: experience.company,
+                  city: experience.city,
+                  achievements: experience.achievements.filter(Boolean),
+                }
+              : undefined;
+          })()
+        : (() => {
+            const education = educationById.get(id);
+            return education
+              ? {
+                  from: education.from,
+                  to: education.to,
+                  title: education.degree,
+                  organization: education.institution,
+                  city: education.city,
+                  achievements: [] as string[],
+                }
+              : undefined;
+          })();
+    if (!item) return "";
+    const achievements = item.achievements.length
+      ? `<ul>${item.achievements
+          .map((achievement) => `<li>${escapeHtml(achievement)}</li>`)
+          .join("")}</ul>`
+      : "";
+    if (variant === "einfach") {
+      return `<article class="managed-pdf-entry einfach-pdf-entry"><h3>${escapeHtml(item.title)}</h3><h4>${escapeHtml(item.organization)}</h4><p class="einfach-pdf-meta"><span>${escapeHtml(formatDateRange(item.from, item.to))}</span>${item.city ? `<span>${escapeHtml(item.city)}</span>` : ""}</p>${achievements}</article>`;
+    }
+    if (variant === "kompakt") {
+      return `<article class="managed-pdf-entry kompakt-pdf-entry"><h3>${escapeHtml(item.title)}</h3><p class="kompakt-pdf-meta"><strong>${escapeHtml(item.organization)}</strong><span>${escapeHtml(formatDateRange(item.from, item.to))}</span>${item.city ? `<span>${escapeHtml(item.city)}</span>` : ""}</p>${achievements}</article>`;
+    }
+    return `<article class="managed-pdf-entry stilvoll-pdf-entry"><h3>${escapeHtml(item.title)}</h3><p class="stilvoll-pdf-meta"><strong>${escapeHtml(item.organization)}</strong><span>${escapeHtml(formatDateRange(item.from, item.to))}${item.city ? ` · ${escapeHtml(item.city)}` : ""}</span></p>${achievements}</article>`;
+  };
+  const managedSection = (
+    title: string,
+    content: string,
+    extraClass = "",
+  ) =>
+    content
+      ? `<section class="managed-pdf-section ${extraClass}"><h3 class="managed-pdf-title">${title}</h3>${content}</section>`
+      : "";
+  const managedAtsContacts = managedContactValues
+    .map((contact) => {
+      const value = escapeHtml(contact.value);
+      return contact.href
+        ? `<a href="${escapeHtml(contact.href)}">${value}</a>`
+        : value;
+    })
+    .join(" · ");
+  const managedAtsStrengths = managedStrengths.length
+    ? `<ul>${managedStrengths
+        .map(
+          (strength) =>
+            `<li><strong>${escapeHtml(strength.title)}</strong>${strength.description ? ` – ${escapeHtml(strength.description)}` : ""}</li>`,
+        )
+        .join("")}</ul>`
+    : "";
+  const managedAtsLanguages = kreativLanguages.length
+    ? `<ul>${kreativLanguages
+        .map((language) => `<li>${escapeHtml(language.raw)}</li>`)
+        .join("")}</ul>`
+    : "";
+  const managedKnowledge = kreativSkillValues.length
+    ? `<p>${kreativSkillValues.map(escapeHtml).join(" · ")}</p>`
+    : "";
+  const managedCertifications = kreativCertifications.length
+    ? `<ul>${kreativCertifications
+        .map((item) => `<li>${escapeHtml(item)}</li>`)
+        .join("")}</ul>`
+    : "";
+  const renderManagedAtsPage = (
+    plan: ResumePagePlan,
+    variant: "stilvoll" | "kompakt" | "einfach",
+  ) => {
+    const isContinuation = plan.pageNumber > 1;
+    const isLastPage = plan.pageNumber === resumePlan.length;
+    const experiences = plan.items
+      .filter((item) => item.kind === "experience")
+      .map((item) => renderManagedCareerEntry(item.id, "experience", variant))
+      .join("");
+    const education = plan.items
+      .filter((item) => item.kind === "education")
+      .map((item) => renderManagedCareerEntry(item.id, "education", variant))
+      .join("");
+    return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="${variant}" data-no-fit="true"><div class="page-content managed-pdf ${variant}-pdf managed-pdf-ats" data-density="${plan.density}">
+      <header class="managed-pdf-header ${variant}-pdf-header${isContinuation ? " compact" : ""}">
+        ${isContinuation ? '<p class="kicker">Lebenslauf · Fortsetzung</p>' : ""}
+        <h1>${escapeHtml(name)}</h1>${managedProfession ? `<h2>${escapeHtml(managedProfession)}</h2>` : ""}
+      </header>
+      ${!isContinuation ? managedSection("Persönliche Daten", `<p>${managedAtsContacts}</p>`) : ""}
+      ${sections.profile && !isContinuation ? managedSection("Zusammenfassung", `<p>${escapeHtml(managedSummary)}</p>`) : ""}
+      ${sections.experience ? managedSection(`Berufserfahrung${isContinuation ? " · Fortsetzung" : ""}`, `<div class="managed-pdf-list">${experiences}</div>`) : ""}
+      ${sections.education ? managedSection("Ausbildung", `<div class="managed-pdf-list">${education}</div>`) : ""}
+      ${isLastPage && sections.skills ? managedSection("Kenntnisse", managedKnowledge) : ""}
+      ${isLastPage && sections.languages ? managedSection("Sprachen", managedAtsLanguages) : ""}
+      ${isLastPage && sections.skills ? managedSection("Stärken", managedAtsStrengths) : ""}
+      ${isLastPage && sections.certifications ? managedSection(variant === "kompakt" ? "Erfolge und Zertifikate" : "Zertifikate", managedCertifications) : ""}
+      ${managedFooter(plan)}
+    </div></section>`;
+  };
+  const stilvollBackground = `<svg class="managed-pdf-background" viewBox="0 0 210 297" aria-hidden="true"><defs><pattern id="stilvoll-pdf-chevron" width="34" height="25" patternUnits="userSpaceOnUse"><path d="M0 22 17 6l17 16M0 16 17 0l17 16"/></pattern></defs><rect x="45" y="-5" width="165" height="105" fill="url(#stilvoll-pdf-chevron)"/><rect x="118" y="48" width="92" height="83" fill="url(#stilvoll-pdf-chevron)"/></svg>`;
+  const kompaktBackground = `<svg class="managed-pdf-background" viewBox="0 0 210 297" aria-hidden="true"><path d="M72-10c2 32 10 48 38 62 31 16 58 22 111 64M80-10c2 28 11 43 38 56 34 16 62 24 103 59M89-10c2 25 12 38 37 50 35 17 64 25 95 54M98-10c3 22 12 33 35 44 36 18 63 26 88 49M144 0v16c0 7 5 12 12 12h25c7 0 12 5 12 12v2M159 49h50M177 71h33"/><circle cx="144" cy="28" r="3.2"/><circle cx="176" cy="49" r="2.2"/><circle cx="198" cy="71" r="2.2"/></svg>`;
+  const einfachBackground = `<svg class="managed-pdf-background" viewBox="0 0 210 297" aria-hidden="true"><path d="M128-8v21h14V-8M148 21v19h16V26M71 20v24h16V31M98 39v20h16V48M152 57v22h16V67M174 79v23h20V89M101 112a11 11 0 1 0 22 0M174 251v29h-14v17M82 261h18v25h15M8 276a9 9 0 1 1 18 0"/></svg>`;
+  const renderManagedHeader = (
+    variant: "stilvoll" | "einfach",
+    isContinuation: boolean,
+  ) => {
+    const contactsClass =
+      variant === "stilvoll"
+        ? "stilvoll-pdf-contacts"
+        : "einfach-pdf-contacts";
+    const contactClass =
+      variant === "stilvoll" ? "" : "einfach-pdf-contact";
+    const contacts = managedContactValues
+      .map((contact) => {
+        const content = contact.href
+          ? `<a href="${escapeHtml(contact.href)}">${escapeHtml(contact.value)}</a>`
+          : `<span>${escapeHtml(contact.value)}</span>`;
+        return `<span class="${contactClass}"><i aria-hidden="true">${contact.icon}</i>${content}</span>`;
+      })
+      .join("");
+    const photoClass =
+      variant === "stilvoll" ? "stilvoll-pdf-photo" : "einfach-pdf-photo";
+    const photo =
+      !isContinuation && photoSource
+        ? `<img class="${photoClass}" src="${escapeHtml(photoSource)}" alt="">`
+        : "";
+    return `<header class="managed-pdf-header ${variant}-pdf-header${isContinuation ? " compact" : ""}${!photo ? " no-photo" : ""}">
+      <div>${isContinuation ? '<p class="kicker">Lebenslauf · Fortsetzung</p>' : ""}<h1>${escapeHtml(name)}</h1>${managedProfession ? `<h2>${escapeHtml(managedProfession)}</h2>` : ""}${!isContinuation && managedContactValues.length ? `<address class="${contactsClass}">${contacts}</address>` : ""}</div>${photo}
+    </header>`;
+  };
+  const managedStrengthCards = (variant: "stilvoll" | "kompakt" | "einfach") =>
+    managedStrengths.length
+      ? `<div class="${variant}-pdf-strengths">${managedStrengths
+          .map(
+            (strength, index) =>
+              `<article class="${variant}-pdf-strength"><i aria-hidden="true">${["★", "⚑", "↗", "◇"][index]}</i><div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+          )
+          .join("")}</div>`
+      : "";
+  const managedVisualLanguages = (variant: "stilvoll" | "kompakt" | "einfach") =>
+    kreativLanguages.length
+      ? `<div class="${variant}-pdf-languages">${kreativLanguages
+          .map(
+            (language) =>
+              `<article class="${variant}-pdf-language"><strong>${escapeHtml(language.name)}</strong><span>${escapeHtml(language.level)}</span>${managedDots(language.score)}</article>`,
+          )
+          .join("")}</div>`
+      : "";
+  const renderStilvollResumePage = (plan: ResumePagePlan) => {
+    if (atsMode) return renderManagedAtsPage(plan, "stilvoll");
+    const isContinuation = plan.pageNumber > 1;
+    const experiences = plan.items
+      .filter((item) => item.kind === "experience")
+      .map((item) => renderManagedCareerEntry(item.id, "experience", "stilvoll"))
+      .join("");
+    const education = plan.items
+      .filter((item) => item.kind === "education")
+      .map((item) => renderManagedCareerEntry(item.id, "education", "stilvoll"))
+      .join("");
+    const left = isContinuation
+      ? ""
+      : `<aside>${sections.profile ? managedSection("Zusammenfassung", `<p>${escapeHtml(managedSummary)}</p>`) : ""}${sections.skills ? managedSection("Stärken", managedStrengthCards("stilvoll")) : ""}${sections.languages ? managedSection("Sprachen", managedVisualLanguages("stilvoll")) : ""}</aside>`;
+    return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="stilvoll" data-no-fit="true"><div class="page-content managed-pdf stilvoll-pdf" data-density="${plan.density}">${designSettings.backgroundId === "geometric" && !isContinuation ? stilvollBackground : ""}${renderManagedHeader("stilvoll", isContinuation)}<div class="stilvoll-pdf-columns${isContinuation ? " continuation" : ""}">${left}<main>${sections.experience ? managedSection(`Erfahrung${isContinuation ? " · Fortsetzung" : ""}`, `<div class="managed-pdf-list">${experiences}</div>`) : ""}${sections.education ? managedSection("Ausbildung", `<div class="managed-pdf-list">${education}</div>`) : ""}</main></div>${managedFooter(plan)}</div></section>`;
+  };
+  const renderKompaktResumePage = (plan: ResumePagePlan) => {
+    if (atsMode) return renderManagedAtsPage(plan, "kompakt");
+    const isContinuation = plan.pageNumber > 1;
+    const isLastPage = plan.pageNumber === resumePlan.length;
+    const experiences = plan.items
+      .filter((item) => item.kind === "experience")
+      .map((item) => renderManagedCareerEntry(item.id, "experience", "kompakt"))
+      .join("");
+    const education = plan.items
+      .filter((item) => item.kind === "education")
+      .map((item) => renderManagedCareerEntry(item.id, "education", "kompakt"))
+      .join("");
+    const contacts = managedContactValues
+      .map((contact) => {
+        const content = contact.href
+          ? `<a href="${escapeHtml(contact.href)}">${escapeHtml(contact.value)}</a>`
+          : escapeHtml(contact.value);
+        return `<span class="kompakt-pdf-contact"><i aria-hidden="true">${contact.icon}</i>${content}</span>`;
+      })
+      .join("");
+    const right = isContinuation
+      ? ""
+      : `<aside>${managedSection("Kontaktdaten", `<address class="kompakt-pdf-contacts">${contacts}</address>`)}${sections.profile ? managedSection("Zusammenfassung", `<p>${escapeHtml(managedSummary)}</p>`) : ""}${sections.skills ? managedSection("Stärken", managedStrengthCards("kompakt")) : ""}${sections.certifications ? managedSection("Erfolge", managedCertifications, "kompakt-pdf-strengths") : ""}${sections.skills ? managedSection("Fähigkeiten", `<div class="kompakt-pdf-skills">${kreativSkillValues.map((skill) => `<span class="kompakt-pdf-skill">${escapeHtml(skill)}</span>`).join("")}</div>`) : ""}</aside>`;
+    return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="kompakt" data-no-fit="true"><div class="page-content managed-pdf kompakt-pdf" data-density="${plan.density}">${designSettings.backgroundId === "abstract" && !isContinuation ? kompaktBackground : ""}<header class="managed-pdf-header kompakt-pdf-header${isContinuation ? " compact" : ""}">${isContinuation ? '<p class="kicker">Lebenslauf · Fortsetzung</p>' : ""}<h1>${escapeHtml(name)}</h1>${isContinuation && managedProfession ? `<h2>${escapeHtml(managedProfession)}</h2>` : ""}</header><div class="kompakt-pdf-columns${isContinuation ? " continuation" : ""}"><main>${sections.experience ? managedSection(`Erfahrung${isContinuation ? " · Fortsetzung" : ""}`, `<div class="managed-pdf-list">${experiences}</div>`) : ""}${sections.education ? managedSection("Ausbildung", `<div class="managed-pdf-list">${education}</div>`) : ""}${isLastPage && sections.languages ? managedSection("Sprachen", managedVisualLanguages("kompakt")) : ""}</main>${right}</div>${managedFooter(plan)}</div></section>`;
+  };
+  const renderEinfachResumePage = (plan: ResumePagePlan) => {
+    if (atsMode) return renderManagedAtsPage(plan, "einfach");
+    const isContinuation = plan.pageNumber > 1;
+    const isLastPage = plan.pageNumber === resumePlan.length;
+    const experiences = plan.items
+      .filter((item) => item.kind === "experience")
+      .map((item) => renderManagedCareerEntry(item.id, "experience", "einfach"))
+      .join("");
+    const education = plan.items
+      .filter((item) => item.kind === "education")
+      .map((item) => renderManagedCareerEntry(item.id, "education", "einfach"))
+      .join("");
+    return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="einfach" data-no-fit="true"><div class="page-content managed-pdf einfach-pdf" data-density="${plan.density}">${designSettings.backgroundId === "geometric" && !isContinuation ? einfachBackground : ""}<div class="einfach-pdf-inner">${renderManagedHeader("einfach", isContinuation)}${sections.profile && !isContinuation ? managedSection("Zusammenfassung", `<p>${escapeHtml(managedSummary)}</p>`) : ""}${sections.skills && !isContinuation ? managedSection("Stärken", managedStrengthCards("einfach")) : ""}${sections.experience ? managedSection(`Erfahrung${isContinuation ? " · Fortsetzung" : ""}`, `<div class="managed-pdf-list">${experiences}</div>`) : ""}${sections.education ? managedSection("Ausbildung", `<div class="managed-pdf-list">${education}</div>`) : ""}${isLastPage && sections.skills ? managedSection("Kenntnisse", managedKnowledge) : ""}${isLastPage && sections.languages ? managedSection("Sprachen", managedVisualLanguages("einfach")) : ""}${isLastPage && sections.certifications ? managedSection("Zertifikate", managedCertifications) : ""}</div>${managedFooter(plan)}</div></section>`;
+  };
+
+  const modernSection = (title: string, content: string, extraClass = "") =>
+    content
+      ? `<section class="modern-pdf-section ${extraClass}"><h3 class="modern-pdf-title">${escapeHtml(title)}</h3>${content}</section>`
+      : "";
+  const modernProfessionTitle = profile?.title || role;
+  const modernProfession = [
+    modernProfessionTitle,
+    ...(modernProfessionTitle.length < 48
+      ? managedStrengths.slice(0, 2).map((item) => item.title)
+      : []),
+  ]
+    .filter(Boolean)
+    .join(" | ");
+  const modernContactItems = [
+    {
+      icon: "T",
+      value: profile?.phone || "",
+      href: profile?.phone
+        ? `tel:${profile.phone.replace(/[^\d+]/g, "")}`
+        : "",
+    },
+    {
+      icon: "@",
+      value: profile?.email || "",
+      href: profile?.email ? `mailto:${profile.email}` : "",
+    },
+    {
+      icon: "in",
+      value: profile?.linkedin || "",
+      href: externalHref(profile?.linkedin),
+    },
+    {
+      icon: "W",
+      value: profile?.portfolio || profile?.github || "",
+      href: externalHref(profile?.portfolio || profile?.github),
+    },
+    {
+      icon: "O",
+      value: [profile?.city, profile?.country].filter(Boolean).join(", "),
+      href: "",
+    },
+    {
+      icon: "G",
+      value:
+        profile?.birthDate || profile?.birthPlace
+          ? `Geb. ${profile?.birthDate || ""}${profile?.birthPlace ? ` in ${profile.birthPlace}` : ""}`.trim()
+          : "",
+      href: "",
+    },
+  ].filter((item) => item.value.trim());
+  const renderModernContacts = (ats = false, inline = false) => {
+    if (!modernContactItems.length) return "";
+    const items = inline
+      ? modernContactItems
+          .filter((item) => ["T", "@", "in", "O"].includes(item.icon))
+          .slice(0, 4)
+      : modernContactItems;
+    return `<address class="modern-pdf-contacts${inline ? " inline" : ""}">${items
+      .map((item) => {
+        const value = escapeHtml(item.value);
+        const content = item.href
+          ? `<a href="${escapeHtml(item.href)}">${value}</a>`
+          : `<span>${value}</span>`;
+        return `<span class="modern-pdf-contact">${ats ? "" : `<i aria-hidden="true">${item.icon}</i>`}${content}</span>`;
+      })
+      .join("")}</address>`;
+  };
+  const renderModernHeader = (compact: boolean, ats = false) => {
+    const photo =
+      !compact && !ats && photoSource
+        ? `<img class="modern-pdf-photo" src="${escapeHtml(photoSource)}" alt="">`
+        : "";
+    return `<header class="modern-pdf-header${compact ? " compact" : ""}${photo ? "" : " no-photo"}"><div class="modern-pdf-identity">${compact ? '<p class="kicker">Lebenslauf · Fortsetzung</p>' : ""}<h1>${escapeHtml(name)}</h1>${modernProfession ? `<h2>${escapeHtml(modernProfession)}</h2>` : ""}${!compact && !ats ? renderModernContacts(false, true) : ""}</div>${photo}</header>`;
+  };
+  const renderModernCareerEntry = (
+    id: string,
+    kind: "experience" | "education",
+  ) => {
+    const item =
+      kind === "experience"
+        ? (() => {
+            const experience = experienceById.get(id);
+            return experience
+              ? {
+                  title: experience.role,
+                  organization: experience.company,
+                  from: experience.from,
+                  to: experience.to,
+                  city: experience.city,
+                  achievements: experience.achievements.filter(Boolean),
+                }
+              : undefined;
+          })()
+        : (() => {
+            const education = educationById.get(id);
+            return education
+              ? {
+                  title: education.degree,
+                  organization: education.institution,
+                  from: education.from,
+                  to: education.to,
+                  city: education.city,
+                  achievements: [] as string[],
+                }
+              : undefined;
+          })();
+    if (!item) return "";
+    return `<article class="modern-pdf-entry"><h3>${escapeHtml(item.title)}</h3><p class="modern-pdf-entry-meta"><strong>${escapeHtml(item.organization)}</strong><span class="modern-pdf-entry-date"><i aria-hidden="true">▦</i>${escapeHtml(formatDateRange(item.from, item.to))}</span>${item.city ? `<span class="modern-pdf-entry-location"><i aria-hidden="true">●</i>${escapeHtml(item.city)}</span>` : ""}</p>${item.achievements.length ? `<ul>${item.achievements.map((achievement) => `<li>${escapeHtml(achievement)}</li>`).join("")}</ul>` : ""}</article>`;
+  };
+  const modernDescribedStrengths = managedStrengths.filter(
+    (item) => item.description,
+  );
+  const modernVisualStrengths = modernDescribedStrengths.length
+    ? `<div class="modern-pdf-strengths">${modernDescribedStrengths
+        .map(
+          (item, index) =>
+            `<article class="modern-pdf-strength"><i aria-hidden="true">${index % 2 === 0 ? "✓" : "⚑"}</i><div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description)}</p></div></article>`,
+        )
+        .join("")}</div>`
+    : "";
+  const modernVisualKnowledge = kreativSkillValues.length
+    ? `<div class="modern-pdf-knowledge">${kreativSkillValues.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>`
+    : "";
+  const modernVisualAchievements = kreativCertifications.length
+    ? `<div class="modern-pdf-achievements">${kreativCertifications.map((item) => `<article><i aria-hidden="true">★</i><p>${escapeHtml(item)}</p></article>`).join("")}</div>`
+    : "";
+  const modernVisualLanguages = kreativLanguages.length
+    ? `<div class="modern-pdf-languages">${kreativLanguages
+        .map(
+          (language) =>
+            `<article class="modern-pdf-language"><div><strong>${escapeHtml(language.name)}</strong><em>${escapeHtml(language.level)}</em></div><span class="modern-pdf-dots" aria-hidden="true">${Array.from({ length: 5 }, (_, index) => (index < language.score ? "●" : "○")).join("")}</span></article>`,
+        )
+        .join("")}</div>`
+    : "";
+  const modernAtsLanguages = kreativLanguages.length
+    ? `<ul>${kreativLanguages.map((language) => `<li>${escapeHtml(language.raw)}</li>`).join("")}</ul>`
+    : "";
+  const modernAtsStrengths = managedStrengths.length
+    ? `<ul>${managedStrengths
+        .map(
+          (item) =>
+            `<li><strong>${escapeHtml(item.title)}</strong>${item.description ? ` – ${escapeHtml(item.description)}` : ""}</li>`,
+        )
+        .join("")}</ul>`
+    : "";
+  const modernAtsKnowledge = kreativSkillValues.length
+    ? `<p>${kreativSkillValues.map(escapeHtml).join(" · ")}</p>`
+    : "";
+  const modernAtsCertifications = kreativCertifications.length
+    ? `<ul class="modern-pdf-certifications">${kreativCertifications.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
+    : "";
+  const modernFooter = (plan: ResumePagePlan) =>
+    `<footer class="modern-pdf-footer">${managedPortfolio ? `<a href="${escapeHtml(externalHref(managedPortfolio))}">${escapeHtml(managedPortfolio)}</a>` : "<span></span>"}<span>Seite ${plan.pageNumber} / ${resumePlan.length}</span></footer>`;
+  const renderModernResumePage = (plan: ResumePagePlan) => {
+    const isContinuation = plan.pageNumber > 1;
+    const isLastPage = plan.pageNumber === resumePlan.length;
+    const experiences = plan.items
+      .filter((item) => item.kind === "experience")
+      .map((item) => renderModernCareerEntry(item.id, "experience"))
+      .join("");
+    const education = plan.items
+      .filter((item) => item.kind === "education")
+      .map((item) => renderModernCareerEntry(item.id, "education"))
+      .join("");
+    const experienceSection = sections.experience && experiences
+      ? modernSection(
+          `${atsMode ? "Berufserfahrung" : "Erfahrung"}${isContinuation ? " · Fortsetzung" : ""}`,
+          `<div class="modern-pdf-list">${experiences}</div>`,
+        )
+      : "";
+    const educationSection = sections.education && education
+      ? modernSection(
+          "Ausbildung",
+          `<div class="modern-pdf-list">${education}</div>`,
+        )
+      : "";
+
+    if (atsMode) {
+      return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="modern" data-no-fit="true"><div class="page-content modern-pdf modern-pdf-ats" data-density="${plan.density}">${renderModernHeader(isContinuation, true)}${!isContinuation ? modernSection("Persönliche Daten", renderModernContacts(true)) : ""}${sections.profile && !isContinuation ? modernSection("Zusammenfassung", `<p class="modern-pdf-summary">${escapeHtml(managedSummary)}</p>`) : ""}${experienceSection}${educationSection}${isLastPage && sections.skills ? modernSection("Kenntnisse", modernAtsKnowledge) : ""}${isLastPage && sections.languages ? modernSection("Sprachen", modernAtsLanguages) : ""}${isLastPage && sections.skills ? modernSection("Stärken", modernAtsStrengths) : ""}${isLastPage && sections.certifications ? modernSection("Zertifikate", modernAtsCertifications) : ""}${modernFooter(plan)}</div></section>`;
+    }
+
+    const right = isContinuation
+      ? ""
+      : `<aside class="modern-pdf-right">${sections.skills ? modernSection("Stärken", modernVisualStrengths) : ""}${sections.languages ? modernSection("Sprachen", modernVisualLanguages) : ""}${sections.skills ? modernSection("Fähigkeiten", modernVisualKnowledge) : ""}${sections.certifications ? modernSection("Erfolge", modernVisualAchievements) : ""}</aside>`;
+    const visualSummary =
+      sections.profile && !isContinuation
+        ? modernSection(
+            "Zusammenfassung",
+            `<p class="modern-pdf-summary">${escapeHtml(managedSummary)}</p>`,
+          )
+        : "";
+    return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="modern" data-no-fit="true"><div class="page-content modern-pdf" data-density="${plan.density}"><div class="modern-pdf-content">${renderModernHeader(isContinuation)}<div class="modern-pdf-columns${isContinuation ? " continuation" : ""}"><main class="modern-pdf-left">${visualSummary}${experienceSection}${educationSection}${!experiences && !education && plan.pageNumber === 1 ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}</main>${right}</div></div>${modernFooter(plan)}</div></section>`;
+  };
+
   const renderResumePage = (plan: ResumePagePlan) => {
     const experienceItems = plan.items
       .filter((item) => item.kind === "experience")
@@ -1955,8 +2475,16 @@ export const buildDocumentHtml = (
   };
   const resume = resumePlan
     .map(
-      template.id === "elegant"
-        ? renderElegantResumePage
+      template.id === "modern"
+        ? renderModernResumePage
+        : template.id === "stilvoll"
+        ? renderStilvollResumePage
+        : template.id === "kompakt"
+          ? renderKompaktResumePage
+          : template.id === "einfach"
+            ? renderEinfachResumePage
+            : template.id === "elegant"
+              ? renderElegantResumePage
         : template.id === "ivy-league"
           ? renderIvyLeagueResumePage
         : template.id === "kreativ"
@@ -1969,7 +2497,7 @@ export const buildDocumentHtml = (
     )
     .join("");
   const selected = target === "mappe" ? [cover, letter, resume] : target === "deckblatt" ? [cover] : target === "anschreiben" ? [letter] : [resume];
-  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}${ivyLeagueDocumentCss}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}${ivyLeagueDocumentCss}${extendedResumeDocumentCss}${modernDocumentCss}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
 };
 
 export const buildCoverLetterMarkdown = (

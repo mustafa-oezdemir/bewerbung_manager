@@ -3,10 +3,12 @@ import path from "node:path";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import {
+  einfachLebenslaufTemplateConfig,
   gepflegtLebenslaufTemplateConfig,
   ivyLeagueLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
+  stilvollLebenslaufTemplateConfig,
   templatePlaceholderAliases,
   templatePlaceholderKeys,
   zeitgenoessischLebenslaufTemplateConfig,
@@ -105,6 +107,36 @@ const applyManagedResumeDesignTokens = (
             normalizedHex(data.DESIGN_SOFT_ACCENT, "FFD8BF"),
           ],
         ])
+      : templateId === stilvollLebenslaufTemplateConfig.id
+        ? new Map([
+            [
+              "36B873",
+              normalizedHex(data.DESIGN_PRIMARY, "36B873"),
+            ],
+            [
+              "075E50",
+              normalizedHex(data.DESIGN_ACCENT, "075E50"),
+            ],
+            [
+              "D9F2E5",
+              normalizedHex(data.DESIGN_SOFT_ACCENT, "D9F2E5"),
+            ],
+          ])
+        : templateId === einfachLebenslaufTemplateConfig.id
+          ? new Map([
+              [
+                "073B8F",
+                normalizedHex(data.DESIGN_PRIMARY, "073B8F"),
+              ],
+              [
+                "4AA7F5",
+                normalizedHex(data.DESIGN_ACCENT, "4AA7F5"),
+              ],
+              [
+                "EAF6FD",
+                normalizedHex(data.DESIGN_SOFT_ACCENT, "EAF6FD"),
+              ],
+            ])
       : templateId === kreativLebenslaufTemplateConfig.id
       ? new Map([
           [
@@ -414,6 +446,8 @@ export class TemplatePlaceholderService {
         template.id === kreativLebenslaufTemplateConfig.id ||
         template.id === ivyLeagueLebenslaufTemplateConfig.id ||
         template.id === kompaktLebenslaufTemplateConfig.id ||
+        template.id === stilvollLebenslaufTemplateConfig.id ||
+        template.id === einfachLebenslaufTemplateConfig.id ||
         template.id === gepflegtLebenslaufTemplateConfig.id
       ) {
         applyManagedResumeDesignTokens(template.id, renderedZip, data);

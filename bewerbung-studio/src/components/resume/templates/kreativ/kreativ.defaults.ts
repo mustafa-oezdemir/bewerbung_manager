@@ -15,7 +15,7 @@ export const kreativDefaults = {
     sectionGapMm: 7,
     entryGapMm: 4.5,
     photoWidthMm: 28,
-    photoHeightMm: 29,
+    photoHeightMm: 28,
   },
   colors: {
     primary: "#37B978",

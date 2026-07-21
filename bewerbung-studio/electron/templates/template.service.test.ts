@@ -12,10 +12,12 @@ import PizZip from "pizzip";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { resolveApplicationPaths } from "../../src/config/application-paths";
 import {
+  einfachLebenslaufTemplateConfig,
   elegantLebenslaufTemplateConfig,
   ivyLeagueLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
+  stilvollLebenslaufTemplateConfig,
   zeitgenoessischLebenslaufTemplateConfig,
   wordMusterTemplateConfig,
 } from "../../src/features/templates/template.constants";
@@ -1064,6 +1066,160 @@ describe("Musterverwaltung", () => {
         /^word\/media\//.test(name),
       ),
     ).toBe(false);
+  });
+
+  it("registers Stilvoll and Einfach with visual previews and linear ATS copies", async () => {
+    paths = resolveApplicationPaths(
+      root,
+      path.resolve("public", "templates"),
+    );
+    service = new TemplateService(paths);
+    await createDocx(
+      path.join(
+        paths.anschreibenDocuments,
+        wordMusterTemplateConfig.fileName,
+      ),
+    );
+
+    const initialized = await service.initialize();
+    const stilvoll = initialized.templates.find(
+      (template) => template.id === stilvollLebenslaufTemplateConfig.id,
+    );
+    const einfach = initialized.templates.find(
+      (template) => template.id === einfachLebenslaufTemplateConfig.id,
+    );
+
+    expect(stilvoll).toMatchObject({
+      name: "Stilvoll",
+      sortOrder: 10,
+      category: "modern-professional",
+      layout: "two-column-right-wide",
+      supportsPhoto: true,
+      supportsBackground: true,
+      supportsAtsMode: true,
+      isSystemTemplate: true,
+      isProtected: true,
+    });
+    expect(einfach).toMatchObject({
+      name: "Einfach",
+      sortOrder: 11,
+      category: "simple-professional",
+      layout: "single-column",
+      supportsPhoto: true,
+      supportsBackground: true,
+      supportsAtsMode: true,
+      isSystemTemplate: true,
+      isProtected: true,
+    });
+    expect(stilvoll?.previewDataUrl).toMatch(/^data:image\/png;base64,/);
+    expect(einfach?.previewDataUrl).toMatch(/^data:image\/png;base64,/);
+
+    const onePixelPng =
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+    const data = {
+      VORNAME: "Lena",
+      NACHNAME: "Hoffmann",
+      BERUFSBEZEICHNUNG: "IT-Projektmanagerin",
+      TELEFON: "+49 30 12345678",
+      EMAIL: "lena@example.de",
+      LINKEDIN: "linkedin.com/in/lena",
+      WEBSITE: "lena.example.com",
+      ORT: "München",
+      ZUSAMMENFASSUNG_TITEL: "ZUSAMMENFASSUNG",
+      ZUSAMMENFASSUNG:
+        "Erfahrene Projektmanagerin für digitale Produkte.",
+      STAERKEN_TITEL: "STÄRKEN",
+      STAERKEN_ATS: "Teamführung\nProzessqualität",
+      STAERKE_1_TITEL: "Teamführung",
+      STAERKE_1_BESCHREIBUNG:
+        "Führung interdisziplinärer Teams.",
+      BERUFSERFAHRUNG_TITEL: "BERUFSERFAHRUNG",
+      ERFAHRUNG_TITEL: "ERFAHRUNG",
+      POSITION_1: "Senior IT-Projektmanagerin",
+      UNTERNEHMEN_1: "Beispiel AG",
+      STARTDATUM_1: "2019",
+      DATUM_TRENNER_1: " – ",
+      ENDDATUM_1: "2023",
+      ARBEITSORT_1: "Berlin",
+      ERFOLG_1_1: "Projektdauer um 15 % reduziert.",
+      AUSBILDUNG_TITEL: "AUSBILDUNG",
+      ABSCHLUSS_1: "M.Sc.",
+      FACHRICHTUNG_1: "Wirtschaftsinformatik",
+      HOCHSCHULE_1: "Technische Universität München",
+      AUSBILDUNG_START_1: "2011",
+      AUSBILDUNG_DATUM_TRENNER_1: " – ",
+      AUSBILDUNG_ENDE_1: "2015",
+      AUSBILDUNG_ORT_1: "München",
+      KENNTNISSE_TITEL: "KENNTNISSE",
+      KENNTNISSE: "Projektmanagement · Jira",
+      SPRACHEN_TITEL: "SPRACHEN",
+      SPRACHEN_ATS: "Deutsch – Muttersprache",
+      SPRACHE_1: "Deutsch",
+      SPRACHNIVEAU_1: "Muttersprache",
+      SPRACHE_1_PUNKTE: "●●●●●",
+      ZERTIFIKATE_TITEL: "ZERTIFIKATE",
+      ZERTIFIKATE: "Professional Scrum Master I",
+      PROFILFOTO: onePixelPng,
+      DESIGN_PRIMARY: "#123456",
+      DESIGN_ACCENT: "#4A90E2",
+      DESIGN_SOFT_ACCENT: "#E6F3FA",
+      DESIGN_FONT: "Arial",
+    };
+
+    for (const template of [stilvoll!, einfach!]) {
+      const targetDirectory = path.join(
+        paths.dataRoot,
+        "Bewerbungen",
+        template.name,
+        "Lebenslauf",
+      );
+      const visual = await service.createDocumentFromTemplate(
+        template.id,
+        targetDirectory,
+        "ignored",
+        data,
+      );
+      const visualZip = new PizZip(await readFile(visual.filePath));
+      const visualXml = visualZip.file("word/document.xml")!.asText();
+      const stylesXml = visualZip.file("word/styles.xml")!.asText();
+      const headerXml =
+        visualZip.file("word/header1.xml")?.asText() ?? "";
+      const styledXml = `${visualXml}${stylesXml}`;
+
+      expect(visual.fileName).toMatch(
+        /^Lebenslauf_Lena_Hoffmann_\d{8}_\d{6}\.docx$/,
+      );
+      expect(visualXml).toContain("Senior IT-Projektmanagerin");
+      expect(visualXml).not.toContain("{{");
+      expect(styledXml).toContain('w:val="123456"');
+      expect(styledXml).toContain('w:val="4A90E2"');
+      expect(headerXml).toContain('behindDoc="1"');
+      expect(headerXml).toContain("<w:drawing>");
+      expect(
+        Object.keys(visualZip.files).some((name) =>
+          /^word\/media\//.test(name),
+        ),
+      ).toBe(true);
+
+      const ats = await service.createDocumentFromTemplate(
+        template.id,
+        path.join(targetDirectory, "ATS"),
+        "ignored",
+        data,
+        { atsMode: true },
+      );
+      const atsZip = new PizZip(await readFile(ats.filePath));
+      const atsXml = atsZip.file("word/document.xml")!.asText();
+      expect(atsXml).toContain("Berufserfahrung");
+      expect(atsXml).not.toContain("{{");
+      expect(atsXml).not.toContain("<w:tbl>");
+      expect(atsXml).not.toContain("<w:drawing>");
+      expect(
+        Object.keys(atsZip.files).some((name) =>
+          /^word\/media\//.test(name),
+        ),
+      ).toBe(false);
+    }
   });
 
   it("invalidates the preview cache when the source modification time changes", async () => {

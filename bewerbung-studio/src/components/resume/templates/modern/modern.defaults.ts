@@ -9,22 +9,22 @@ export const modernTemplateDefaults = {
     widthMm: 210,
     heightMm: 297,
     marginTopMm: 15,
-    marginRightMm: 17,
+    marginRightMm: 15,
     marginBottomMm: 14,
-    marginLeftMm: 17,
+    marginLeftMm: 15,
   },
 
   // Layout measurements
   layout: {
-    headerHeightMm: 38,
+    headerHeightMm: 25,
     photoSizeMm: 25,
     photoTopMm: 6,
-    photoRightMm: 17,
-    contentStartMm: 56, // 15 + 38 + gap
+    photoRightMm: 15,
+    contentStartMm: 44,
     columnGapMm: 11,
-    leftColumnWidthMm: 101,
-    rightColumnWidthMm: 64,
-    sectionGapMm: 6,
+    leftColumnWidthMm: 102,
+    rightColumnWidthMm: 67,
+    sectionGapMm: 7,
     entryGapMm: 4,
     footerTopMm: 280,
     footerHeightMm: 10,
@@ -55,7 +55,7 @@ export const modernTemplateDefaults = {
   // Typography (pt = points)
   typography: {
     fontFamily: '"Source Sans 3", "Segoe UI", Arial, sans-serif',
-    nameSizePt: 23,
+    nameSizePt: 24,
     nameWeight: 700,
     professionSizePt: 12.5,
     professionWeight: 500,

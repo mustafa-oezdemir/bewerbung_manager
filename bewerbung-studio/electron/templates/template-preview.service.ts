@@ -2,11 +2,13 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { ApplicationPaths } from "../../src/config/application-paths";
 import {
+  einfachLebenslaufTemplateConfig,
   elegantLebenslaufTemplateConfig,
   gepflegtLebenslaufTemplateConfig,
   ivyLeagueLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
+  stilvollLebenslaufTemplateConfig,
   templateSourceLabels,
   zeitgenoessischLebenslaufTemplateConfig,
 } from "../../src/features/templates/template.constants";
@@ -36,6 +38,10 @@ export class TemplatePreviewService {
               ? ivyLeagueLebenslaufTemplateConfig
             : template.id === kompaktLebenslaufTemplateConfig.id
               ? kompaktLebenslaufTemplateConfig
+              : template.id === stilvollLebenslaufTemplateConfig.id
+                ? stilvollLebenslaufTemplateConfig
+                : template.id === einfachLebenslaufTemplateConfig.id
+                  ? einfachLebenslaufTemplateConfig
               : template.id === gepflegtLebenslaufTemplateConfig.id
                 ? gepflegtLebenslaufTemplateConfig
                 : undefined;

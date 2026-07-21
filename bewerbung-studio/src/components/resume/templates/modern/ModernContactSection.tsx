@@ -3,7 +3,15 @@
  * Renders contact details with icons: phone, email, location, LinkedIn, website
  */
 
-import { Phone, Mail, MapPin, Linkedin, Globe } from "lucide-react";
+import {
+  CalendarDays,
+  Github,
+  Globe,
+  Linkedin,
+  Mail,
+  MapPin,
+  Phone,
+} from "lucide-react";
 import type { ModernContactSectionProps } from "./modern.types";
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -12,12 +20,15 @@ const iconMap: Record<string, React.ReactNode> = {
   location: <MapPin size={16} />,
   linkedin: <Linkedin size={16} />,
   website: <Globe size={16} />,
+  github: <Github size={16} />,
+  birth: <CalendarDays size={16} />,
 };
 
 export function ModernContactSection({
   profile,
   accentColor,
   atsMode,
+  inline = false,
 }: ModernContactSectionProps) {
   const contactItems: Array<{
     key: string;
@@ -42,14 +53,6 @@ export function ModernContactSection({
       value: profile.email,
     });
   }
-  if (profile?.city) {
-    contactItems.push({
-      key: "location",
-      icon: "location",
-      label: "Wohnort",
-      value: profile.city,
-    });
-  }
   if (profile?.linkedin) {
     contactItems.push({
       key: "linkedin",
@@ -66,28 +69,75 @@ export function ModernContactSection({
       value: profile.portfolio,
     });
   }
+  if (profile?.github) {
+    contactItems.push({
+      key: "github",
+      icon: "github",
+      label: "GitHub",
+      value: profile.github,
+    });
+  }
+  const location = [profile?.city, profile?.country]
+    .filter(Boolean)
+    .join(", ");
+  if (location) {
+    contactItems.push({
+      key: "location",
+      icon: "location",
+      label: "Wohnort",
+      value: location,
+    });
+  }
+  const birth =
+    profile?.birthDate || profile?.birthPlace
+      ? `Geb. ${profile?.birthDate || ""}${profile?.birthPlace ? ` in ${profile.birthPlace}` : ""}`.trim()
+      : "";
+  if (birth) {
+    contactItems.push({
+      key: "birth",
+      icon: "birth",
+      label: "Geburtsdaten",
+      value: birth,
+    });
+  }
 
   if (contactItems.length === 0) {
     return null;
   }
 
+  const hasProfessionalLink = contactItems.some(
+    (item) => item.key === "linkedin",
+  );
+  const visibleItems = inline
+    ? contactItems
+        .filter(
+          (item) =>
+            ["phone", "email", "linkedin", "location"].includes(item.key) ||
+            (item.key === "website" && !hasProfessionalLink),
+        )
+        .slice(0, 4)
+    : contactItems;
+
   return (
-    <section className="modern-section">
-      <h2 className="modern-section__title">Kontaktdaten</h2>
+    <section
+      className={`modern-section ${inline ? "modern-contact-section--inline" : ""}`}
+    >
+      {!inline ? (
+        <h2 className="modern-section__title">
+          {atsMode ? "Persönliche Daten" : "Kontaktdaten"}
+        </h2>
+      ) : null}
       <ul className="modern-contact-list">
-        {contactItems.map((item) => (
+        {visibleItems.map((item) => (
           <li key={item.key} className="modern-contact-item">
-            <div
-              className="modern-contact-item__icon"
-              style={
-                !atsMode
-                  ? {
-                      color: accentColor,
-                    }
-                  : undefined
-              }>
-              {iconMap[item.icon]}
-            </div>
+            {!atsMode ? (
+              <div
+                className="modern-contact-item__icon"
+                style={{ color: accentColor }}
+              >
+                {iconMap[item.icon]}
+              </div>
+            ) : null}
             <span className="modern-contact-item__value">{item.value}</span>
           </li>
         ))}

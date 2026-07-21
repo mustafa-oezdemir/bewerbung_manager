@@ -8,12 +8,14 @@ import path from "node:path";
 import type { ApplicationPaths } from "../../src/config/application-paths";
 import {
   defaultTemplateSortOrder,
+  einfachLebenslaufTemplateConfig,
   elegantLebenslaufTemplateConfig,
   gepflegtLebenslaufTemplateConfig,
   ivyLeagueLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   maximumTemplateFileSize,
+  stilvollLebenslaufTemplateConfig,
   zeitgenoessischLebenslaufTemplateConfig,
 } from "../../src/features/templates/template.constants";
 import type {
@@ -219,6 +221,10 @@ export class TemplateService {
               ? ivyLeagueLebenslaufTemplateConfig
             : template.id === kompaktLebenslaufTemplateConfig.id
               ? kompaktLebenslaufTemplateConfig
+              : template.id === stilvollLebenslaufTemplateConfig.id
+                ? stilvollLebenslaufTemplateConfig
+                : template.id === einfachLebenslaufTemplateConfig.id
+                  ? einfachLebenslaufTemplateConfig
               : template.id === gepflegtLebenslaufTemplateConfig.id
                 ? gepflegtLebenslaufTemplateConfig
                 : undefined;

@@ -4,21 +4,14 @@
  */
 
 import type { ModernStrengthsSectionProps } from "./modern.types";
+import { parseTemplateStrengths } from "../resume-template-data";
 
 export function ModernStrengthsSection({
   profile,
 }: ModernStrengthsSectionProps) {
-  // For now, we can render skills as strengths if available
-  if (!profile?.skills || profile.skills.length === 0) {
-    return null;
-  }
-
-  // Split skills into groups of title and potential description
-  // In a real implementation, this might come from a separate strengths field
-  const strengthItems = profile.skills.slice(0, 4).map((skill: string) => ({
-    title: skill,
-    description: "Mehrjährige praktische Erfahrung und nachgewiesene Erfolge.",
-  }));
+  const strengthItems = parseTemplateStrengths(profile, 4).filter(
+    (item) => item.description,
+  );
 
   if (strengthItems.length === 0) {
     return null;
@@ -29,12 +22,17 @@ export function ModernStrengthsSection({
       <h2 className="modern-section__title">Stärken</h2>
       <div className="modern-strengths-list">
         {strengthItems.map(
-          (item: { title: string; description: string }, idx: number) => (
+          (item, idx: number) => (
             <div key={idx} className="modern-strengths-item">
-              <h3 className="modern-strengths-item__title">{item.title}</h3>
-              <p className="modern-strengths-item__description">
-                {item.description}
-              </p>
+              <span className="modern-strengths-item__icon" aria-hidden="true">
+                {idx % 2 === 0 ? "✓" : "⚑"}
+              </span>
+              <div>
+                <h3 className="modern-strengths-item__title">{item.title}</h3>
+                <p className="modern-strengths-item__description">
+                  {item.description}
+                </p>
+              </div>
             </div>
           ),
         )}

@@ -5,6 +5,7 @@
 
 import type { ModernEducationSectionProps } from "./modern.types";
 import type { ApplicantProfile } from "../../../../shared/schema";
+import { CalendarDays, MapPin } from "lucide-react";
 
 export function ModernEducationSection({
   profile,
@@ -25,10 +26,12 @@ export function ModernEducationSection({
                 {edu.institution}
               </span>
               <span className="modern-education-entry__date">
-                {edu.from}–{edu.to}
+                <CalendarDays size={13} aria-hidden="true" />
+                {edu.from} – {edu.to}
               </span>
               {edu.city && (
                 <span className="modern-education-entry__location">
+                  <MapPin size={13} aria-hidden="true" />
                   {edu.city}
                 </span>
               )}

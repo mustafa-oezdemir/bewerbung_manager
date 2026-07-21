@@ -6,9 +6,17 @@ export function KreativBackground() {
       viewBox="0 0 100 100"
       aria-hidden="true"
     >
-      <circle cx="62" cy="45" r="39" />
-      <circle cx="78" cy="53" r="30" />
-      <circle cx="91" cy="62" r="22" />
+      <g className="kreativ-background__wide">
+        <circle cx="57" cy="35" r="43" />
+        <circle cx="66" cy="41" r="37" />
+        <circle cx="75" cy="47" r="31" />
+      </g>
+      <g className="kreativ-background__tight">
+        <circle cx="84" cy="58" r="27" />
+        <circle cx="89" cy="66" r="22" />
+        <circle cx="92" cy="75" r="17" />
+        <circle cx="93" cy="81" r="12" />
+      </g>
     </svg>
   );
 }

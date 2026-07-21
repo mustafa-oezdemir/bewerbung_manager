@@ -1,6 +1,5 @@
 ![Eine einspaltige Lebenslauf Vorlage, perfekt für alle Branchen. Mit blauem Akzent.](https://cdn.enhancv.com/predefined-examples/GYOCEx7eqx7pwOHg4xYmTodsXmVaHmDN1VzJkJXm/image.png)
 
-
 * Konu: Referans görseldeki sade, tek sütunlu ve ATS odaklı Lebenslauf şablonunun oluşturulması
 * İstenilen çıktı: A4 ölçüsünde; referans görseldeki mavi renk paleti, üst profil alanı, dairesel fotoğraf, açık geometrik arka plan, tam genişlikte bölümler ve kompakt içerik düzenini yüksek görsel doğrulukla yeniden üreten; React, TypeScript, CSS, Electron ve PDF sistemiyle uyumlu Lebenslauf şablonu
 * Kullanılacak framework: RASCEF
@@ -936,3 +935,8 @@ Ardından eksiksiz ve doğrudan uygulanabilir kodu ver.
 Eksik import, hayali API, pseudocode veya yarım kod bloğu üretme. Mevcut ortak rendererları gerekçesiz kopyalama. `dist-electron`, `artifacts`, `release` ve `windows-release` klasörlerini doğrudan düzenleme.
 
 İlk olarak yalnızca **Aşama 1 ve Aşama 2’yi** gerçekleştir. Mevcut proje yapısını analiz et, yeni template kaynaklarının mevcut servislerle nasıl eşleşeceğini belirle ve referans görselin A4 yerleşimini milimetre bazında çıkar. Henüz mevcut kodla doğrulanmamış component, import veya API üretme.
+
+
+![Ein Lebenslauf mit zwei Spalten und einem Foto im Kopfbereich sowie lila Akzentfarbe. Ein langer Zusammenfassungsteil und ein Schwerpunkt auf dem Erfahrungsbereich.](https://cdn.enhancv.com/predefined-examples/51rURkUSmd1YeLEfKsTW9CDBPNnZ8HDJlmjQ0uWe/image.png)
+
+![Ein Lebenslauf mit zwei Spalten und einem Foto im Kopfbereich sowie lila Akzentfarbe. Ein langer Zusammenfassungsteil und ein Schwerpunkt auf dem Erfahrungsbereich.](https://cdn.enhancv.com/predefined-examples/51rURkUSmd1YeLEfKsTW9CDBPNnZ8HDJlmjQ0uWe/image.png)

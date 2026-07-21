@@ -16,7 +16,7 @@ from PIL import Image, ImageDraw, ImageFont
 from docx import Document
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
-from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Mm, Pt, RGBColor, Twips
@@ -371,6 +371,7 @@ def add_experience(cell, index: int) -> None:
     set_paragraph_indents(company)
     company.paragraph_format.tab_stops.add_tab_stop(
         Twips(RIGHT_COLUMN_DXA - 840),
+        WD_TAB_ALIGNMENT.RIGHT,
     )
     company.add_run(f"{{{{UNTERNEHMEN_{index}}}}}")
     company.add_run("\t")
@@ -387,6 +388,7 @@ def add_experience(cell, index: int) -> None:
     set_paragraph_indents(role)
     role.paragraph_format.tab_stops.add_tab_stop(
         Twips(RIGHT_COLUMN_DXA - 840),
+        WD_TAB_ALIGNMENT.RIGHT,
     )
     role.add_run(f"{{{{POSITION_{index}}}}}")
     role.add_run("\t")
@@ -422,6 +424,7 @@ def add_education(cell, index: int) -> None:
     set_paragraph_indents(company)
     company.paragraph_format.tab_stops.add_tab_stop(
         Twips(RIGHT_COLUMN_DXA - 840),
+        WD_TAB_ALIGNMENT.RIGHT,
     )
     company.add_run(f"{{{{HOCHSCHULE_{index}}}}}")
     company.add_run("\t")
@@ -438,6 +441,7 @@ def add_education(cell, index: int) -> None:
     set_paragraph_indents(degree)
     degree.paragraph_format.tab_stops.add_tab_stop(
         Twips(RIGHT_COLUMN_DXA - 840),
+        WD_TAB_ALIGNMENT.RIGHT,
     )
     degree.add_run(
         f"{{{{ABSCHLUSS_{index}}}}} {{{{FACHRICHTUNG_{index}}}}}",
