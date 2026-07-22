@@ -63,6 +63,7 @@ const newProfile = (): ApplicantProfile => ({
   languages: [],
   certifications: [],
   resumeSections: defaultSections,
+  resumeSectionLayout: [],
   updatedAt: new Date().toISOString(),
 });
 

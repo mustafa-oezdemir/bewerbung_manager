@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { ApplicantProfile } from "../../../../shared/schema";
 import {
   formatTemplateDateRange,
@@ -20,7 +20,7 @@ export function KlassischStrengths({
   profile: ApplicantProfile | undefined;
   atsMode?: boolean;
 }) {
-  const strengths = parseTemplateStrengths(profile, 3);
+  const strengths = parseTemplateStrengths(profile, 4);
   if (!strengths.length) return null;
   return (
     <section
@@ -29,8 +29,9 @@ export function KlassischStrengths({
     >
       <KlassischHeading>Stärken</KlassischHeading>
       <div>
-        {strengths.map((strength) => (
+        {strengths.map((strength, index) => (
           <article key={`${strength.title}-${strength.description}`}>
+            {!atsMode ? <i aria-hidden="true">{["✦", "⚑", "♡", "↗"][index % 4]}</i> : null}
             <h3>{strength.title}</h3>
             {strength.description ? <p>{strength.description}</p> : null}
           </article>
@@ -68,10 +69,7 @@ export function KlassischCareer({
                 <h3>{item.title}</h3>
                 <h4>{item.organization}</h4>
               </div>
-              <p>
-                {item.city ? <span>{item.city}</span> : null}
-                <time>{formatTemplateDateRange(item.from, item.to)}</time>
-              </p>
+              <p>{item.city ? <span>⌖ {item.city}</span> : null}<time>▣ {formatTemplateDateRange(item.from, item.to)}</time></p>
             </div>
             {item.achievements.length ? (
               <ul>
@@ -101,8 +99,8 @@ export function KlassischKnowledge({
   if (!knowledge.length) return null;
   return (
     <section className="klassisch-section" data-element-id="klassisch.skills">
-      <KlassischHeading>Kenntnisse</KlassischHeading>
-      <p className="klassisch-knowledge">{knowledge.join(" · ")}</p>
+      <KlassischHeading>Fähigkeiten</KlassischHeading>
+      <div className="klassisch-knowledge">{knowledge.map((item) => <strong key={item}>{item}</strong>)}</div>
     </section>
   );
 }
@@ -128,7 +126,8 @@ export function KlassischLanguages({
         {languages.map((language) => (
           <p key={language.raw}>
             <strong>{language.name}</strong>
-            {language.level ? <span>({language.level})</span> : null}
+            {language.level ? <span>{language.level}</span> : null}
+            {!atsMode ? <em aria-label={`${language.score} von 5`}><i style={{ "--score": language.score } as CSSProperties} /></em> : null}
           </p>
         ))}
       </div>

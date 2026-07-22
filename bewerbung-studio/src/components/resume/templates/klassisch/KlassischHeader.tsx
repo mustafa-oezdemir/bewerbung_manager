@@ -42,9 +42,9 @@ export function KlassischHeader({
       href: profile?.email ? `mailto:${profile.email}` : "",
     },
     {
-      value: profile?.linkedin,
-      href: profile?.linkedin
-        ? toTemplateExternalHref(profile.linkedin)
+      value: profile?.portfolio || profile?.linkedin || profile?.github,
+      href: profile?.portfolio || profile?.linkedin || profile?.github
+        ? toTemplateExternalHref(profile.portfolio || profile.linkedin || profile.github || "")
         : "",
     },
     { value: location, href: "" },
@@ -63,7 +63,8 @@ export function KlassischHeader({
         {!compact && !atsMode && contacts.length ? (
           <address>
             {contacts.map((contact, index) => (
-              <span key={`${contact.value}-${index}`}>
+              <span className="klassisch-header__contact" key={`${contact.value}-${index}`}>
+                <i aria-hidden="true">{["☎", "@", "⌂", "⌖", "☆"][index]}</i>
                 {contact.href ? (
                   <a href={contact.href}>{contact.value}</a>
                 ) : (

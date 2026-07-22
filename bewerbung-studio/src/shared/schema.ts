@@ -9,6 +9,10 @@ import {
 } from "./documentDesign";
 import { defaultKnowledgeSection } from "../features/knowledge/knowledge.constants";
 import { knowledgeSectionSchema } from "../features/knowledge/knowledge.validation";
+import {
+  resumeSectionTypes,
+  sectionZones,
+} from "../features/resume-sections/resume-sections";
 
 export const applicationStatuses = [
   "Entwurf",
@@ -305,6 +309,14 @@ export const profileSchema = z.object({
       languages: true,
       certifications: true,
     }),
+  resumeSectionLayout: z
+    .array(
+      z.object({
+        type: z.enum(resumeSectionTypes),
+        zone: z.enum(sectionZones),
+      }),
+    )
+    .default([]),
   updatedAt: z.iso.datetime(),
 });
 

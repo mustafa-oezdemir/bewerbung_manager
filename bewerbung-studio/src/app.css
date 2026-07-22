@@ -3707,6 +3707,110 @@ kbd {
   background: color-mix(in srgb, #f2c36b, var(--surface) 88%);
 }
 
+.resume-sections-panel {
+  display: grid;
+  gap: 12px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-muted);
+}
+
+.resume-sections-heading > div,
+.resume-sections-heading small {
+  display: grid;
+  gap: 3px;
+}
+
+.resume-sections-heading strong {
+  font-size: 0.72rem;
+}
+
+.resume-sections-heading small,
+.resume-section-zone > span {
+  color: var(--muted);
+  font-size: 0.58rem;
+  line-height: 1.4;
+}
+
+.resume-section-zones {
+  display: grid;
+  gap: 9px;
+}
+
+.resume-section-zone {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 9px;
+  border: 1px dashed color-mix(in srgb, var(--line), var(--brand) 28%);
+  border-radius: 9px;
+  background: var(--surface);
+}
+
+.resume-section-list {
+  display: grid;
+  gap: 6px;
+}
+
+.resume-section-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) repeat(3, auto) minmax(0, 116px);
+  gap: 4px;
+  align-items: center;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-muted);
+}
+
+.resume-section-card > svg {
+  color: var(--muted);
+  cursor: grab;
+}
+
+.resume-section-card-title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resume-section-card select {
+  min-width: 0;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--ink);
+  background: var(--surface);
+  font-size: 0.54rem;
+}
+
+.resume-section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.resume-section-actions .button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.58rem;
+}
+
+.resume-sections-warning {
+  margin: 0;
+  padding: 8px;
+  border-left: 3px solid #d68a22;
+  color: #734615;
+  background: color-mix(in srgb, #f2c36b, var(--surface) 83%);
+  font-size: 0.6rem;
+  line-height: 1.4;
+}
+
 .design-panel-heading {
   display: flex;
   align-items: flex-start;

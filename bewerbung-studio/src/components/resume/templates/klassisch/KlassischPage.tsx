@@ -34,36 +34,21 @@ export function KlassischPage({
   const isLastPage = plan.pageNumber === totalPages;
   const portfolio = profile?.portfolio || profile?.github || profile?.linkedin || "";
   const visualBody = (
-    <>
-      {sections.profile && summary && !isContinuation ? (
-        <section className="klassisch-section" data-element-id="klassisch.summary">
-          <KlassischHeading>Zusammenfassung</KlassischHeading>
-          <p className="klassisch-summary">{summary}</p>
-        </section>
-      ) : null}
-      {!isContinuation && sections.skills ? (
-        <KlassischStrengths profile={profile} />
-      ) : null}
-      {sections.experience ? (
-        <KlassischCareer
-          title="Erfahrung"
-          items={experiences}
-          continuation={isContinuation}
-        />
-      ) : null}
-      {sections.education ? (
-        <KlassischCareer title="Ausbildung" items={education} />
-      ) : null}
-      {isLastPage && sections.skills ? (
-        <KlassischKnowledge profile={profile} />
-      ) : null}
-      {isLastPage && sections.languages ? (
-        <KlassischLanguages profile={profile} />
-      ) : null}
-      {isLastPage && sections.certifications ? (
-        <KlassischCertifications profile={profile} />
-      ) : null}
-    </>
+    <div className={`klassisch-columns ${isContinuation ? "klassisch-columns--continuation" : ""}`}>
+      {!isContinuation ? <aside className="klassisch-column klassisch-column--left">
+        {sections.profile && summary ? <section className="klassisch-section" data-element-id="klassisch.summary"><KlassischHeading>Zusammenfassung</KlassischHeading><p className="klassisch-summary">{summary}</p></section> : null}
+        {sections.skills ? <KlassischKnowledge profile={profile} /> : null}
+        {isLastPage && sections.languages ? <KlassischLanguages profile={profile} /> : null}
+      </aside> : null}
+      <main className="klassisch-column klassisch-column--main">
+        {sections.experience ? <KlassischCareer title="Erfahrung" items={experiences} continuation={isContinuation} /> : null}
+        {sections.education ? <KlassischCareer title="Ausbildung" items={education} /> : null}
+        {isLastPage && sections.certifications ? <KlassischCertifications profile={profile} /> : null}
+      </main>
+      {!isContinuation ? <aside className="klassisch-column klassisch-column--right">
+        {sections.skills ? <KlassischStrengths profile={profile} /> : null}
+      </aside> : null}
+    </div>
   );
   if (atsMode) {
     return (

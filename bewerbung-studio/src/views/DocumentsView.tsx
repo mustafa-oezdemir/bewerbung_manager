@@ -19,6 +19,7 @@ import {
 import { TemplateThumbnail } from "../components/TemplateThumbnail";
 import { KnowledgeSectionRenderer } from "../components/document/KnowledgeSectionRenderer";
 import { DocumentBackgroundLayer } from "../components/document/DocumentBackgroundLayer";
+import { ResumeSectionsPanel } from "../components/resume/ResumeSectionsPanel";
 import { ElegantResume } from "../components/resume/templates/elegant";
 import { EinspaltigResume } from "../components/resume/templates/einspaltig";
 import { GepflegtResume } from "../components/resume/templates/gepflegt";
@@ -656,6 +657,16 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                     umzubrechen verteilt.
                   </span>
                 </section>
+                {profile ? (
+                  <ResumeSectionsPanel
+                    profile={profile}
+                    singlePageExceeded={
+                      template.id === "kompakt" && resumePlan.length > 1
+                    }
+                    templateId={template.id}
+                    onSave={saveProfile}
+                  />
+                ) : null}
                 <button
                   className="design-panel-trigger"
                   type="button"
