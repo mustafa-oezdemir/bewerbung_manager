@@ -147,54 +147,9 @@ const listFilesRecursive = async (root: string) => {
 };
 
 const sortTemplates = (templates: DocumentTemplate[]) => {
-  const sortedWithoutPinned = templates
-    .filter(
-      (template) =>
-        template.id !== wordMusterTemplateConfig.id &&
-        template.id !== zeitgenoessischLebenslaufTemplateConfig.id &&
-        template.id !== kreativLebenslaufTemplateConfig.id &&
-        template.id !== kompaktLebenslaufTemplateConfig.id &&
-        template.id !== gepflegtLebenslaufTemplateConfig.id &&
-        template.id !== modernLebenslaufTemplateConfig.id,
-    )
-    .sort(
-      (left, right) =>
-        left.sortOrder - right.sortOrder ||
-        left.name.localeCompare(right.name, "de"),
-    );
-  const pinnedTemplates = [
-    {
-      id: wordMusterTemplateConfig.id,
-      index: 1,
-    },
-    {
-      id: zeitgenoessischLebenslaufTemplateConfig.id,
-      index: 2,
-    },
-    {
-      id: kreativLebenslaufTemplateConfig.id,
-      index: 3,
-    },
-    {
-      id: kompaktLebenslaufTemplateConfig.id,
-      index: 4,
-    },
-    {
-      id: gepflegtLebenslaufTemplateConfig.id,
-      index: 5,
-    },
-    {
-      id: modernLebenslaufTemplateConfig.id,
-      index: 6,
-    },
-  ];
-  const sorted = [...sortedWithoutPinned];
-  for (const pinned of pinnedTemplates) {
-    const template = templates.find((item) => item.id === pinned.id);
-    if (!template) continue;
-    sorted.splice(Math.min(pinned.index, sorted.length), 0, template);
-  }
-  return sorted;
+  return [...templates].sort((left, right) =>
+    left.name.localeCompare(right.name, "de", { sensitivity: "base" }),
+  );
 };
 
 export class TemplateScanner {

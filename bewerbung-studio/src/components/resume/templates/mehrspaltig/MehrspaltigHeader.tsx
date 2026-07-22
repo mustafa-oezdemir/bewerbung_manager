@@ -4,7 +4,7 @@ import {
   toTemplateExternalHref,
 } from "../resume-template-data";
 
-export function KlassischHeader({
+export function MehrspaltigHeader({
   profile,
   name,
   photoSource,
@@ -42,9 +42,9 @@ export function KlassischHeader({
       href: profile?.email ? `mailto:${profile.email}` : "",
     },
     {
-      value: profile?.linkedin,
-      href: profile?.linkedin
-        ? toTemplateExternalHref(profile.linkedin)
+      value: profile?.portfolio || profile?.linkedin || profile?.github,
+      href: profile?.portfolio || profile?.linkedin || profile?.github
+        ? toTemplateExternalHref(profile.portfolio || profile.linkedin || profile.github || "")
         : "",
     },
     { value: location, href: "" },
@@ -53,17 +53,18 @@ export function KlassischHeader({
 
   return (
     <header
-      className={`klassisch-header ${compact ? "klassisch-header--compact" : ""} ${!photoSource || atsMode ? "klassisch-header--no-photo" : ""}`}
-      data-element-id="klassisch.header"
+      className={`mehrspaltig-header ${compact ? "mehrspaltig-header--compact" : ""} ${!photoSource || atsMode ? "mehrspaltig-header--no-photo" : ""}`}
+      data-element-id="mehrspaltig.header"
     >
-      <div className="klassisch-header__identity">
+      <div className="mehrspaltig-header__identity">
         {compact ? <p>Lebenslauf · Fortsetzung</p> : null}
         <h1>{name}</h1>
         {profession ? <h2>{profession}</h2> : null}
         {!compact && !atsMode && contacts.length ? (
           <address>
             {contacts.map((contact, index) => (
-              <span key={`${contact.value}-${index}`}>
+              <span className="mehrspaltig-header__contact" key={`${contact.value}-${index}`}>
+                <i aria-hidden="true">{["☎", "@", "⌂", "⌖", "☆"][index]}</i>
                 {contact.href ? (
                   <a href={contact.href}>{contact.value}</a>
                 ) : (
@@ -75,7 +76,7 @@ export function KlassischHeader({
         ) : null}
       </div>
       {!compact && !atsMode && photoSource ? (
-        <figure data-element-id="klassisch.photo">
+        <figure data-element-id="mehrspaltig.photo">
           <img src={photoSource} alt={`Bewerbungsfoto von ${name}`} />
         </figure>
       ) : null}

@@ -13,6 +13,7 @@ import {
   elegantLebenslaufTemplateConfig,
   ivyLeagueLebenslaufTemplateConfig,
   klassischLebenslaufTemplateConfig,
+  mehrspaltigLebenslaufTemplateConfig,
   gepflegtLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
@@ -71,6 +72,7 @@ export class TemplateRepository {
     await this.ensureStilvollLebenslaufTemplate();
     await this.ensureEinspaltigLebenslaufTemplate();
     await this.ensureKlassischLebenslaufTemplate();
+    await this.ensureMehrspaltigLebenslaufTemplate();
     await this.ensureElegantLebenslaufTemplate();
     await this.ensureGepflegtLebenslaufTemplate();
     await this.ensureModernLebenslaufTemplate();
@@ -351,6 +353,10 @@ export class TemplateRepository {
 
   private async ensureKlassischLebenslaufTemplate() {
     await this.ensureManagedResumeTemplate(klassischLebenslaufTemplateConfig);
+  }
+
+  private async ensureMehrspaltigLebenslaufTemplate() {
+    await this.ensureManagedResumeTemplate(mehrspaltigLebenslaufTemplateConfig);
   }
 
   private async ensureManagedResumeTemplate(config: {

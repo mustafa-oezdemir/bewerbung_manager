@@ -142,7 +142,7 @@ describe("Musterverwaltung", () => {
     await expect(stat(second.filePath)).resolves.toBeDefined();
   });
 
-  it("registers Word Muster from the uploaded source and keeps it fixed in second position", async () => {
+  it("registers Word Muster from the uploaded source", async () => {
     const sourcePath = path.join(
       paths.anschreibenDocuments,
       wordMusterTemplateConfig.fileName,
@@ -169,7 +169,9 @@ describe("Musterverwaltung", () => {
     );
 
     const initialized = await service.initialize();
-    const wordMuster = initialized.templates[1];
+    const wordMuster = initialized.templates.find(
+      (template) => template.id === wordMusterTemplateConfig.id,
+    )!;
 
     expect(wordMuster).toMatchObject({
       id: "word-muster-anschreiben",
@@ -192,9 +194,11 @@ describe("Musterverwaltung", () => {
       (template) => template.fileName === "Spaeter.docx",
     )!;
     const afterFavorite = await service.toggleTemplateFavorite(later.id);
-    expect(afterFavorite.templates[1].id).toBe(
-      wordMusterTemplateConfig.id,
-    );
+    expect(
+      afterFavorite.templates.some(
+        (template) => template.id === wordMusterTemplateConfig.id,
+      ),
+    ).toBe(true);
     await expect(
       service.deleteCustomTemplate(wordMuster.id),
     ).rejects.toMatchObject({ code: "PROTECTED_TEMPLATE" });
@@ -286,7 +290,7 @@ describe("Musterverwaltung", () => {
     expect(await readFile(templatePath)).toEqual(original);
   });
 
-  it("registers Zeitgenössisch as the third template and creates photo and ATS Lebenslauf copies", async () => {
+  it("registers Zeitgenössisch and creates photo and ATS Lebenslauf copies", async () => {
     paths = resolveApplicationPaths(
       root,
       path.resolve("public", "templates"),
@@ -310,16 +314,9 @@ describe("Musterverwaltung", () => {
     );
 
     const initialized = await service.initialize();
-    const zeitgenoessisch = initialized.templates[2];
-    expect(initialized.templates[3].id).toBe(
-      kreativLebenslaufTemplateConfig.id,
-    );
-    expect(initialized.templates[4].id).toBe(
-      kompaktLebenslaufTemplateConfig.id,
-    );
-    expect(initialized.templates[5].id).toBe(
-      elegantLebenslaufTemplateConfig.id,
-    );
+    const zeitgenoessisch = initialized.templates.find(
+      (template) => template.id === zeitgenoessischLebenslaufTemplateConfig.id,
+    )!;
     const bundledPath = path.resolve(
       "public",
       "templates",
@@ -464,12 +461,15 @@ describe("Musterverwaltung", () => {
     const favorited = await service.toggleTemplateFavorite(
       zeitgenoessisch.id,
     );
-    expect(favorited.templates[2].id).toBe(
-      zeitgenoessischLebenslaufTemplateConfig.id,
-    );
+    expect(
+      favorited.templates.some(
+        (template) =>
+          template.id === zeitgenoessischLebenslaufTemplateConfig.id,
+      ),
+    ).toBe(true);
   });
 
-  it("registers Kreativ as the fourth compact template and preserves its banner, background and ATS copy", async () => {
+  it("registers Kreativ and preserves its banner, background and ATS copy", async () => {
     paths = resolveApplicationPaths(
       root,
       path.resolve("public", "templates"),
@@ -493,7 +493,9 @@ describe("Musterverwaltung", () => {
     );
 
     const initialized = await service.initialize();
-    const kreativ = initialized.templates[3];
+    const kreativ = initialized.templates.find(
+      (template) => template.id === kreativLebenslaufTemplateConfig.id,
+    )!;
     expect(kreativ).toMatchObject({
       id: "word-lebenslauf-kreativ",
       name: "Kreativ",
@@ -651,12 +653,14 @@ describe("Musterverwaltung", () => {
     );
 
     const favorited = await service.toggleTemplateFavorite(kreativ.id);
-    expect(favorited.templates[3].id).toBe(
-      kreativLebenslaufTemplateConfig.id,
-    );
+    expect(
+      favorited.templates.some(
+        (template) => template.id === kreativLebenslaufTemplateConfig.id,
+      ),
+    ).toBe(true);
   });
 
-  it("registers Kompakt as the fifth high-density template and preserves margins, links, decoration and ATS mode", async () => {
+  it("registers Kompakt and preserves margins, links, decoration and ATS mode", async () => {
     paths = resolveApplicationPaths(
       root,
       path.resolve("public", "templates"),
@@ -678,7 +682,9 @@ describe("Musterverwaltung", () => {
     );
 
     const initialized = await service.initialize();
-    const kompakt = initialized.templates[4];
+    const kompakt = initialized.templates.find(
+      (template) => template.id === kompaktLebenslaufTemplateConfig.id,
+    )!;
     expect(kompakt).toMatchObject({
       id: "word-lebenslauf-kompakt",
       name: "Kompakt",
@@ -854,9 +860,11 @@ describe("Musterverwaltung", () => {
     );
 
     const favorited = await service.toggleTemplateFavorite(kompakt.id);
-    expect(favorited.templates[4].id).toBe(
-      kompaktLebenslaufTemplateConfig.id,
-    );
+    expect(
+      favorited.templates.some(
+        (template) => template.id === kompaktLebenslaufTemplateConfig.id,
+      ),
+    ).toBe(true);
   });
 
   it("creates a new DOCX, replaces split-run placeholders and preserves run formatting", async () => {

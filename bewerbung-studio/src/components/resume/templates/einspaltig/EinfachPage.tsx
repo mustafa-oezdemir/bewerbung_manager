@@ -7,6 +7,10 @@ import type { EinspaltigResumeProps } from "./einfach.types";
 import { EinfachBackground } from "./EinfachBackground";
 import { EinfachHeader } from "./EinfachHeader";
 import {
+  getProfileResumeSectionLayout,
+  hasSavedTemplateSectionLayout,
+} from "../../../../features/resume-sections/resume-sections";
+import {
   EinfachCareer,
   EinfachCertifications,
   EinfachHeading,
@@ -34,41 +38,47 @@ export function EinfachPage({
   const isLastPage = plan.pageNumber === totalPages;
   const portfolio =
     profile?.portfolio || profile?.github || profile?.linkedin || "";
-  const body = (
-    <>
-      {sections.profile && summary && !isContinuation ? (
-        <section className="einfach-section" data-element-id="einspaltig.summary">
+  const sectionLayout = getProfileResumeSectionLayout(profile, "einspaltig");
+  const hasCustomLayout = hasSavedTemplateSectionLayout(profile, "einspaltig");
+  const renderOrderedSections = () => {
+    const order = hasCustomLayout
+      ? sectionLayout.map(({ type }) => type)
+      : atsMode
+        ? ["summary", "experience", "education", "knowledge", "languages", "strengths", "certifications"]
+        : ["summary", "strengths", "experience", "education", "knowledge", "languages", "certifications"];
+    return order.map((type) => {
+      if (type === "summary") {
+        return sections.profile && summary && !isContinuation ? (
+        <section key={type} className="einfach-section" data-element-id="einspaltig.summary">
           <EinfachHeading>Zusammenfassung</EinfachHeading>
           <p className="einfach-summary">{summary}</p>
         </section>
-      ) : null}
-      {!atsMode && !isContinuation && sections.skills ? (
-        <EinfachStrengths profile={profile} />
-      ) : null}
-      {sections.experience ? (
-        <EinfachCareer
-          title="Erfahrung"
-          items={experiences}
-          continuation={isContinuation}
-        />
-      ) : null}
-      {sections.education ? (
-        <EinfachCareer title="Ausbildung" items={education} />
-      ) : null}
-      {isLastPage && sections.skills ? (
-        <EinfachKnowledge profile={profile} />
-      ) : null}
-      {isLastPage && sections.languages ? (
-        <EinfachLanguages profile={profile} atsMode={atsMode} />
-      ) : null}
-      {atsMode && isLastPage && sections.skills ? (
-        <EinfachStrengths profile={profile} atsMode />
-      ) : null}
-      {isLastPage && sections.certifications ? (
-        <EinfachCertifications profile={profile} />
-      ) : null}
-    </>
-  );
+        ) : null;
+      }
+      if (type === "strengths") {
+        return sections.skills && !isContinuation && (!atsMode || isLastPage) ? (
+          <EinfachStrengths key={type} profile={profile} atsMode={atsMode} />
+        ) : null;
+      }
+      if (type === "experience") {
+        return sections.experience ? <EinfachCareer key={type} title="Erfahrung" items={experiences} continuation={isContinuation} /> : null;
+      }
+      if (type === "education") {
+        return sections.education ? <EinfachCareer key={type} title="Ausbildung" items={education} /> : null;
+      }
+      if (type === "knowledge") {
+        return isLastPage && sections.skills ? <EinfachKnowledge key={type} profile={profile} /> : null;
+      }
+      if (type === "languages") {
+        return isLastPage && sections.languages ? <EinfachLanguages key={type} profile={profile} atsMode={atsMode} /> : null;
+      }
+      if (type === "certifications") {
+        return isLastPage && sections.certifications ? <EinfachCertifications key={type} profile={profile} /> : null;
+      }
+      return null;
+    });
+  };
+  const body = <>{renderOrderedSections()}</>;
   if (atsMode) {
     return (
       <main className="einfach-ats" data-renderer="ats">

@@ -317,6 +317,17 @@ export const profileSchema = z.object({
       }),
     )
     .default([]),
+  resumeSectionLayouts: z
+    .record(
+      z.string(),
+      z.array(
+        z.object({
+          type: z.enum(resumeSectionTypes),
+          zone: z.enum(sectionZones),
+        }),
+      ),
+    )
+    .default({}),
   updatedAt: z.iso.datetime(),
 });
 

@@ -98,6 +98,8 @@ describe("BewerbungsManager schemas", () => {
       "Kenntnisse & Zusatzangaben",
     );
     expect(profile.knowledgeSection.categories).toEqual([]);
+    expect(profile.resumeSectionLayout).toEqual([]);
+    expect(profile.resumeSectionLayouts).toEqual({});
   });
 
   it("migrates existing attachments into the PDF package by default", () => {

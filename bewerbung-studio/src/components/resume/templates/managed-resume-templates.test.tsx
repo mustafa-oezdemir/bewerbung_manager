@@ -12,6 +12,7 @@ import { EinspaltigResume } from "./einspaltig/EinfachResume";
 import { einspaltigDefaults } from "./einspaltig/einfach.defaults";
 import { KlassischResume } from "./klassisch/KlassischResume";
 import { klassischDefaults } from "./klassisch/klassisch.defaults";
+import { MehrspaltigResume } from "./mehrspaltig/MehrspaltigResume";
 import { KompaktResume } from "./kompakt/KompaktResume";
 import { kompaktDefaults } from "./kompakt/kompakt.defaults";
 import { StilvollResume } from "./stilvoll/StilvollResume";
@@ -386,6 +387,57 @@ describe("Klassisch rendering", () => {
   });
 });
 
+describe("Mehrspaltig rendering", () => {
+  it("keeps the three-column executive layout separate from Klassisch", () => {
+    const markup = renderToStaticMarkup(
+      <MehrspaltigResume
+        {...commonProps}
+        atsMode={false}
+        plan={singlePagePlan}
+        totalPages={1}
+        backgroundId="classic-soft-blue-waves"
+        photoSource="data:image/png;base64,AA=="
+        resumeProfile={commonProps.resumeProfile}
+      />,
+    );
+
+    expect(markup).toContain('data-template="mehrspaltig"');
+    expect(markup).toContain("mehrspaltig-columns");
+    expect(markup).toContain("mehrspaltig-background");
+    expect(markup).toContain("mehrspaltig-column--right");
+  });
+
+  it("applies the saved per-template section order", () => {
+    const orderedProfile = profileSchema.parse({
+      ...profile,
+      resumeSectionLayouts: {
+        mehrspaltig: [
+          { type: "education", zone: "main" },
+          { type: "experience", zone: "main" },
+          { type: "summary", zone: "left-sidebar" },
+          { type: "strengths", zone: "right-sidebar" },
+        ],
+      },
+    });
+    const markup = renderToStaticMarkup(
+      <MehrspaltigResume
+        {...commonProps}
+        profile={orderedProfile}
+        atsMode
+        plan={singlePagePlan}
+        totalPages={1}
+        backgroundId="classic-soft-blue-waves"
+        photoSource={null}
+        resumeProfile={commonProps.resumeProfile}
+      />,
+    );
+
+    expect(markup.indexOf("Ausbildung")).toBeLessThan(
+      markup.indexOf("Erfahrung"),
+    );
+  });
+});
+
 describe("managed resume registration", () => {
   it("registers app metadata, exact grids, and Word asset names", () => {
     expect(getTemplate("stilvoll")).toMatchObject({
@@ -418,6 +470,14 @@ describe("managed resume registration", () => {
       accent: "#2B2F32",
       secondary: "#00AFC5",
       category: "classic-professional",
+      supportsAtsMode: true,
+      supportsPhoto: true,
+      supportsMultiplePages: true,
+    });
+    expect(getTemplate("mehrspaltig")).toMatchObject({
+      id: "mehrspaltig",
+      name: "Mehrspaltig",
+      category: "executive",
       supportsAtsMode: true,
       supportsPhoto: true,
       supportsMultiplePages: true,

@@ -7,6 +7,7 @@ import {
   gepflegtLebenslaufTemplateConfig,
   ivyLeagueLebenslaufTemplateConfig,
   klassischLebenslaufTemplateConfig,
+  mehrspaltigLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   stilvollLebenslaufTemplateConfig,
@@ -45,6 +46,8 @@ export class TemplatePreviewService {
                   ? einspaltigLebenslaufTemplateConfig
                   : template.id === klassischLebenslaufTemplateConfig.id
                     ? klassischLebenslaufTemplateConfig
+                    : template.id === mehrspaltigLebenslaufTemplateConfig.id
+                      ? mehrspaltigLebenslaufTemplateConfig
                     : template.id === gepflegtLebenslaufTemplateConfig.id
                       ? gepflegtLebenslaufTemplateConfig
                       : undefined;

@@ -9,6 +9,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import {
   getTemplateSectionCapabilities,
+  getProfileResumeSectionLayout,
   isResumeSectionVisible,
   moveResumeSection,
   resolveResumeSectionLayout,
@@ -73,13 +74,13 @@ export function ResumeSectionsPanel({
 }: ResumeSectionsPanelProps) {
   const capabilities = getTemplateSectionCapabilities(templateId);
   const [draftLayout, setDraftLayout] = useState<ResumeSectionPlacement[]>(
-    () => resolveResumeSectionLayout(templateId, profile.resumeSectionLayout),
+    () => getProfileResumeSectionLayout(profile, templateId),
   );
   const [draftProfile, setDraftProfile] = useState(profile);
   const [draggedType, setDraggedType] = useState<ResumeSectionType | null>(null);
 
   useEffect(() => {
-    setDraftLayout(resolveResumeSectionLayout(templateId, profile.resumeSectionLayout));
+    setDraftLayout(getProfileResumeSectionLayout(profile, templateId));
     setDraftProfile(profile);
   }, [profile, templateId]);
 
@@ -102,7 +103,7 @@ export function ResumeSectionsPanel({
   };
 
   const cancel = () => {
-    setDraftLayout(resolveResumeSectionLayout(templateId, profile.resumeSectionLayout));
+    setDraftLayout(getProfileResumeSectionLayout(profile, templateId));
     setDraftProfile(profile);
   };
 
@@ -110,6 +111,10 @@ export function ResumeSectionsPanel({
     await onSave({
       ...draftProfile,
       resumeSectionLayout: draftLayout,
+      resumeSectionLayouts: {
+        ...draftProfile.resumeSectionLayouts,
+        [templateId]: draftLayout,
+      },
       updatedAt: new Date().toISOString(),
     });
   };

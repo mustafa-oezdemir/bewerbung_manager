@@ -14,6 +14,11 @@ import {
   KlassischStrengths,
 } from "./KlassischSections";
 import type { KlassischResumeProps } from "./klassisch.types";
+import {
+  getProfileResumeSectionLayout,
+  hasSavedTemplateSectionLayout,
+  type ResumeSectionType,
+} from "../../../../features/resume-sections/resume-sections";
 
 type Props = Omit<KlassischResumeProps, "accentColor" | "secondaryColor">;
 
@@ -33,23 +38,34 @@ export function KlassischPage({
   const summary = resolveTemplateSummary(profile, resumeProfile);
   const isLastPage = plan.pageNumber === totalPages;
   const portfolio = profile?.portfolio || profile?.github || profile?.linkedin || "";
-  const visualBody = (
-    <div className={`klassisch-columns ${isContinuation ? "klassisch-columns--continuation" : ""}`}>
-      {!isContinuation ? <aside className="klassisch-column klassisch-column--left">
-        {sections.profile && summary ? <section className="klassisch-section" data-element-id="klassisch.summary"><KlassischHeading>Zusammenfassung</KlassischHeading><p className="klassisch-summary">{summary}</p></section> : null}
-        {sections.skills ? <KlassischKnowledge profile={profile} /> : null}
-        {isLastPage && sections.languages ? <KlassischLanguages profile={profile} /> : null}
-      </aside> : null}
-      <main className="klassisch-column klassisch-column--main">
-        {sections.experience ? <KlassischCareer title="Erfahrung" items={experiences} continuation={isContinuation} /> : null}
-        {sections.education ? <KlassischCareer title="Ausbildung" items={education} /> : null}
-        {isLastPage && sections.certifications ? <KlassischCertifications profile={profile} /> : null}
-      </main>
-      {!isContinuation ? <aside className="klassisch-column klassisch-column--right">
-        {sections.skills ? <KlassischStrengths profile={profile} /> : null}
-      </aside> : null}
-    </div>
+  const hasCustomLayout = hasSavedTemplateSectionLayout(profile, "klassisch");
+  const savedOrder = getProfileResumeSectionLayout(profile, "klassisch").map(
+    ({ type }) => type,
   );
+  const renderSection = (type: ResumeSectionType, mode: "visual" | "ats") => {
+    if (type === "summary") {
+      return sections.profile && summary && !isContinuation ? (
+        <section key={type} className="klassisch-section" data-element-id="klassisch.summary">
+          <KlassischHeading>Zusammenfassung</KlassischHeading>
+          <p className="klassisch-summary">{summary}</p>
+        </section>
+      ) : null;
+    }
+    if (type === "strengths") return !isContinuation && sections.skills ? <KlassischStrengths key={type} profile={profile} atsMode={mode === "ats"} /> : null;
+    if (type === "experience") return sections.experience ? <KlassischCareer key={type} title="Erfahrung" items={experiences} continuation={isContinuation} /> : null;
+    if (type === "education") return sections.education ? <KlassischCareer key={type} title="Ausbildung" items={education} /> : null;
+    if (type === "knowledge") return isLastPage && sections.skills ? <KlassischKnowledge key={type} profile={profile} /> : null;
+    if (type === "languages") return isLastPage && sections.languages ? <KlassischLanguages key={type} profile={profile} atsMode={mode === "ats"} /> : null;
+    if (type === "certifications") return isLastPage && sections.certifications ? <KlassischCertifications key={type} profile={profile} /> : null;
+    return null;
+  };
+  const visualOrder: ResumeSectionType[] = hasCustomLayout
+    ? savedOrder
+    : ["summary", "strengths", "experience", "education", "knowledge", "languages", "certifications"];
+  const atsOrder: ResumeSectionType[] = hasCustomLayout
+    ? savedOrder
+    : ["summary", "experience", "education", "knowledge", "languages", "strengths", "certifications"];
+  const visualBody = <>{visualOrder.map((type) => renderSection(type, "visual"))}</>;
   if (atsMode) {
     return (
       <main className="klassisch-ats" data-renderer="ats">
@@ -75,34 +91,7 @@ export function KlassischPage({
             </p>
           </section>
         ) : null}
-        {sections.profile && summary && !isContinuation ? (
-          <section className="klassisch-section">
-            <KlassischHeading>Zusammenfassung</KlassischHeading>
-            <p>{summary}</p>
-          </section>
-        ) : null}
-        {sections.experience ? (
-          <KlassischCareer
-            title="Erfahrung"
-            items={experiences}
-            continuation={isContinuation}
-          />
-        ) : null}
-        {sections.education ? (
-          <KlassischCareer title="Ausbildung" items={education} />
-        ) : null}
-        {isLastPage && sections.skills ? (
-          <KlassischKnowledge profile={profile} />
-        ) : null}
-        {isLastPage && sections.languages ? (
-          <KlassischLanguages profile={profile} atsMode />
-        ) : null}
-        {isLastPage && sections.skills ? (
-          <KlassischStrengths profile={profile} atsMode />
-        ) : null}
-        {isLastPage && sections.certifications ? (
-          <KlassischCertifications profile={profile} />
-        ) : null}
+        {atsOrder.map((type) => renderSection(type, "ats"))}
       </main>
     );
   }

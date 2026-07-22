@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { ApplicantProfile } from "../../../../shared/schema";
 import {
   formatTemplateDateRange,
@@ -9,28 +9,29 @@ import {
   type TemplateCareerItem,
 } from "../resume-template-data";
 
-export function KlassischHeading({ children }: { children: ReactNode }) {
-  return <h2 className="klassisch-section__title">{children}</h2>;
+export function MehrspaltigHeading({ children }: { children: ReactNode }) {
+  return <h2 className="mehrspaltig-section__title">{children}</h2>;
 }
 
-export function KlassischStrengths({
+export function MehrspaltigStrengths({
   profile,
   atsMode = false,
 }: {
   profile: ApplicantProfile | undefined;
   atsMode?: boolean;
 }) {
-  const strengths = parseTemplateStrengths(profile, 3);
+  const strengths = parseTemplateStrengths(profile, 4);
   if (!strengths.length) return null;
   return (
     <section
-      className={`klassisch-section klassisch-strengths ${atsMode ? "klassisch-strengths--ats" : ""}`}
-      data-element-id="klassisch.strengths"
+      className={`mehrspaltig-section mehrspaltig-strengths ${atsMode ? "mehrspaltig-strengths--ats" : ""}`}
+      data-element-id="mehrspaltig.strengths"
     >
-      <KlassischHeading>Stärken</KlassischHeading>
+      <MehrspaltigHeading>Stärken</MehrspaltigHeading>
       <div>
-        {strengths.map((strength) => (
+        {strengths.map((strength, index) => (
           <article key={`${strength.title}-${strength.description}`}>
+            {!atsMode ? <i aria-hidden="true">{["✦", "⚑", "♡", "↗"][index % 4]}</i> : null}
             <h3>{strength.title}</h3>
             {strength.description ? <p>{strength.description}</p> : null}
           </article>
@@ -40,7 +41,7 @@ export function KlassischStrengths({
   );
 }
 
-export function KlassischCareer({
+export function MehrspaltigCareer({
   title,
   items,
   continuation = false,
@@ -53,25 +54,22 @@ export function KlassischCareer({
   const isEducation = title === "Ausbildung";
   return (
     <section
-      className={`klassisch-section klassisch-career ${isEducation ? "klassisch-career--education" : ""}`}
-      data-element-id={`klassisch.${isEducation ? "education" : "experience"}`}
+      className={`mehrspaltig-section mehrspaltig-career ${isEducation ? "mehrspaltig-career--education" : ""}`}
+      data-element-id={`mehrspaltig.${isEducation ? "education" : "experience"}`}
     >
-      <KlassischHeading>
+      <MehrspaltigHeading>
         {title}
         {continuation ? " · Fortsetzung" : ""}
-      </KlassischHeading>
+      </MehrspaltigHeading>
       <div>
         {items.map((item) => (
           <article key={item.id}>
-            <div className="klassisch-career__heading">
+            <div className="mehrspaltig-career__heading">
               <div>
                 <h3>{item.title}</h3>
                 <h4>{item.organization}</h4>
               </div>
-              <p>
-                {item.city ? <span>{item.city}</span> : null}
-                <time>{formatTemplateDateRange(item.from, item.to)}</time>
-              </p>
+              <p>{item.city ? <span>⌖ {item.city}</span> : null}<time>▣ {formatTemplateDateRange(item.from, item.to)}</time></p>
             </div>
             {item.achievements.length ? (
               <ul>
@@ -87,7 +85,7 @@ export function KlassischCareer({
   );
 }
 
-export function KlassischKnowledge({
+export function MehrspaltigKnowledge({
   profile,
 }: {
   profile: ApplicantProfile | undefined;
@@ -100,14 +98,14 @@ export function KlassischKnowledge({
   );
   if (!knowledge.length) return null;
   return (
-    <section className="klassisch-section" data-element-id="klassisch.skills">
-      <KlassischHeading>Kenntnisse</KlassischHeading>
-      <p className="klassisch-knowledge">{knowledge.join(" · ")}</p>
+    <section className="mehrspaltig-section" data-element-id="mehrspaltig.skills">
+      <MehrspaltigHeading>Fähigkeiten</MehrspaltigHeading>
+      <div className="mehrspaltig-knowledge">{knowledge.map((item) => <strong key={item}>{item}</strong>)}</div>
     </section>
   );
 }
 
-export function KlassischLanguages({
+export function MehrspaltigLanguages({
   profile,
   atsMode = false,
 }: {
@@ -120,15 +118,16 @@ export function KlassischLanguages({
   if (!languages.length) return null;
   return (
     <section
-      className={`klassisch-section klassisch-languages ${atsMode ? "klassisch-languages--ats" : ""}`}
-      data-element-id="klassisch.languages"
+      className={`mehrspaltig-section mehrspaltig-languages ${atsMode ? "mehrspaltig-languages--ats" : ""}`}
+      data-element-id="mehrspaltig.languages"
     >
-      <KlassischHeading>Sprachen</KlassischHeading>
+      <MehrspaltigHeading>Sprachen</MehrspaltigHeading>
       <div>
         {languages.map((language) => (
           <p key={language.raw}>
             <strong>{language.name}</strong>
-            {language.level ? <span>({language.level})</span> : null}
+            {language.level ? <span>{language.level}</span> : null}
+            {!atsMode ? <em aria-label={`${language.score} von 5`}><i style={{ "--score": language.score } as CSSProperties} /></em> : null}
           </p>
         ))}
       </div>
@@ -136,7 +135,7 @@ export function KlassischLanguages({
   );
 }
 
-export function KlassischCertifications({
+export function MehrspaltigCertifications({
   profile,
 }: {
   profile: ApplicantProfile | undefined;
@@ -144,8 +143,8 @@ export function KlassischCertifications({
   const certifications = uniqueTemplateValues(profile?.certifications ?? []);
   if (!certifications.length) return null;
   return (
-    <section className="klassisch-section" data-element-id="klassisch.certifications">
-      <KlassischHeading>Zertifikate</KlassischHeading>
+    <section className="mehrspaltig-section" data-element-id="mehrspaltig.certifications">
+      <MehrspaltigHeading>Zertifikate</MehrspaltigHeading>
       <ul>
         {certifications.map((certification) => (
           <li key={certification}>{certification}</li>

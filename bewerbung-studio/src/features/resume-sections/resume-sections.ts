@@ -29,6 +29,11 @@ export type ResumeSectionPlacement = {
   zone: SectionZone;
 };
 
+export type ResumeSectionLayoutsByTemplate = Record<
+  string,
+  ResumeSectionPlacement[]
+>;
+
 export type TemplateSectionCapabilities = {
   templateId: string;
   availableZones: readonly SectionZone[];
@@ -121,11 +126,58 @@ const twoColumnCapabilities = (
   },
 });
 
+const threeColumnCapabilities = (
+  templateId: string,
+): TemplateSectionCapabilities => ({
+  templateId,
+  availableZones: ["main", "left-sidebar", "right-sidebar"],
+  lockedSectionTypes: [],
+  allowedZonesBySection: {
+    summary: ["left-sidebar", "right-sidebar"],
+    strengths: ["left-sidebar", "right-sidebar"],
+    experience: ["main"],
+    education: ["main"],
+    projects: ["main"],
+    knowledge: ["left-sidebar", "right-sidebar", "main"],
+    certifications: ["left-sidebar", "right-sidebar", "main"],
+    languages: ["left-sidebar", "right-sidebar"],
+    additional: ["main", "left-sidebar", "right-sidebar"],
+    references: ["main", "left-sidebar", "right-sidebar"],
+  },
+  defaultSectionOrder: naturalOrder,
+  defaultZoneBySection: {
+    summary: "left-sidebar",
+    strengths: "right-sidebar",
+    experience: "main",
+    education: "main",
+    projects: "main",
+    knowledge: "left-sidebar",
+    certifications: "right-sidebar",
+    languages: "left-sidebar",
+    additional: "main",
+    references: "main",
+  },
+});
+
 export const templateSectionCapabilities: Record<
   string,
   TemplateSectionCapabilities
 > = {
-  "ivy-league": mainOnlyCapabilities("ivy-league"),
+  "ivy-league": {
+    ...mainOnlyCapabilities("ivy-league"),
+    defaultSectionOrder: [
+      "summary",
+      "experience",
+      "education",
+      "knowledge",
+      "languages",
+      "strengths",
+      "certifications",
+      "projects",
+      "additional",
+      "references",
+    ],
+  },
   stilvoll: mainOnlyCapabilities("stilvoll"),
   kompakt: mainOnlyCapabilities("kompakt", { compactSinglePage: true }),
   einspaltig: mainOnlyCapabilities("einspaltig"),
@@ -139,36 +191,7 @@ export const templateSectionCapabilities: Record<
   elegant: twoColumnCapabilities("elegant"),
   zeitgenoessisch: twoColumnCapabilities("zeitgenoessisch"),
   kreativ: twoColumnCapabilities("kreativ"),
-  mehrspaltig: {
-    templateId: "mehrspaltig",
-    availableZones: ["main", "left-sidebar", "right-sidebar"],
-    lockedSectionTypes: [],
-    allowedZonesBySection: {
-      summary: ["left-sidebar", "right-sidebar"],
-      strengths: ["left-sidebar", "right-sidebar"],
-      experience: ["main"],
-      education: ["main"],
-      projects: ["main"],
-      knowledge: ["left-sidebar", "right-sidebar", "main"],
-      certifications: ["left-sidebar", "right-sidebar", "main"],
-      languages: ["left-sidebar", "right-sidebar"],
-      additional: ["main", "left-sidebar", "right-sidebar"],
-      references: ["main", "left-sidebar", "right-sidebar"],
-    },
-    defaultSectionOrder: naturalOrder,
-    defaultZoneBySection: {
-      summary: "left-sidebar",
-      strengths: "right-sidebar",
-      experience: "main",
-      education: "main",
-      projects: "main",
-      knowledge: "left-sidebar",
-      certifications: "right-sidebar",
-      languages: "left-sidebar",
-      additional: "main",
-      references: "main",
-    },
-  },
+  mehrspaltig: threeColumnCapabilities("mehrspaltig"),
 };
 
 export const getTemplateSectionCapabilities = (templateId: string) =>
@@ -207,6 +230,29 @@ export const resolveResumeSectionLayout = (
   });
   return [...resolved, ...defaults.filter(({ type }) => !known.has(type))];
 };
+
+export const getProfileResumeSectionLayout = (
+  profile: Pick<
+    ApplicantProfile,
+    "resumeSectionLayout" | "resumeSectionLayouts"
+  > | undefined,
+  templateId: string,
+) =>
+  resolveResumeSectionLayout(
+    templateId,
+    profile?.resumeSectionLayouts?.[templateId] ?? profile?.resumeSectionLayout,
+  );
+
+export const hasSavedTemplateSectionLayout = (
+  profile: Pick<
+    ApplicantProfile,
+    "resumeSectionLayout" | "resumeSectionLayouts"
+  > | undefined,
+  templateId: string,
+) => Boolean(
+  profile?.resumeSectionLayouts?.[templateId]?.length ||
+    profile?.resumeSectionLayout?.length,
+);
 
 export const isResumeSectionVisible = (
   profile: Pick<ApplicantProfile, "resumeSections"> | undefined,

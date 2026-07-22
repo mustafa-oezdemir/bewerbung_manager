@@ -31,3 +31,4 @@ export function KlassischResume({
 }
 
 export default KlassischResume;
+

@@ -342,6 +342,40 @@ const allTemplates: TemplateDefinition[] = [
     },
   },
   {
+    id: "mehrspaltig",
+    name: "Mehrspaltig",
+    description:
+      "Dreispaltige Lebenslaufvorlage mit hoher Informationsdichte für erfahrene Fach- und Führungskräfte.",
+    accent: "#003C96",
+    secondary: "#57ADF4",
+    font: "Source Sans 3",
+    layout: "centered",
+    features: [
+      "Dreispaltige Executive-Struktur",
+      "Farbige Akzentlinien",
+      "ATS-Variante",
+    ],
+    category: "executive",
+    supportsAtsMode: true,
+    supportsPhoto: true,
+    supportsFreeform: true,
+    supportsMultiplePages: true,
+    atsInfo:
+      "Mehrspaltig bietet eine lineare ATS-Ausgabe ohne Foto, Farbakzente oder Spaltenlayout.",
+    designDefaults: {
+      marginLevel: 3,
+      sectionSpacingLevel: 3,
+      fontSize: "small",
+      lineHeightLevel: 2,
+      columnLayout: "template",
+      resumeOutputMode: "visual",
+      backgroundId: "classic-soft-blue-waves",
+      showBackgroundInPrint: true,
+      fontId: "source-sans",
+      headingFontId: "source-sans",
+    },
+  },
+  {
     id: "gepflegt",
     name: "Gepflegt",
     description:
@@ -519,6 +553,7 @@ const enabledTemplateIds = new Set([
   "kompakt",
   "einspaltig",
   "klassisch",
+  "mehrspaltig",
 ]);
 
 /** Templates exposed to the resume editor. Legacy definitions remain readable for old documents. */

@@ -2,7 +2,7 @@ import type { DocumentBackgroundId } from "../../../../shared/documentDesign";
 import type { ResumePagePlan } from "../../../../shared/documentPagination";
 import type { ApplicantProfile } from "../../../../shared/schema";
 
-export type KlassischResumeProps = {
+export type MehrspaltigResumeProps = {
   profile: ApplicantProfile | undefined;
   name: string;
   atsMode: boolean;

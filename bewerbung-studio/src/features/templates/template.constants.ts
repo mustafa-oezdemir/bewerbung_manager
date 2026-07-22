@@ -442,6 +442,46 @@ export const klassischLebenslaufTemplateConfig = {
   ],
 } as const;
 
+export const mehrspaltigLebenslaufTemplateConfig = {
+  id: "word-lebenslauf-mehrspaltig",
+  fileName: "Mehrspaltig_Lebenslauf_Muster.docx",
+  atsFileName: "Mehrspaltig_Lebenslauf_ATS.docx",
+  previewFileName: "Mehrspaltig_Lebenslauf_Muster.preview.png",
+  name: "Mehrspaltig",
+  documentType: "lebenslauf",
+  format: "docx",
+  source: "system-word-template",
+  sortOrder: 12,
+  category: "multi-column",
+  layout: "three-column-executive",
+  atsFriendly: true,
+  supportsPhoto: true,
+  supportsBackground: true,
+  supportsPlaceholders: true,
+  supportsPreview: true,
+  supportsAtsMode: true,
+  editableInWord: true,
+  isSystemTemplate: true,
+  isProtected: true,
+  emphasis: "executive-information-density",
+  description:
+    "Dreispaltige Word-Lebenslaufvorlage mit klarer Executive-Hierarchie, Farbakzenten und separater ATS-Ausgabe.",
+  tags: [
+    "Mehrspaltig",
+    "Word",
+    "DOCX",
+    "Lebenslauf",
+    "ATS",
+    "Foto",
+    "Führungskräfte",
+    "Blau",
+  ],
+  cardHighlights: [
+    "Dreispaltiges Layout für hohe Informationsdichte",
+    "Mit Foto · ATS-freundlich · DOCX",
+  ],
+} as const;
+
 const coreTemplatePlaceholderKeys = [
   "BEWERBER_NAME",
   "BEWERBER_VORNAME",

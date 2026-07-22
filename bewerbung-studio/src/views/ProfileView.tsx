@@ -64,6 +64,7 @@ const newProfile = (): ApplicantProfile => ({
   certifications: [],
   resumeSections: defaultSections,
   resumeSectionLayout: [],
+  resumeSectionLayouts: {},
   updatedAt: new Date().toISOString(),
 });
 
