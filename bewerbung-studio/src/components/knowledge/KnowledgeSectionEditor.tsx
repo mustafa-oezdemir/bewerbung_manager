@@ -27,7 +27,7 @@ export function KnowledgeSectionEditor({
 }: {
   value: KnowledgeSection;
   onChange: (value: KnowledgeSection) => void;
-  onCopyCategory: (categoryId: string) => void;
+  onCopyCategory?: (categoryId: string) => void;
 }) {
   const [customName, setCustomName] = useState("");
   const [predefined, setPredefined] = useState<string>(
@@ -181,7 +181,11 @@ export function KnowledgeSectionEditor({
               onDuplicate={() =>
                 onChange(duplicateKnowledgeCategory(value, category.id))
               }
-              onCopy={() => onCopyCategory(category.id)}
+              onCopy={
+                onCopyCategory
+                  ? () => onCopyCategory(category.id)
+                  : undefined
+              }
               onDragStart={() => setDraggedCategoryId(category.id)}
               onDrop={() => {
                 if (!draggedCategoryId) return;

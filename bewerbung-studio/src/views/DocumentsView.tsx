@@ -20,6 +20,7 @@ import {
 import { TemplateThumbnail } from "../components/TemplateThumbnail";
 import { KnowledgeSectionRenderer } from "../components/document/KnowledgeSectionRenderer";
 import { DocumentBackgroundLayer } from "../components/document/DocumentBackgroundLayer";
+import { ResumeDataEditor } from "../components/resume/ResumeDataEditor";
 import { ResumeSectionsPanel } from "../components/resume/ResumeSectionsPanel";
 import { ElegantResume } from "../components/resume/templates/elegant";
 import { EinspaltigResume } from "../components/resume/templates/einspaltig";
@@ -323,9 +324,43 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
   } | null>(null);
   const handleResumeSectionPreview = useCallback(
     (templateId: string, previewProfile: ApplicantProfile | null) => {
-      setResumeSectionPreview(
-        previewProfile ? { templateId, profile: previewProfile } : null,
-      );
+      setResumeSectionPreview((current) => {
+        if (!previewProfile) return null;
+        const base =
+          current?.templateId === templateId &&
+          current.profile.id === previewProfile.id
+            ? current.profile
+            : previewProfile;
+        return {
+          templateId,
+          profile: {
+            ...base,
+            resumeSections: previewProfile.resumeSections,
+            resumeSectionLayout: previewProfile.resumeSectionLayout,
+            resumeSectionLayouts: previewProfile.resumeSectionLayouts,
+          },
+        };
+      });
+    },
+    [],
+  );
+  const handleResumeDataPreview = useCallback(
+    (previewProfile: ApplicantProfile | null) => {
+      setResumeSectionPreview((current) => {
+        if (!previewProfile) return null;
+        const preservedLayout =
+          current?.profile.id === previewProfile.id
+            ? {
+                resumeSections: current.profile.resumeSections,
+                resumeSectionLayout: current.profile.resumeSectionLayout,
+                resumeSectionLayouts: current.profile.resumeSectionLayouts,
+              }
+            : {};
+        return {
+          templateId: current?.templateId ?? "",
+          profile: { ...previewProfile, ...preservedLayout },
+        };
+      });
     },
     [],
   );
@@ -454,6 +489,38 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
         [key]: value,
       },
     }));
+  };
+
+  const saveResumeData = async (changedProfile: ApplicantProfile) => {
+    const preview =
+      resumeSectionPreview?.profile.id === changedProfile.id
+        ? resumeSectionPreview.profile
+        : undefined;
+    await saveProfile({
+      ...changedProfile,
+      ...(preview
+        ? {
+            resumeSections: preview.resumeSections,
+            resumeSectionLayout: preview.resumeSectionLayout,
+            resumeSectionLayouts: preview.resumeSectionLayouts,
+          }
+        : {}),
+      updatedAt: new Date().toISOString(),
+    });
+  };
+
+  const saveResumeSections = async (changedProfile: ApplicantProfile) => {
+    const preview =
+      resumeSectionPreview?.profile.id === changedProfile.id
+        ? resumeSectionPreview.profile
+        : changedProfile;
+    await saveProfile({
+      ...preview,
+      resumeSections: changedProfile.resumeSections,
+      resumeSectionLayout: changedProfile.resumeSectionLayout,
+      resumeSectionLayouts: changedProfile.resumeSectionLayouts,
+      updatedAt: new Date().toISOString(),
+    });
   };
 
   const pickProfileMedia = async (kind: ProfileMediaKind) => {
@@ -680,15 +747,22 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                   </span>
                 </section>
                 {profile ? (
-                  <ResumeSectionsPanel
-                    profile={profile}
-                    singlePageExceeded={
-                      template.id === "kompakt" && resumePlan.length > 1
-                    }
-                    templateId={template.id}
-                    onSave={saveProfile}
-                    onPreview={handleResumeSectionPreview}
-                  />
+                  <>
+                    <ResumeDataEditor
+                      profile={profile}
+                      onPreview={handleResumeDataPreview}
+                      onSave={saveResumeData}
+                    />
+                    <ResumeSectionsPanel
+                      profile={profile}
+                      singlePageExceeded={
+                        template.id === "kompakt" && resumePlan.length > 1
+                      }
+                      templateId={template.id}
+                      onSave={saveResumeSections}
+                      onPreview={handleResumeSectionPreview}
+                    />
+                  </>
                 ) : null}
                 <button
                   className="design-panel-trigger"

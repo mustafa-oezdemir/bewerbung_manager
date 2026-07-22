@@ -1730,6 +1730,12 @@ kbd {
 
 .document-editor {
   align-self: start;
+  position: sticky;
+  top: 96px;
+  max-height: calc(100vh - 116px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .document-tabs {
@@ -3806,6 +3812,179 @@ kbd {
 .page-limit-status.warning {
   border-left-color: #d68a22;
   background: color-mix(in srgb, #f2c36b, var(--surface) 88%);
+}
+
+.resume-data-editor {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-muted);
+}
+
+.resume-data-editor-trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 13px;
+  border: 0;
+  color: var(--ink);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.resume-data-editor-trigger > span {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.resume-data-editor-trigger strong {
+  font-size: 0.72rem;
+}
+
+.resume-data-editor-trigger small,
+.resume-data-editor-hint {
+  color: var(--muted);
+  font-size: 0.58rem;
+  line-height: 1.45;
+}
+
+.resume-data-editor-trigger svg {
+  flex: 0 0 auto;
+  transition: transform 160ms ease;
+}
+
+.resume-data-editor-trigger svg.is-open {
+  transform: rotate(180deg);
+}
+
+.resume-data-editor-body {
+  display: grid;
+  gap: 10px;
+  padding: 11px;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.resume-data-editor-hint {
+  margin: 0;
+  padding: 9px 10px;
+  border-left: 3px solid var(--brand);
+  border-radius: 7px;
+  background: var(--brand-soft);
+}
+
+.resume-data-group {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface-strong);
+}
+
+.resume-data-group > summary {
+  padding: 10px;
+  color: var(--ink);
+  font-size: 0.66rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.resume-data-group[open] > summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.resume-data-group > .field {
+  margin: 10px;
+}
+
+.resume-data-group > .small-button {
+  margin: 10px 10px 0;
+}
+
+.resume-data-list {
+  display: grid;
+  gap: 9px;
+  padding: 10px;
+}
+
+.resume-data-card {
+  display: grid;
+  min-width: 0;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface-muted);
+}
+
+.resume-data-card-heading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.resume-data-card-heading strong {
+  overflow: hidden;
+  font-size: 0.65rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resume-data-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.resume-data-field-grid .field:nth-child(n + 3) {
+  grid-column: 1 / -1;
+}
+
+.resume-personal-fields {
+  padding: 10px;
+}
+
+.resume-personal-fields .field:nth-child(n) {
+  grid-column: auto;
+}
+
+.resume-personal-fields .field:nth-child(3),
+.resume-personal-fields .field:nth-child(6),
+.resume-personal-fields .field:nth-child(9),
+.resume-personal-fields .field:nth-child(10),
+.resume-personal-fields .field:nth-child(11),
+.resume-personal-fields .field:nth-child(12),
+.resume-personal-fields .field:nth-child(15) {
+  grid-column: 1 / -1;
+}
+
+.resume-data-editor .knowledge-section-editor {
+  gap: 10px;
+  padding: 10px;
+}
+
+.resume-data-editor .knowledge-add-panel,
+.resume-data-editor .knowledge-section-heading,
+.resume-data-editor .knowledge-category-settings {
+  grid-template-columns: 1fr;
+}
+
+.resume-data-editor .knowledge-category-card,
+.resume-data-editor .knowledge-add-panel {
+  padding: 10px;
+  border-radius: 9px;
+}
+
+.resume-data-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
 }
 
 .resume-sections-panel {

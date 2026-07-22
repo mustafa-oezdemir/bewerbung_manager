@@ -37,7 +37,7 @@ export function KnowledgeCategoryCard({
   onChange: (category: KnowledgeCategory) => void;
   onRemove: () => void;
   onDuplicate: () => void;
-  onCopy: () => void;
+  onCopy?: () => void;
   onDragStart: () => void;
   onDrop: () => void;
 }) {
@@ -84,9 +84,11 @@ export function KnowledgeCategoryCard({
           <button className="icon-button" type="button" title="Kategorie duplizieren" onClick={onDuplicate}>
             <Copy size={16} />
           </button>
-          <button className="icon-button" type="button" title="In anderes Profil kopieren" onClick={onCopy}>
-            <FolderInput size={16} />
-          </button>
+          {onCopy ? (
+            <button className="icon-button" type="button" title="In anderes Profil kopieren" onClick={onCopy}>
+              <FolderInput size={16} />
+            </button>
+          ) : null}
           <button
             className="icon-button danger"
             type="button"
