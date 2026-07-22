@@ -1056,12 +1056,12 @@ describe("Lebenslauf-Dokumente", () => {
     );
   });
 
-  it("renders Einfach as a geometric one-column document with a round photo", () => {
-    const einfachApplication = applicationSchema.parse({
+  it("renders Einspaltig as a geometric one-column document with a round photo", () => {
+    const einspaltigApplication = applicationSchema.parse({
       ...application,
-      templateId: "einfach",
-      accentColor: "#073B8F",
-      secondaryColor: "#4AA7F5",
+      templateId: "einspaltig",
+      accentColor: "#0B3485",
+      secondaryColor: "#4AAAF4",
       designSettings: {
         ...application.designSettings,
         columnLayout: "single",
@@ -1075,23 +1075,57 @@ describe("Lebenslauf-Dokumente", () => {
       certifications: ["Professional Scrum Master I"],
     });
     const html = buildDocumentHtml(
-      einfachApplication,
+      einspaltigApplication,
       mediaProfile,
       "lebenslauf",
     );
     const body = html.slice(html.indexOf("<body>"));
 
-    expect(body).toContain('data-template="einfach"');
+    expect(body).toContain('data-template="einspaltig"');
     expect(body).toContain("einfach-pdf-inner");
+    expect(html).toContain(".einfach-pdf .managed-pdf-background{z-index:-1");
     expect(body).toContain('class="managed-pdf-background"');
     expect(body).toContain('<img class="einfach-pdf-photo"');
     expect(body).toContain("einfach-pdf-strengths");
   });
 
-  it("renders Einfach ATS in logical order without photo or geometry", () => {
-    const einfachApplication = applicationSchema.parse({
+  it("keeps strengths but omits Kenntnisse when the knowledge section is disabled", () => {
+    const einspaltigApplication = applicationSchema.parse({
       ...application,
-      templateId: "einfach",
+      templateId: "einspaltig",
+      designSettings: {
+        ...application.designSettings,
+        resumeOutputMode: "visual",
+        backgroundId: "geometric",
+      },
+    });
+    const profileWithoutKnowledge = profileSchema.parse({
+      ...profile,
+      skills: [
+        "Führungskompetenz – Ein Team erfolgreich entwickelt.",
+        "Vertriebsstrategie – Den Umsatz messbar gesteigert.",
+      ],
+      knowledgeSection: {
+        title: "Kenntnisse",
+        isVisible: false,
+        categories: [],
+      },
+    });
+    const html = buildDocumentHtml(
+      einspaltigApplication,
+      profileWithoutKnowledge,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain("Stärken");
+    expect(body).not.toContain(">Kenntnisse<");
+  });
+
+  it("renders Einspaltig ATS in logical order without photo or geometry", () => {
+    const einspaltigApplication = applicationSchema.parse({
+      ...application,
+      templateId: "einspaltig",
       designSettings: {
         ...application.designSettings,
         resumeOutputMode: "ats",
@@ -1114,13 +1148,14 @@ describe("Lebenslauf-Dokumente", () => {
       certifications: ["Professional Scrum Master I"],
     });
     const html = buildDocumentHtml(
-      einfachApplication,
+      einspaltigApplication,
       mediaProfile,
       "lebenslauf",
     );
     const body = html.slice(html.indexOf("<body>"));
 
     expect(body).toContain("managed-pdf-ats");
+    expect(body).toContain('data-template="einspaltig"');
     expect(body).not.toContain("einfach-pdf-background");
     expect(body).not.toContain("<img");
     expect(body).not.toContain("managed-pdf-dots");
@@ -1128,6 +1163,107 @@ describe("Lebenslauf-Dokumente", () => {
       body.indexOf("Berufserfahrung"),
     );
     expect(body.indexOf("Berufserfahrung")).toBeLessThan(
+      body.indexOf("Ausbildung"),
+    );
+    expect(body.indexOf("Ausbildung")).toBeLessThan(
+      body.indexOf("Kenntnisse"),
+    );
+    expect(body.indexOf("Kenntnisse")).toBeLessThan(
+      body.indexOf("Sprachen"),
+    );
+    expect(body.indexOf("Sprachen")).toBeLessThan(
+      body.indexOf("Stärken"),
+    );
+    expect(body.indexOf("Stärken")).toBeLessThan(
+      body.indexOf("Zertifikate"),
+    );
+  });
+
+  it("renders Klassisch with background waves, round photo, and horizontal strengths", () => {
+    const klassischApplication = applicationSchema.parse({
+      ...application,
+      templateId: "klassisch",
+      accentColor: "#2B2F32",
+      secondaryColor: "#00AFC5",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "single",
+        resumeOutputMode: "visual",
+        backgroundId: "classic-soft-blue-waves",
+        showBackgroundInPrint: true,
+      },
+    });
+    const mediaProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      skills: [
+        "Teamleitung – Führung interdisziplinärer Teams",
+        "Kommunikation – Abstimmung mit Fachbereichen",
+        "Konfliktmanagement – Nachhaltige Lösungen",
+      ],
+      languages: ["Deutsch – Muttersprache", "Englisch – Versiert"],
+    });
+    const html = buildDocumentHtml(
+      klassischApplication,
+      mediaProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain('data-template="klassisch"');
+    expect(body).toContain('class="klassisch-pdf-background"');
+    expect(body).toContain('<img class="klassisch-pdf-photo"');
+    expect(body).toContain("klassisch-pdf-strengths");
+    expect(body).toContain("klassisch-pdf-entry-head");
+    expect(html).toContain(".klassisch-pdf-background{position:absolute;inset:0;z-index:-1");
+    expect(body).not.toContain("Seite 1 / 1");
+  });
+
+  it("renders Klassisch ATS in logical order without photo or wave decoration", () => {
+    const klassischApplication = applicationSchema.parse({
+      ...application,
+      templateId: "klassisch",
+      designSettings: {
+        ...application.designSettings,
+        resumeOutputMode: "ats",
+        backgroundId: "classic-soft-blue-waves",
+      },
+    });
+    const atsProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      skills: [
+        "Teamführung – Führung interdisziplinärer Teams",
+        "Kommunikation – Abstimmung mit Fachbereichen",
+        "Konfliktmanagement – Nachhaltige Lösungen",
+        "Jira",
+      ],
+      education: [
+        {
+          id: crypto.randomUUID(),
+          from: "2015",
+          to: "2019",
+          degree: "B.Sc. Informatik",
+          institution: "Beispiel Universität",
+          city: "Berlin",
+        },
+      ],
+      certifications: ["Professional Scrum Master I"],
+    });
+    const html = buildDocumentHtml(
+      klassischApplication,
+      atsProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain("klassisch-pdf-ats");
+    expect(body).not.toContain("klassisch-pdf-background");
+    expect(body).not.toContain("<img");
+    expect(body.indexOf("Zusammenfassung")).toBeLessThan(
+      body.indexOf("Erfahrung"),
+    );
+    expect(body.indexOf("Erfahrung")).toBeLessThan(
       body.indexOf("Ausbildung"),
     );
     expect(body.indexOf("Ausbildung")).toBeLessThan(

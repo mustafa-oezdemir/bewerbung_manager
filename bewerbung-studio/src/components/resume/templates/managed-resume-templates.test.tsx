@@ -1,14 +1,17 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import {
-  einfachLebenslaufTemplateConfig,
+  einspaltigLebenslaufTemplateConfig,
+  klassischLebenslaufTemplateConfig,
   stilvollLebenslaufTemplateConfig,
 } from "../../../features/templates/template.constants";
 import type { ResumePagePlan } from "../../../shared/documentPagination";
 import { profileSchema } from "../../../shared/schema";
 import { getTemplate } from "../../../shared/templates";
-import { EinfachResume } from "./einfach/EinfachResume";
-import { einfachDefaults } from "./einfach/einfach.defaults";
+import { EinspaltigResume } from "./einspaltig/EinfachResume";
+import { einspaltigDefaults } from "./einspaltig/einfach.defaults";
+import { KlassischResume } from "./klassisch/KlassischResume";
+import { klassischDefaults } from "./klassisch/klassisch.defaults";
 import { KompaktResume } from "./kompakt/KompaktResume";
 import { kompaktDefaults } from "./kompakt/kompakt.defaults";
 import { StilvollResume } from "./stilvoll/StilvollResume";
@@ -247,7 +250,7 @@ describe("Kompakt rendering", () => {
   });
 });
 
-describe("Einfach rendering", () => {
+describe("Einspaltig rendering", () => {
   const renderResume = ({
     atsMode = false,
     plan = singlePagePlan,
@@ -257,7 +260,7 @@ describe("Einfach rendering", () => {
     resumeProfile = commonProps.resumeProfile,
   } = {}) =>
     renderToStaticMarkup(
-      <EinfachResume
+      <EinspaltigResume
         {...commonProps}
         atsMode={atsMode}
         plan={plan}
@@ -270,11 +273,13 @@ describe("Einfach rendering", () => {
 
   it("renders the one-column layout with circular photo and geometry", () => {
     const markup = renderResume();
+    expect(markup).toContain('data-template="einspaltig"');
     expect(markup).toContain('data-renderer="visual"');
     expect(markup).toContain("einfach-background");
     expect(markup).toContain("einfach-content");
     expect(markup).toContain("einfach-strengths");
     expect(markup).toContain("<img");
+    expect(markup).not.toContain("Seite 1 / 1");
   });
 
   it("uses a linear ATS order without photo, geometry, or rating dots", () => {
@@ -314,6 +319,73 @@ describe("Einfach rendering", () => {
   });
 });
 
+describe("Klassisch rendering", () => {
+  const renderResume = ({
+    atsMode = false,
+    plan = singlePagePlan,
+    totalPages = 1,
+    backgroundId = "classic-soft-blue-waves" as const,
+    photoSource = "data:image/png;base64,AA==" as string | null,
+    resumeProfile = commonProps.resumeProfile,
+  } = {}) =>
+    renderToStaticMarkup(
+      <KlassischResume
+        {...commonProps}
+        atsMode={atsMode}
+        plan={plan}
+        totalPages={totalPages}
+        backgroundId={backgroundId}
+        photoSource={photoSource}
+        resumeProfile={resumeProfile}
+      />,
+    );
+
+  it("renders waves, a round photo, and horizontal strengths", () => {
+    const markup = renderResume();
+    expect(markup).toContain('data-template="klassisch"');
+    expect(markup).toContain('data-renderer="visual"');
+    expect(markup).toContain("klassisch-background");
+    expect(markup).toContain("klassisch-strengths");
+    expect(markup).toContain("klassisch-career__heading");
+    expect(markup).toContain("<img");
+  });
+
+  it("renders a linear ATS version without waves or photo", () => {
+    const markup = renderResume({ atsMode: true });
+    const order = [
+      "Zusammenfassung",
+      "Erfahrung",
+      "Ausbildung",
+      "Kenntnisse",
+      "Sprachen",
+      "Stärken",
+      "Zertifikate",
+    ].map((title) => markup.indexOf(title));
+
+    expect(markup).toContain('data-renderer="ats"');
+    expect(markup).not.toContain("klassisch-background");
+    expect(markup).not.toContain("<img");
+    expect(
+      order.every(
+        (index, position) =>
+          index >= 0 && (position === 0 || index > order[position - 1]),
+      ),
+    ).toBe(true);
+  });
+
+  it("uses a compact continuation header without profile extras", () => {
+    const markup = renderResume({
+      plan: secondPagePlan,
+      totalPages: 2,
+    });
+    expect(markup).toContain('data-continuation="true"');
+    expect(markup).toContain("klassisch-header--compact");
+    expect(markup).toContain("Zukunft GmbH");
+    expect(markup).not.toContain("klassisch-background");
+    expect(markup).not.toContain("<img");
+  });
+});
+
 describe("managed resume registration", () => {
   it("registers app metadata, exact grids, and Word asset names", () => {
     expect(getTemplate("stilvoll")).toMatchObject({
@@ -330,9 +402,22 @@ describe("managed resume registration", () => {
       supportsPhoto: false,
       supportsMultiplePages: true,
     });
-    expect(getTemplate("einfach")).toMatchObject({
-      name: "Einfach",
+    expect(getTemplate("einspaltig")).toMatchObject({
+      id: "einspaltig",
+      name: "Einspaltig",
+      accent: "#0B3485",
+      secondary: "#4AAAF4",
       category: "simple-professional",
+      supportsAtsMode: true,
+      supportsPhoto: true,
+      supportsMultiplePages: true,
+    });
+    expect(getTemplate("klassisch")).toMatchObject({
+      id: "klassisch",
+      name: "Klassisch",
+      accent: "#2B2F32",
+      secondary: "#00AFC5",
+      category: "classic-professional",
       supportsAtsMode: true,
       supportsPhoto: true,
       supportsMultiplePages: true,
@@ -347,21 +432,51 @@ describe("managed resume registration", () => {
       columnGapMm: 10,
       rightColumnWidthMm: 66,
     });
-    expect(einfachDefaults.page).toMatchObject({
+    expect(getTemplate("einfach")).toMatchObject({
+      id: "einspaltig",
+      name: "Einspaltig",
+    });
+    expect(einspaltigDefaults.page).toMatchObject({
       widthMm: 210,
       heightMm: 297,
       marginLeftMm: 15,
       marginRightMm: 15,
+    });
+    expect(einspaltigDefaults.colors).toMatchObject({
+      primary: "#0B3485",
+      accent: "#4AAAF4",
+      text: "#3E484E",
+      pattern: "#EAF5FD",
     });
     expect(stilvollLebenslaufTemplateConfig).toMatchObject({
       fileName: "Stilvoll_Lebenslauf_Muster.docx",
       atsFileName: "Stilvoll_Lebenslauf_ATS.docx",
       previewFileName: "Stilvoll_Lebenslauf_Muster.preview.png",
     });
-    expect(einfachLebenslaufTemplateConfig).toMatchObject({
+    expect(einspaltigLebenslaufTemplateConfig).toMatchObject({
+      id: "word-lebenslauf-einspaltig",
+      name: "Einspaltig",
+      category: "single-column",
+      emphasis: "simple-ats-readable",
       fileName: "Einfach_Lebenslauf_Muster.docx",
       atsFileName: "Einfach_Lebenslauf_ATS.docx",
       previewFileName: "Einfach_Lebenslauf_Muster.preview.png",
+    });
+    expect(klassischDefaults.colors).toMatchObject({
+      primary: "#2B2F32",
+      accent: "#00AFC5",
+      softBackground: "#CDEFF3",
+    });
+    expect(klassischLebenslaufTemplateConfig).toMatchObject({
+      id: "word-lebenslauf-klassisch",
+      name: "Klassisch",
+      sortOrder: 8,
+      category: "classic",
+      layout: "single-column-classic",
+      emphasis: "traditional-professional",
+      fileName: "Klassisch_Lebenslauf_Muster.docx",
+      atsFileName: "Klassisch_Lebenslauf_ATS.docx",
+      previewFileName: "Klassisch_Lebenslauf_Muster.preview.png",
     });
   });
 });

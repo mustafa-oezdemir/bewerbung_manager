@@ -50,6 +50,7 @@ export const documentBackgroundIds = [
   "top-band",
   "bottom-band",
   "programming-languages-bg",
+  "classic-soft-blue-waves",
 ] as const;
 
 export type DocumentFontId = (typeof documentFontIds)[number];
@@ -165,6 +166,16 @@ export const documentBackgrounds: DocumentBackground[] = [
     category: "technical",
     previewType: "css",
     previewValue: "corner-cluster",
+    supportsPrint: true,
+    atsFriendly: false,
+  },
+  {
+    id: "classic-soft-blue-waves",
+    name: "Klassische blaue Wellen",
+    description: "Organische hellblaue Flächen mit feinen Konturlinien",
+    category: "minimal",
+    previewType: "svg",
+    previewValue: "classic-soft-blue-waves",
     supportsPrint: true,
     atsFriendly: false,
   },

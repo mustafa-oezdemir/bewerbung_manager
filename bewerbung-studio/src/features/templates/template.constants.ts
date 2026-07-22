@@ -361,17 +361,18 @@ export const stilvollLebenslaufTemplateConfig = {
   ],
 } as const;
 
-export const einfachLebenslaufTemplateConfig = {
-  id: "word-lebenslauf-einfach",
+export const einspaltigLebenslaufTemplateConfig = {
+  id: "word-lebenslauf-einspaltig",
+  // Die geschützten Asset-Dateinamen bleiben für bestehende Installationen stabil.
   fileName: "Einfach_Lebenslauf_Muster.docx",
   atsFileName: "Einfach_Lebenslauf_ATS.docx",
   previewFileName: "Einfach_Lebenslauf_Muster.preview.png",
-  name: "Einfach",
+  name: "Einspaltig",
   documentType: "lebenslauf",
   format: "docx",
   source: "system-word-template",
   sortOrder: 11,
-  category: "simple-professional",
+  category: "single-column",
   layout: "single-column",
   atsFriendly: true,
   supportsPhoto: true,
@@ -382,22 +383,62 @@ export const einfachLebenslaufTemplateConfig = {
   editableInWord: true,
   isSystemTemplate: true,
   isProtected: true,
-  emphasis: "simple-ats",
+  emphasis: "simple-ats-readable",
   description:
-    "Einfache einspaltige Word-Lebenslaufvorlage mit klarer blauer Hierarchie und separater ATS-Ausgabe.",
+    "Einfache Word-Lebenslaufvorlage mit klarer einspaltiger Struktur, blauer Hierarchie und separater ATS-Ausgabe.",
   tags: [
-    "Einfach",
+    "Einspaltig",
+    "Word",
+    "DOCX",
+    "Lebenslauf",
+    "ATS",
+    "Foto",
+    "Alle Branchen",
+    "Blau",
+  ],
+  cardHighlights: [
+    "Klare Einspaltenstruktur mit kräftigen Abschnittslinien",
+    "Mit Foto · Geometrisches Dekor · ATS-freundlich",
+  ],
+} as const;
+
+export const klassischLebenslaufTemplateConfig = {
+  id: "word-lebenslauf-klassisch",
+  fileName: "Klassisch_Lebenslauf_Muster.docx",
+  atsFileName: "Klassisch_Lebenslauf_ATS.docx",
+  previewFileName: "Klassisch_Lebenslauf_Muster.preview.png",
+  name: "Klassisch",
+  documentType: "lebenslauf",
+  format: "docx",
+  source: "system-word-template",
+  sortOrder: 8,
+  category: "classic",
+  layout: "single-column-classic",
+  atsFriendly: true,
+  supportsPhoto: true,
+  supportsBackground: true,
+  supportsPlaceholders: true,
+  supportsPreview: true,
+  supportsAtsMode: true,
+  editableInWord: true,
+  isSystemTemplate: true,
+  isProtected: true,
+  emphasis: "traditional-professional",
+  description:
+    "Traditionelle Word-Lebenslaufvorlage mit klarer Einspaltenstruktur, modernem hellblauem Wellendekor und separater ATS-Ausgabe.",
+  tags: [
+    "Klassisch",
     "Word",
     "DOCX",
     "Lebenslauf",
     "ATS",
     "Foto",
     "Einspaltig",
-    "Blau",
+    "Konservative Branchen",
   ],
   cardHighlights: [
-    "Klare Einspaltenstruktur mit kräftigen Abschnittslinien",
-    "Mit Foto · Geometrisches Dekor · ATS-freundlich",
+    "Traditionelles Layout mit modernem hellblauem Wellendekor",
+    "Einspaltig · Mit Foto · ATS-freundlich · DOCX",
   ],
 } as const;
 

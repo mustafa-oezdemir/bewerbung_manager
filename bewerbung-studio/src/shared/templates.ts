@@ -42,7 +42,7 @@ export type TemplateDefinition = {
   designDefaults?: TemplateDesignDefaults;
 };
 
-export const templates: TemplateDefinition[] = [
+const allTemplates: TemplateDefinition[] = [
   {
     id: "classic-professional",
     name: "Klar & Zentriert",
@@ -278,12 +278,12 @@ export const templates: TemplateDefinition[] = [
     },
   },
   {
-    id: "einfach",
-    name: "Einfach",
+    id: "einspaltig",
+    name: "Einspaltig",
     description:
       "Kostenlose, einfache Lebenslauf-Vorlage. Durchläuft mühelos die ATS-Prüfungen.",
-    accent: "#073B8F",
-    secondary: "#4AA7F5",
+    accent: "#0B3485",
+    secondary: "#4AAAF4",
     font: "Source Sans 3",
     layout: "centered",
     features: ["Einspaltig", "Klarer Profilkopf", "ATS-freundlich"],
@@ -293,7 +293,7 @@ export const templates: TemplateDefinition[] = [
     supportsFreeform: true,
     supportsMultiplePages: true,
     atsInfo:
-      "Einfach bietet eine lineare ATS-Ausgabe ohne Foto, geometrische Flächen, Symbole oder Sprachniveau-Punkte.",
+      "Einspaltig bietet eine lineare ATS-Ausgabe ohne Foto, geometrische Flächen, Symbole oder Sprachniveau-Punkte.",
     designDefaults: {
       marginLevel: 3,
       sectionSpacingLevel: 4,
@@ -302,6 +302,40 @@ export const templates: TemplateDefinition[] = [
       columnLayout: "single",
       resumeOutputMode: "visual",
       backgroundId: "geometric",
+      showBackgroundInPrint: true,
+      fontId: "source-sans",
+      headingFontId: "source-sans",
+    },
+  },
+  {
+    id: "klassisch",
+    name: "Klassisch",
+    description:
+      "Traditionelle Lebenslaufvorlage für konservative Branchen, ohne auf ein modernes Erscheinungsbild zu verzichten.",
+    accent: "#2B2F32",
+    secondary: "#00AFC5",
+    font: "Source Sans 3",
+    layout: "centered",
+    features: [
+      "Klassische Einspaltenstruktur",
+      "Organische blaue Wellen",
+      "ATS-Variante",
+    ],
+    category: "classic-professional",
+    supportsAtsMode: true,
+    supportsPhoto: true,
+    supportsFreeform: true,
+    supportsMultiplePages: true,
+    atsInfo:
+      "Klassisch bietet eine lineare ATS-Ausgabe ohne Foto, blaue Wellen oder mehrspaltige Stärkenblöcke.",
+    designDefaults: {
+      marginLevel: 3,
+      sectionSpacingLevel: 3,
+      fontSize: "small",
+      lineHeightLevel: 2,
+      columnLayout: "single",
+      resumeOutputMode: "visual",
+      backgroundId: "classic-soft-blue-waves",
       showBackgroundInPrint: true,
       fontId: "source-sans",
       headingFontId: "source-sans",
@@ -472,6 +506,26 @@ export const templates: TemplateDefinition[] = [
   },
 ];
 
+const enabledTemplateIds = new Set([
+  "zweispaltig",
+  "gepflegt",
+  "tabellarisch",
+  "modern",
+  "elegant",
+  "zeitgenoessisch",
+  "kreativ",
+  "ivy-league",
+  "stilvoll",
+  "kompakt",
+  "einspaltig",
+  "klassisch",
+]);
+
+/** Templates exposed to the resume editor. Legacy definitions remain readable for old documents. */
+export const templates = allTemplates.filter((template) =>
+  enabledTemplateIds.has(template.id),
+);
+
 export const colorPresets = [
   { id: "blue", name: "Blau", accent: "#2474d2", secondary: "#294d73" },
   { id: "gray", name: "Grau", accent: "#68747c", secondary: "#38434a" },
@@ -485,8 +539,16 @@ export const colorPresets = [
   { id: "red", name: "Rot", accent: "#d44848", secondary: "#8e242b" },
 ] as const;
 
-export const getTemplate = (id: string) =>
-  templates.find((template) => template.id === id) ?? templates[0];
+const templateIdAliases: Record<string, string> = {
+  einfach: "einspaltig",
+};
+
+export const getTemplate = (id: string) => {
+  const resolvedId = templateIdAliases[id] ?? id;
+  return (
+    allTemplates.find((template) => template.id === resolvedId) ?? templates[0]
+  );
+};
 
 export const getReadableTextColor = (hex: string) => {
   const normalized = hex.replace("#", "");

@@ -1,0 +1,31 @@
+{
+  "id": "word-lebenslauf-kreativ",
+  "name": "Kreativ",
+  "documentType": "lebenslauf",
+  "format": "docx",
+  "source": "system-word-template",
+  "sortOrder": 4,
+  "description": "Kompakte, kreative Word-Lebenslaufvorlage. Ideal, um viele Informationen übersichtlich auf einer Seite unterzubringen.",
+  "tags": [
+    "Kreativ",
+    "Word",
+    "DOCX",
+    "Lebenslauf",
+    "ATS",
+    "Foto",
+    "Zweispaltig",
+    "Kompakt"
+  ],
+  "isSystemTemplate": true,
+  "supportsPreview": true,
+  "supportsPlaceholders": true,
+  "editableInWord": true,
+  "isProtected": true,
+  "category": "creative",
+  "layout": "two-column-header-banner",
+  "atsFriendly": true,
+  "supportsPhoto": true,
+  "supportsBackground": true,
+  "supportsAtsMode": true,
+  "emphasis": "compact-information"
+}

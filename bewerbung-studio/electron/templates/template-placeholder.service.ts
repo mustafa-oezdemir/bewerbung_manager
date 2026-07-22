@@ -3,9 +3,10 @@ import path from "node:path";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
 import {
-  einfachLebenslaufTemplateConfig,
+  einspaltigLebenslaufTemplateConfig,
   gepflegtLebenslaufTemplateConfig,
   ivyLeagueLebenslaufTemplateConfig,
+  klassischLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   stilvollLebenslaufTemplateConfig,
@@ -47,6 +48,63 @@ const removeEmptyParagraphs = (documentXml: string) =>
       return text ? paragraph : "";
     },
   );
+
+const cleanKlassischDocumentXml = (documentXml: string) => {
+  const tableRanges: Array<{ start: number; end: number }> = [];
+  const stack: number[] = [];
+  for (const match of documentXml.matchAll(/<\/?w:tbl\b[^>]*>/g)) {
+    if (match[0].startsWith("</")) {
+      const start = stack.pop();
+      if (start !== undefined) {
+        tableRanges.push({ start, end: match.index + match[0].length });
+      }
+    } else if (!match[0].endsWith("/>")) {
+      stack.push(match.index);
+    }
+  }
+  const emptyTables = tableRanges.filter(({ start, end }) => {
+    const table = documentXml.slice(start, end);
+    if (table.includes("<w:drawing")) return false;
+    const text = Array.from(
+      table.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g),
+      (match) => decodeXmlText(match[1]).trim(),
+    ).join("");
+    return !text;
+  });
+  const emptyParagraphs = Array.from(
+    documentXml.matchAll(/<w:p\b[\s\S]*?<\/w:p>/g),
+    (match) => {
+      const paragraph = match[0];
+      const start = match.index;
+      const end = start + paragraph.length;
+      const text = Array.from(
+        paragraph.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g),
+        (textMatch) => decodeXmlText(textMatch[1]).trim(),
+      ).join("");
+      const insideTable = tableRanges.some(
+        (range) => range.start < start && range.end > end,
+      );
+      const removable =
+        !text &&
+        !paragraph.includes("<w:drawing") &&
+        (!insideTable || paragraph.includes('w:pStyle w:val="ListBullet"'));
+      return removable ? { start, end } : null;
+    },
+  ).filter((range): range is { start: number; end: number } => Boolean(range));
+  const removals = [...emptyTables, ...emptyParagraphs].filter(
+    (candidate, _, all) =>
+      !all.some(
+        (other) =>
+          other.start < candidate.start && other.end > candidate.end,
+      ),
+  );
+  return removals
+    .sort((left, right) => right.start - left.start)
+    .reduce(
+      (xml, range) => xml.slice(0, range.start) + xml.slice(range.end),
+      documentXml,
+    );
+};
 
 const centeredSquareCrop = (bytes: Buffer) => {
   if (
@@ -122,21 +180,36 @@ const applyManagedResumeDesignTokens = (
               normalizedHex(data.DESIGN_SOFT_ACCENT, "D9F2E5"),
             ],
           ])
-        : templateId === einfachLebenslaufTemplateConfig.id
+        : templateId === einspaltigLebenslaufTemplateConfig.id
           ? new Map([
               [
                 "073B8F",
-                normalizedHex(data.DESIGN_PRIMARY, "073B8F"),
+                normalizedHex(data.DESIGN_PRIMARY, "0B3485"),
               ],
               [
                 "4AA7F5",
-                normalizedHex(data.DESIGN_ACCENT, "4AA7F5"),
+                normalizedHex(data.DESIGN_ACCENT, "4AAAF4"),
               ],
               [
                 "EAF6FD",
-                normalizedHex(data.DESIGN_SOFT_ACCENT, "EAF6FD"),
+                normalizedHex(data.DESIGN_SOFT_ACCENT, "EAF5FD"),
               ],
             ])
+          : templateId === klassischLebenslaufTemplateConfig.id
+            ? new Map([
+                [
+                  "2B2F32",
+                  normalizedHex(data.DESIGN_PRIMARY, "2B2F32"),
+                ],
+                [
+                  "00AFC5",
+                  normalizedHex(data.DESIGN_ACCENT, "00AFC5"),
+                ],
+                [
+                  "CDEFF3",
+                  normalizedHex(data.DESIGN_SOFT_ACCENT, "CDEFF3"),
+                ],
+              ])
       : templateId === kreativLebenslaufTemplateConfig.id
       ? new Map([
           [
@@ -208,13 +281,42 @@ const compactHyperlinkTarget = (value: string) => {
   }
   if (/^https?:\/\//i.test(text)) return text;
   if (
-    /^(?:www\.|linkedin\.com\/|github\.com\/|[\w.-]+\.[a-z]{2,}\/)/i.test(
+    /^(?:www\.|linkedin\.com\/|github\.com\/|[\w.-]+\.[a-z]{2,}(?:\/|$))/i.test(
       text,
     )
   ) {
     return `https://${text}`;
   }
   return null;
+};
+
+const applyManagedHyperlinkTargets = (
+  zip: PizZip,
+  data: Record<string, string>,
+) => {
+  for (const fileName of Object.keys(zip.files)) {
+    if (!/^word\/_rels\/.*\.rels$/i.test(fileName)) continue;
+    const part = zip.file(fileName);
+    if (!part) continue;
+    const relationshipsXml = part.asText().replace(
+      /Target="([^"]*(?:\{\{|%7B%7B)[A-Z0-9_]+(?:\}\}|%7D%7D)[^"]*)"/gi,
+      (attribute, encodedTarget: string) => {
+        let decodedTarget = encodedTarget;
+        try {
+          decodedTarget = decodeURIComponent(encodedTarget);
+        } catch {
+          // Keep the original relationship target when it is not URL encoded.
+        }
+        const key = decodedTarget.match(/\{\{([A-Z0-9_]+)\}\}/i)?.[1];
+        if (!key) return attribute;
+        const target = compactHyperlinkTarget(data[key] ?? "");
+        return target
+          ? `Target="${escapeXmlAttribute(target)}"`
+          : 'Target="about:blank"';
+      },
+    );
+    zip.file(fileName, relationshipsXml);
+  }
 };
 
 const applyKompaktDocumentOptions = (
@@ -305,6 +407,7 @@ const applyKompaktDocumentOptions = (
 const replaceProfilePhoto = (
   zip: PizZip,
   dataUrl: string,
+  cleanEmptyParagraphs = true,
 ) => {
   const documentPart = zip.file("word/document.xml");
   const relationshipsPart = zip.file(
@@ -331,7 +434,7 @@ const replaceProfilePhoto = (
     documentXml = documentXml.replace(drawing, "");
     zip.file(
       "word/document.xml",
-      removeEmptyParagraphs(documentXml),
+      cleanEmptyParagraphs ? removeEmptyParagraphs(documentXml) : documentXml,
     );
     return { found: true };
   }
@@ -347,7 +450,7 @@ const replaceProfilePhoto = (
     documentXml = documentXml.replace(drawing, "");
     zip.file(
       "word/document.xml",
-      removeEmptyParagraphs(documentXml),
+      cleanEmptyParagraphs ? removeEmptyParagraphs(documentXml) : documentXml,
     );
     return { found: true };
   }
@@ -368,7 +471,7 @@ const replaceProfilePhoto = (
   documentXml = documentXml.replace(drawing, updatedDrawing);
   zip.file(
     "word/document.xml",
-    removeEmptyParagraphs(documentXml),
+    cleanEmptyParagraphs ? removeEmptyParagraphs(documentXml) : documentXml,
   );
   return { found: true };
 };
@@ -435,6 +538,31 @@ export class TemplatePlaceholderService {
           ),
         ],
       );
+      if (template.id === klassischLebenslaufTemplateConfig.id) {
+        for (const [titleKey, contentKeys] of [
+          ["KENNTNISSE_TITEL", ["KENNTNISSE"]],
+          [
+            "SPRACHEN_TITEL",
+            ["SPRACHEN_ATS", "SPRACHE_1", "SPRACHE_2", "SPRACHE_3"],
+          ],
+          [
+            "STAERKEN_TITEL",
+            [
+              "STAERKEN_ATS",
+              "STAERKE_1_TITEL",
+              "STAERKE_2_TITEL",
+              "STAERKE_3_TITEL",
+            ],
+          ],
+          ["ZERTIFIKATE_TITEL", ["ZERTIFIKATE"]],
+        ] as const) {
+          if (
+            !contentKeys.some((key) => normalizedData[key]?.trim())
+          ) {
+            normalizedData[titleKey] = "";
+          }
+        }
+      }
       const replacedPlaceholders = [
         ...templatePlaceholderKeys,
         ...aliasKeys,
@@ -447,7 +575,8 @@ export class TemplatePlaceholderService {
         template.id === ivyLeagueLebenslaufTemplateConfig.id ||
         template.id === kompaktLebenslaufTemplateConfig.id ||
         template.id === stilvollLebenslaufTemplateConfig.id ||
-        template.id === einfachLebenslaufTemplateConfig.id ||
+        template.id === einspaltigLebenslaufTemplateConfig.id ||
+        template.id === klassischLebenslaufTemplateConfig.id ||
         template.id === gepflegtLebenslaufTemplateConfig.id
       ) {
         applyManagedResumeDesignTokens(template.id, renderedZip, data);
@@ -458,8 +587,12 @@ export class TemplatePlaceholderService {
       const photoResult = replaceProfilePhoto(
         renderedZip,
         data.PROFILFOTO ?? "",
+        template.id !== klassischLebenslaufTemplateConfig.id,
       );
-      if (!photoResult.found) {
+      if (
+        !photoResult.found &&
+        template.id !== klassischLebenslaufTemplateConfig.id
+      ) {
         const documentPart = renderedZip.file("word/document.xml");
         if (documentPart) {
           renderedZip.file(
@@ -469,6 +602,17 @@ export class TemplatePlaceholderService {
         }
       } else {
         replacedPlaceholders.push("PROFILFOTO");
+      }
+      if (template.id === klassischLebenslaufTemplateConfig.id) {
+        applyManagedHyperlinkTargets(renderedZip, data);
+        const documentPart = renderedZip.file("word/document.xml");
+        if (documentPart) {
+          const documentXml = documentPart.asText();
+          renderedZip.file(
+            "word/document.xml",
+            cleanKlassischDocumentXml(documentXml),
+          );
+        }
       }
       const output = renderedZip
         .generate({ type: "nodebuffer", compression: "DEFLATE" });

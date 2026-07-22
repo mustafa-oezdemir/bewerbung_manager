@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import { profileSchema } from "./schema";
 import {
   createResumePagePlan,
+  einspaltigPaginationOptions,
   elegantPaginationOptions,
   gepflegtPaginationOptions,
   getLetterPageStatus,
   ivyLeaguePaginationOptions,
+  klassischPaginationOptions,
   kompaktPaginationOptions,
   kreativPaginationOptions,
   modernPaginationOptions,
@@ -230,6 +232,16 @@ describe("A4 document pagination", () => {
     expect(elegantPlan).toHaveLength(1);
     expect(elegantPlan[0].items).toHaveLength(6);
     expect(elegantPlan[0].density).toBe("compact");
+
+    const klassischPlan = createResumePagePlan(
+      profile,
+      "",
+      klassischPaginationOptions,
+    );
+
+    expect(klassischPlan).toHaveLength(1);
+    expect(klassischPlan[0].items).toHaveLength(6);
+    expect(klassischPlan[0].density).toBe("compact");
   });
 
   it("keeps Modern career items in reading order after a page split", () => {
@@ -271,6 +283,53 @@ describe("A4 document pagination", () => {
     ]);
     expect(plan[1].items.map((item) => item.kind)).toEqual([
       "experience",
+      "education",
+    ]);
+  });
+
+  it("keeps Einspaltig experience entries ahead of education after a page split", () => {
+    const profile = profileSchema.parse({
+      id: crypto.randomUUID(),
+      isDefault: true,
+      firstName: "Mina",
+      lastName: "Kaya",
+      experiences: Array.from({ length: 3 }, (_, index) => ({
+        id: crypto.randomUUID(),
+        from: `${2012 + index}`,
+        to: `${2013 + index}`,
+        role: `Position ${index + 1}`,
+        company: `Unternehmen ${index + 1}`,
+        achievements: Array.from(
+          { length: 4 },
+          (_, achievementIndex) =>
+            `Messbares Ergebnis ${achievementIndex + 1} mit nachhaltiger Wirkung im Team.`,
+        ),
+      })),
+      education: Array.from({ length: 2 }, (_, index) => ({
+        id: crypto.randomUUID(),
+        from: `${2008 + index * 2}`,
+        to: `${2010 + index * 2}`,
+        degree: `Abschluss ${index + 1}`,
+        institution: `Hochschule ${index + 1}`,
+      })),
+      updatedAt: now,
+    });
+
+    const plan = createResumePagePlan(
+      profile,
+      "",
+      einspaltigPaginationOptions,
+    );
+    const orderedKinds = plan.flatMap((page) =>
+      page.items.map((item) => item.kind),
+    );
+
+    expect(plan).toHaveLength(2);
+    expect(orderedKinds).toEqual([
+      "experience",
+      "experience",
+      "experience",
+      "education",
       "education",
     ]);
   });

@@ -20,8 +20,9 @@ import { TemplateThumbnail } from "../components/TemplateThumbnail";
 import { KnowledgeSectionRenderer } from "../components/document/KnowledgeSectionRenderer";
 import { DocumentBackgroundLayer } from "../components/document/DocumentBackgroundLayer";
 import { ElegantResume } from "../components/resume/templates/elegant";
-import { EinfachResume } from "../components/resume/templates/einfach";
+import { EinspaltigResume } from "../components/resume/templates/einspaltig";
 import { GepflegtResume } from "../components/resume/templates/gepflegt";
+import { KlassischResume } from "../components/resume/templates/klassisch";
 import { KompaktResume } from "../components/resume/templates/kompakt";
 import { KreativResume } from "../components/resume/templates/kreativ";
 import { IvyLeagueResume } from "../components/resume/templates/ivy-league";
@@ -33,9 +34,11 @@ import { ZweispaltigResume } from "../components/resume/templates/zweispaltig";
 import { analyzeKeywordMatch } from "../lib/keywordMatch";
 import {
   createResumePagePlan,
+  einspaltigPaginationOptions,
   elegantPaginationOptions,
   getLetterPageStatus,
   ivyLeaguePaginationOptions,
+  klassischPaginationOptions,
   kompaktPaginationOptions,
   kreativPaginationOptions,
   gepflegtPaginationOptions,
@@ -386,11 +389,15 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                   ? ivyLeaguePaginationOptions
                   : template.id === "stilvoll"
                     ? stilvollPaginationOptions
-                    : template.id === "tabellarisch"
-                      ? tabellarischPaginationOptions
-                      : template.id === "modern"
-                        ? modernPaginationOptions
-                        : undefined,
+                    : template.id === "einspaltig"
+                      ? einspaltigPaginationOptions
+                      : template.id === "klassisch"
+                        ? klassischPaginationOptions
+                        : template.id === "tabellarisch"
+                          ? tabellarischPaginationOptions
+                          : template.id === "modern"
+                            ? modernPaginationOptions
+                            : undefined,
   );
   const letterStatus = getLetterPageStatus(docs);
   const isAtsMode =
@@ -1239,8 +1246,22 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                     resumeProfile={docs.resumeProfile}
                     sections={sections}
                   />
-                ) : template.id === "einfach" ? (
-                  <EinfachResume
+                ) : template.id === "einspaltig" ? (
+                  <EinspaltigResume
+                    profile={profile}
+                    name={name}
+                    atsMode={isAtsMode}
+                    plan={plan}
+                    totalPages={resumePlan.length}
+                    accentColor={design.accentColor}
+                    secondaryColor={design.secondaryColor}
+                    backgroundId={design.settings.backgroundId}
+                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    resumeProfile={docs.resumeProfile}
+                    sections={sections}
+                  />
+                ) : template.id === "klassisch" ? (
+                  <KlassischResume
                     profile={profile}
                     name={name}
                     atsMode={isAtsMode}

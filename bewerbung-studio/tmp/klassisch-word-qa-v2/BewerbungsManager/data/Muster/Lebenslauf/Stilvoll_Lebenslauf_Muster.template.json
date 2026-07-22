@@ -1,0 +1,31 @@
+{
+  "id": "word-lebenslauf-stilvoll",
+  "name": "Stilvoll",
+  "documentType": "lebenslauf",
+  "format": "docx",
+  "source": "system-word-template",
+  "sortOrder": 10,
+  "description": "Stilvolle Word-Lebenslaufvorlage mit kompakter linker Informationsspalte, breiter Karrierespalte und geometrischem Hintergrund.",
+  "tags": [
+    "Stilvoll",
+    "Word",
+    "DOCX",
+    "Lebenslauf",
+    "ATS",
+    "Foto",
+    "Zweispaltig",
+    "Grün"
+  ],
+  "isSystemTemplate": true,
+  "supportsPreview": true,
+  "supportsPlaceholders": true,
+  "editableInWord": true,
+  "isProtected": true,
+  "category": "modern-professional",
+  "layout": "two-column-right-wide",
+  "atsFriendly": true,
+  "supportsPhoto": true,
+  "supportsBackground": true,
+  "supportsAtsMode": true,
+  "emphasis": "skills-and-career"
+}

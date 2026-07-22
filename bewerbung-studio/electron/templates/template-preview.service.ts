@@ -2,10 +2,11 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { ApplicationPaths } from "../../src/config/application-paths";
 import {
-  einfachLebenslaufTemplateConfig,
+  einspaltigLebenslaufTemplateConfig,
   elegantLebenslaufTemplateConfig,
   gepflegtLebenslaufTemplateConfig,
   ivyLeagueLebenslaufTemplateConfig,
+  klassischLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   stilvollLebenslaufTemplateConfig,
@@ -40,11 +41,13 @@ export class TemplatePreviewService {
               ? kompaktLebenslaufTemplateConfig
               : template.id === stilvollLebenslaufTemplateConfig.id
                 ? stilvollLebenslaufTemplateConfig
-                : template.id === einfachLebenslaufTemplateConfig.id
-                  ? einfachLebenslaufTemplateConfig
-              : template.id === gepflegtLebenslaufTemplateConfig.id
-                ? gepflegtLebenslaufTemplateConfig
-                : undefined;
+                : template.id === einspaltigLebenslaufTemplateConfig.id
+                  ? einspaltigLebenslaufTemplateConfig
+                  : template.id === klassischLebenslaufTemplateConfig.id
+                    ? klassischLebenslaufTemplateConfig
+                    : template.id === gepflegtLebenslaufTemplateConfig.id
+                      ? gepflegtLebenslaufTemplateConfig
+                      : undefined;
     if (managedPreviewConfig && this.paths.bundledTemplatesRoot) {
       try {
         const preview = await readFile(

@@ -1,0 +1,31 @@
+{
+  "id": "word-lebenslauf-ivy-league",
+  "name": "Ivy League",
+  "documentType": "lebenslauf",
+  "format": "docx",
+  "source": "system-word-template",
+  "sortOrder": 9,
+  "description": "Die klassische Harvard-Lebenslaufvorlage, aktualisiert für das 21. Jahrhundert mit einem raffinierten, ATS-freundlichen Design.",
+  "tags": [
+    "Ivy League",
+    "Word",
+    "DOCX",
+    "Lebenslauf",
+    "ATS",
+    "Ohne Foto",
+    "Einspaltig",
+    "Klassisch"
+  ],
+  "isSystemTemplate": true,
+  "supportsPreview": true,
+  "supportsPlaceholders": true,
+  "editableInWord": true,
+  "isProtected": true,
+  "category": "classic-professional",
+  "layout": "single-column-watercolor",
+  "atsFriendly": true,
+  "supportsPhoto": false,
+  "supportsBackground": true,
+  "supportsAtsMode": true,
+  "emphasis": "classic-single-column"
+}

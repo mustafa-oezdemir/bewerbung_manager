@@ -8,10 +8,11 @@ import path from "node:path";
 import type { ApplicationPaths } from "../../src/config/application-paths";
 import {
   defaultTemplateSortOrder,
-  einfachLebenslaufTemplateConfig,
+  einspaltigLebenslaufTemplateConfig,
   elegantLebenslaufTemplateConfig,
   gepflegtLebenslaufTemplateConfig,
   ivyLeagueLebenslaufTemplateConfig,
+  klassischLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   maximumTemplateFileSize,
@@ -223,11 +224,13 @@ export class TemplateService {
               ? kompaktLebenslaufTemplateConfig
               : template.id === stilvollLebenslaufTemplateConfig.id
                 ? stilvollLebenslaufTemplateConfig
-                : template.id === einfachLebenslaufTemplateConfig.id
-                  ? einfachLebenslaufTemplateConfig
-              : template.id === gepflegtLebenslaufTemplateConfig.id
-                ? gepflegtLebenslaufTemplateConfig
-                : undefined;
+                : template.id === einspaltigLebenslaufTemplateConfig.id
+                  ? einspaltigLebenslaufTemplateConfig
+                  : template.id === klassischLebenslaufTemplateConfig.id
+                    ? klassischLebenslaufTemplateConfig
+                    : template.id === gepflegtLebenslaufTemplateConfig.id
+                      ? gepflegtLebenslaufTemplateConfig
+                      : undefined;
     if (managedResumeConfig && options.atsMode) {
       const atsPath = path.join(
         this.paths.systemTemplateCache,

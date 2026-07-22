@@ -9,9 +9,10 @@ import { constants as fsConstants } from "node:fs";
 import path from "node:path";
 import type { ApplicationPaths } from "../../src/config/application-paths";
 import {
-  einfachLebenslaufTemplateConfig,
+  einspaltigLebenslaufTemplateConfig,
   elegantLebenslaufTemplateConfig,
   ivyLeagueLebenslaufTemplateConfig,
+  klassischLebenslaufTemplateConfig,
   gepflegtLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
@@ -34,6 +35,11 @@ const errorCode = (error: unknown) =>
   typeof error === "object" && error && "code" in error
     ? String(error.code)
     : "";
+
+const resolveManagedTemplateId = (templateId: string) =>
+  templateId === "word-lebenslauf-einfach"
+    ? einspaltigLebenslaufTemplateConfig.id
+    : templateId;
 
 export class TemplateRepository {
   private templates: DocumentTemplate[] = [];
@@ -63,7 +69,8 @@ export class TemplateRepository {
     await this.ensureIvyLeagueLebenslaufTemplate();
     await this.ensureKompaktLebenslaufTemplate();
     await this.ensureStilvollLebenslaufTemplate();
-    await this.ensureEinfachLebenslaufTemplate();
+    await this.ensureEinspaltigLebenslaufTemplate();
+    await this.ensureKlassischLebenslaufTemplate();
     await this.ensureElegantLebenslaufTemplate();
     await this.ensureGepflegtLebenslaufTemplate();
     await this.ensureModernLebenslaufTemplate();
@@ -338,8 +345,12 @@ export class TemplateRepository {
     await this.ensureManagedResumeTemplate(stilvollLebenslaufTemplateConfig);
   }
 
-  private async ensureEinfachLebenslaufTemplate() {
-    await this.ensureManagedResumeTemplate(einfachLebenslaufTemplateConfig);
+  private async ensureEinspaltigLebenslaufTemplate() {
+    await this.ensureManagedResumeTemplate(einspaltigLebenslaufTemplateConfig);
+  }
+
+  private async ensureKlassischLebenslaufTemplate() {
+    await this.ensureManagedResumeTemplate(klassischLebenslaufTemplateConfig);
   }
 
   private async ensureManagedResumeTemplate(config: {
@@ -499,10 +510,11 @@ export class TemplateRepository {
   }
 
   async getById(templateId: string) {
-    let template = this.templates.find((item) => item.id === templateId);
+    const resolvedId = resolveManagedTemplateId(templateId);
+    let template = this.templates.find((item) => item.id === resolvedId);
     if (!template) {
       await this.refresh();
-      template = this.templates.find((item) => item.id === templateId);
+      template = this.templates.find((item) => item.id === resolvedId);
     }
     return template ? structuredClone(template) : null;
   }

@@ -1,0 +1,31 @@
+{
+  "id": "word-lebenslauf-klassisch",
+  "name": "Klassisch",
+  "documentType": "lebenslauf",
+  "format": "docx",
+  "source": "system-word-template",
+  "sortOrder": 8,
+  "description": "Traditionelle Word-Lebenslaufvorlage mit klarer Einspaltenstruktur, modernem hellblauem Wellendekor und separater ATS-Ausgabe.",
+  "tags": [
+    "Klassisch",
+    "Word",
+    "DOCX",
+    "Lebenslauf",
+    "ATS",
+    "Foto",
+    "Einspaltig",
+    "Konservative Branchen"
+  ],
+  "isSystemTemplate": true,
+  "supportsPreview": true,
+  "supportsPlaceholders": true,
+  "editableInWord": true,
+  "isProtected": true,
+  "category": "classic",
+  "layout": "single-column-classic",
+  "atsFriendly": true,
+  "supportsPhoto": true,
+  "supportsBackground": true,
+  "supportsAtsMode": true,
+  "emphasis": "traditional-professional"
+}

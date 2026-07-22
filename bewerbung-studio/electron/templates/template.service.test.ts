@@ -12,9 +12,10 @@ import PizZip from "pizzip";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { resolveApplicationPaths } from "../../src/config/application-paths";
 import {
-  einfachLebenslaufTemplateConfig,
+  einspaltigLebenslaufTemplateConfig,
   elegantLebenslaufTemplateConfig,
   ivyLeagueLebenslaufTemplateConfig,
+  klassischLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   stilvollLebenslaufTemplateConfig,
@@ -1068,7 +1069,7 @@ describe("Musterverwaltung", () => {
     ).toBe(false);
   });
 
-  it("registers Stilvoll and Einfach with visual previews and linear ATS copies", async () => {
+  it("registers Stilvoll, Einspaltig, and Klassisch with visual previews and linear ATS copies", async () => {
     paths = resolveApplicationPaths(
       root,
       path.resolve("public", "templates"),
@@ -1085,8 +1086,11 @@ describe("Musterverwaltung", () => {
     const stilvoll = initialized.templates.find(
       (template) => template.id === stilvollLebenslaufTemplateConfig.id,
     );
-    const einfach = initialized.templates.find(
-      (template) => template.id === einfachLebenslaufTemplateConfig.id,
+    const einspaltig = initialized.templates.find(
+      (template) => template.id === einspaltigLebenslaufTemplateConfig.id,
+    );
+    const klassisch = initialized.templates.find(
+      (template) => template.id === klassischLebenslaufTemplateConfig.id,
     );
 
     expect(stilvoll).toMatchObject({
@@ -1100,10 +1104,10 @@ describe("Musterverwaltung", () => {
       isSystemTemplate: true,
       isProtected: true,
     });
-    expect(einfach).toMatchObject({
-      name: "Einfach",
+    expect(einspaltig).toMatchObject({
+      name: "Einspaltig",
       sortOrder: 11,
-      category: "simple-professional",
+      category: "single-column",
       layout: "single-column",
       supportsPhoto: true,
       supportsBackground: true,
@@ -1111,8 +1115,26 @@ describe("Musterverwaltung", () => {
       isSystemTemplate: true,
       isProtected: true,
     });
+    expect(klassisch).toMatchObject({
+      name: "Klassisch",
+      sortOrder: 8,
+      category: "classic",
+      layout: "single-column-classic",
+      supportsPhoto: true,
+      supportsBackground: true,
+      supportsAtsMode: true,
+      isSystemTemplate: true,
+      isProtected: true,
+    });
     expect(stilvoll?.previewDataUrl).toMatch(/^data:image\/png;base64,/);
-    expect(einfach?.previewDataUrl).toMatch(/^data:image\/png;base64,/);
+    expect(einspaltig?.previewDataUrl).toMatch(/^data:image\/png;base64,/);
+    expect(klassisch?.previewDataUrl).toMatch(/^data:image\/png;base64,/);
+    await expect(
+      service.getTemplateById("word-lebenslauf-einfach"),
+    ).resolves.toMatchObject({
+      id: einspaltigLebenslaufTemplateConfig.id,
+      name: "Einspaltig",
+    });
 
     const onePixelPng =
       "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
@@ -1124,6 +1146,11 @@ describe("Musterverwaltung", () => {
       EMAIL: "lena@example.de",
       LINKEDIN: "linkedin.com/in/lena",
       WEBSITE: "lena.example.com",
+      HEADER_KONTAKT_1: "+49 30 12345678",
+      HEADER_KONTAKT_2: "lena@example.de",
+      HEADER_KONTAKT_3: "linkedin.com/in/lena",
+      HEADER_KONTAKT_4: "München, Deutschland",
+      HEADER_KONTAKT_6: "lena.example.com",
       ORT: "München",
       ZUSAMMENFASSUNG_TITEL: "ZUSAMMENFASSUNG",
       ZUSAMMENFASSUNG:
@@ -1166,7 +1193,7 @@ describe("Musterverwaltung", () => {
       DESIGN_FONT: "Arial",
     };
 
-    for (const template of [stilvoll!, einfach!]) {
+    for (const template of [stilvoll!, einspaltig!, klassisch!]) {
       const targetDirectory = path.join(
         paths.dataRoot,
         "Bewerbungen",
@@ -1200,6 +1227,15 @@ describe("Musterverwaltung", () => {
           /^word\/media\//.test(name),
         ),
       ).toBe(true);
+      if (template.id === klassischLebenslaufTemplateConfig.id) {
+        const relationships = Object.keys(visualZip.files)
+          .filter((name) => /^word\/_rels\/.*\.rels$/.test(name))
+          .map((name) => visualZip.file(name)?.asText() ?? "")
+          .join("");
+        expect(relationships).toContain("mailto:lena@example.de");
+        expect(relationships).toContain("https://linkedin.com/in/lena");
+        expect(relationships).toContain("https://lena.example.com");
+      }
 
       const ats = await service.createDocumentFromTemplate(
         template.id,
@@ -1210,7 +1246,11 @@ describe("Musterverwaltung", () => {
       );
       const atsZip = new PizZip(await readFile(ats.filePath));
       const atsXml = atsZip.file("word/document.xml")!.asText();
-      expect(atsXml).toContain("Berufserfahrung");
+      expect(atsXml).toContain(
+        template.id === klassischLebenslaufTemplateConfig.id
+          ? "BERUFSERFAHRUNG"
+          : "Berufserfahrung",
+      );
       expect(atsXml).not.toContain("{{");
       expect(atsXml).not.toContain("<w:tbl>");
       expect(atsXml).not.toContain("<w:drawing>");
