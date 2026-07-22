@@ -66,11 +66,11 @@ export const elegantLebenslaufTemplateConfig = {
   isSystemTemplate: true,
   isProtected: true,
   description:
-    "Zweispaltige Word-Lebenslaufvorlage mit breiter Hauptspalte für Berufserfahrung und blauer Seitenleiste für persönliche Highlights.",
+    "Zweispaltige Word-Lebenslaufvorlage mit breiter Hauptspalte für Berufserfahrung und eleganter roter Seitenleiste für persönliche Highlights.",
   tags: ["Elegant", "Word", "DOCX", "Lebenslauf", "ATS", "Foto"],
   cardHighlights: [
     "Breite Hauptspalte für Berufserfahrung",
-    "Blaue Seitenleiste für persönliche Highlights",
+    "Rote Seitenleiste für persönliche Highlights",
   ],
 } as const;
 

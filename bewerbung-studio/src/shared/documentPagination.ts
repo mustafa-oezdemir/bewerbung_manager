@@ -38,6 +38,12 @@ export const zweispaltigPaginationOptions: ResumePaginationOptions = {
   preserveItemOrder: true,
 };
 
+export const elegantPaginationOptions: ResumePaginationOptions = {
+  firstPageCapacity: 50,
+  secondPageCapacity: 54,
+  preserveItemOrder: true,
+};
+
 export const kompaktPaginationOptions: ResumePaginationOptions = {
   firstPageCapacity: 50,
   secondPageCapacity: 54,

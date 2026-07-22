@@ -1,6 +1,7 @@
 import type { ApplicantProfile, Application } from "../src/shared/schema";
 import {
   createResumePagePlan,
+  elegantPaginationOptions,
   gepflegtPaginationOptions,
   getLetterPageStatus,
   ivyLeaguePaginationOptions,
@@ -284,21 +285,20 @@ const documentCss = (
 };
 
 const elegantDocumentCss = `
-  .elegant-pdf{--elegant-heading:#3b4247;--elegant-text:#4b5359;--elegant-muted:#6d757a;--elegant-line:#b9bfc3;--elegant-sidebar-muted:#e2e9ef;display:grid;grid-template-columns:minmax(0,140mm) 70mm;width:100%;height:100%;color:var(--elegant-text);background:#fff;font-family:var(--body-font)}
+  .elegant-pdf{--elegant-heading:#3b4247;--elegant-text:#4b5359;--elegant-muted:#6d757a;--elegant-line:#b9bfc3;--elegant-sidebar-muted:#f6eaea;display:grid;grid-template-columns:minmax(0,140mm) 70mm;width:100%;height:100%;color:var(--elegant-text);background:#fff;font-family:var(--body-font)}
   .elegant-pdf *{box-sizing:border-box}
   .elegant-pdf-main{position:relative;min-width:0;height:100%;padding:max(14mm,calc(var(--doc-margin) - 2mm)) max(10mm,calc(var(--doc-margin) - 6mm)) max(13mm,calc(var(--doc-margin) - 4mm)) var(--doc-margin);overflow:hidden;background:#fff}
-  .elegant-pdf-header{position:relative;padding-bottom:5mm;border-bottom:.35mm solid var(--elegant-line)}
-  .elegant-pdf-header:after{position:absolute;bottom:-.35mm;left:0;width:27mm;height:.7mm;background:var(--accent);content:""}
-  .elegant-pdf-header .kicker{margin:0 0 2.2mm;font-size:7.7pt}
+  .elegant-pdf-header{position:relative;padding-bottom:0}
+  .elegant-pdf-header-compact{padding-bottom:3.2mm;border-bottom:.3mm solid var(--elegant-line)}
+  .elegant-pdf-header .kicker{margin:0 0 2.2mm;color:var(--accent);font-size:7.7pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
   .elegant-pdf-header h1{margin:0;color:var(--elegant-heading);font-size:22pt;font-weight:500;letter-spacing:.01em;line-height:1.05;text-transform:uppercase;overflow-wrap:anywhere}
   .elegant-pdf-header h2{margin:2mm 0 0;color:var(--accent);font-size:12pt;font-weight:400;line-height:1.25;overflow-wrap:anywhere}
-  .elegant-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.2mm 6mm;margin:3.3mm 0 0;color:var(--elegant-text);font-size:8pt;font-style:normal;line-height:1.3}
-  .elegant-pdf-contacts a,.elegant-pdf-contacts span{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:1.5mm;min-width:0;color:inherit;text-decoration:none}
-  .elegant-pdf-contacts strong{color:var(--elegant-heading)}
-  .elegant-pdf-contacts i{min-width:0;font-style:normal;overflow-wrap:anywhere}
+  .elegant-pdf-contacts{display:flex;flex-wrap:wrap;gap:1.2mm 3.5mm;margin:3.3mm 0 0;color:var(--elegant-text);font-size:8pt;font-style:normal;line-height:1.3}
+  .elegant-pdf-contacts a,.elegant-pdf-contacts>span{display:inline-flex;align-items:baseline;gap:1mm;min-width:0;color:inherit;text-decoration:none}
+  .elegant-pdf-contacts i{color:var(--elegant-line);font-size:9pt;font-style:normal}
+  .elegant-pdf-contacts span{min-width:0;overflow-wrap:anywhere}
   .elegant-pdf-section{margin-top:var(--section-gap)}
-  .elegant-pdf-section>h3,.elegant-pdf-ats .knowledge-section>h3{display:flex;align-items:baseline;gap:2.5mm;margin:0 0 3.2mm;color:var(--elegant-heading);font-size:12pt;font-weight:500;letter-spacing:.055em;line-height:1.1;text-transform:uppercase}
-  .elegant-pdf-section>h3:after,.elegant-pdf-ats .knowledge-section>h3:after{flex:1;height:.3mm;background:linear-gradient(90deg,var(--accent),var(--elegant-line));content:""}
+  .elegant-pdf-section>h3,.elegant-pdf-ats .knowledge-section>h3{display:block;margin:0 0 3.2mm;padding-bottom:1.5mm;border-bottom:.3mm solid var(--elegant-line);color:var(--elegant-heading);font-size:12pt;font-weight:500;letter-spacing:.055em;line-height:1.1;text-transform:uppercase}
   .elegant-pdf-list{display:flex;flex-direction:column;gap:5mm}
   .elegant-pdf-entry{break-inside:avoid;page-break-inside:avoid}
   .elegant-pdf-entry-head{display:grid;grid-template-columns:minmax(0,1fr) max-content;gap:5mm;align-items:start}
@@ -310,11 +310,10 @@ const elegantDocumentCss = `
   .elegant-pdf-entry ul{margin:1.8mm 0 0;padding-left:4.5mm}
   .elegant-pdf-entry li{margin:.6mm 0;padding-left:.4mm;color:var(--elegant-text);font-size:var(--body-size);line-height:var(--body-line)}
   .elegant-pdf-entry li::marker{color:var(--accent)}
-  .elegant-pdf-sidebar{display:flex;flex-direction:column;gap:var(--section-gap);min-width:0;height:100%;padding:max(13mm,calc(var(--doc-margin) - 3mm)) max(12mm,calc(var(--doc-margin) - 5mm));overflow:hidden;color:#fff;background:var(--secondary)}
-  .elegant-pdf-photo{display:block;width:27mm;height:27mm;margin:0 auto 12mm;overflow:hidden;border-radius:1.5mm;background:color-mix(in srgb,var(--secondary),white 12%);object-fit:cover}
+  .elegant-pdf-sidebar{position:relative;display:flex;flex-direction:column;gap:var(--section-gap);min-width:0;height:100%;padding:max(13mm,calc(var(--doc-margin) - 3mm)) max(12mm,calc(var(--doc-margin) - 5mm));overflow:hidden;color:#fff;background:var(--secondary);box-shadow:inset 0 3.5mm 0 #600101}
+  .elegant-pdf-photo{display:block;width:27mm;height:27mm;margin:0 auto 8mm;overflow:hidden;border-radius:1.5mm;background:color-mix(in srgb,var(--secondary),white 12%);object-fit:cover}
   .elegant-pdf-sidebar section{margin:0;break-inside:avoid;page-break-inside:avoid}
-  .elegant-pdf-sidebar section>h3{position:relative;margin:0 0 2.4mm;padding-bottom:1.6mm;border:0;color:#fff;font-size:11.5pt;font-weight:400;letter-spacing:.075em;line-height:1.15;text-transform:uppercase}
-  .elegant-pdf-sidebar section>h3:after{position:absolute;bottom:0;left:0;width:14mm;height:.45mm;background:var(--accent);content:""}
+  .elegant-pdf-sidebar section>h3{position:relative;margin:0 0 2.4mm;padding-bottom:1.6mm;border-bottom:.3mm solid rgb(255 255 255 / 75%);color:#fff;font-size:11.5pt;font-weight:400;letter-spacing:.075em;line-height:1.15;text-transform:uppercase}
   .elegant-pdf-sidebar section p,.elegant-pdf-sidebar section li{color:var(--elegant-sidebar-muted);font-size:var(--body-size);line-height:var(--body-line)}
   .elegant-pdf-sidebar section p{margin:0}
   .elegant-pdf-sidebar section ul{margin:0;padding-left:4mm}
@@ -322,22 +321,28 @@ const elegantDocumentCss = `
   .elegant-pdf-sidebar .knowledge-category h4,.elegant-pdf-sidebar .knowledge-subcategory h5{color:#fff;font-size:8.7pt}
   .elegant-pdf-sidebar .knowledge-tags span{border-color:color-mix(in srgb,white,transparent 50%);color:#fff}
   .elegant-pdf-strengths{display:grid;gap:3mm}
-  .elegant-pdf-strength{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:2mm;align-items:start}
-  .elegant-pdf-strength i{display:grid;width:4mm;height:4mm;place-items:center;border:.25mm solid color-mix(in srgb,white,transparent 45%);border-radius:50%;color:#fff;font-size:7pt;font-style:normal;line-height:1}
-  .elegant-pdf-strength span{color:var(--elegant-sidebar-muted);font-size:var(--body-size);line-height:var(--body-line);overflow-wrap:anywhere}
+  .elegant-pdf-strength{display:grid;grid-template-columns:6mm minmax(0,1fr);gap:2mm;align-items:start}
+  .elegant-pdf-strength i{color:#fff;font-size:11pt;font-style:normal;line-height:1}
+  .elegant-pdf-strength h4{margin:0 0 1.2mm;color:#fff;font-size:10pt;font-weight:400;line-height:1.2}
+  .elegant-pdf-strength p{margin:0;color:var(--elegant-sidebar-muted);font-size:var(--body-size);line-height:var(--body-line);overflow-wrap:anywhere}
+  .elegant-pdf-languages{display:grid;gap:3mm}
+  .elegant-pdf-language{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:1.8mm;align-items:center;color:var(--elegant-sidebar-muted)}
+  .elegant-pdf-language strong{color:#fff;font-size:var(--body-size);font-weight:400}
+  .elegant-pdf-language span{font-size:8pt}
+  .elegant-pdf-language-dots{display:flex;gap:.8mm}
+  .elegant-pdf-language-dots i{display:block;width:1.5mm;height:1.5mm;border-radius:50%;background:rgb(255 255 255 / 28%)}
+  .elegant-pdf-language-dots i.filled{background:#fff}
   .elegant-pdf-continuation .kicker{color:var(--accent);font-size:8pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
   .elegant-pdf-continuation h2{margin:3.5mm 0 0;color:#fff;font-size:18pt;line-height:1.05;overflow-wrap:anywhere}
   .elegant-pdf-continuation p{margin:1.8mm 0 0;color:var(--elegant-sidebar-muted)}
   .elegant-pdf-continuation hr{width:18mm;height:.6mm;margin:6mm 0;border:0;background:var(--accent)}
   .elegant-pdf-continuation a{display:block;margin-top:1.7mm;color:#fff;font-size:8.3pt;text-decoration:none;overflow-wrap:anywhere}
-  .elegant-pdf-footer{position:absolute;right:max(10mm,calc(var(--doc-margin) - 6mm));bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;padding-top:1.7mm;border-top:.25mm solid var(--elegant-line);color:var(--elegant-muted);font-size:7.2pt}
+  .elegant-pdf-footer{position:absolute;right:max(10mm,calc(var(--doc-margin) - 6mm));bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;color:var(--elegant-muted);font-size:7.2pt}
   .elegant-pdf-footer a{color:var(--accent);text-decoration:none}
   .elegant-pdf-footer span:last-child{margin-left:auto}
   .elegant-pdf-ats{--elegant-heading:#3b4247;--elegant-text:#4b5359;--elegant-muted:#6d757a;--elegant-line:#b9bfc3;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--elegant-text);background:#fff}
-  .elegant-pdf-ats .elegant-pdf-header:after{display:none}
   .elegant-pdf-ats .elegant-pdf-contacts{display:block}
   .elegant-pdf-ats .elegant-pdf-contacts a,.elegant-pdf-ats .elegant-pdf-contacts span{display:block;margin-top:.8mm}
-  .elegant-pdf-ats .elegant-pdf-contacts strong{margin-right:1.5mm}
   .elegant-pdf-ats .elegant-pdf-entry-head{display:block}
   .elegant-pdf-ats .elegant-pdf-entry-meta{margin-top:.8mm;text-align:left}
   .elegant-pdf-ats .elegant-pdf-entry-meta strong,.elegant-pdf-ats .elegant-pdf-entry-meta span{display:inline}
@@ -701,7 +706,9 @@ export const buildDocumentHtml = (
   const resumePlan = createResumePagePlan(
     paginatedProfile,
     docs.resumeProfile,
-    template.id === "zweispaltig"
+    template.id === "elegant"
+      ? elegantPaginationOptions
+      : template.id === "zweispaltig"
       ? zweispaltigPaginationOptions
       : template.id === "kompakt"
         ? kompaktPaginationOptions
@@ -749,48 +756,48 @@ export const buildDocumentHtml = (
 
   const elegantContactMarkup = () => {
     if (!profile) return "";
-    const location = [
-      profile.postalCode,
-      profile.city,
-      profile.country,
-    ]
+    const cityAndCountry = [profile.city, profile.country]
+      .filter(Boolean)
+      .join(", ");
+    const location = [profile.postalCode, cityAndCountry]
       .filter(Boolean)
       .join(" ");
+    const birth =
+      profile.birthDate || profile.birthPlace
+        ? `${profile.birthDate || ""}${profile.birthPlace ? ` in ${profile.birthPlace}` : ""}`.trim()
+        : "";
+    const website = profile.portfolio || profile.github || "";
     const contacts = [
       {
-        label: "Telefon",
+        icon: "☎",
         value: profile.phone,
         href: profile.phone
           ? `tel:${profile.phone.replace(/[^\d+]/g, "")}`
           : "",
       },
       {
-        label: "E-Mail",
+        icon: "@",
         value: profile.email,
         href: profile.email ? `mailto:${profile.email}` : "",
       },
       {
-        label: "LinkedIn",
-        value: profile.linkedin,
+        icon: "↗",
+        value: externalHref(profile.linkedin),
         href: externalHref(profile.linkedin),
       },
       {
-        label: "GitHub",
-        value: profile.github,
-        href: externalHref(profile.github),
+        icon: "⌖",
+        value: externalHref(website),
+        href: externalHref(website),
       },
-      {
-        label: "Portfolio",
-        value: profile.portfolio,
-        href: externalHref(profile.portfolio),
-      },
-      { label: "Ort", value: location, href: "" },
+      { icon: "◆", value: location, href: "" },
+      { icon: "☆", value: birth, href: "" },
     ].filter((contact) => contact.value?.trim());
 
     if (!contacts.length) return "";
     return `<address class="elegant-pdf-contacts">${contacts
       .map((contact) => {
-        const content = `<strong>${escapeHtml(contact.label)}</strong><i>${escapeHtml(contact.value)}</i>`;
+        const content = `<i aria-hidden="true">${contact.icon}</i><span>${escapeHtml(contact.value)}</span>`;
         return contact.href
           ? `<a href="${escapeHtml(contact.href)}">${content}</a>`
           : `<span>${content}</span>`;
@@ -800,7 +807,7 @@ export const buildDocumentHtml = (
 
   const renderElegantHeader = (compact: boolean) => `
     <header class="elegant-pdf-header${compact ? " elegant-pdf-header-compact" : ""}">
-      <p class="kicker">${compact ? "Lebenslauf · Fortsetzung" : "Lebenslauf"}</p>
+      ${compact ? '<p class="kicker">Lebenslauf · Fortsetzung</p>' : ""}
       <h1>${escapeHtml(name)}</h1>
       ${profile?.title || role ? `<h2>${escapeHtml(profile?.title || role)}</h2>` : ""}
       ${compact ? "" : elegantContactMarkup()}
@@ -865,19 +872,57 @@ export const buildDocumentHtml = (
   };
 
   const strengths = uniqueValues(profile?.skills ?? []).slice(0, 3);
-  const visualStrengthSection = strengths.length
-    ? `<section><h3>Stärken</h3><div class="elegant-pdf-strengths">${strengths
+  const elegantStrengths = strengths.map((value) => {
+    const [title, ...description] = value.split(/\s+(?:–|—|:)\s+/);
+    return {
+      title: title.trim(),
+      description: description.join(" – ").trim(),
+    };
+  });
+  const visualStrengthSection = elegantStrengths.length
+    ? `<section><h3>Stärken</h3><div class="elegant-pdf-strengths">${elegantStrengths
         .map(
-          (strength) =>
-            `<div class="elegant-pdf-strength"><i aria-hidden="true">✓</i><span>${escapeHtml(strength)}</span></div>`,
+          (strength, index) =>
+            `<article class="elegant-pdf-strength"><i aria-hidden="true">${index ? "♥" : "◉"}</i><div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
         )
         .join("")}</div></section>`
     : "";
-  const atsStrengthSection = strengths.length
-    ? `<section class="elegant-pdf-section"><h3>Stärken</h3><ul>${strengths
-        .map((strength) => `<li>${escapeHtml(strength)}</li>`)
+  const atsStrengthSection = elegantStrengths.length
+    ? `<section class="elegant-pdf-section"><h3>Stärken</h3><ul>${elegantStrengths
+        .map(
+          (strength) =>
+            `<li><strong>${escapeHtml(strength.title)}</strong>${strength.description ? ` – ${escapeHtml(strength.description)}` : ""}</li>`,
+        )
         .join("")}</ul></section>`
     : "";
+  const elegantLanguages = uniqueValues(profile?.languages ?? []).map(
+    (raw) => {
+      const [namePart, ...levelParts] = raw.split(/\s+[–—-]\s+/);
+      const level = levelParts.join(" – ").trim();
+      const normalized = level.toLocaleLowerCase("de-DE");
+      const score = /muttersprache|native|c2/.test(normalized)
+        ? 5
+        : /verhandlung|fließ|fliess|c1/.test(normalized)
+          ? 4
+          : /b2|fortgeschritten|advanced|erweitert|versiert/.test(normalized)
+            ? 3
+            : /b1|a2|grundkennt/.test(normalized)
+              ? 2
+              : /a1|anfänger|anfaenger/.test(normalized)
+                ? 1
+                : 3;
+      return { raw, name: namePart.trim() || raw, level, score };
+    },
+  );
+  const elegantVisualLanguages =
+    sections.languages && elegantLanguages.length
+      ? `<section><h3>Sprachen</h3><div class="elegant-pdf-languages">${elegantLanguages
+          .map(
+            (language) =>
+              `<article class="elegant-pdf-language"><strong>${escapeHtml(language.name)}</strong><span>${escapeHtml(language.level)}</span><span class="elegant-pdf-language-dots" aria-hidden="true">${Array.from({ length: 5 }, (_, index) => `<i class="${index < language.score ? "filled" : ""}"></i>`).join("")}</span></article>`,
+          )
+          .join("")}</div></section>`
+      : "";
   const elegantPortfolio =
     profile?.portfolio || profile?.github || profile?.linkedin || "";
 
@@ -922,7 +967,7 @@ export const buildDocumentHtml = (
     }
 
     const continuationLink = elegantPortfolio
-      ? `<a href="${escapeHtml(externalHref(elegantPortfolio))}">${escapeHtml(elegantPortfolio)}</a>`
+      ? `<a href="${escapeHtml(externalHref(elegantPortfolio))}">${escapeHtml(externalHref(elegantPortfolio))}</a>`
       : "";
     const sidebarMarkup = isContinuation
       ? `<aside class="elegant-pdf-sidebar elegant-pdf-continuation">
@@ -940,11 +985,11 @@ export const buildDocumentHtml = (
           ${summarySection}
           ${visualStrengthSection}
           ${skillSection}
-          ${languageSection}
+          ${elegantVisualLanguages}
           ${certificationSection}
         </aside>`;
     const footerLink = elegantPortfolio
-      ? `<a href="${escapeHtml(externalHref(elegantPortfolio))}">${escapeHtml(elegantPortfolio)}</a>`
+      ? `<a href="${escapeHtml(externalHref(elegantPortfolio))}">${escapeHtml(externalHref(elegantPortfolio))}</a>`
       : "<span></span>";
 
     return `
@@ -958,7 +1003,7 @@ export const buildDocumentHtml = (
                 ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>"
                 : ""
             }
-            <footer class="elegant-pdf-footer">${footerLink}<span>Seite ${plan.pageNumber} von ${resumePlan.length}</span></footer>
+            <footer class="elegant-pdf-footer">${footerLink}${resumePlan.length > 1 ? `<span>Seite ${plan.pageNumber} von ${resumePlan.length}</span>` : ""}</footer>
           </main>
           ${sidebarMarkup}
         </div>

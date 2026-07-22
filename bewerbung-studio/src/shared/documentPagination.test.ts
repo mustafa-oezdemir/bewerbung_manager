@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { profileSchema } from "./schema";
 import {
   createResumePagePlan,
+  elegantPaginationOptions,
   gepflegtPaginationOptions,
   getLetterPageStatus,
   ivyLeaguePaginationOptions,
@@ -219,6 +220,16 @@ describe("A4 document pagination", () => {
     expect(kompaktPlan).toHaveLength(1);
     expect(kompaktPlan[0].items).toHaveLength(6);
     expect(kompaktPlan[0].density).toBe("compact");
+
+    const elegantPlan = createResumePagePlan(
+      profile,
+      "",
+      elegantPaginationOptions,
+    );
+
+    expect(elegantPlan).toHaveLength(1);
+    expect(elegantPlan[0].items).toHaveLength(6);
+    expect(elegantPlan[0].density).toBe("compact");
   });
 
   it("keeps Modern career items in reading order after a page split", () => {

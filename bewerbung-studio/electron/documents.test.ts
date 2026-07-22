@@ -302,8 +302,8 @@ describe("Lebenslauf-Dokumente", () => {
     const elegantApplication = applicationSchema.parse({
       ...application,
       templateId: "elegant",
-      accentColor: "#0788FF",
-      secondaryColor: "#264A68",
+      accentColor: "#FE6201",
+      secondaryColor: "#8A0202",
       designSettings: {
         ...application.designSettings,
         columnLayout: "right-sidebar",
@@ -320,6 +320,7 @@ describe("Lebenslauf-Dokumente", () => {
     expect(html).toContain('data-template="elegant"');
     expect(html).toContain('data-no-fit="true"');
     expect(html).toContain('<aside class="elegant-pdf-sidebar">');
+    expect(html).toContain("box-shadow:inset 0 3.5mm 0 #600101");
     expect(html).toContain(
       "grid-template-columns:minmax(0,140mm) 70mm",
     );
@@ -327,6 +328,7 @@ describe("Lebenslauf-Dokumente", () => {
     expect(html).toContain("Stärken");
     expect(html).not.toContain('<img class="elegant-pdf-photo"');
     expect(html).not.toContain("elegant-pdf-monogram");
+    expect(html).not.toContain("Seite 1 von 1");
   });
 
   it("uses a separate linear Elegant ATS renderer in logical section order", () => {

@@ -2,6 +2,7 @@ import {
   toElegantExternalHref,
   uniqueElegantValues,
 } from "./elegant.model";
+import { parseTemplateLanguage } from "../resume-template-data";
 import type { ElegantSidebarProps } from "./elegant.types";
 import { ElegantKnowledge } from "./ElegantKnowledge";
 import { ElegantStrengths } from "./ElegantStrengths";
@@ -16,10 +17,15 @@ export function ElegantSidebar({
   pageNumber,
   totalPages,
 }: ElegantSidebarProps) {
-  const languages = uniqueElegantValues(profile?.languages ?? []);
+  const languages = uniqueElegantValues(profile?.languages ?? []).map(
+    parseTemplateLanguage,
+  );
   const certifications = uniqueElegantValues(profile?.certifications ?? []);
   const continuationLink =
     profile?.portfolio || profile?.linkedin || profile?.github;
+  const continuationHref = continuationLink
+    ? toElegantExternalHref(continuationLink)
+    : "";
 
   return (
     <aside
@@ -44,8 +50,8 @@ export function ElegantSidebar({
             </a>
           ) : null}
           {continuationLink ? (
-            <a href={toElegantExternalHref(continuationLink)}>
-              {continuationLink}
+            <a href={continuationHref}>
+              {continuationHref}
             </a>
           ) : null}
         </div>
@@ -84,11 +90,22 @@ export function ElegantSidebar({
               data-element-id="elegant.languages"
             >
               <h2 className="elegant-sidebar__title">Sprachen</h2>
-              <ul className="elegant-sidebar__list">
+              <div className="elegant-languages">
                 {languages.map((language) => (
-                  <li key={language}>{language}</li>
+                  <article className="elegant-language" key={language.raw}>
+                    <strong>{language.name}</strong>
+                    <span>{language.level}</span>
+                    <span className="elegant-language__dots" aria-hidden="true">
+                      {Array.from({ length: 5 }, (_, index) => (
+                        <i
+                          className={index < language.score ? "filled" : ""}
+                          key={index}
+                        />
+                      ))}
+                    </span>
+                  </article>
                 ))}
-              </ul>
+              </div>
             </section>
           ) : null}
 

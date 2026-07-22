@@ -10,17 +10,22 @@ export function ElegantFooter({
   if (atsMode) return null;
 
   const portfolio = profile?.portfolio || profile?.github || profile?.linkedin;
+  const portfolioHref = portfolio
+    ? toElegantExternalHref(portfolio)
+    : "";
 
   return (
     <footer className="elegant-footer" data-element-id="elegant.footer">
       {portfolio ? (
-        <a href={toElegantExternalHref(portfolio)}>{portfolio}</a>
+        <a href={portfolioHref}>{portfolioHref}</a>
       ) : (
         <span />
       )}
-      <p>
-        Seite {pageNumber} von {totalPages}
-      </p>
+      {totalPages > 1 ? (
+        <p>
+          Seite {pageNumber} von {totalPages}
+        </p>
+      ) : null}
     </footer>
   );
 }

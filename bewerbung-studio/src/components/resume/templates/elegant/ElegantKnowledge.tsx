@@ -35,9 +35,7 @@ export function ElegantKnowledge({
       data-element-id="elegant.skills"
     >
       {variant === "sidebar" ? (
-        <h2 className="elegant-sidebar__title">
-          {knowledge.title || "Kenntnisse"}
-        </h2>
+        <h2 className="elegant-sidebar__title">Fähigkeiten</h2>
       ) : (
         <h2 className="elegant-section__title">Kenntnisse</h2>
       )}

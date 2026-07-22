@@ -33,6 +33,7 @@ import { ZweispaltigResume } from "../components/resume/templates/zweispaltig";
 import { analyzeKeywordMatch } from "../lib/keywordMatch";
 import {
   createResumePagePlan,
+  elegantPaginationOptions,
   getLetterPageStatus,
   ivyLeaguePaginationOptions,
   kompaktPaginationOptions,
@@ -369,25 +370,27 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
   const resumePlan = createResumePagePlan(
     paginatedProfile,
     docs.resumeProfile,
-    template.id === "zweispaltig"
-      ? zweispaltigPaginationOptions
-      : template.id === "kompakt"
-        ? kompaktPaginationOptions
-        : template.id === "kreativ"
-          ? kreativPaginationOptions
-          : template.id === "gepflegt"
-            ? gepflegtPaginationOptions
-            : template.id === "zeitgenoessisch"
-              ? zeitgenoessischPaginationOptions
-              : template.id === "ivy-league"
-                ? ivyLeaguePaginationOptions
-                : template.id === "stilvoll"
-                  ? stilvollPaginationOptions
-                : template.id === "tabellarisch"
-                  ? tabellarischPaginationOptions
-                  : template.id === "modern"
-                    ? modernPaginationOptions
-                    : undefined,
+    template.id === "elegant"
+      ? elegantPaginationOptions
+      : template.id === "zweispaltig"
+        ? zweispaltigPaginationOptions
+        : template.id === "kompakt"
+          ? kompaktPaginationOptions
+          : template.id === "kreativ"
+            ? kreativPaginationOptions
+            : template.id === "gepflegt"
+              ? gepflegtPaginationOptions
+              : template.id === "zeitgenoessisch"
+                ? zeitgenoessischPaginationOptions
+                : template.id === "ivy-league"
+                  ? ivyLeaguePaginationOptions
+                  : template.id === "stilvoll"
+                    ? stilvollPaginationOptions
+                    : template.id === "tabellarisch"
+                      ? tabellarischPaginationOptions
+                      : template.id === "modern"
+                        ? modernPaginationOptions
+                        : undefined,
   );
   const letterStatus = getLetterPageStatus(docs);
   const isAtsMode =

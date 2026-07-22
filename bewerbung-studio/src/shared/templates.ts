@@ -337,8 +337,8 @@ export const templates: TemplateDefinition[] = [
     name: "Elegant",
     description:
       "Moderne Lebenslauf-Vorlage. Schönes, stilvolles Design, das Ihren Hintergrund und Ihre Leistungen hervorhebt.",
-    accent: "#0788FF",
-    secondary: "#264A68",
+    accent: "#FE6201",
+    secondary: "#8A0202",
     font: "Source Sans 3",
     layout: "sidebar-right",
     features: ["Rechte Farbfläche", "A4-optimiert", "ATS-Variante"],

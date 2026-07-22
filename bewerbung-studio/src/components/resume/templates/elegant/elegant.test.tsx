@@ -112,8 +112,8 @@ const renderResume = ({
       atsMode={atsMode}
       plan={plan}
       totalPages={totalPages}
-      accentColor="#0788FF"
-      secondaryColor="#264A68"
+      accentColor="#FE6201"
+      secondaryColor="#8A0202"
       photoSource={photoSource}
       resumeProfile={resumeProfile}
       sections={profile.resumeSections}
@@ -171,7 +171,19 @@ describe("Elegant rendering", () => {
     expect(markup).toContain("elegant-sidebar__photo");
     expect(markup).toContain("Auf die Stelle zugeschnitten");
     expect(markup).toContain("Beispiel GmbH");
+    expect(markup).not.toContain("elegant-header__kicker");
     expect(markup).not.toContain("Zukunft AG");
+  });
+
+  it("renders normalized links without a redundant single-page number", () => {
+    const markup = renderResume({
+      plan: singlePagePlan,
+      totalPages: 1,
+    });
+
+    expect(markup).toContain('href="https://linkedin.com/in/minakaya"');
+    expect(markup).toContain("https://mina.example.com");
+    expect(markup).not.toContain("Seite 1 von 1");
   });
 
   it("removes the photo area when no photo is available", () => {
@@ -228,6 +240,8 @@ describe("Elegant rendering", () => {
   it("registers Elegant with matching Word assets and design defaults", () => {
     expect(getTemplate("elegant")).toMatchObject({
       id: "elegant",
+      accent: "#FE6201",
+      secondary: "#8A0202",
       layout: "sidebar-right",
       supportsAtsMode: true,
       supportsPhoto: true,

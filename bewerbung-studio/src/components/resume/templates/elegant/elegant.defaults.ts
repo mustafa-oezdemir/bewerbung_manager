@@ -19,10 +19,10 @@ export const elegantDefaults = {
     entryGapMm: 5,
   },
   colors: {
-    primary: "#0788FF",
-    sidebarBackground: "#264A68",
+    primary: "#FE6201",
+    sidebarBackground: "#8A0202",
     sidebarText: "#FFFFFF",
-    sidebarMutedText: "#E2E9EF",
+    sidebarMutedText: "#F6EAEA",
     heading: "#3B4247",
     text: "#4B5359",
     mutedText: "#6D757A",
