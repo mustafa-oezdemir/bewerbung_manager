@@ -1,5 +1,6 @@
 import type { ResumePagePlan } from "../../../../shared/documentPagination";
 import type { ApplicantProfile } from "../../../../shared/schema";
+import type { ResumeSectionType } from "../../../../features/resume-sections/resume-sections";
 
 export type ZweispaltigCareerItem = {
   id: string;
@@ -63,6 +64,8 @@ export type ZweispaltigStrengthsProps = {
 export type ZweispaltigSidebarProps = {
   profile: ApplicantProfile | undefined;
   sections: ApplicantProfile["resumeSections"];
+  order?: readonly ResumeSectionType[];
+  summary?: string;
 };
 
 export type ZweispaltigFooterProps = {

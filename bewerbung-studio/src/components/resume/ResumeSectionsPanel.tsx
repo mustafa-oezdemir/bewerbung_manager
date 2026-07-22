@@ -25,6 +25,10 @@ type ResumeSectionsPanelProps = {
   templateId: string;
   singlePageExceeded: boolean;
   onSave: (profile: ApplicantProfile) => Promise<void>;
+  onPreview: (
+    templateId: string,
+    profile: ApplicantProfile | null,
+  ) => void;
 };
 
 const editableSectionTypes: readonly ResumeSectionType[] = [
@@ -71,6 +75,7 @@ export function ResumeSectionsPanel({
   templateId,
   singlePageExceeded,
   onSave,
+  onPreview,
 }: ResumeSectionsPanelProps) {
   const capabilities = getTemplateSectionCapabilities(templateId);
   const [draftLayout, setDraftLayout] = useState<ResumeSectionPlacement[]>(
@@ -87,6 +92,26 @@ export function ResumeSectionsPanel({
   const visibleLayout = useMemo(
     () => draftLayout.filter((item) => editableSectionTypes.includes(item.type)),
     [draftLayout],
+  );
+  const previewProfile = useMemo(
+    () => ({
+      ...draftProfile,
+      resumeSectionLayout: draftLayout,
+      resumeSectionLayouts: {
+        ...draftProfile.resumeSectionLayouts,
+        [templateId]: draftLayout,
+      },
+    }),
+    [draftLayout, draftProfile, templateId],
+  );
+
+  useEffect(() => {
+    onPreview(templateId, previewProfile);
+  }, [onPreview, previewProfile, templateId]);
+
+  useEffect(
+    () => () => onPreview(templateId, null),
+    [onPreview, templateId],
   );
 
   const updatePlacement = (
@@ -109,12 +134,7 @@ export function ResumeSectionsPanel({
 
   const apply = async () => {
     await onSave({
-      ...draftProfile,
-      resumeSectionLayout: draftLayout,
-      resumeSectionLayouts: {
-        ...draftProfile.resumeSectionLayouts,
-        [templateId]: draftLayout,
-      },
+      ...previewProfile,
       updatedAt: new Date().toISOString(),
     });
   };
@@ -172,7 +192,9 @@ export function ResumeSectionsPanel({
                         setDraggedType(null);
                       }}>
                       <GripVertical aria-hidden="true" size={16} />
-                      <span className="resume-section-card-title">
+                      <span
+                        className="resume-section-card-title"
+                        title={resumeSectionLabels[placement.type]}>
                         {resumeSectionLabels[placement.type]}
                       </span>
                       <button

@@ -2887,14 +2887,72 @@ export const buildDocumentHtml = (
           `<div class="modern-pdf-list">${education}</div>`,
         )
       : "";
+    const hasCustomLayout = hasSavedTemplateSectionLayout(profile, "modern");
+    const savedLayout = getProfileResumeSectionLayout(profile, "modern");
+    const renderOrderedSection = (
+      type: (typeof savedLayout)[number]["type"],
+      variant: "visual" | "ats",
+    ) => {
+      if (type === "summary") {
+        return sections.profile && !isContinuation
+          ? modernSection(
+              "Zusammenfassung",
+              `<p class="modern-pdf-summary">${escapeHtml(managedSummary)}</p>`,
+            )
+          : "";
+      }
+      if (type === "experience") return experienceSection;
+      if (type === "education") return educationSection;
+      if (!isLastPage) return "";
+      if (type === "knowledge") {
+        return sections.skills
+          ? modernSection(
+              variant === "ats" ? "Kenntnisse" : "Fähigkeiten",
+              variant === "ats" ? modernAtsKnowledge : modernVisualKnowledge,
+            )
+          : "";
+      }
+      if (type === "languages") {
+        return sections.languages
+          ? modernSection(
+              "Sprachen",
+              variant === "ats" ? modernAtsLanguages : modernVisualLanguages,
+            )
+          : "";
+      }
+      if (type === "strengths") {
+        return sections.skills
+          ? modernSection(
+              "Stärken",
+              variant === "ats" ? modernAtsStrengths : modernVisualStrengths,
+            )
+          : "";
+      }
+      if (type === "certifications") {
+        return sections.certifications
+          ? modernSection(
+              variant === "ats" ? "Zertifikate" : "Erfolge",
+              variant === "ats"
+                ? modernAtsCertifications
+                : modernVisualAchievements,
+            )
+          : "";
+      }
+      return "";
+    };
 
     if (atsMode) {
-      return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="modern" data-no-fit="true"><div class="page-content modern-pdf modern-pdf-ats" data-density="${plan.density}">${renderModernHeader(isContinuation, true)}${!isContinuation ? modernSection("Persönliche Daten", renderModernContacts(true)) : ""}${sections.profile && !isContinuation ? modernSection("Zusammenfassung", `<p class="modern-pdf-summary">${escapeHtml(managedSummary)}</p>`) : ""}${experienceSection}${educationSection}${isLastPage && sections.skills ? modernSection("Kenntnisse", modernAtsKnowledge) : ""}${isLastPage && sections.languages ? modernSection("Sprachen", modernAtsLanguages) : ""}${isLastPage && sections.skills ? modernSection("Stärken", modernAtsStrengths) : ""}${isLastPage && sections.certifications ? modernSection("Zertifikate", modernAtsCertifications) : ""}${modernFooter(plan)}</div></section>`;
+      const orderedSections = hasCustomLayout
+        ? savedLayout
+            .map(({ type }) => renderOrderedSection(type, "ats"))
+            .join("")
+        : `${sections.profile && !isContinuation ? modernSection("Zusammenfassung", `<p class="modern-pdf-summary">${escapeHtml(managedSummary)}</p>`) : ""}${experienceSection}${educationSection}${isLastPage && sections.skills ? modernSection("Kenntnisse", modernAtsKnowledge) : ""}${isLastPage && sections.languages ? modernSection("Sprachen", modernAtsLanguages) : ""}${isLastPage && sections.skills ? modernSection("Stärken", modernAtsStrengths) : ""}${isLastPage && sections.certifications ? modernSection("Zertifikate", modernAtsCertifications) : ""}`;
+      return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="modern" data-no-fit="true"><div class="page-content modern-pdf modern-pdf-ats" data-density="${plan.density}">${renderModernHeader(isContinuation, true)}${!isContinuation ? modernSection("Persönliche Daten", renderModernContacts(true)) : ""}${orderedSections}${modernFooter(plan)}</div></section>`;
     }
 
     const right = isContinuation
       ? ""
-      : `<aside class="modern-pdf-right">${sections.skills ? modernSection("Stärken", modernVisualStrengths) : ""}${sections.languages ? modernSection("Sprachen", modernVisualLanguages) : ""}${sections.skills ? modernSection("Fähigkeiten", modernVisualKnowledge) : ""}${sections.certifications ? modernSection("Erfolge", modernVisualAchievements) : ""}</aside>`;
+      : `<aside class="modern-pdf-right">${hasCustomLayout ? savedLayout.filter(({ zone }) => zone === "sidebar").map(({ type }) => renderOrderedSection(type, "visual")).join("") : `${sections.skills ? modernSection("Stärken", modernVisualStrengths) : ""}${sections.languages ? modernSection("Sprachen", modernVisualLanguages) : ""}${sections.skills ? modernSection("Fähigkeiten", modernVisualKnowledge) : ""}${sections.certifications ? modernSection("Erfolge", modernVisualAchievements) : ""}`}</aside>`;
     const visualSummary =
       sections.profile && !isContinuation
         ? modernSection(
@@ -2902,7 +2960,13 @@ export const buildDocumentHtml = (
             `<p class="modern-pdf-summary">${escapeHtml(managedSummary)}</p>`,
           )
         : "";
-    return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="modern" data-no-fit="true"><div class="page-content modern-pdf" data-density="${plan.density}"><div class="modern-pdf-content">${renderModernHeader(isContinuation)}<div class="modern-pdf-columns${isContinuation ? " continuation" : ""}"><main class="modern-pdf-left">${visualSummary}${experienceSection}${educationSection}${!experiences && !education && plan.pageNumber === 1 ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}</main>${right}</div></div>${modernFooter(plan)}</div></section>`;
+    const main = hasCustomLayout
+      ? savedLayout
+          .filter(({ zone }) => zone === "main" || zone === "full")
+          .map(({ type }) => renderOrderedSection(type, "visual"))
+          .join("")
+      : `${visualSummary}${experienceSection}${educationSection}`;
+    return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="modern" data-no-fit="true"><div class="page-content modern-pdf" data-density="${plan.density}"><div class="modern-pdf-content">${renderModernHeader(isContinuation)}<div class="modern-pdf-columns${isContinuation ? " continuation" : ""}"><main class="modern-pdf-left">${main}${!experiences && !education && plan.pageNumber === 1 ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}</main>${right}</div></div>${modernFooter(plan)}</div></section>`;
   };
 
   const tabellarischExtraIcon = (kind: "profile" | "flag" | "trophy") => {

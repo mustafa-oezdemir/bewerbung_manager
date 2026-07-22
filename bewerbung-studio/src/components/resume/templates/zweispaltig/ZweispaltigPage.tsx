@@ -7,7 +7,15 @@ import { ZweispaltigAdditionalSections } from "./ZweispaltigAdditionalSections";
 import { ZweispaltigCareerSection } from "./ZweispaltigCareerSection";
 import { ZweispaltigFooter } from "./ZweispaltigFooter";
 import { ZweispaltigHeader } from "./ZweispaltigHeader";
-import { ZweispaltigSidebar } from "./ZweispaltigSidebar";
+import {
+  ZweispaltigSidebar,
+  ZweispaltigSupplementalSections,
+} from "./ZweispaltigSidebar";
+import {
+  getProfileResumeSectionLayout,
+  hasSavedTemplateSectionLayout,
+  type ResumeSectionType,
+} from "../../../../features/resume-sections/resume-sections";
 
 export function ZweispaltigPage({
   profile,
@@ -23,6 +31,40 @@ export function ZweispaltigPage({
     createZweispaltigPageData(profile, plan);
   const summary = resolveZweispaltigSummary(profile, resumeProfile);
   const isLastPage = plan.pageNumber === totalPages;
+  const hasCustomLayout = hasSavedTemplateSectionLayout(profile, "zweispaltig");
+  const savedLayout = getProfileResumeSectionLayout(profile, "zweispaltig");
+  const mainOrder: ResumeSectionType[] = hasCustomLayout
+    ? savedLayout.filter(({ zone }) => zone === "main" || zone === "full").map(({ type }) => type)
+    : ["summary", "experience", "education"];
+  const sidebarOrder: ResumeSectionType[] = hasCustomLayout
+    ? savedLayout.filter(({ zone }) => zone === "sidebar").map(({ type }) => type)
+    : ["strengths", "knowledge", "languages", "certifications"];
+  const atsOrder: ResumeSectionType[] = hasCustomLayout
+    ? savedLayout.map(({ type }) => type)
+    : ["summary", "experience", "education", "knowledge", "languages", "strengths", "certifications"];
+
+  const renderOrderedSection = (type: ResumeSectionType, variant: "visual" | "ats") => {
+    if (type === "summary") {
+      return sections.profile && summary && !isContinuation ? (
+        <section className="zweispaltig-section" data-element-id="zweispaltig.summary">
+          <h2 className="zweispaltig-section__title">{variant === "ats" ? "Berufliches Profil" : "Zusammenfassung"}</h2>
+          <p className="zweispaltig-summary">{summary}</p>
+        </section>
+      ) : null;
+    }
+    if (type === "experience") return sections.experience ? <ZweispaltigCareerSection title="Berufserfahrung" items={experiences} continuation={isContinuation} /> : null;
+    if (type === "education") return sections.education ? <ZweispaltigCareerSection title="Ausbildung" items={education} /> : null;
+    if (!isLastPage) return null;
+    return (
+      <ZweispaltigSupplementalSections
+        order={[type]}
+        profile={profile}
+        sections={sections}
+        summary={summary}
+        variant={variant === "ats" ? "ats" : "sidebar"}
+      />
+    );
+  };
 
   if (atsMode) {
     return (
@@ -34,28 +76,13 @@ export function ZweispaltigPage({
           compact={isContinuation}
           atsMode
         />
-        {sections.profile && summary && !isContinuation ? (
-          <section
-            className="zweispaltig-section"
-            data-element-id="zweispaltig.summary"
-          >
-            <h2 className="zweispaltig-section__title">
-              Berufliches Profil
-            </h2>
-            <p>{summary}</p>
-          </section>
+        {hasCustomLayout ? atsOrder.map((type) => <div className="zweispaltig-ordered-section" key={type}>{renderOrderedSection(type, "ats")}</div>) : null}
+        {!hasCustomLayout && sections.profile && summary && !isContinuation ? (
+          <section className="zweispaltig-section" data-element-id="zweispaltig.summary"><h2 className="zweispaltig-section__title">Berufliches Profil</h2><p>{summary}</p></section>
         ) : null}
-        {sections.experience ? (
-          <ZweispaltigCareerSection
-            title="Berufserfahrung"
-            items={experiences}
-            continuation={isContinuation}
-          />
-        ) : null}
-        {sections.education ? (
-          <ZweispaltigCareerSection title="Ausbildung" items={education} />
-        ) : null}
-        {isLastPage ? (
+        {!hasCustomLayout && sections.experience ? <ZweispaltigCareerSection title="Berufserfahrung" items={experiences} continuation={isContinuation} /> : null}
+        {!hasCustomLayout && sections.education ? <ZweispaltigCareerSection title="Ausbildung" items={education} /> : null}
+        {!hasCustomLayout && isLastPage ? (
           <ZweispaltigAdditionalSections
             profile={profile}
             sections={sections}
@@ -77,27 +104,7 @@ export function ZweispaltigPage({
         className={`zweispaltig-columns ${isContinuation ? "zweispaltig-columns--continuation" : ""}`}
       >
         <main className="zweispaltig-main">
-          {sections.profile && summary && !isContinuation ? (
-            <section
-              className="zweispaltig-section"
-              data-element-id="zweispaltig.summary"
-            >
-              <h2 className="zweispaltig-section__title">
-                Zusammenfassung
-              </h2>
-              <p className="zweispaltig-summary">{summary}</p>
-            </section>
-          ) : null}
-          {sections.experience ? (
-            <ZweispaltigCareerSection
-              title="Berufserfahrung"
-              items={experiences}
-              continuation={isContinuation}
-            />
-          ) : null}
-          {sections.education ? (
-            <ZweispaltigCareerSection title="Ausbildung" items={education} />
-          ) : null}
+          {mainOrder.map((type) => <div className="zweispaltig-ordered-section" key={type}>{renderOrderedSection(type, "visual")}</div>)}
           {!experiences.length &&
           !education.length &&
           plan.pageNumber === 1 ? (
@@ -107,7 +114,7 @@ export function ZweispaltigPage({
           ) : null}
         </main>
         {!isContinuation ? (
-          <ZweispaltigSidebar profile={profile} sections={sections} />
+          <ZweispaltigSidebar profile={profile} sections={sections} order={sidebarOrder} summary={summary} />
         ) : null}
       </div>
       <ZweispaltigFooter

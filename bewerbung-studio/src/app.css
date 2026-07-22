@@ -3856,10 +3856,10 @@ kbd {
 
 .resume-section-card {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) repeat(3, auto) minmax(0, 116px);
-  gap: 4px;
+  grid-template-columns: auto minmax(112px, 1fr) repeat(3, auto);
+  gap: 6px;
   align-items: center;
-  padding: 6px;
+  padding: 8px;
   border: 1px solid var(--line);
   border-radius: 7px;
   background: var(--surface-muted);
@@ -3872,16 +3872,17 @@ kbd {
 
 .resume-section-card-title {
   min-width: 0;
-  overflow: hidden;
-  font-size: 0.62rem;
+  font-size: 0.64rem;
   font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 .resume-section-card select {
+  grid-column: 2 / -1;
+  width: 100%;
   min-width: 0;
-  padding: 4px;
+  padding: 6px 8px;
   border: 1px solid var(--line);
   border-radius: 5px;
   color: var(--ink);

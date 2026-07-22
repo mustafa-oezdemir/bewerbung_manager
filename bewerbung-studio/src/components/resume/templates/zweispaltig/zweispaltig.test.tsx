@@ -98,16 +98,18 @@ const renderResume = ({
   totalPages = 2,
   photoSource = "data:image/png;base64,AA==",
   resumeProfile = "Auf die Stelle zugeschnitten",
+  profileOverride = profile,
 }: {
   atsMode?: boolean;
   plan?: ResumePagePlan;
   totalPages?: number;
   photoSource?: string | null;
   resumeProfile?: string;
+  profileOverride?: typeof profile;
 } = {}) =>
   renderToStaticMarkup(
     <ZweispaltigResume
-      profile={profile}
+      profile={profileOverride}
       name="Mina Kaya"
       atsMode={atsMode}
       plan={plan}
@@ -116,7 +118,7 @@ const renderResume = ({
       secondaryColor="#EAF2FA"
       photoSource={photoSource}
       resumeProfile={resumeProfile}
-      sections={profile.resumeSections}
+      sections={profileOverride.resumeSections}
     />,
   );
 
@@ -224,6 +226,37 @@ describe("Zweispaltig rendering", () => {
     expect(educationIndex).toBeLessThan(knowledgeIndex);
     expect(knowledgeIndex).toBeLessThan(languagesIndex);
     expect(languagesIndex).toBeLessThan(strengthsIndex);
+  });
+
+  it("applies a saved live-preview order and column placement", () => {
+    const reorderedProfile = profileSchema.parse({
+      ...profile,
+      resumeSectionLayouts: {
+        zweispaltig: [
+          { type: "education", zone: "main" },
+          { type: "experience", zone: "main" },
+          { type: "summary", zone: "sidebar" },
+          { type: "languages", zone: "sidebar" },
+          { type: "strengths", zone: "sidebar" },
+          { type: "knowledge", zone: "sidebar" },
+          { type: "certifications", zone: "sidebar" },
+        ],
+      },
+    });
+    const markup = renderResume({
+      plan: singlePagePlan,
+      totalPages: 1,
+      profileOverride: reorderedProfile,
+    });
+    const mainStart = markup.indexOf('class="zweispaltig-main"');
+    const sidebarStart = markup.indexOf('class="zweispaltig-sidebar"');
+
+    expect(markup.indexOf("Ausbildung", mainStart)).toBeLessThan(
+      markup.indexOf("Berufserfahrung", mainStart),
+    );
+    expect(markup.indexOf("Zusammenfassung", sidebarStart)).toBeGreaterThan(
+      sidebarStart,
+    );
   });
 
   it("escapes user-provided summary markup", () => {

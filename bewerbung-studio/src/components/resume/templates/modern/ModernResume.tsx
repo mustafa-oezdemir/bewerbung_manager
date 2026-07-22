@@ -1,4 +1,9 @@
-import type { CSSProperties } from "react";
+import { Fragment, type CSSProperties } from "react";
+import {
+  getProfileResumeSectionLayout,
+  hasSavedTemplateSectionLayout,
+  type ResumeSectionType,
+} from "../../../../features/resume-sections/resume-sections";
 import {
   getTemplateKnowledge,
   parseTemplateStrengths,
@@ -67,13 +72,81 @@ export function ModernResume({
   } as CSSProperties;
   const portfolio =
     profile?.portfolio || profile?.github || profile?.linkedin || "";
+  const hasCustomLayout = hasSavedTemplateSectionLayout(profile, "modern");
+  const savedLayout = getProfileResumeSectionLayout(profile, "modern");
+  const mainOrder = savedLayout
+    .filter(({ zone }) => zone === "main" || zone === "full")
+    .map(({ type }) => type);
+  const sidebarOrder = savedLayout
+    .filter(({ zone }) => zone === "sidebar")
+    .map(({ type }) => type);
+  const knowledge = getTemplateKnowledge(profile);
+  const strengths = parseTemplateStrengths(profile, 4);
+  const certifications = uniqueTemplateValues(profile?.certifications ?? []);
+  const renderOrderedSection = (
+    type: ResumeSectionType,
+    variant: "visual" | "ats",
+  ) => {
+    if (type === "summary") {
+      return !isContinuation && sections.profile ? (
+        <ModernSummarySection profile={pageProfile} />
+      ) : null;
+    }
+    if (type === "experience") {
+      return sections.experience ? (
+        <ModernExperienceSection profile={pageProfile} />
+      ) : null;
+    }
+    if (type === "education") {
+      return sections.education ? (
+        <ModernEducationSection profile={pageProfile} />
+      ) : null;
+    }
+    if (!isLastPage) return null;
+    if (type === "knowledge") {
+      return sections.skills && knowledge.length ? (
+        <section className={`modern-section ${variant === "visual" ? "modern-knowledge" : ""}`}>
+          <h2 className="modern-section__title">
+            {variant === "ats" ? "Kenntnisse" : "Fähigkeiten"}
+          </h2>
+          {variant === "ats" ? (
+            <p className="modern-summary-text">{knowledge.join(" · ")}</p>
+          ) : (
+            <div className="modern-knowledge__list">
+              {knowledge.map((item) => <span className="modern-knowledge__item" key={item}>{item}</span>)}
+            </div>
+          )}
+        </section>
+      ) : null;
+    }
+    if (type === "languages") {
+      return sections.languages ? (
+        <ModernLanguagesSection profile={pageProfile} accentColor={accentColor} atsMode={variant === "ats"} />
+      ) : null;
+    }
+    if (type === "strengths") {
+      return sections.skills && strengths.length ? <ModernStrengthsSection profile={pageProfile} /> : null;
+    }
+    if (type === "certifications") {
+      if (!sections.certifications || !certifications.length) return null;
+      return variant === "ats" ? (
+        <section className="modern-section">
+          <h2 className="modern-section__title">Zertifikate</h2>
+          <ul className="modern-ats-list">{certifications.map((item) => <li key={item}>{item}</li>)}</ul>
+        </section>
+      ) : (
+        <section className="modern-section modern-achievements">
+          <h2 className="modern-section__title">Erfolge</h2>
+          <div className="modern-achievements__list">
+            {certifications.map((item) => <div className="modern-achievements__item" key={item}><span aria-hidden="true">★</span><p>{item}</p></div>)}
+          </div>
+        </section>
+      );
+    }
+    return null;
+  };
 
   if (atsMode) {
-    const knowledge = getTemplateKnowledge(profile);
-    const strengths = parseTemplateStrengths(profile, 4);
-    const certifications = uniqueTemplateValues(
-      profile?.certifications ?? [],
-    );
     return (
       <article
         className="modern-resume-page modern-resume-page--ats"
@@ -98,34 +171,39 @@ export function ModernResume({
                   accentColor={accentColor}
                   atsMode
                 />
-                {sections.profile ? (
+                {!hasCustomLayout && sections.profile ? (
                   <ModernSummarySection profile={pageProfile} />
                 ) : null}
               </>
             ) : null}
-            {sections.experience ? (
+            {hasCustomLayout
+              ? savedLayout.map(({ type }) => (
+                  <Fragment key={type}>{renderOrderedSection(type, "ats")}</Fragment>
+                ))
+              : null}
+            {!hasCustomLayout && sections.experience ? (
               <ModernExperienceSection profile={pageProfile} />
             ) : null}
-            {sections.education ? (
+            {!hasCustomLayout && sections.education ? (
               <ModernEducationSection profile={pageProfile} />
             ) : null}
-            {isLastPage && sections.skills && knowledge.length ? (
+            {!hasCustomLayout && isLastPage && sections.skills && knowledge.length ? (
               <section className="modern-section">
                 <h2 className="modern-section__title">Kenntnisse</h2>
                 <p className="modern-summary-text">{knowledge.join(" · ")}</p>
               </section>
             ) : null}
-            {isLastPage && sections.languages ? (
+            {!hasCustomLayout && isLastPage && sections.languages ? (
               <ModernLanguagesSection
                 profile={pageProfile}
                 accentColor={accentColor}
                 atsMode
               />
             ) : null}
-            {isLastPage && sections.skills && strengths.length ? (
+            {!hasCustomLayout && isLastPage && sections.skills && strengths.length ? (
               <ModernStrengthsSection profile={pageProfile} />
             ) : null}
-            {isLastPage && sections.certifications && certifications.length ? (
+            {!hasCustomLayout && isLastPage && sections.certifications && certifications.length ? (
               <section className="modern-section">
                 <h2 className="modern-section__title">Zertifikate</h2>
                 <ul className="modern-ats-list">
@@ -177,17 +255,29 @@ export function ModernResume({
             className="modern-resume-main"
             data-continuation={isContinuation}
           >
-            <ModernLeftColumn
-              profile={pageProfile}
-              atsMode={false}
-              showSummary={!isContinuation && sections.profile}
-            />
-            {!isContinuation ? (
-              <ModernRightColumn
+            {hasCustomLayout ? (
+              <div className="modern-resume-left-column" data-ats-mode="false">
+                {mainOrder.map((type) => <Fragment key={type}>{renderOrderedSection(type, "visual")}</Fragment>)}
+              </div>
+            ) : (
+              <ModernLeftColumn
                 profile={pageProfile}
-                accentColor={accentColor}
                 atsMode={false}
+                showSummary={!isContinuation && sections.profile}
               />
+            )}
+            {!isContinuation ? (
+              hasCustomLayout ? (
+                <div className="modern-resume-right-column" data-ats-mode="false">
+                  {sidebarOrder.map((type) => <Fragment key={type}>{renderOrderedSection(type, "visual")}</Fragment>)}
+                </div>
+              ) : (
+                <ModernRightColumn
+                  profile={pageProfile}
+                  accentColor={accentColor}
+                  atsMode={false}
+                />
+              )
             ) : null}
           </div>
         </div>

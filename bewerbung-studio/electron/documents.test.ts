@@ -1322,6 +1322,48 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).not.toContain("cv-sidebar-right");
   });
 
+  it("uses the saved Modern section order in the PDF HTML", () => {
+    const modernApplication = applicationSchema.parse({
+      ...application,
+      templateId: "modern",
+    });
+    const reorderedProfile = profileSchema.parse({
+      ...profile,
+      education: [
+        {
+          id: crypto.randomUUID(),
+          from: "2018",
+          to: "2021",
+          degree: "B.Sc. Informatik",
+          institution: "Beispiel Universität",
+          city: "Berlin",
+        },
+      ],
+      resumeSectionLayouts: {
+        modern: [
+          { type: "education", zone: "main" },
+          { type: "experience", zone: "main" },
+          { type: "summary", zone: "sidebar" },
+          { type: "strengths", zone: "sidebar" },
+          { type: "languages", zone: "sidebar" },
+          { type: "knowledge", zone: "sidebar" },
+          { type: "certifications", zone: "sidebar" },
+        ],
+      },
+    });
+    const html = buildDocumentHtml(
+      modernApplication,
+      reorderedProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+    const mainStart = body.indexOf('class="modern-pdf-left"');
+
+    expect(body.indexOf("Ausbildung", mainStart)).toBeLessThan(
+      body.indexOf("Erfahrung", mainStart),
+    );
+  });
+
   it("renders Modern ATS linearly without waves, photo, icons, or rating dots", () => {
     const modernApplication = applicationSchema.parse({
       ...application,

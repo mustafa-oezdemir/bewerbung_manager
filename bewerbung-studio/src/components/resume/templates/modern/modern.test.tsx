@@ -87,14 +87,16 @@ const renderResume = ({
   atsMode = false,
   plan = singlePagePlan,
   totalPages = 1,
+  profileOverride = profile,
 }: {
   atsMode?: boolean;
   plan?: ResumePagePlan;
   totalPages?: number;
+  profileOverride?: typeof profile;
 } = {}) =>
   renderToStaticMarkup(
     <ModernResume
-      profile={profile}
+      profile={profileOverride}
       name="Sophia Bauer"
       atsMode={atsMode}
       plan={plan}
@@ -103,7 +105,7 @@ const renderResume = ({
       secondaryColor="#C7F1F5"
       photoSource="data:image/png;base64,AA=="
       resumeProfile="Stellenspezifisches Kurzprofil"
-      sections={profile.resumeSections}
+      sections={profileOverride.resumeSections}
     />,
   );
 
@@ -131,6 +133,33 @@ describe("Modern rendering", () => {
     expect(markup).not.toContain("Bauhaus AG");
     expect(markup).not.toContain("modern-background-waves");
     expect(markup).not.toContain("modern-resume-right-column");
+  });
+
+  it("renders the saved editor order immediately", () => {
+    const reorderedProfile = profileSchema.parse({
+      ...profile,
+      resumeSectionLayouts: {
+        modern: [
+          { type: "education", zone: "main" },
+          { type: "experience", zone: "main" },
+          { type: "summary", zone: "sidebar" },
+          { type: "strengths", zone: "sidebar" },
+          { type: "languages", zone: "sidebar" },
+          { type: "knowledge", zone: "sidebar" },
+          { type: "certifications", zone: "sidebar" },
+        ],
+      },
+    });
+    const markup = renderResume({ profileOverride: reorderedProfile });
+    const mainStart = markup.indexOf('class="modern-resume-left-column"');
+    const sidebarStart = markup.indexOf('class="modern-resume-right-column"');
+
+    expect(markup.indexOf("Ausbildung", mainStart)).toBeLessThan(
+      markup.indexOf("Erfahrung", mainStart),
+    );
+    expect(markup.indexOf("Zusammenfassung", sidebarStart)).toBeGreaterThan(
+      sidebarStart,
+    );
   });
 
   it("uses a linear ATS order without waves, photo, icons, or dots", () => {

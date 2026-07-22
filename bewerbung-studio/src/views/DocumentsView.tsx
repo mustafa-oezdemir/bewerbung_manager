@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import {
   useEffect,
+  useCallback,
   useRef,
   useState,
   type CSSProperties,
@@ -316,6 +317,18 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
   const openFolder = useAppStore((state) => state.openFolder);
   const [tab, setTab] = useState<Tab>(initialTab);
   const [designPanelOpen, setDesignPanelOpen] = useState(true);
+  const [resumeSectionPreview, setResumeSectionPreview] = useState<{
+    templateId: string;
+    profile: ApplicantProfile;
+  } | null>(null);
+  const handleResumeSectionPreview = useCallback(
+    (templateId: string, previewProfile: ApplicantProfile | null) => {
+      setResumeSectionPreview(
+        previewProfile ? { templateId, profile: previewProfile } : null,
+      );
+    },
+    [],
+  );
   const [design, setDesign] = useState({
     applicationId: "",
     templateId: templates[0].id,
@@ -353,8 +366,13 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
   const photoSource = getProfileMediaSource(profile?.photoPath);
   const signatureSource = getProfileMediaSource(profile?.signaturePath);
   const template = getTemplate(design.templateId);
+  const renderProfile =
+    resumeSectionPreview?.templateId === template.id &&
+    resumeSectionPreview.profile.id === profile?.id
+      ? resumeSectionPreview.profile
+      : profile;
   const docs = application.documents;
-  const sections = profile?.resumeSections ?? {
+  const sections = renderProfile?.resumeSections ?? {
     profile: true,
     experience: true,
     education: true,
@@ -362,15 +380,15 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
     languages: true,
     certifications: true,
   };
-  const keywordMatch = analyzeKeywordMatch(application, profile);
-  const name = profile
-    ? `${profile.firstName} ${profile.lastName}`
+  const keywordMatch = analyzeKeywordMatch(application, renderProfile);
+  const name = renderProfile
+    ? `${renderProfile.firstName} ${renderProfile.lastName}`
     : "Vorname Nachname";
-  const paginatedProfile = profile
+  const paginatedProfile = renderProfile
     ? {
-        ...profile,
-        experiences: sections.experience ? profile.experiences : [],
-        education: sections.education ? profile.education : [],
+        ...renderProfile,
+        experiences: sections.experience ? renderProfile.experiences : [],
+        education: sections.education ? renderProfile.education : [],
       }
     : undefined;
   const resumePlan = createResumePagePlan(
@@ -669,6 +687,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                     }
                     templateId={template.id}
                     onSave={saveProfile}
+                    onPreview={handleResumeSectionPreview}
                   />
                 ) : null}
                 <button
@@ -1236,7 +1255,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                 />
                 {template.id === "stilvoll" ? (
                   <StilvollResume
-                    profile={profile}
+                    profile={renderProfile}
                     name={name}
                     atsMode={isAtsMode}
                     plan={plan}
@@ -1244,13 +1263,13 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                     accentColor={design.accentColor}
                     secondaryColor={design.secondaryColor}
                     backgroundId={design.settings.backgroundId}
-                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    photoSource={getProfileMediaSource(renderProfile?.photoPath)}
                     resumeProfile={docs.resumeProfile}
                     sections={sections}
                   />
                 ) : template.id === "kompakt" ? (
                   <KompaktResume
-                    profile={profile}
+                    profile={renderProfile}
                     name={name}
                     atsMode={isAtsMode}
                     plan={plan}
@@ -1263,7 +1282,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                   />
                 ) : template.id === "einspaltig" ? (
                   <EinspaltigResume
-                    profile={profile}
+                    profile={renderProfile}
                     name={name}
                     atsMode={isAtsMode}
                     plan={plan}
@@ -1271,13 +1290,13 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                     accentColor={design.accentColor}
                     secondaryColor={design.secondaryColor}
                     backgroundId={design.settings.backgroundId}
-                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    photoSource={getProfileMediaSource(renderProfile?.photoPath)}
                     resumeProfile={docs.resumeProfile}
                     sections={sections}
                   />
                 ) : template.id === "klassisch" ? (
                   <KlassischResume
-                    profile={profile}
+                    profile={renderProfile}
                     name={name}
                     atsMode={isAtsMode}
                     plan={plan}
@@ -1285,13 +1304,13 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                     accentColor={design.accentColor}
                     secondaryColor={design.secondaryColor}
                     backgroundId={design.settings.backgroundId}
-                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    photoSource={getProfileMediaSource(renderProfile?.photoPath)}
                     resumeProfile={docs.resumeProfile}
                     sections={sections}
                   />
                 ) : template.id === "mehrspaltig" ? (
                   <MehrspaltigResume
-                    profile={profile}
+                    profile={renderProfile}
                     name={name}
                     atsMode={isAtsMode}
                     plan={plan}
@@ -1299,13 +1318,13 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                     accentColor={design.accentColor}
                     secondaryColor={design.secondaryColor}
                     backgroundId={design.settings.backgroundId}
-                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    photoSource={getProfileMediaSource(renderProfile?.photoPath)}
                     resumeProfile={docs.resumeProfile}
                     sections={sections}
                   />
                 ) : template.id === "ivy-league" ? (
                   <IvyLeagueResume
-                    profile={profile}
+                    profile={renderProfile}
                     name={name}
                     atsMode={isAtsMode}
                     plan={plan}
@@ -1318,92 +1337,92 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                   />
                 ) : template.id === "kreativ" ? (
                   <KreativResume
-                    profile={profile}
+                    profile={renderProfile}
                     name={name}
                     atsMode={isAtsMode}
                     plan={plan}
                     totalPages={resumePlan.length}
                     accentColor={design.accentColor}
                     secondaryColor={design.secondaryColor}
-                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    photoSource={getProfileMediaSource(renderProfile?.photoPath)}
                     resumeProfile={docs.resumeProfile}
                     sections={sections}
                   />
                 ) : template.id === "zeitgenoessisch" ? (
                   <ZeitgenoessischResume
-                    profile={profile}
+                    profile={renderProfile}
                     name={name}
                     atsMode={isAtsMode}
                     plan={plan}
                     totalPages={resumePlan.length}
                     accentColor={design.accentColor}
                     secondaryColor={design.secondaryColor}
-                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    photoSource={getProfileMediaSource(renderProfile?.photoPath)}
                     resumeProfile={docs.resumeProfile}
                     sections={sections}
                   />
                 ) : template.id === "zweispaltig" ? (
                   <ZweispaltigResume
-                    profile={profile}
+                    profile={renderProfile}
                     name={name}
                     atsMode={isAtsMode}
                     plan={plan}
                     totalPages={resumePlan.length}
                     accentColor={design.accentColor}
                     secondaryColor={design.secondaryColor}
-                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    photoSource={getProfileMediaSource(renderProfile?.photoPath)}
                     resumeProfile={docs.resumeProfile}
                     sections={sections}
                   />
                 ) : template.id === "gepflegt" ? (
                   <GepflegtResume
-                    profile={profile}
+                    profile={renderProfile}
                     name={name}
                     atsMode={isAtsMode}
                     plan={plan}
                     totalPages={resumePlan.length}
                     accentColor={design.accentColor}
                     secondaryColor={design.secondaryColor}
-                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    photoSource={getProfileMediaSource(renderProfile?.photoPath)}
                     resumeProfile={docs.resumeProfile}
                     sections={sections}
                   />
                 ) : template.id === "elegant" ? (
                   <ElegantResume
-                    profile={profile}
+                    profile={renderProfile}
                     name={name}
                     atsMode={isAtsMode}
                     plan={plan}
                     totalPages={resumePlan.length}
                     accentColor={design.accentColor}
                     secondaryColor={design.secondaryColor}
-                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    photoSource={getProfileMediaSource(renderProfile?.photoPath)}
                     resumeProfile={docs.resumeProfile}
                     sections={sections}
                   />
                 ) : template.id === "tabellarisch" ? (
                   <TabellarischResume
-                    profile={profile}
+                    profile={renderProfile}
                     name={name}
                     atsMode={isAtsMode}
                     plan={plan}
                     totalPages={resumePlan.length}
                     accentColor={design.accentColor}
                     secondaryColor={design.secondaryColor}
-                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    photoSource={getProfileMediaSource(renderProfile?.photoPath)}
                     resumeProfile={docs.resumeProfile}
                     sections={sections}
                   />
                 ) : template.id === "modern" ? (
                   <ModernResume
-                    profile={profile}
+                    profile={renderProfile}
                     name={name}
                     atsMode={isAtsMode}
                     plan={plan}
                     totalPages={resumePlan.length}
                     accentColor={design.accentColor}
                     secondaryColor={design.secondaryColor}
-                    photoSource={getProfileMediaSource(profile?.photoPath)}
+                    photoSource={getProfileMediaSource(renderProfile?.photoPath)}
                     resumeProfile={docs.resumeProfile}
                     sections={sections}
                   />
@@ -1414,7 +1433,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                     documents={docs}
                     name={name}
                     plan={plan}
-                    profile={profile}
+                    profile={renderProfile}
                     sections={sections}
                     totalPages={resumePlan.length}
                   />
