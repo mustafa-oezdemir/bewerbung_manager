@@ -9,6 +9,8 @@ import {
   Menu,
   MessageSquareText,
   Moon,
+  PanelLeftClose,
+  PanelLeftOpen,
   Plus,
   Search,
   Settings,
@@ -60,6 +62,9 @@ export default function App() {
   const [view, setView] = useState<View>("home");
   const [wizardOpen, setWizardOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    () => window.localStorage.getItem("sidebar-collapsed") === "true",
+  );
   const hydrate = useAppStore((state) => state.hydrate);
   const workspace = useAppStore((state) => state.workspace);
   const loading = useAppStore((state) => state.loading);
@@ -104,6 +109,13 @@ export default function App() {
     setSidebarOpen(false);
   }, [view]);
 
+  useEffect(() => {
+    window.localStorage.setItem(
+      "sidebar-collapsed",
+      String(sidebarCollapsed),
+    );
+  }, [sidebarCollapsed]);
+
   const counts = useMemo(
     () => ({
       active: workspace.applications.filter(
@@ -131,14 +143,29 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
+      <aside
+        className={`sidebar ${sidebarOpen ? "open" : ""} ${sidebarCollapsed ? "collapsed" : ""}`}>
         <div className="brand">
           <span>BM</span>
           <div><strong>Bewerbungs</strong><small>Manager</small></div>
           <button className="mobile-close" aria-label="Navigation schließen" onClick={() => setSidebarOpen(false)}><X size={18} /></button>
         </div>
-        <button className="button primary new-button" onClick={() => setWizardOpen(true)}>
-          <Plus size={18} /> Neue Bewerbung
+        <button
+          className="sidebar-collapse"
+          type="button"
+          aria-label={sidebarCollapsed ? "Navigation ausklappen" : "Navigation einklappen"}
+          aria-expanded={!sidebarCollapsed}
+          title={sidebarCollapsed ? "Navigation ausklappen" : "Navigation einklappen"}
+          onClick={() => setSidebarCollapsed((current) => !current)}>
+          {sidebarCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
+        </button>
+        <button
+          className="button primary new-button"
+          type="button"
+          aria-label="Neue Bewerbung"
+          title="Neue Bewerbung"
+          onClick={() => setWizardOpen(true)}>
+          <Plus size={18} /> <span>Neue Bewerbung</span>
         </button>
         <nav>
           <p>Übersicht</p>
@@ -159,7 +186,7 @@ export default function App() {
           <NavItem icon={Settings} label="Einstellungen" active={view === "settings"} onClick={() => setView("settings")} />
         </div>
       </aside>
-      <div className="main-shell">
+      <div className={`main-shell ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <header className="topbar">
           <div className="topbar-title">
             <button className="menu-button" aria-label="Navigation öffnen" onClick={() => setSidebarOpen(true)}><Menu size={20} /></button>
@@ -222,7 +249,10 @@ function NavItem({
   onClick: () => void;
 }) {
   return (
-    <button className={`nav-item ${active ? "active" : ""}`} onClick={onClick}>
+    <button
+      className={`nav-item ${active ? "active" : ""}`}
+      title={label}
+      onClick={onClick}>
       <Icon size={18} />
       <span>{label}</span>
       {badge !== undefined && <em>{badge}</em>}

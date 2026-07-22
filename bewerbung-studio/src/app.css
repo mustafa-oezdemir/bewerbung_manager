@@ -347,6 +347,10 @@ h3 {
     radial-gradient(circle at 20% 0%, rgba(95, 176, 164, 0.18), transparent 19rem),
     var(--sidebar);
   box-shadow: 12px 0 34px rgba(15, 32, 29, 0.12);
+  transition:
+    width 180ms ease,
+    padding 180ms ease,
+    transform 180ms ease;
 }
 
 .brand {
@@ -392,6 +396,27 @@ h3 {
   background: transparent;
 }
 
+.sidebar-collapse {
+  position: absolute;
+  top: 24px;
+  right: -14px;
+  z-index: 2;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
+  color: #e8f4f1;
+  background: var(--sidebar);
+  box-shadow: 0 6px 16px rgba(15, 32, 29, 0.24);
+}
+
+.sidebar-collapse:hover {
+  color: white;
+  background: #29433f;
+}
+
 .new-button {
   width: 100%;
   margin: 26px 0 22px;
@@ -402,7 +427,29 @@ h3 {
 
 .sidebar nav {
   display: grid;
+  min-height: 0;
+  flex: 1 1 auto;
+  align-content: start;
   gap: 3px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 3px;
+  scrollbar-color: rgba(143, 208, 198, 0.6) transparent;
+  scrollbar-width: thin;
+  overscroll-behavior: contain;
+}
+
+.sidebar nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar nav::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(143, 208, 198, 0.55);
+}
+
+.sidebar nav::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .sidebar nav > p {
@@ -463,7 +510,8 @@ h3 {
 .sidebar-footer {
   display: grid;
   gap: 3px;
-  margin-top: auto;
+  flex: 0 0 auto;
+  margin-top: 12px;
   padding-top: 15px;
   border-top: 1px solid rgba(255, 255, 255, 0.09);
 }
@@ -471,6 +519,59 @@ h3 {
 .main-shell {
   min-height: 100vh;
   margin-left: 252px;
+  transition: margin-left 180ms ease;
+}
+
+.sidebar.collapsed {
+  width: 76px;
+  padding-inline: 10px;
+}
+
+.sidebar.collapsed .brand {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.sidebar.collapsed .brand div,
+.sidebar.collapsed .new-button span,
+.sidebar.collapsed nav > p,
+.sidebar.collapsed .nav-item span,
+.sidebar.collapsed .nav-item em {
+  display: none;
+}
+
+.sidebar.collapsed .new-button {
+  width: 44px;
+  min-width: 44px;
+  margin-inline: auto;
+  padding-inline: 0;
+}
+
+.sidebar.collapsed .new-button svg {
+  margin: auto;
+}
+
+.sidebar.collapsed nav,
+.sidebar.collapsed .sidebar-footer {
+  padding-right: 0;
+}
+
+.sidebar.collapsed .nav-item {
+  display: grid;
+  width: 44px;
+  min-width: 44px;
+  margin-inline: auto;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  padding-inline: 0;
+}
+
+.sidebar.collapsed .nav-item.active {
+  box-shadow: inset 3px 0 #69b9ad;
+}
+
+.main-shell.sidebar-collapsed {
+  margin-left: 76px;
 }
 
 .topbar {
@@ -4441,6 +4542,47 @@ kbd {
     transition: transform 180ms ease;
   }
 
+  .sidebar.collapsed {
+    width: 252px;
+    padding: 24px 15px 18px;
+  }
+
+  .sidebar.collapsed .brand {
+    justify-content: flex-start;
+    padding: 0 9px;
+  }
+
+  .sidebar.collapsed .brand div,
+  .sidebar.collapsed .new-button span,
+  .sidebar.collapsed nav > p,
+  .sidebar.collapsed .nav-item span,
+  .sidebar.collapsed .nav-item em {
+    display: initial;
+  }
+
+  .sidebar.collapsed .brand div {
+    display: grid;
+  }
+
+  .sidebar.collapsed .new-button,
+  .sidebar.collapsed .nav-item {
+    width: 100%;
+  }
+
+  .sidebar.collapsed .new-button {
+    padding-inline: 14px;
+  }
+
+  .sidebar.collapsed .nav-item {
+    grid-template-columns: 22px 1fr auto;
+    justify-items: initial;
+    padding-inline: 11px;
+  }
+
+  .sidebar-collapse {
+    display: none;
+  }
+
   .sidebar.open {
     transform: translateX(0);
   }
@@ -4451,6 +4593,10 @@ kbd {
   }
 
   .main-shell {
+    margin-left: 0;
+  }
+
+  .main-shell.sidebar-collapsed {
     margin-left: 0;
   }
 
