@@ -32,6 +32,9 @@ export function StilvollPage({
   const isLastPage = plan.pageNumber === totalPages;
   const portfolio =
     profile?.portfolio || profile?.github || profile?.linkedin || "";
+  const portfolioHref = portfolio
+    ? toTemplateExternalHref(portfolio)
+    : "";
   if (atsMode) {
     return (
       <main className="stilvoll-ats" data-renderer="ats">
@@ -113,13 +116,15 @@ export function StilvollPage({
       </div>
       <footer className="stilvoll-footer" data-element-id="stilvoll.footer">
         {portfolio ? (
-          <a href={toTemplateExternalHref(portfolio)}>{portfolio}</a>
+          <a href={portfolioHref}>{portfolioHref}</a>
         ) : (
           <span />
         )}
-        <span>
-          Seite {plan.pageNumber} / {totalPages}
-        </span>
+        {totalPages > 1 ? (
+          <span>
+            Seite {plan.pageNumber} / {totalPages}
+          </span>
+        ) : null}
       </footer>
     </div>
   );

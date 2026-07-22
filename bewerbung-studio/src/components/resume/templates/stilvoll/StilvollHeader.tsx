@@ -45,7 +45,9 @@ export function StilvollHeader({
     },
     {
       icon: "↗",
-      value: profile?.linkedin,
+      value: profile?.linkedin
+        ? toTemplateExternalHref(profile.linkedin)
+        : "",
       href: profile?.linkedin
         ? toTemplateExternalHref(profile.linkedin)
         : "",

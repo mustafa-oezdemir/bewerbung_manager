@@ -880,6 +880,8 @@ describe("Lebenslauf-Dokumente", () => {
     const mediaProfile = profileSchema.parse({
       ...profile,
       photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      linkedin: "linkedin.com/in/mina-kaya",
+      portfolio: "mina.example.com",
       certifications: ["Professional Scrum Master I"],
     });
     const html = buildDocumentHtml(
@@ -895,6 +897,11 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).toContain('<img class="stilvoll-pdf-photo"');
     expect(body).toContain("Zusammenfassung");
     expect(body).toContain("Erfahrung");
+    expect(body).toContain(
+      'href="https://linkedin.com/in/mina-kaya"',
+    );
+    expect(body).toContain("https://mina.example.com");
+    expect(body).not.toContain("Seite 1 / 1");
   });
 
   it("renders Stilvoll ATS linearly without photo, chevrons, or rating dots", () => {
@@ -966,6 +973,8 @@ describe("Lebenslauf-Dokumente", () => {
     const mediaProfile = profileSchema.parse({
       ...profile,
       photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      linkedin: "linkedin.com/in/mina-kaya",
+      portfolio: "mina.example.com",
       certifications: ["Prozessqualität verbessert"],
     });
     const html = buildDocumentHtml(
@@ -976,10 +985,44 @@ describe("Lebenslauf-Dokumente", () => {
     const body = html.slice(html.indexOf("<body>"));
 
     expect(body).toContain('data-template="kompakt"');
+    expect(html).toContain(
+      ".kompakt-pdf .managed-pdf-background{z-index:-1",
+    );
     expect(body).toContain("kompakt-pdf-columns");
     expect(body).toContain('class="managed-pdf-background"');
     expect(body).toContain("kompakt-pdf-skills");
+    expect(body).toContain('class="kompakt-pdf-strength"');
+    expect(body).toContain('href="https://linkedin.com/in/mina-kaya"');
+    expect(body).toContain("https://mina.example.com");
+    expect(body).not.toContain("Seite 1 / 1");
     expect(body).not.toContain("<img");
+  });
+
+  it("omits empty Kompakt sidebar sections instead of leaving headings behind", () => {
+    const kompaktApplication = applicationSchema.parse({
+      ...application,
+      templateId: "kompakt",
+      designSettings: {
+        ...application.designSettings,
+        resumeOutputMode: "visual",
+        backgroundId: "abstract",
+      },
+    });
+    const emptySidebarProfile = profileSchema.parse({
+      ...profile,
+      skills: [],
+      certifications: [],
+    });
+    const html = buildDocumentHtml(
+      kompaktApplication,
+      emptySidebarProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).not.toContain("Stärken");
+    expect(body).not.toContain("Erfolge");
+    expect(body).not.toContain("Fähigkeiten");
   });
 
   it("renders Kompakt ATS without flow lines, skill tags, or rating dots", () => {

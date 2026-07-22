@@ -32,6 +32,9 @@ export function KompaktPage({
   const isLastPage = plan.pageNumber === totalPages;
   const portfolio =
     profile?.portfolio || profile?.github || profile?.linkedin || "";
+  const portfolioHref = portfolio
+    ? toTemplateExternalHref(portfolio)
+    : "";
 
   if (atsMode) {
     return (
@@ -115,13 +118,15 @@ export function KompaktPage({
       </div>
       <footer className="kompakt-footer" data-element-id="kompakt.footer">
         {portfolio ? (
-          <a href={toTemplateExternalHref(portfolio)}>{portfolio}</a>
+          <a href={portfolioHref}>{portfolioHref}</a>
         ) : (
           <span />
         )}
-        <span>
-          Seite {plan.pageNumber} / {totalPages}
-        </span>
+        {totalPages > 1 ? (
+          <span>
+            Seite {plan.pageNumber} / {totalPages}
+          </span>
+        ) : null}
       </footer>
     </div>
   );

@@ -134,6 +134,9 @@ describe("Stilvoll rendering", () => {
     expect(markup).toContain("stilvoll-background");
     expect(markup).toContain("stilvoll-left");
     expect(markup).toContain("stilvoll-main");
+    expect(markup).toContain('href="https://linkedin.com/in/lena"');
+    expect(markup).toContain("https://lena.example.com");
+    expect(markup).not.toContain("Seite 1 / 1");
     expect(markup).toContain("<img");
   });
 
@@ -203,6 +206,9 @@ describe("Kompakt rendering", () => {
     expect(markup).toContain("kompakt-left");
     expect(markup).toContain("kompakt-right");
     expect(markup).toContain("kompakt-skills");
+    expect(markup).toContain('href="https://linkedin.com/in/lena"');
+    expect(markup).toContain("https://lena.example.com");
+    expect(markup).not.toContain("Seite 1 / 1");
     expect(markup).not.toContain("<img");
   });
 

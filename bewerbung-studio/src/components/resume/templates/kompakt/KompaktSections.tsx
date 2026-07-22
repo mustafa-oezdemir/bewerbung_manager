@@ -63,6 +63,13 @@ const contactRows = (profile: ApplicantProfile | undefined) => {
   const location = [profile?.city, profile?.country]
     .filter(Boolean)
     .join(", ");
+  const linkedin = profile?.linkedin
+    ? toTemplateExternalHref(profile.linkedin)
+    : "";
+  const websiteSource = profile?.portfolio || profile?.github || "";
+  const website = websiteSource
+    ? toTemplateExternalHref(websiteSource)
+    : "";
   const birth =
     profile?.birthDate || profile?.birthPlace
       ? `Geb. ${profile?.birthDate || ""}${profile?.birthPlace ? ` in ${profile.birthPlace}` : ""}`.trim()
@@ -82,20 +89,13 @@ const contactRows = (profile: ApplicantProfile | undefined) => {
     },
     {
       icon: "∞",
-      value: profile?.linkedin,
-      href: profile?.linkedin
-        ? toTemplateExternalHref(profile.linkedin)
-        : "",
+      value: linkedin,
+      href: linkedin,
     },
     {
       icon: "⌖",
-      value: profile?.portfolio || profile?.github,
-      href:
-        profile?.portfolio || profile?.github
-          ? toTemplateExternalHref(
-              profile?.portfolio || profile?.github || "",
-            )
-          : "",
+      value: website,
+      href: website,
     },
     { icon: "◆", value: location, href: "" },
     { icon: "★", value: birth, href: "" },

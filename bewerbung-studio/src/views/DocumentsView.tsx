@@ -39,6 +39,7 @@ import {
   kreativPaginationOptions,
   gepflegtPaginationOptions,
   modernPaginationOptions,
+  stilvollPaginationOptions,
   tabellarischPaginationOptions,
   type ResumePagePlan,
   zeitgenoessischPaginationOptions,
@@ -380,6 +381,8 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
               ? zeitgenoessischPaginationOptions
               : template.id === "ivy-league"
                 ? ivyLeaguePaginationOptions
+                : template.id === "stilvoll"
+                  ? stilvollPaginationOptions
                 : template.id === "tabellarisch"
                   ? tabellarischPaginationOptions
                   : template.id === "modern"

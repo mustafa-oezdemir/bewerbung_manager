@@ -39,8 +39,9 @@ export const zweispaltigPaginationOptions: ResumePaginationOptions = {
 };
 
 export const kompaktPaginationOptions: ResumePaginationOptions = {
-  firstPageCapacity: 43,
-  secondPageCapacity: 46,
+  firstPageCapacity: 50,
+  secondPageCapacity: 54,
+  preserveItemOrder: true,
 };
 
 export const kreativPaginationOptions: ResumePaginationOptions = {
@@ -74,6 +75,12 @@ export const zeitgenoessischPaginationOptions: ResumePaginationOptions = {
 };
 
 export const ivyLeaguePaginationOptions: ResumePaginationOptions = {
+  firstPageCapacity: 50,
+  secondPageCapacity: 54,
+  preserveItemOrder: true,
+};
+
+export const stilvollPaginationOptions: ResumePaginationOptions = {
   firstPageCapacity: 50,
   secondPageCapacity: 54,
   preserveItemOrder: true,
