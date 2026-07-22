@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { profileSchema } from "./schema";
 import {
   createResumePagePlan,
+  gepflegtPaginationOptions,
   getLetterPageStatus,
   kreativPaginationOptions,
   modernPaginationOptions,
@@ -97,7 +98,7 @@ describe("A4 document pagination", () => {
     ).toHaveLength(1);
   });
 
-  it("keeps long one-page Modern, Kreativ, and Zweispaltig profiles together", () => {
+  it("keeps long one-page visual-template profiles together", () => {
     const profile = profileSchema.parse({
       id: crypto.randomUUID(),
       isDefault: true,
@@ -164,6 +165,16 @@ describe("A4 document pagination", () => {
     expect(tabellarischPlan).toHaveLength(1);
     expect(tabellarischPlan[0].items).toHaveLength(6);
     expect(tabellarischPlan[0].density).toBe("compact");
+
+    const gepflegtPlan = createResumePagePlan(
+      profile,
+      "",
+      gepflegtPaginationOptions,
+    );
+
+    expect(gepflegtPlan).toHaveLength(1);
+    expect(gepflegtPlan[0].items).toHaveLength(6);
+    expect(gepflegtPlan[0].density).toBe("compact");
   });
 
   it("keeps Modern career items in reading order after a page split", () => {

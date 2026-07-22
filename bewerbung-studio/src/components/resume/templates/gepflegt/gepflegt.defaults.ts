@@ -1,125 +1,57 @@
-/**
- * Gepflegt template default values and design tokens
- * Per z_Gepflegt.md specification - Business-focused sidebar template
- */
-
 export const gepflegtDefaults = {
-  // Page dimensions (A4)
   page: {
     widthMm: 210,
     heightMm: 297,
   },
-
-  // Margins (mm) - outer page margins
-  margins: {
-    topMm: 16,
-    rightMm: 17,
-    bottomMm: 14,
-    leftMm: 17,
+  layout: {
+    sidebarWidthMm: 72,
+    topBarHeightMm: 3.5,
   },
-
-  // Sidebar layout (left column with dark teal background)
   sidebar: {
-    widthPercentage: 0.295, // 29.5% of page width (~62mm of 210mm)
-    minWidthPercentage: 0.27, // 27% minimum per spec
-    maxWidthPercentage: 0.31, // 31% maximum per spec
-    paddingTopMm: 3,
-    paddingRightMm: 3,
-    paddingBottomMm: 3,
-    paddingLeftMm: 3,
+    paddingTopMm: 9,
+    paddingRightMm: 10,
+    paddingBottomMm: 13,
+    paddingLeftMm: 10,
+    photoSizeMm: 26,
   },
-
-  // Main content area (right column)
   main: {
-    paddingTopMm: 3,
-    paddingRightMm: 3.5,
-    paddingBottomMm: 3,
-    paddingLeftMm: 3.5,
+    paddingTopMm: 9,
+    paddingRightMm: 10,
+    paddingBottomMm: 13,
+    paddingLeftMm: 9,
   },
-
-  // Header section (name, profession, contact)
-  header: {
-    paddingBottomMm: 4,
-    nameBelowProfessionGapMm: 1.5,
-    photoSizeMm: 55, // Square photo in sidebar, 55x55mm
-    photoRadiusPercent: 8, // 8px border-radius for slight rounding
-  },
-
-  // Spacing
   spacing: {
-    sectionGapMm: 5.5, // mm between sections
-    entryGapMm: 4, // mm between experience/education entries
-    itemGapMm: 1.5, // mm between inline items
+    sectionGapMm: 7,
+    entryGapMm: 4.5,
   },
-
-  // Colors per z_Gepflegt.md specification
   colors: {
-    // Sidebar (linke Farbfläche)
-    sidebarBackground: "#087875", // Dark teal/turquoise
-    sidebarText: "#FFFFFF", // White text on sidebar
-
-    // Text colors for main content
-    heading: "#354147", // Dark gray for headings
-    text: "#3F494E", // Medium gray for body text
-
-    // Accent and divider
-    accent: "#00B8B5", // Bright turquoise for accents
-    divider: "#C7CED1", // Light gray for dividers
-
-    // Background
-    pageBackground: "#FFFFFF", // White page background
+    sidebarBackground: "#087875",
+    sidebarTopBar: "#005B59",
+    sidebarText: "#FFFFFF",
+    sidebarMutedText: "#D8F0EF",
+    accent: "#00B8B5",
+    heading: "#354147",
+    text: "#3F494E",
+    mutedText: "#657075",
+    divider: "#C7CED1",
+    pageBackground: "#FFFFFF",
   },
-
-  // Typography (all sizes in points)
   typography: {
     fontFamily: '"Source Sans 3", "Segoe UI", Arial, sans-serif',
-
-    // Heading sizes
-    nameSizePt: 18,
+    nameSizePt: 24,
     nameWeight: 750,
-
-    jobTitleSizePt: 12,
-    jobTitleWeight: 600,
-
-    sectionTitleSizePt: 11,
-    sectionTitleWeight: 750, // Bold for sidebar section titles
-
-    entryTitleSizePt: 10.5,
-    entryTitleWeight: 600, // Company/role title
-
-    // Body text
-    bodySizePt: 9.2,
-    bodyWeight: 400,
-    bodyLineHeight: 1.4,
-
-    // Small text (location, meta)
-    smallSizePt: 8.4,
-    smallWeight: 400,
-    smallLineHeight: 1.3,
+    jobTitleSizePt: 13.5,
+    sectionTitleSizePt: 14.5,
+    sidebarTitleSizePt: 12.5,
+    entryTitleSizePt: 11.5,
+    bodySizePt: 8.8,
+    smallSizePt: 8,
+    bodyLineHeight: 1.28,
   },
-
-  // Section defaults (can be reordered in UI)
-  sidebar_sections: {
-    default_order: [
-      "photo",
-      "zusammenfassung",
-      "sprachen",
-      "fähigkeiten",
-      "stärken",
-    ],
-  },
-
-  // Output modes
   output: {
     supportsAtsMode: true,
     supportsVisualMode: true,
     supportsFreeform: true,
-  },
-
-  // Multi-page behavior
-  multipage: {
-    sidebarContinuationMode: "repeat" as const, // 'repeat' | 'first-page-only' | 'compact'
-    orphanSectionHeaderLines: 2, // Don't orphan section header at bottom
   },
 };
 

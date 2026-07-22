@@ -1328,4 +1328,96 @@ describe("Lebenslauf-Dokumente", () => {
       body.indexOf("Erfahrung"),
     );
   });
+
+  it("renders Gepflegt with its dedicated teal sidebar PDF layout", () => {
+    const gepflegtApplication = applicationSchema.parse({
+      ...application,
+      templateId: "gepflegt",
+      accentColor: "#00B8B5",
+      secondaryColor: "#087875",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "left-sidebar",
+        resumeOutputMode: "visual",
+        backgroundId: "white",
+      },
+    });
+    const gepflegtProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      linkedin: "https://www.linkedin.com/in/mina-kaya/",
+      skills: [
+        "Kundenorientierung: Anforderungen in belastbare Lösungen übersetzt",
+        "Mentorship: Neue Teammitglieder strukturiert eingearbeitet",
+      ],
+      experiences: Array.from({ length: 3 }, (_, index) => ({
+        id: crypto.randomUUID(),
+        from: `${2012 + index * 4}`,
+        to: `${2016 + index * 4}`,
+        role: `Projektrolle ${index + 1}`,
+        company: `Unternehmen ${index + 1}`,
+        city: "Berlin",
+        achievements: Array.from(
+          { length: 3 },
+          (_, achievementIndex) =>
+            `Messbares Projektergebnis ${achievementIndex + 1} erfolgreich erreicht.`,
+        ),
+      })),
+      education: Array.from({ length: 3 }, (_, index) => ({
+        id: crypto.randomUUID(),
+        from: `${2006 + index * 2}`,
+        to: `${2008 + index * 2}`,
+        degree: `Abschluss ${index + 1}`,
+        institution: `Hochschule ${index + 1}`,
+        city: "Berlin",
+      })),
+    });
+    const html = buildDocumentHtml(
+      gepflegtApplication,
+      gepflegtProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body.match(/data-resume-page="/g)).toHaveLength(1);
+    expect(body).toContain('data-template="gepflegt"');
+    expect(body).toContain("gepflegt-pdf-sidebar");
+    expect(body).toContain("gepflegt-pdf-photo");
+    expect(body).toContain("gepflegt-pdf-contacts");
+    expect(body).toContain("gepflegt-pdf-strengths");
+    expect(body).toContain("https://www.linkedin.com/in/mina-kaya/");
+    expect(body.indexOf(">Zusammenfassung<")).toBeLessThan(
+      body.indexOf(">Stärken<"),
+    );
+    expect(body.indexOf(">Erfahrung<")).toBeLessThan(
+      body.indexOf(">Ausbildung<"),
+    );
+  });
+
+  it("renders Gepflegt ATS without a sidebar, photo, or icons", () => {
+    const gepflegtApplication = applicationSchema.parse({
+      ...application,
+      templateId: "gepflegt",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "compact-ats",
+        resumeOutputMode: "ats",
+      },
+    });
+    const mediaProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+    });
+    const html = buildDocumentHtml(
+      gepflegtApplication,
+      mediaProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain("gepflegt-pdf-ats");
+    expect(body).not.toContain("gepflegt-pdf-sidebar");
+    expect(body).not.toContain("gepflegt-pdf-photo");
+    expect(body).not.toContain("<svg");
+  });
 });

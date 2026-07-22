@@ -1,6 +1,7 @@
 import type { ApplicantProfile, Application } from "../src/shared/schema";
 import {
   createResumePagePlan,
+  gepflegtPaginationOptions,
   getLetterPageStatus,
   kompaktPaginationOptions,
   kreativPaginationOptions,
@@ -521,6 +522,18 @@ const modernDocumentCss = `
   @media print{.no-print-background .modern-pdf-background{display:none!important}}
 `;
 
+const gepflegtDocumentCss = `
+  .gepflegt-pdf{--gepflegt-sidebar:var(--secondary);--gepflegt-accent:var(--accent);--gepflegt-heading:#354147;--gepflegt-text:#3f494e;--gepflegt-muted:#657075;--gepflegt-divider:#c7ced1;--gepflegt-sidebar-text:#fff;--gepflegt-sidebar-muted:#d8f0ef;--gepflegt-sidebar-width:72mm;--gepflegt-section-gap:7mm;--gepflegt-entry-gap:4.5mm;position:relative;display:grid;grid-template-columns:var(--gepflegt-sidebar-width) minmax(0,1fr);width:100%;height:100%;overflow:hidden;color:var(--gepflegt-text);background:#fff;font-family:var(--body-font);font-size:8.8pt;line-height:1.28}
+  .gepflegt-pdf *{box-sizing:border-box}.gepflegt-pdf a{color:inherit;text-decoration:none}.gepflegt-pdf:before{position:absolute;top:0;right:0;left:0;z-index:4;height:3.5mm;background:color-mix(in srgb,var(--gepflegt-sidebar),#003f3e 32%);content:""}
+  .gepflegt-pdf-sidebar{min-width:0;height:100%;overflow:hidden;padding:9mm 10mm 13mm;color:var(--gepflegt-sidebar-text);background:var(--gepflegt-sidebar)}.gepflegt-pdf-photo{display:block;width:26mm;height:26mm;margin:0 auto 16mm;border-radius:1.5mm;background:rgba(255,255,255,.16);object-fit:cover}.gepflegt-pdf-sidebar section{margin:0 0 8.5mm;break-inside:avoid}.gepflegt-pdf-sidebar h3{margin:0 0 3.5mm;padding:0 0 2.2mm;border-bottom:.35mm solid rgba(255,255,255,.78);color:var(--gepflegt-sidebar-text);font-size:12.5pt;font-weight:500;letter-spacing:.01em;line-height:1.05;text-transform:uppercase}.gepflegt-pdf-summary,.gepflegt-pdf-knowledge{margin:0;color:var(--gepflegt-sidebar-text);font-size:8.8pt;line-height:1.3;hyphens:auto;overflow-wrap:break-word}
+  .gepflegt-pdf-strengths{display:flex;flex-direction:column;gap:5mm}.gepflegt-pdf-strength{display:grid;grid-template-columns:5.5mm minmax(0,1fr);gap:2mm;align-items:start}.gepflegt-pdf-strength svg{width:4mm;height:4mm;margin-top:.4mm;fill:none;stroke:var(--gepflegt-sidebar-text);stroke-linecap:round;stroke-linejoin:round;stroke-width:2.3}.gepflegt-pdf-strength h4{margin:0 0 1.5mm;color:var(--gepflegt-sidebar-text);font-size:10.2pt;font-weight:600;line-height:1.15}.gepflegt-pdf-strength p{margin:0;color:var(--gepflegt-sidebar-muted);font-size:8.5pt;line-height:1.28;hyphens:auto}.gepflegt-pdf-languages{display:flex;flex-direction:column;gap:3.2mm}.gepflegt-pdf-language{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2.5mm;align-items:center}.gepflegt-pdf-language>div{display:flex;min-width:0;justify-content:space-between;gap:2mm}.gepflegt-pdf-language strong,.gepflegt-pdf-language span{font-size:8.6pt;font-weight:400}.gepflegt-pdf-language em{color:var(--gepflegt-sidebar-muted);font-style:normal}.gepflegt-pdf-dots{display:flex;gap:1.05mm}.gepflegt-pdf-dots i{width:1.7mm;height:1.7mm;border:.3mm solid rgba(255,255,255,.7);border-radius:50%}.gepflegt-pdf-dots i.filled{border-color:#fff;background:#fff}.gepflegt-pdf-certifications{margin:0;padding-left:4mm}.gepflegt-pdf-certifications li{margin:0 0 1.3mm;padding-left:.7mm;color:var(--gepflegt-sidebar-text);font-size:8.5pt;line-height:1.25}
+  .gepflegt-pdf-content{position:relative;min-width:0;height:100%;overflow:hidden;padding:9mm 10mm 13mm 9mm}.gepflegt-pdf-header{min-width:0;margin:0 0 12mm}.gepflegt-pdf-header h1{margin:0;color:var(--gepflegt-heading);font-family:var(--heading-font);font-size:24pt;font-weight:750;letter-spacing:.005em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.gepflegt-pdf-header h2{max-width:120mm;margin:2.4mm 0 0;color:var(--gepflegt-accent);font-size:13.5pt;font-weight:500;line-height:1.15;overflow-wrap:break-word}.gepflegt-pdf-contacts{display:flex;flex-wrap:wrap;gap:2.1mm 4mm;margin:4mm 0 0;color:var(--gepflegt-text);font-size:8.2pt;font-style:normal;font-weight:500;line-height:1.2}.gepflegt-pdf-contact{display:inline-flex;min-width:0;max-width:90mm;align-items:center;gap:1.4mm}.gepflegt-pdf-contact svg{width:3.4mm;height:3.4mm;flex:0 0 auto;fill:none;stroke:#b9bec0;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.7}.gepflegt-pdf-contact span{min-width:0;overflow-wrap:anywhere;white-space:nowrap}
+  .gepflegt-pdf-main{display:flex;min-width:0;flex-direction:column;gap:var(--gepflegt-section-gap)}.gepflegt-pdf-section{min-width:0;break-inside:auto}.gepflegt-pdf-title{margin:0 0 3.6mm;padding:0 0 2.2mm;border-bottom:.35mm solid var(--gepflegt-divider);color:var(--gepflegt-heading);font-family:var(--heading-font);font-size:14.5pt;font-weight:500;letter-spacing:.015em;line-height:1;text-transform:uppercase;break-after:avoid}.gepflegt-pdf-list{display:flex;flex-direction:column;gap:var(--gepflegt-entry-gap)}.gepflegt-pdf-entry{min-width:0;break-inside:avoid}.gepflegt-pdf-entry-heading,.gepflegt-pdf-entry-subheading{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5mm;align-items:baseline}.gepflegt-pdf-entry-heading h4{min-width:0;margin:0;color:var(--gepflegt-heading);font-size:11.5pt;font-weight:500;line-height:1.15;overflow-wrap:anywhere}.gepflegt-pdf-entry-heading span,.gepflegt-pdf-entry-subheading span{max-width:31mm;color:var(--gepflegt-text);font-size:8.8pt;line-height:1.15;text-align:right}.gepflegt-pdf-entry-subheading{margin-top:1.5mm}.gepflegt-pdf-entry-subheading strong{color:var(--gepflegt-accent);font-size:9.8pt;font-weight:600;line-height:1.15;overflow-wrap:anywhere}.gepflegt-pdf-entry ul{margin:2mm 0 0;padding-left:4.8mm}.gepflegt-pdf-entry li{margin:.45mm 0;padding-left:.6mm;color:var(--gepflegt-text);font-size:8.8pt;line-height:1.28;hyphens:auto;overflow-wrap:break-word}
+  .gepflegt-pdf-footer{position:absolute;right:10mm;bottom:5.5mm;left:9mm;display:flex;justify-content:flex-end;gap:8mm;color:var(--gepflegt-muted);font-size:7.2pt}.gepflegt-pdf-footer span:first-child{margin-right:auto}.gepflegt-pdf-sidebar-continuation{display:flex;align-items:center}.gepflegt-pdf-sidebar-continuation p,.gepflegt-pdf-sidebar-continuation h2,.gepflegt-pdf-sidebar-continuation span,.gepflegt-pdf-sidebar-continuation small{display:block;margin:0}.gepflegt-pdf-sidebar-continuation p{font-size:8pt;letter-spacing:.12em;text-transform:uppercase}.gepflegt-pdf-sidebar-continuation h2{margin-top:2mm;color:#fff;font-size:16pt;line-height:1.05;text-transform:uppercase}.gepflegt-pdf-sidebar-continuation span{margin-top:2mm;color:var(--gepflegt-sidebar-muted)}.gepflegt-pdf-sidebar-continuation i{display:block;width:16mm;height:.5mm;margin:8mm 0;background:#fff}.gepflegt-pdf-header.compact{margin-bottom:8mm;padding-bottom:3mm;border-bottom:.35mm solid var(--gepflegt-divider)}.gepflegt-pdf-header.compact .kicker{margin:0 0 1mm;color:var(--gepflegt-accent);font-size:7.3pt}.gepflegt-pdf-header.compact h1{font-size:16pt}.gepflegt-pdf-header.compact h2{margin-top:1mm;font-size:9.5pt}
+  .gepflegt-pdf[data-density="compact"]{--gepflegt-section-gap:5.7mm;--gepflegt-entry-gap:3.6mm;font-size:8.35pt;line-height:1.23}.gepflegt-pdf[data-density="compact"] .gepflegt-pdf-header{margin-bottom:9mm}.gepflegt-pdf[data-density="compact"] .gepflegt-pdf-sidebar section{margin-bottom:6.5mm}.gepflegt-pdf[data-density="compact"] .gepflegt-pdf-entry li{font-size:8.35pt;line-height:1.23}.gepflegt-pdf[data-density="dense"]{--gepflegt-section-gap:4.4mm;--gepflegt-entry-gap:2.8mm;font-size:7.8pt;line-height:1.18}.gepflegt-pdf[data-density="dense"] .gepflegt-pdf-header{margin-bottom:7mm}.gepflegt-pdf[data-density="dense"] .gepflegt-pdf-photo{margin-bottom:10mm}.gepflegt-pdf[data-density="dense"] .gepflegt-pdf-sidebar section{margin-bottom:5mm}.gepflegt-pdf[data-density="dense"] .gepflegt-pdf-entry li{font-size:7.8pt;line-height:1.18}
+  .gepflegt-pdf-ats{display:block;padding:14mm 16mm 16mm;background:#fff;font-family:Arial,sans-serif}.gepflegt-pdf-ats:before{display:none}.gepflegt-pdf-ats .gepflegt-pdf-header{margin-bottom:6mm;padding-bottom:3mm;border-bottom:.35mm solid var(--gepflegt-divider)}.gepflegt-pdf-ats .gepflegt-pdf-header h1{font-size:20pt}.gepflegt-pdf-ats .gepflegt-pdf-header h2{color:var(--gepflegt-heading);font-size:10.5pt}.gepflegt-pdf-ats .gepflegt-pdf-contacts{gap:1mm 5mm;margin-top:2mm}.gepflegt-pdf-ats .gepflegt-pdf-contact{max-width:none}.gepflegt-pdf-ats-summary{margin-bottom:var(--gepflegt-section-gap)}.gepflegt-pdf-ats-summary p{margin:0}.gepflegt-pdf-ats-extra{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5mm 10mm;margin-top:var(--gepflegt-section-gap)}.gepflegt-pdf-ats-extra section{margin:0}.gepflegt-pdf-ats-extra h3{margin:0 0 2mm;padding-bottom:1.5mm;border-bottom:.35mm solid var(--gepflegt-divider);color:var(--gepflegt-heading);font-size:10.5pt;text-transform:uppercase}.gepflegt-pdf-ats-extra p,.gepflegt-pdf-ats-extra li{font-size:8.5pt}.gepflegt-pdf-ats-extra ul{margin:0;padding-left:4mm}
+`;
+
 const tabellarischDocumentCss = `
   .tabellarisch-pdf{--tab-primary:var(--secondary);--tab-accent:var(--accent);--tab-text:#3f4850;--tab-muted:#6d747a;--tab-line:#c8cdd1;--tab-margin:max(15mm,var(--doc-margin));--tab-section-gap:max(6.3mm,var(--section-gap));--tab-entry-gap:4.4mm;position:relative;width:100%;height:100%;overflow:hidden;color:var(--tab-text);background:#fff;font-family:var(--body-font);font-size:max(8.7pt,var(--body-size));line-height:max(1.28,var(--body-line))}
   .tabellarisch-pdf *{box-sizing:border-box}.tabellarisch-pdf a{color:inherit;text-decoration:none}.tabellarisch-pdf-content{position:relative;z-index:2;height:100%;padding:max(15mm,var(--doc-margin)) var(--tab-margin) max(19mm,calc(var(--doc-margin) + 5mm))}
@@ -690,11 +703,13 @@ export const buildDocumentHtml = (
         ? kompaktPaginationOptions
         : template.id === "kreativ"
           ? kreativPaginationOptions
-        : template.id === "tabellarisch"
-          ? tabellarischPaginationOptions
-        : template.id === "modern"
-          ? modernPaginationOptions
-        : undefined,
+          : template.id === "gepflegt"
+            ? gepflegtPaginationOptions
+            : template.id === "tabellarisch"
+              ? tabellarischPaginationOptions
+              : template.id === "modern"
+                ? modernPaginationOptions
+                : undefined,
   );
 
   const renderExperience = (id: string) => {
@@ -2711,6 +2726,270 @@ export const buildDocumentHtml = (
     return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="tabellarisch" data-no-fit="true"><div class="page-content tabellarisch-pdf" data-density="${plan.density}">${!isContinuation ? tabellarischBackground : ""}<div class="tabellarisch-pdf-content">${header}${summary}${strengths}${experience}${education}${additional}</div>${tabellarischFooter(plan)}</div></section>`;
   };
 
+  const gepflegtIconMarkup = (
+    kind: "phone" | "mail" | "link" | "location" | "strength",
+  ) => {
+    const paths = {
+      phone:
+        '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.6 1.9Z"/>',
+      mail: '<circle cx="12" cy="12" r="9"/><path d="M16 8v5a2 2 0 0 0 4 0v-1a8 8 0 1 0-3.3 6.5"/><circle cx="12" cy="12" r="3"/>',
+      link: '<path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/>',
+      location:
+        '<path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+      strength:
+        '<path d="M9 18h6M10 22h4M8.5 14.5A6 6 0 1 1 15.5 14.5c-1 .7-1.5 1.5-1.5 2.5h-4c0-1-.5-1.8-1.5-2.5Z"/>',
+    } as const;
+    return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[kind]}</svg>`;
+  };
+  const gepflegtLocation = [profile?.city, profile?.country]
+    .filter(Boolean)
+    .join(", ");
+  const gepflegtProfessionalLink =
+    profile?.linkedin || profile?.github || profile?.portfolio || "";
+  const gepflegtContacts = [
+    {
+      icon: gepflegtIconMarkup("phone"),
+      value: profile?.phone || "",
+      href: profile?.phone
+        ? `tel:${profile.phone.replace(/[^\d+]/g, "")}`
+        : "",
+    },
+    {
+      icon: gepflegtIconMarkup("mail"),
+      value: profile?.email || "",
+      href: profile?.email ? `mailto:${profile.email}` : "",
+    },
+    {
+      icon: gepflegtIconMarkup("link"),
+      value: externalHref(gepflegtProfessionalLink),
+      href: externalHref(gepflegtProfessionalLink),
+    },
+    {
+      icon: gepflegtIconMarkup("location"),
+      value: gepflegtLocation,
+      href: "",
+    },
+  ].filter((contact) => contact.value.trim());
+  const gepflegtContactMarkup = (ats = false) =>
+    gepflegtContacts.length
+      ? `<address class="gepflegt-pdf-contacts">${gepflegtContacts
+          .map((contact) => {
+            const value = `<span>${escapeHtml(contact.value)}</span>`;
+            const content = `${ats ? "" : contact.icon}${value}`;
+            return contact.href
+              ? `<a class="gepflegt-pdf-contact" href="${escapeHtml(contact.href)}">${content}</a>`
+              : `<span class="gepflegt-pdf-contact">${content}</span>`;
+          })
+          .join("")}</address>`
+      : "";
+  const gepflegtSummary =
+    docs.resumeProfile || profile?.summary ||
+    "Kurzprofil im Dokumenteditor ergänzen.";
+  const gepflegtStrengths = uniqueValues(profile?.skills ?? [])
+    .slice(0, 3)
+    .map((raw) => {
+      const [title, ...description] = raw.split(
+        /\s+(?:\u2013|\u2014|:)\s+/,
+      );
+      return {
+        title: title.trim(),
+        description: description.join(" - ").trim(),
+      };
+    });
+  const gepflegtKnowledge = profile
+    ? uniqueValues(
+        ensureKnowledgeSection(profile.knowledgeSection, profile.skills)
+          .categories.filter((category) => category.isVisible)
+          .sort((left, right) => left.sortOrder - right.sortOrder)
+          .flatMap((category) => [
+            ...visibleKnowledgeItems(category.items).map((item) =>
+              formatKnowledgeItem(
+                item,
+                category.showLevels,
+                category.showYearsOfExperience,
+                "comma-separated",
+              ),
+            ),
+            ...category.subcategories
+              .filter((subcategory) => subcategory.isVisible)
+              .sort((left, right) => left.sortOrder - right.sortOrder)
+              .flatMap((subcategory) =>
+                visibleKnowledgeItems(subcategory.items).map((item) =>
+                  formatKnowledgeItem(
+                    item,
+                    category.showLevels,
+                    category.showYearsOfExperience,
+                    "comma-separated",
+                  ),
+                ),
+              ),
+          ]),
+      )
+    : [];
+  const gepflegtLanguageScore = (level: string) => {
+    const normalized = level.toLocaleLowerCase("de-DE");
+    if (/muttersprache|native|c2/.test(normalized)) return 5;
+    if (/verhandlung|fließ|fliess|c1/.test(normalized)) return 4;
+    if (/b2|fortgeschritten|versiert/.test(normalized)) return 3;
+    if (/b1|a2|grundkennt/.test(normalized)) return 2;
+    if (/a1|anfänger|anfaenger/.test(normalized)) return 1;
+    return 3;
+  };
+  const gepflegtLanguages = uniqueValues(profile?.languages ?? []).map(
+    (raw) => {
+      const [languageName, ...levelParts] = raw.split(
+        /\s+(?:\u2013|\u2014|-)\s+/,
+      );
+      const level = levelParts.join(" - ").trim();
+      return {
+        raw,
+        name: languageName.trim() || raw,
+        level,
+        score: gepflegtLanguageScore(level),
+      };
+    },
+  );
+  const gepflegtCertifications = uniqueValues(
+    profile?.certifications ?? [],
+  );
+  const gepflegtStrengthMarkup = (ats = false) => {
+    if (!sections.skills || !gepflegtStrengths.length) return "";
+    if (ats) {
+      return `<section><h3>Stärken</h3><ul>${gepflegtStrengths
+        .map(
+          (strength) =>
+            `<li><strong>${escapeHtml(strength.title)}</strong>${strength.description ? ` - ${escapeHtml(strength.description)}` : ""}</li>`,
+        )
+        .join("")}</ul></section>`;
+    }
+    return `<section><h3>Stärken</h3><div class="gepflegt-pdf-strengths">${gepflegtStrengths
+      .map(
+        (strength) =>
+          `<article class="gepflegt-pdf-strength">${gepflegtIconMarkup("strength")}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+      )
+      .join("")}</div></section>`;
+  };
+  const gepflegtLanguageMarkup = (ats = false) => {
+    if (!sections.languages || !gepflegtLanguages.length) return "";
+    if (ats) {
+      return `<section><h3>Sprachen</h3><ul>${gepflegtLanguages
+        .map((language) => `<li>${escapeHtml(language.raw)}</li>`)
+        .join("")}</ul></section>`;
+    }
+    return `<section><h3>Sprachen</h3><div class="gepflegt-pdf-languages">${gepflegtLanguages
+      .map(
+        (language) =>
+          `<div class="gepflegt-pdf-language"><div><strong>${escapeHtml(language.name)}</strong><em>${escapeHtml(language.level)}</em></div><span class="gepflegt-pdf-dots">${Array.from(
+            { length: 5 },
+            (_, index) =>
+              `<i class="${index < language.score ? "filled" : ""}"></i>`,
+          ).join("")}</span></div>`,
+      )
+      .join("")}</div></section>`;
+  };
+  const gepflegtKnowledgeMarkup = (ats = false) =>
+    sections.skills && gepflegtKnowledge.length
+      ? `<section><h3>Fähigkeiten</h3><p class="${ats ? "" : "gepflegt-pdf-knowledge"}">${gepflegtKnowledge.map(escapeHtml).join(" · ")}</p></section>`
+      : "";
+  const gepflegtCertificationMarkup = (ats = false) =>
+    sections.certifications && gepflegtCertifications.length
+      ? `<section><h3>Zertifikate</h3><ul class="${ats ? "" : "gepflegt-pdf-certifications"}">${gepflegtCertifications
+          .map((certification) => `<li>${escapeHtml(certification)}</li>`)
+          .join("")}</ul></section>`
+      : "";
+  const renderGepflegtHeader = (compact = false, ats = false) => `
+    <header class="gepflegt-pdf-header${compact ? " compact" : ""}">
+      ${compact ? '<p class="kicker">Lebenslauf · Fortsetzung</p>' : ""}
+      <h1>${escapeHtml(name)}</h1>
+      ${profile?.title || role ? `<h2>${escapeHtml(profile?.title || role)}</h2>` : ""}
+      ${compact ? "" : gepflegtContactMarkup(ats)}
+    </header>`;
+  const formatGepflegtDateRange = (from: string, to: string) => {
+    const start = from.trim();
+    const end = to.trim();
+    if (!start) return end;
+    if (!end) return start;
+    return `${start} - ${end}`;
+  };
+  const renderGepflegtEntry = (
+    id: string,
+    kind: "experience" | "education",
+  ) => {
+    const item =
+      kind === "experience"
+        ? (() => {
+            const experience = experienceById.get(id);
+            return experience
+              ? {
+                  title: experience.role,
+                  organization: experience.company,
+                  from: experience.from,
+                  to: experience.to,
+                  city: experience.city,
+                  achievements: experience.achievements.filter(Boolean),
+                }
+              : undefined;
+          })()
+        : (() => {
+            const education = educationById.get(id);
+            return education
+              ? {
+                  title: education.degree,
+                  organization: education.institution,
+                  from: education.from,
+                  to: education.to,
+                  city: education.city,
+                  achievements: [] as string[],
+                }
+              : undefined;
+          })();
+    if (!item) return "";
+    return `<article class="gepflegt-pdf-entry"><div class="gepflegt-pdf-entry-heading"><h4>${escapeHtml(item.title)}</h4><span>${escapeHtml(formatGepflegtDateRange(item.from, item.to))}</span></div><div class="gepflegt-pdf-entry-subheading"><strong>${escapeHtml(item.organization)}</strong>${item.city ? `<span>${escapeHtml(item.city)}</span>` : ""}</div>${item.achievements.length ? `<ul>${item.achievements.map((achievement) => `<li>${escapeHtml(achievement)}</li>`).join("")}</ul>` : ""}</article>`;
+  };
+  const gepflegtPortfolio =
+    profile?.portfolio || profile?.github || profile?.linkedin || "";
+  const renderGepflegtResumePage = (plan: ResumePagePlan) => {
+    const isContinuation = plan.pageNumber > 1;
+    const isLastPage = plan.pageNumber === resumePlan.length;
+    const experienceItems = plan.items
+      .filter((item) => item.kind === "experience")
+      .map((item) => renderGepflegtEntry(item.id, "experience"))
+      .join("");
+    const educationItems = plan.items
+      .filter((item) => item.kind === "education")
+      .map((item) => renderGepflegtEntry(item.id, "education"))
+      .join("");
+    const experienceSection =
+      sections.experience && experienceItems
+        ? `<section class="gepflegt-pdf-section"><h3 class="gepflegt-pdf-title">${atsMode ? "Berufserfahrung" : "Erfahrung"}${isContinuation ? " · Fortsetzung" : ""}</h3><div class="gepflegt-pdf-list">${experienceItems}</div></section>`
+        : "";
+    const educationSection =
+      sections.education && educationItems
+        ? `<section class="gepflegt-pdf-section"><h3 class="gepflegt-pdf-title">Ausbildung</h3><div class="gepflegt-pdf-list">${educationItems}</div></section>`
+        : "";
+    const main = `<main class="gepflegt-pdf-main">${experienceSection}${educationSection}${!experienceItems && !educationItems && plan.pageNumber === 1 ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}</main>`;
+
+    if (atsMode) {
+      const summary =
+        sections.profile && !isContinuation
+          ? `<section class="gepflegt-pdf-section gepflegt-pdf-ats-summary"><h3 class="gepflegt-pdf-title">Zusammenfassung</h3><p>${escapeHtml(gepflegtSummary)}</p></section>`
+          : "";
+      const extra = isLastPage
+        ? `<div class="gepflegt-pdf-ats-extra">${gepflegtStrengthMarkup(true)}${gepflegtLanguageMarkup(true)}${gepflegtKnowledgeMarkup(true)}${gepflegtCertificationMarkup(true)}</div>`
+        : "";
+      return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="gepflegt" data-no-fit="true"><div class="page-content gepflegt-pdf gepflegt-pdf-ats" data-density="${plan.density}">${renderGepflegtHeader(isContinuation, true)}${summary}${main}${extra}</div></section>`;
+    }
+
+    const sidebar = isContinuation
+      ? `<aside class="gepflegt-pdf-sidebar gepflegt-pdf-sidebar-continuation"><div><p>Lebenslauf</p><h2>${escapeHtml(name)}</h2>${profile?.title ? `<span>${escapeHtml(profile.title)}</span>` : ""}<i aria-hidden="true"></i><small>Fortsetzung · Seite ${plan.pageNumber} von ${resumePlan.length}</small>${profile?.email || profile?.phone ? `<span>${escapeHtml(profile.email || profile.phone)}</span>` : ""}</div></aside>`
+      : `<aside class="gepflegt-pdf-sidebar">${photoSource ? `<img class="gepflegt-pdf-photo" src="${escapeHtml(photoSource)}" alt="">` : ""}${sections.profile ? `<section><h3>Zusammenfassung</h3><p class="gepflegt-pdf-summary">${escapeHtml(gepflegtSummary)}</p></section>` : ""}${gepflegtStrengthMarkup()}${gepflegtLanguageMarkup()}${gepflegtKnowledgeMarkup()}${gepflegtCertificationMarkup()}</aside>`;
+    const footer =
+      gepflegtPortfolio || resumePlan.length > 1
+        ? `<footer class="gepflegt-pdf-footer">${resumePlan.length > 1 ? `<span>Seite ${plan.pageNumber} von ${resumePlan.length}</span>` : ""}${gepflegtPortfolio ? `<a href="${escapeHtml(externalHref(gepflegtPortfolio))}">${escapeHtml(gepflegtPortfolio)}</a>` : ""}</footer>`
+        : "";
+    return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="gepflegt" data-no-fit="true"><div class="page-content gepflegt-pdf" data-density="${plan.density}">${sidebar}<div class="gepflegt-pdf-content">${renderGepflegtHeader(isContinuation)}${main}${footer}</div></div></section>`;
+  };
+
   const renderResumePage = (plan: ResumePagePlan) => {
     const experienceItems = plan.items
       .filter((item) => item.kind === "experience")
@@ -2763,28 +3042,30 @@ export const buildDocumentHtml = (
       template.id === "modern"
         ? renderModernResumePage
         : template.id === "stilvoll"
-        ? renderStilvollResumePage
-        : template.id === "kompakt"
-          ? renderKompaktResumePage
-          : template.id === "einfach"
-            ? renderEinfachResumePage
-            : template.id === "elegant"
-              ? renderElegantResumePage
-        : template.id === "ivy-league"
-          ? renderIvyLeagueResumePage
-        : template.id === "kreativ"
-          ? renderKreativResumePage
-        : template.id === "zeitgenoessisch"
-          ? renderZeitgenoessischResumePage
-        : template.id === "zweispaltig"
-          ? renderZweispaltigResumePage
-        : template.id === "tabellarisch"
-          ? renderTabellarischResumePage
-        : renderResumePage,
+          ? renderStilvollResumePage
+          : template.id === "kompakt"
+            ? renderKompaktResumePage
+            : template.id === "einfach"
+              ? renderEinfachResumePage
+              : template.id === "elegant"
+                ? renderElegantResumePage
+                : template.id === "gepflegt"
+                  ? renderGepflegtResumePage
+                  : template.id === "ivy-league"
+                    ? renderIvyLeagueResumePage
+                    : template.id === "kreativ"
+                      ? renderKreativResumePage
+                      : template.id === "zeitgenoessisch"
+                        ? renderZeitgenoessischResumePage
+                        : template.id === "zweispaltig"
+                          ? renderZweispaltigResumePage
+                          : template.id === "tabellarisch"
+                            ? renderTabellarischResumePage
+                            : renderResumePage,
     )
     .join("");
   const selected = target === "mappe" ? [cover, letter, resume] : target === "deckblatt" ? [cover] : target === "anschreiben" ? [letter] : [resume];
-  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}${ivyLeagueDocumentCss}${extendedResumeDocumentCss}${modernDocumentCss}${tabellarischDocumentCss}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}${ivyLeagueDocumentCss}${extendedResumeDocumentCss}${modernDocumentCss}${gepflegtDocumentCss}${tabellarischDocumentCss}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
 };
 
 export const buildCoverLetterMarkdown = (

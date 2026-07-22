@@ -1,111 +1,91 @@
-/**
- * Gepflegt template main content component
- */
-
-import type { ApplicantProfile } from "../../../../shared/schema";
+import {
+  formatTemplateDateRange,
+  type TemplateCareerItem,
+} from "../resume-template-data";
 import type { GepflegtMainContentProps } from "./gepflegt.types";
+
+function GepflegtCareerEntry({ item }: { item: TemplateCareerItem }) {
+  return (
+    <article className="gepflegt-entry">
+      <div className="gepflegt-entry__heading">
+        <h3>{item.title}</h3>
+        <span>{formatTemplateDateRange(item.from, item.to)}</span>
+      </div>
+      <div className="gepflegt-entry__subheading">
+        <strong>{item.organization}</strong>
+        {item.city ? <span>{item.city}</span> : null}
+      </div>
+      {item.achievements.length ? (
+        <ul>
+          {item.achievements.map((achievement, index) => (
+            <li key={`${item.id}-${index}`}>{achievement}</li>
+          ))}
+        </ul>
+      ) : null}
+    </article>
+  );
+}
 
 export function GepflegtMainContent({
   profile,
-  name,
   atsMode,
+  isContinuation,
 }: GepflegtMainContentProps) {
-  const experiences = profile?.experiences || [];
-  const education = profile?.education || [];
+  const experiences: TemplateCareerItem[] = (profile?.experiences ?? []).map(
+    (entry) => ({
+      id: entry.id,
+      from: entry.from,
+      to: entry.to,
+      title: entry.role,
+      organization: entry.company,
+      city: entry.city,
+      achievements: entry.achievements.filter(Boolean),
+    }),
+  );
+  const education: TemplateCareerItem[] = (profile?.education ?? []).map(
+    (entry) => ({
+      id: entry.id,
+      from: entry.from,
+      to: entry.to,
+      title: entry.degree,
+      organization: entry.institution,
+      city: entry.city,
+      achievements: [],
+    }),
+  );
 
   return (
     <main className="gepflegt-main">
-      {/* Experience Section */}
-      {experiences.length > 0 && (
-        <section className="gepflegt-section">
-          <h2 className="gepflegt-section__title">Berufserfahrung</h2>
-          {experiences.map((entry) => (
-            <article key={entry.id} className="gepflegt-entry">
-              <div className="gepflegt-entry__header">
-                <div>
-                  <h3 className="gepflegt-entry__title">{entry.role}</h3>
-                  <p className="gepflegt-entry__organization">
-                    {entry.company}
-                  </p>
-                </div>
-                <div className="gepflegt-entry__meta">
-                  <span className="gepflegt-entry__date">
-                    {entry.from} – {entry.to}
-                  </span>
-                </div>
-              </div>
-              {entry.city && (
-                <p
-                  className="gepflegt-entry__location"
-                  style={{
-                    margin: "0.5mm 0 1mm",
-                    fontSize: "var(--gepflegt-small-font-size, 8.4pt)",
-                    opacity: 0.8,
-                  }}>
-                  {entry.city}
-                </p>
-              )}
-              {entry.achievements &&
-                entry.achievements.filter(Boolean).length > 0 && (
-                  <ul className="gepflegt-entry__achievements">
-                    {entry.achievements
-                      .filter(Boolean)
-                      .map((achievement, idx) => (
-                        <li key={idx}>{achievement}</li>
-                      ))}
-                  </ul>
-                )}
-            </article>
-          ))}
+      {experiences.length ? (
+        <section className="gepflegt-section" data-element-id="gepflegt.experience">
+          <h2 className="gepflegt-section__title">
+            {atsMode ? "Berufserfahrung" : "Erfahrung"}
+            {isContinuation ? " · Fortsetzung" : ""}
+          </h2>
+          <div className="gepflegt-entry-list">
+            {experiences.map((item) => (
+              <GepflegtCareerEntry item={item} key={item.id} />
+            ))}
+          </div>
         </section>
-      )}
+      ) : null}
 
-      {/* Education Section */}
-      {education.length > 0 && (
-        <section className="gepflegt-section">
+      {education.length ? (
+        <section className="gepflegt-section" data-element-id="gepflegt.education">
           <h2 className="gepflegt-section__title">Ausbildung</h2>
-          {education.map((entry) => (
-            <article key={entry.id} className="gepflegt-entry">
-              <div className="gepflegt-entry__header">
-                <div>
-                  <h3 className="gepflegt-entry__title">{entry.degree}</h3>
-                  <p className="gepflegt-entry__organization">
-                    {entry.institution}
-                  </p>
-                </div>
-                <div className="gepflegt-entry__meta">
-                  <span className="gepflegt-entry__date">
-                    {entry.from} – {entry.to}
-                  </span>
-                </div>
-              </div>
-              {entry.city && (
-                <p
-                  className="gepflegt-entry__location"
-                  style={{
-                    margin: "0.5mm 0 1mm",
-                    fontSize: "var(--gepflegt-small-font-size, 8.4pt)",
-                    opacity: 0.8,
-                  }}>
-                  {entry.city}
-                </p>
-              )}
-            </article>
-          ))}
+          <div className="gepflegt-entry-list">
+            {education.map((item) => (
+              <GepflegtCareerEntry item={item} key={item.id} />
+            ))}
+          </div>
         </section>
-      )}
+      ) : null}
 
-      {/* Empty state */}
-      {!experiences.length && !education.length && (
-        <p
-          style={{
-            color: "var(--gepflegt-body-text-color, #3f494e)",
-            opacity: 0.6,
-            fontSize: "var(--gepflegt-body-font-size, 9.2pt)",
-          }}>
+      {!experiences.length && !education.length ? (
+        <p className="gepflegt-empty">
           Berufserfahrung und Ausbildung im Profil ergänzen.
         </p>
-      )}
+      ) : null}
     </main>
   );
 }

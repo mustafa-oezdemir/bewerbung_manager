@@ -1,39 +1,47 @@
-/**
- * Gepflegt template type definitions
- */
-
+import type { ResumePagePlan } from "../../../../shared/documentPagination";
 import type { ApplicantProfile } from "../../../../shared/schema";
 
-export interface GepflegtPageProps {
+export interface GepflegtResumeProps {
   profile: ApplicantProfile | undefined;
   name: string;
   atsMode: boolean;
-  pageNumber: number;
+  plan: ResumePagePlan;
   totalPages: number;
   accentColor: string;
   secondaryColor: string;
+  photoSource: string | null;
+  resumeProfile: string;
+  sections: ApplicantProfile["resumeSections"];
 }
 
 export interface GepflegtHeaderProps {
   name: string;
   profile: ApplicantProfile | undefined;
-  accentColor: string;
-  photoSource: string | null;
   atsMode: boolean;
+  compact?: boolean;
 }
 
 export interface GepflegtSidebarProps {
   profile: ApplicantProfile | undefined;
-  accentColor: string;
-  sidebarBackground: string;
-  sidebarText: string;
+  name: string;
+  summary: string;
+  sections: ApplicantProfile["resumeSections"];
   atsMode: boolean;
-  photoSource?: string | null;
-  name?: string;
+  photoSource: string | null;
+  isContinuation: boolean;
+  pageNumber: number;
+  totalPages: number;
 }
 
 export interface GepflegtMainContentProps {
   profile: ApplicantProfile | undefined;
-  name: string;
+  atsMode: boolean;
+  isContinuation: boolean;
+}
+
+export interface GepflegtFooterProps {
+  profile: ApplicantProfile | undefined;
+  pageNumber: number;
+  totalPages: number;
   atsMode: boolean;
 }

@@ -1,55 +1,37 @@
-/**
- * Gepflegt template Strengths section
- * Renders core competencies/strengths in sidebar style
- */
-
+import { CheckCircle2, Lightbulb, Sparkles } from "lucide-react";
 import type { ApplicantProfile } from "../../../../shared/schema";
+import { parseTemplateStrengths } from "../resume-template-data";
 
 export interface GepflegtStrengthsSectionProps {
   profile: ApplicantProfile | undefined;
   atsMode: boolean;
 }
 
+const icons = [Lightbulb, Sparkles, CheckCircle2];
+
 export function GepflegtStrengthsSection({
   profile,
   atsMode,
 }: GepflegtStrengthsSectionProps) {
-  // Use skills as strengths - take top 5
-  const strengths = profile?.skills?.slice(0, 5) || [];
+  const strengths = parseTemplateStrengths(profile, 3);
+  if (!strengths.length) return null;
 
-  if (strengths.length === 0) {
-    return null;
-  }
-
-  if (atsMode) {
-    // ATS mode: render as simple list with line breaks
-    return (
-      <section className="gepflegt-sidebar__section">
-        <h3 className="gepflegt-sidebar__section-title">Stärken</h3>
-        <p
-          className="gepflegt-sidebar__strengths-list-ats"
-          style={{
-            margin: 0,
-            fontSize: "var(--gepflegt-body-font-size, 9.2pt)",
-            lineHeight: "var(--gepflegt-line-height, 1.4)",
-          }}>
-          {strengths.join(" • ")}
-        </p>
-      </section>
-    );
-  }
-
-  // Visual mode: render as visual list with separators
   return (
     <section className="gepflegt-sidebar__section">
-      <h3 className="gepflegt-sidebar__section-title">Stärken</h3>
-      <div className="gepflegt-strengths-list">
-        {strengths.map((strength, idx) => (
-          <div key={idx} className="gepflegt-strength-item">
-            <span className="gepflegt-strength-item__bullet">●</span>
-            <span className="gepflegt-strength-item__text">{strength}</span>
-          </div>
-        ))}
+      <h2 className="gepflegt-sidebar__title">Stärken</h2>
+      <div className="gepflegt-strengths">
+        {strengths.map((strength, index) => {
+          const Icon = icons[index % icons.length];
+          return (
+            <article className="gepflegt-strength" key={`${strength.title}-${index}`}>
+              {!atsMode ? <Icon aria-hidden="true" /> : null}
+              <div>
+                <h3>{strength.title}</h3>
+                {strength.description ? <p>{strength.description}</p> : null}
+              </div>
+            </article>
+          );
+        })}
       </div>
     </section>
   );

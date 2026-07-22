@@ -12,8 +12,9 @@ export { GepflegtFooter } from "./GepflegtFooter";
 export { gepflegtDefaults } from "./gepflegt.defaults";
 export type { GepflegtTemplateDefaults } from "./gepflegt.defaults";
 export type {
-  GepflegtPageProps,
+  GepflegtResumeProps,
   GepflegtHeaderProps,
   GepflegtSidebarProps,
   GepflegtMainContentProps,
+  GepflegtFooterProps,
 } from "./gepflegt.types";

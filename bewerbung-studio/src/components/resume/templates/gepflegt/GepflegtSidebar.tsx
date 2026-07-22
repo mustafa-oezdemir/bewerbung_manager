@@ -1,111 +1,151 @@
-/**
- * Gepflegt template sidebar component
- * Left column with photo, profile, strengths, languages, skills
- */
-
-import type { ApplicantProfile } from "../../../../shared/schema";
-import { KnowledgeSectionRenderer } from "../../../document/KnowledgeSectionRenderer";
+import { CheckCircle2, Lightbulb, Sparkles } from "lucide-react";
+import {
+  getTemplateKnowledge,
+  parseTemplateLanguage,
+  parseTemplateStrengths,
+  uniqueTemplateValues,
+} from "../resume-template-data";
 import { GepflegtSidebarPhoto } from "./GepflegtSidebarPhoto";
-import { GepflegtStrengthsSection } from "./GepflegtStrengthsSection";
 import type { GepflegtSidebarProps } from "./gepflegt.types";
 
-export interface GepflegtSidebarExtendedProps extends GepflegtSidebarProps {
-  photoSource?: string | null;
-  name?: string;
-}
+const strengthIcons = [Lightbulb, Sparkles, CheckCircle2];
 
 export function GepflegtSidebar({
   profile,
-  accentColor,
-  sidebarBackground,
-  sidebarText,
+  name,
+  summary,
+  sections,
   atsMode,
-  photoSource = null,
-  name = "",
-}: GepflegtSidebarExtendedProps) {
-  if (atsMode) {
-    return null;
+  photoSource,
+  isContinuation,
+  pageNumber,
+  totalPages,
+}: GepflegtSidebarProps) {
+  const strengths = parseTemplateStrengths(profile, 3);
+  const languages = uniqueTemplateValues(profile?.languages ?? []).map(
+    parseTemplateLanguage,
+  );
+  const knowledge = getTemplateKnowledge(profile);
+  const certifications = uniqueTemplateValues(
+    profile?.certifications ?? [],
+  );
+
+  if (!atsMode && isContinuation) {
+    const contact = profile?.email || profile?.phone || profile?.linkedin;
+    return (
+      <aside className="gepflegt-sidebar gepflegt-sidebar--continuation">
+        <div className="gepflegt-sidebar__continuation">
+          <p>Lebenslauf</p>
+          <h2>{name}</h2>
+          {profile?.title ? <span>{profile.title}</span> : null}
+          <i aria-hidden="true" />
+          <small>
+            Fortsetzung · Seite {pageNumber} von {totalPages}
+          </small>
+          {contact ? <span>{contact}</span> : null}
+        </div>
+      </aside>
+    );
   }
 
   return (
     <aside
-      className="gepflegt-sidebar"
-      style={
-        {
-          "--gepflegt-sidebar-background": sidebarBackground,
-          "--gepflegt-sidebar-text": sidebarText,
-          "--gepflegt-accent-color": accentColor,
-        } as React.CSSProperties
-      }>
-      {/* Profile Photo (top of sidebar) */}
-      <GepflegtSidebarPhoto
-        photoSource={photoSource}
-        name={name}
-        atsMode={atsMode}
-      />
+      className={`gepflegt-sidebar ${atsMode ? "gepflegt-sidebar--ats" : ""}`}
+      data-element-id="gepflegt.sidebar"
+    >
+      {!atsMode ? (
+        <GepflegtSidebarPhoto
+          photoSource={photoSource}
+          name={name}
+          atsMode={false}
+        />
+      ) : null}
 
-      {/* Profile Summary (Zusammenfassung) */}
-      {profile?.summary && (
-        <section className="gepflegt-sidebar__section">
-          <h3 className="gepflegt-sidebar__section-title">Zusammenfassung</h3>
-          <p
-            className="gepflegt-sidebar__summary"
-            dangerouslySetInnerHTML={{ __html: profile.summary }}
-          />
-        </section>
-      )}
-
-      {/* Strengths (Stärken) */}
-      <GepflegtStrengthsSection profile={profile} atsMode={atsMode} />
-
-      {/* Languages (Sprachen) */}
-      {profile?.languages && profile.languages.length > 0 && (
-        <section className="gepflegt-sidebar__section">
-          <h3 className="gepflegt-sidebar__section-title">Sprachen</h3>
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "1.5mm" }}>
-            {profile.languages.map((language, idx) => (
-              <div key={idx} className="gepflegt-language">
-                <span className="gepflegt-language__name">{language}</span>
-                <span className="gepflegt-language__level">●●●●○</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Skills/Knowledge Section (Fähigkeiten) */}
-      {profile?.knowledgeSection && (
+      {!atsMode && summary ? (
         <section
           className="gepflegt-sidebar__section"
-          style={{ color: sidebarText }}>
-          <KnowledgeSectionRenderer
-            section={profile.knowledgeSection}
-            legacySkills={profile.skills}
-            atsMode={false}
-          />
+          data-element-id="gepflegt.summary"
+        >
+          <h2 className="gepflegt-sidebar__title">Zusammenfassung</h2>
+          <p className="gepflegt-sidebar__summary">{summary}</p>
         </section>
-      )}
+      ) : null}
 
-      {/* Certifications (Zertifikate) */}
-      {profile?.certifications && profile.certifications.length > 0 && (
-        <section className="gepflegt-sidebar__section">
-          <h3 className="gepflegt-sidebar__section-title">Zertifikate</h3>
-          <ul
-            style={{
-              margin: 0,
-              paddingLeft: "4mm",
-              fontSize: "var(--gepflegt-body-font-size, 9.2pt)",
-              lineHeight: "var(--gepflegt-line-height, 1.4)",
-            }}>
-            {profile.certifications.map((cert, idx) => (
-              <li key={idx} style={{ marginBottom: "1mm" }}>
-                {cert}
+      {sections.skills && strengths.length ? (
+        <section
+          className="gepflegt-sidebar__section"
+          data-element-id="gepflegt.strengths"
+        >
+          <h2 className="gepflegt-sidebar__title">Stärken</h2>
+          <div className="gepflegt-strengths">
+            {strengths.map((strength, index) => {
+              const Icon = strengthIcons[index % strengthIcons.length];
+              return (
+                <article className="gepflegt-strength" key={`${strength.title}-${index}`}>
+                  {!atsMode ? <Icon aria-hidden="true" /> : null}
+                  <div>
+                    <h3>{strength.title}</h3>
+                    {strength.description ? <p>{strength.description}</p> : null}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+
+      {sections.languages && languages.length ? (
+        <section
+          className="gepflegt-sidebar__section"
+          data-element-id="gepflegt.languages"
+        >
+          <h2 className="gepflegt-sidebar__title">Sprachen</h2>
+          <ul className="gepflegt-languages">
+            {languages.map((language) => (
+              <li key={language.raw}>
+                <div>
+                  <strong>{language.name}</strong>
+                  <span>{language.level}</span>
+                </div>
+                {!atsMode ? (
+                  <span className="gepflegt-language-dots" aria-hidden="true">
+                    {Array.from({ length: 5 }, (_, index) => (
+                      <i
+                        className={index < language.score ? "is-filled" : ""}
+                        key={index}
+                      />
+                    ))}
+                  </span>
+                ) : null}
               </li>
             ))}
           </ul>
         </section>
-      )}
+      ) : null}
+
+      {sections.skills && knowledge.length ? (
+        <section
+          className="gepflegt-sidebar__section"
+          data-element-id="gepflegt.skills"
+        >
+          <h2 className="gepflegt-sidebar__title">Fähigkeiten</h2>
+          <p className="gepflegt-knowledge">{knowledge.join(" · ")}</p>
+        </section>
+      ) : null}
+
+      {sections.certifications && certifications.length ? (
+        <section
+          className="gepflegt-sidebar__section"
+          data-element-id="gepflegt.certifications"
+        >
+          <h2 className="gepflegt-sidebar__title">Zertifikate</h2>
+          <ul className="gepflegt-certifications">
+            {certifications.map((certification) => (
+              <li key={certification}>{certification}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </aside>
   );
 }

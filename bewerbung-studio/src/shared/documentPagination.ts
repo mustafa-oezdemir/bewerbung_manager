@@ -61,6 +61,12 @@ export const modernPaginationOptions: ResumePaginationOptions = {
   preserveItemOrder: true,
 };
 
+export const gepflegtPaginationOptions: ResumePaginationOptions = {
+  firstPageCapacity: 50,
+  secondPageCapacity: 54,
+  preserveItemOrder: true,
+};
+
 const textWeight = (value: string, charactersPerUnit = 95) =>
   Math.max(0, Math.ceil(value.trim().length / charactersPerUnit));
 

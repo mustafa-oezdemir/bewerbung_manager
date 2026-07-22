@@ -1,16 +1,5 @@
-/**
- * Gepflegt template footer component
- * Simple footer with optional portfolio link and page numbers
- */
-
-import type { ApplicantProfile } from "../../../../shared/schema";
-
-export interface GepflegtFooterProps {
-  profile: ApplicantProfile | undefined;
-  pageNumber: number;
-  totalPages: number;
-  atsMode: boolean;
-}
+import { toTemplateExternalHref } from "../resume-template-data";
+import type { GepflegtFooterProps } from "./gepflegt.types";
 
 export function GepflegtFooter({
   profile,
@@ -18,31 +7,25 @@ export function GepflegtFooter({
   totalPages,
   atsMode,
 }: GepflegtFooterProps) {
-  // Extract portfolio URL if available
-  const portfolioUrl =
-    profile?.portfolio || profile?.github || profile?.linkedin;
+  const portfolio =
+    profile?.portfolio || profile?.github || profile?.linkedin || "";
+
+  if (atsMode || (!portfolio && totalPages === 1)) {
+    return null;
+  }
 
   return (
-    <footer className="gepflegt-footer">
-      <div className="gepflegt-footer__content">
-        {/* Portfolio link if available - clickable in PDF */}
-        {portfolioUrl && !atsMode && (
-          <a
-            href={portfolioUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="gepflegt-footer__link">
-            {portfolioUrl}
-          </a>
-        )}
-
-        {/* Page numbers - hidden in ATS mode */}
-        {!atsMode && (
-          <div className="gepflegt-footer__pages">
-            {pageNumber} / {totalPages}
-          </div>
-        )}
-      </div>
+    <footer className="gepflegt-footer" data-element-id="gepflegt.footer">
+      {portfolio ? (
+        <a href={toTemplateExternalHref(portfolio)}>{portfolio}</a>
+      ) : (
+        <span />
+      )}
+      {totalPages > 1 ? (
+        <span>
+          Seite {pageNumber} von {totalPages}
+        </span>
+      ) : null}
     </footer>
   );
 }

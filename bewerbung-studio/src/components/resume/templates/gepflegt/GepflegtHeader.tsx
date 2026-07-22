@@ -1,66 +1,67 @@
-/**
- * Gepflegt template header component
- */
-
-import type { ApplicantProfile } from "../../../../shared/schema";
+import { AtSign, Link2, MapPin, Phone } from "lucide-react";
+import { toTemplateExternalHref } from "../resume-template-data";
 import type { GepflegtHeaderProps } from "./gepflegt.types";
 
 export function GepflegtHeader({
   name,
   profile,
-  accentColor,
-  photoSource,
   atsMode,
+  compact = false,
 }: GepflegtHeaderProps) {
+  const location = [profile?.city, profile?.country]
+    .filter(Boolean)
+    .join(", ");
+  const professionalLink =
+    profile?.linkedin || profile?.github || profile?.portfolio || "";
+  const professionalLinkDisplay = professionalLink
+    ? toTemplateExternalHref(professionalLink)
+    : "";
+
   return (
-    <header className="gepflegt-header">
-      <div className="gepflegt-header__identity">
-        <h1 className="gepflegt-header__name">{name}</h1>
-        {profile?.title && (
-          <p
-            className="gepflegt-header__title"
-            style={
-              { "--gepflegt-accent-color": accentColor } as React.CSSProperties
-            }>
-            {profile.title}
-          </p>
-        )}
-        {profile?.summary && (
-          <p
-            className="gepflegt-header__subtitle"
-            dangerouslySetInnerHTML={{ __html: profile.summary.slice(0, 120) }}
-          />
-        )}
-      </div>
+    <header
+      className={`gepflegt-header ${compact ? "gepflegt-header--compact" : ""}`}
+      data-element-id="gepflegt.header"
+    >
+      {compact ? (
+        <p className="gepflegt-header__kicker">Lebenslauf · Fortsetzung</p>
+      ) : null}
+      <h1 className="gepflegt-header__name">{name}</h1>
+      {profile?.title ? (
+        <p className="gepflegt-header__title">{profile.title}</p>
+      ) : null}
 
-      {!atsMode && photoSource && (
-        <div className="gepflegt-header__photo">
-          <img src={photoSource} alt={`Foto von ${name}`} />
-        </div>
-      )}
-
-      <div className="gepflegt-header__contact">
-        {profile?.phone && (
-          <div className="gepflegt-header__contact-item">
-            <span>{profile.phone}</span>
-          </div>
-        )}
-        {profile?.email && (
-          <div className="gepflegt-header__contact-item">
-            <span>{profile.email}</span>
-          </div>
-        )}
-        {profile?.city && (
-          <div className="gepflegt-header__contact-item">
-            <span>{profile.city}</span>
-          </div>
-        )}
-        {profile?.linkedin && (
-          <div className="gepflegt-header__contact-item">
-            <span>{profile.linkedin}</span>
-          </div>
-        )}
-      </div>
+      {!compact &&
+      (profile?.phone ||
+        profile?.email ||
+        professionalLink ||
+        location) ? (
+        <address className="gepflegt-header__contacts">
+          {profile?.phone ? (
+            <a href={`tel:${profile.phone.replace(/[^\d+]/g, "")}`}>
+              {!atsMode ? <Phone aria-hidden="true" /> : null}
+              <span>{profile.phone}</span>
+            </a>
+          ) : null}
+          {profile?.email ? (
+            <a href={`mailto:${profile.email}`}>
+              {!atsMode ? <AtSign aria-hidden="true" /> : null}
+              <span>{profile.email}</span>
+            </a>
+          ) : null}
+          {professionalLink ? (
+            <a href={toTemplateExternalHref(professionalLink)}>
+              {!atsMode ? <Link2 aria-hidden="true" /> : null}
+              <span>{professionalLinkDisplay}</span>
+            </a>
+          ) : null}
+          {location ? (
+            <span>
+              {!atsMode ? <MapPin aria-hidden="true" /> : null}
+              <span>{location}</span>
+            </span>
+          ) : null}
+        </address>
+      ) : null}
     </header>
   );
 }

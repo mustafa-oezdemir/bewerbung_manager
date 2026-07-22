@@ -36,6 +36,7 @@ import {
   getLetterPageStatus,
   kompaktPaginationOptions,
   kreativPaginationOptions,
+  gepflegtPaginationOptions,
   modernPaginationOptions,
   tabellarischPaginationOptions,
   type ResumePagePlan,
@@ -371,11 +372,13 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
         ? kompaktPaginationOptions
         : template.id === "kreativ"
           ? kreativPaginationOptions
-          : template.id === "tabellarisch"
-            ? tabellarischPaginationOptions
-          : template.id === "modern"
-            ? modernPaginationOptions
-            : undefined,
+          : template.id === "gepflegt"
+            ? gepflegtPaginationOptions
+            : template.id === "tabellarisch"
+              ? tabellarischPaginationOptions
+              : template.id === "modern"
+                ? modernPaginationOptions
+                : undefined,
   );
   const letterStatus = getLetterPageStatus(docs);
   const isAtsMode =
@@ -1295,11 +1298,13 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                     profile={profile}
                     name={name}
                     atsMode={isAtsMode}
-                    pageNumber={plan.pageNumber}
+                    plan={plan}
                     totalPages={resumePlan.length}
                     accentColor={design.accentColor}
                     secondaryColor={design.secondaryColor}
                     photoSource={getProfileMediaSource(profile?.photoPath)}
+                    resumeProfile={docs.resumeProfile}
+                    sections={sections}
                   />
                 ) : template.id === "elegant" ? (
                   <ElegantResume

@@ -71,6 +71,12 @@ type DragItem = {
   id: string;
 };
 
+const normalizeProfileUrl = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed || /^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed.replace(/^[a-z][a-z\d+.-]*:(?:\/\/)?/i, "")}`;
+};
+
 const moveItem = <T extends { id: string }>(
   items: T[],
   id: string,
@@ -134,6 +140,9 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
     }
     await saveProfile({
       ...draft,
+      linkedin: normalizeProfileUrl(draft.linkedin),
+      github: normalizeProfileUrl(draft.github),
+      portfolio: normalizeProfileUrl(draft.portfolio),
       skills: syncLegacySkills(draft.knowledgeSection),
       updatedAt: new Date().toISOString(),
     });
