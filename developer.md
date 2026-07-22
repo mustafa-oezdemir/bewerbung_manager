@@ -1,4 +1,3 @@
-
 # Lebenslauf Softwareentwickler: Vorlagen und Tipps für eine erfolgreiche IT-Karriere
 
 [![Avatar image](https://cdn.enhancv.com/localizedImages/80/i/aHR0cHM6Ly9jZG4uZW5oYW5jdi5jb20vNTgyX1AyX0RfVndfU19HaV9BSkRKXzJfVVVfVHJfdV9TN3Bia19VN19RRF82cWhfRlhYXzdfSV9CdV9tZWRpYW1vZGlmaWVyX2Nyb3BwZWRfaW1hZ2VfZjYwNjNjMWMxNS5wbmc~.png)](https://enhancv.com/de/blog/author/enhancv/)
@@ -11,8 +10,7 @@ Aktualisiert: 5/13/2026
 
 8 min lesen
 
-Ein überzeugender Lebenslauf als Softwareentwickler zeigt nicht nur deine Programmierkenntnisse. Er beweist mit einer logischen Struktur und Logik auch deine Leidenschaft für Technologie. Mit unseren modernen Lebenslauf Vorlagen machst du 
-
+Ein überzeugender Lebenslauf als Softwareentwickler zeigt nicht nur deine Programmierkenntnisse. Er beweist mit einer logischen Struktur und Logik auch deine Leidenschaft für Technologie. Mit unseren modernen Lebenslauf Vorlagen machst du
 
 Ein professioneller Lebenslauf als Softwareentwickler öffnet dir viele Türen, da er der Schlüssel zu spannenden IT-Projekten und neuen Karriereschritten ist. Es zählen aber nicht nur Programmiersprachen, die du kennst.
 

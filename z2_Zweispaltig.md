@@ -1,14 +1,12 @@
+![Grüne moderne Lebenslaufvorlage](https://cdn.enhancv.com/predefined-examples/u4sMqAHXgZiomUwUaeNJd0EbgxV1EUrK3Hc7POOl/image.png)
 
-![Ein zweispaltiger Lebenslauf mit blauer Akzentfarbe und Fokus auf Erfahrung und Leistungen.](https://cdn.enhancv.com/predefined-examples/XHiNXHD5CWUGCGVKQTJArS7MY8iHn7Awe5tqWOpY/image.png) 
-
-
+![Ein zweispaltiger Lebenslauf mit blauer Akzentfarbe und Fokus auf Erfahrung und Leistungen.](https://cdn.enhancv.com/predefined-examples/XHiNXHD5CWUGCGVKQTJArS7MY8iHn7Awe5tqWOpY/image.png)
 
 ##### Zweispaltig
 
 We've tested these templates with major ATS vendors to ensure they parse correctly. Keep your content focused on the reader, though - humans still make the vast majority of hiring decisions.
 
-Kostenlose, zweispaltige Lebenslauf-Vorlage. Perfekt für jede Branche. 
-
+Kostenlose, zweispaltige Lebenslauf-Vorlage. Perfekt für jede Branche.
 
 * Konu: Bewerbung Studio için ATS uyumlu, iki sütunlu “Zweispaltig” Lebenslauf şablonunun oluşturulması
 * İstenilen çıktı: Referans görseldeki yapıyı temel alan; Electron, React ve TypeScript uygulamasına entegre edilebilen, kullanıcı tarafından düzenlenebilir, sürüklenebilir ve yeniden boyutlandırılabilir iki sütunlu Lebenslauf şablonu

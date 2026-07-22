@@ -29,6 +29,8 @@ export function IvyLeagueHeader({
   const profession = [profile?.title, specializations]
     .filter(Boolean)
     .join(" | ");
+  const professionalLink =
+    profile?.linkedin || profile?.portfolio || profile?.github || "";
   const contacts = [
     {
       value: profile?.phone,
@@ -41,19 +43,12 @@ export function IvyLeagueHeader({
       href: profile?.email ? `mailto:${profile.email}` : "",
     },
     {
-      value: profile?.linkedin,
-      href: profile?.linkedin
-        ? toIvyLeagueExternalHref(profile.linkedin)
+      value: professionalLink
+        ? toIvyLeagueExternalHref(professionalLink)
         : "",
-    },
-    {
-      value: profile?.portfolio || profile?.github,
-      href:
-        profile?.portfolio || profile?.github
-          ? toIvyLeagueExternalHref(
-              profile?.portfolio || profile?.github || "",
-            )
-          : "",
+      href: professionalLink
+        ? toIvyLeagueExternalHref(professionalLink)
+        : "",
     },
     { value: location, href: "" },
     { value: birth, href: "" },
@@ -70,7 +65,10 @@ export function IvyLeagueHeader({
       {!compact && contacts.length ? (
         <address className="ivy-league-header__contacts">
           {contacts.map((contact, index) => (
-            <span className="ivy-league-header__contact" key={`${contact.value}-${index}`}>
+            <span
+              className="ivy-league-header__contact"
+              key={`${contact.value}-${index}`}
+            >
               {index ? <i aria-hidden="true">•</i> : null}
               {contact.href ? (
                 <a href={contact.href}>{contact.value}</a>

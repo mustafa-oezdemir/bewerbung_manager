@@ -175,6 +175,9 @@ describe("Ivy League rendering", () => {
     expect(markup).toContain("ivy-league-strengths");
     expect(markup).toContain("ivy-league-career");
     expect(markup).toContain("ivy-league-languages");
+    expect(markup).toContain('href="https://linkedin.com/in/lena"');
+    expect(markup).toContain("https://lena.example.com");
+    expect(markup).not.toContain("Seite 1 / 1");
     expect(markup).not.toContain("<img");
   });
 

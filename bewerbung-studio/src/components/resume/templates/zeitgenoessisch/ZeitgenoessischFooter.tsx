@@ -20,9 +20,11 @@ export function ZeitgenoessischFooter({
       ) : (
         <span />
       )}
-      <span>
-        Seite {pageNumber} von {totalPages}
-      </span>
+      {totalPages > 1 ? (
+        <span>
+          Seite {pageNumber} von {totalPages}
+        </span>
+      ) : null}
     </footer>
   );
 }

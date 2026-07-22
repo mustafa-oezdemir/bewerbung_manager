@@ -4,9 +4,11 @@ import {
   createResumePagePlan,
   gepflegtPaginationOptions,
   getLetterPageStatus,
+  ivyLeaguePaginationOptions,
   kreativPaginationOptions,
   modernPaginationOptions,
   tabellarischPaginationOptions,
+  zeitgenoessischPaginationOptions,
   zweispaltigPaginationOptions,
 } from "./documentPagination";
 
@@ -175,6 +177,26 @@ describe("A4 document pagination", () => {
     expect(gepflegtPlan).toHaveLength(1);
     expect(gepflegtPlan[0].items).toHaveLength(6);
     expect(gepflegtPlan[0].density).toBe("compact");
+
+    const zeitgenoessischPlan = createResumePagePlan(
+      profile,
+      "",
+      zeitgenoessischPaginationOptions,
+    );
+
+    expect(zeitgenoessischPlan).toHaveLength(1);
+    expect(zeitgenoessischPlan[0].items).toHaveLength(6);
+    expect(zeitgenoessischPlan[0].density).toBe("compact");
+
+    const ivyLeaguePlan = createResumePagePlan(
+      profile,
+      "",
+      ivyLeaguePaginationOptions,
+    );
+
+    expect(ivyLeaguePlan).toHaveLength(1);
+    expect(ivyLeaguePlan[0].items).toHaveLength(6);
+    expect(ivyLeaguePlan[0].density).toBe("compact");
   });
 
   it("keeps Modern career items in reading order after a page split", () => {

@@ -1,3 +1,5 @@
+![Grüne moderne Lebenslaufvorlage](https://cdn.enhancv.com/predefined-examples/u4sMqAHXgZiomUwUaeNJd0EbgxV1EUrK3Hc7POOl/image.png)
+
 # Modern Lebenslauf Standardı
 
 Bu dosya, modern ama profesyonel görünen Lebenslauf tasarımlarının içerik ve görsel kararlarını sabitler. Amaç, eski görünen şablonlardan uzak durmak ve ATS uyumunu bozmadan daha güncel bir sonuç üretmektir.

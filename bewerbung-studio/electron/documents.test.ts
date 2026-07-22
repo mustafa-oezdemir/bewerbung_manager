@@ -487,6 +487,8 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).toContain("Zusammenfassung");
     expect(body).toContain("Erfahrung");
     expect(body).toContain("Stärken");
+    expect(body).toContain("zeit-pdf-heading");
+    expect(body).toContain("<svg");
     expect(body).not.toContain("monogram");
   });
 
@@ -736,6 +738,8 @@ describe("Lebenslauf-Dokumente", () => {
     });
     const ivyProfile = profileSchema.parse({
       ...profile,
+      linkedin: "linkedin.com/in/mina-kaya",
+      portfolio: "mina.example.com",
       skills: [
         "Analysefähigkeit – Präzise Bewertung komplexer Systeme",
         "Teamführung – Führung interdisziplinärer Teams",
@@ -766,6 +770,11 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).toContain("ivy-pdf-strengths");
     expect(body).toContain("ivy-pdf-languages");
     expect(body).toContain("Erfahrung");
+    expect(body).toContain(
+      'href="https://linkedin.com/in/mina-kaya"',
+    );
+    expect(body).toContain("https://mina.example.com");
+    expect(body).not.toContain("Seite 1 / 1");
     expect(body).not.toContain("Powered by");
     expect(body).not.toContain("<img");
   });

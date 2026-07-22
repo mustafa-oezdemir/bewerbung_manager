@@ -3,11 +3,13 @@ import {
   createResumePagePlan,
   gepflegtPaginationOptions,
   getLetterPageStatus,
+  ivyLeaguePaginationOptions,
   kompaktPaginationOptions,
   kreativPaginationOptions,
   modernPaginationOptions,
   tabellarischPaginationOptions,
   type ResumePagePlan,
+  zeitgenoessischPaginationOptions,
   zweispaltigPaginationOptions,
 } from "../src/shared/documentPagination";
 import {
@@ -402,10 +404,10 @@ const zweispaltigDocumentCss = `
 const zeitgenoessischDocumentCss = `
   .zeit-pdf{--zeit-dark:#075e4e;--zeit-soft:#cbeccd;--zeit-pale:#e5f5ec;--zeit-heading:#374247;--zeit-text:#434d52;--zeit-muted:#687277;--zeit-divider:#d5deda;position:relative;width:100%;height:100%;padding:max(15mm,calc(var(--doc-margin) - 2mm)) var(--doc-margin) max(14mm,calc(var(--doc-margin) - 3mm));overflow:hidden;color:var(--zeit-text);background:#fff;font-family:var(--body-font)}
   .zeit-pdf *{box-sizing:border-box}
-  .zeit-pdf-header{display:grid;grid-template-columns:minmax(0,28.4%) minmax(0,6.25%) minmax(0,65.35%);min-height:42mm;margin-bottom:5.5mm}
+  .zeit-pdf-header{display:grid;grid-template-columns:minmax(0,28.4%) minmax(0,6.25%) minmax(0,65.35%);min-height:36.5mm;margin-bottom:1.5mm}
   .zeit-pdf-identity{grid-column:3;min-width:0;padding-top:4mm}
   .zeit-pdf-identity h1{margin:0;color:var(--zeit-heading);font-size:25pt;font-weight:350;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}
-  .zeit-pdf-identity h2{display:inline-block;max-width:100%;margin:4mm 0 0;padding:2.6mm 4mm;border-radius:3.8mm;color:var(--zeit-dark);background:var(--zeit-soft);font-size:12.5pt;font-weight:600;letter-spacing:.045em;line-height:1.15;text-transform:uppercase;overflow-wrap:anywhere}
+  .zeit-pdf-identity h2{display:inline-block;width:100%;max-width:100%;margin:4mm 0 0;padding:2.6mm 4mm;border-radius:3.8mm;color:var(--zeit-dark);background:var(--zeit-soft);font-size:12.5pt;font-weight:600;letter-spacing:.045em;line-height:1.15;text-transform:uppercase;overflow-wrap:anywhere}
   .zeit-pdf-photo-composition{position:relative;grid-column:1;width:50mm;max-width:100%;height:42mm}
   .zeit-pdf-photo-composition span{position:absolute;display:block}
   .zeit-pdf-photo-pale{top:1mm;left:0;width:42mm;height:39mm;border-radius:48% 52% 45% 55%/57% 40% 60% 43%;background:var(--zeit-pale);transform:rotate(-13deg)}
@@ -417,33 +419,34 @@ const zeitgenoessischDocumentCss = `
   .zeit-pdf-header.compact .zeit-pdf-identity{padding:0}.zeit-pdf-header.compact .kicker{margin:0 0 1.5mm;color:var(--zeit-dark);font-size:7.3pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
   .zeit-pdf-header.compact h1{font-size:15pt;font-weight:600}.zeit-pdf-header.compact h2{margin:0 0 0 3mm;padding:0;color:var(--zeit-muted);background:transparent;font-size:8.5pt}
   .zeit-pdf-columns{position:relative;display:grid;grid-template-columns:minmax(0,28.4%) minmax(0,6.25%) minmax(0,65.35%)}
-  .zeit-pdf-columns:before{position:absolute;top:0;bottom:0;left:31.525%;width:.3mm;background:color-mix(in srgb,var(--accent),transparent 64%);content:""}
+  .zeit-pdf-columns:before{display:none}
   .zeit-pdf-columns.continuation{display:block}.zeit-pdf-columns.continuation:before{display:none}
-  .zeit-pdf-left{grid-column:1;min-width:0}.zeit-pdf-main{grid-column:3;min-width:0}
+  .zeit-pdf-left{grid-column:1;min-width:0;padding-top:12mm}.zeit-pdf-main{grid-column:3;min-width:0}
   .zeit-pdf-section,.zeit-pdf-left>section{margin-top:var(--section-gap);break-inside:avoid;page-break-inside:avoid}
   .zeit-pdf-left>section:first-child,.zeit-pdf-main>.zeit-pdf-section:first-child{margin-top:0}
-  .zeit-pdf-heading{display:flex;align-items:center;gap:2mm;margin:0 0 3mm;padding-bottom:1.4mm;border-bottom:.45mm solid var(--accent)}
-  .zeit-pdf-heading i{display:grid;flex:none;width:6.5mm;height:6.5mm;place-items:center;border-radius:1.5mm;color:var(--zeit-dark);background:var(--zeit-soft);font-size:8pt;font-style:normal;font-weight:700}
+  .zeit-pdf-heading{display:flex;align-items:center;gap:2mm;margin:0 0 3mm}
+  .zeit-pdf-heading i{display:grid;flex:none;width:6.5mm;height:6.5mm;place-items:center;border-radius:1.5mm;color:var(--zeit-dark);background:var(--zeit-soft);font-style:normal}
+  .zeit-pdf-heading i svg{width:4mm;height:4mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.9}
   .zeit-pdf-heading h3{margin:0;color:var(--zeit-dark);font-size:11pt;font-weight:750;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}
   .zeit-pdf-summary{margin:0;color:var(--zeit-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}
   .zeit-pdf-contacts{display:grid;gap:2.3mm}
-  .zeit-pdf-contact{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;min-width:0;color:inherit;font-size:var(--body-size);line-height:1.25;text-decoration:none}
-  .zeit-pdf-contact i{color:var(--zeit-dark);font-size:7.2pt;font-style:normal;font-weight:750;text-align:center}.zeit-pdf-contact span{overflow-wrap:anywhere}
-  .zeit-pdf-strengths{display:grid;gap:2.5mm}.zeit-pdf-strength{display:grid;grid-template-columns:3.5mm minmax(0,1fr);gap:1.5mm;align-items:start}
-  .zeit-pdf-strength i{width:2mm;height:2mm;margin-top:1.2mm;border-radius:50%;background:var(--accent)}.zeit-pdf-strength span{color:var(--zeit-heading);font-size:9pt;font-weight:700;line-height:1.2;overflow-wrap:anywhere}
-  .zeit-pdf-languages{display:grid;gap:3mm}.zeit-pdf-language h4{margin:0;color:var(--zeit-dark);font-size:8.8pt;font-weight:750;text-transform:uppercase}.zeit-pdf-language>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2mm;margin-top:1mm;color:var(--zeit-muted);font-size:7.8pt}
+  .zeit-pdf-contact{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;min-width:0;color:inherit;font-size:7.7pt;letter-spacing:-.01em;line-height:1.28;text-decoration:none}
+  .zeit-pdf-contact i{display:grid;place-items:start center;color:var(--accent);font-style:normal}.zeit-pdf-contact i svg{width:3.8mm;height:3.8mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.5}.zeit-pdf-contact span{overflow-wrap:anywhere}
+  .zeit-pdf-strengths{display:grid;gap:4.5mm}.zeit-pdf-strength{display:grid;grid-template-columns:3.5mm minmax(0,1fr);gap:1.5mm;align-items:start}
+  .zeit-pdf-strength>i{width:2mm;height:2mm;margin-top:1.2mm;border-radius:50%;background:var(--accent)}.zeit-pdf-strength h4{margin:0;color:var(--zeit-heading);font-size:9.5pt;font-weight:700;line-height:1.2;overflow-wrap:anywhere}.zeit-pdf-strength p{margin:1.2mm 0 0;color:var(--zeit-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}
+  .zeit-pdf-languages{display:grid;gap:3mm}.zeit-pdf-language>div{display:grid;grid-template-columns:minmax(13mm,auto) minmax(0,1fr) auto;align-items:center;gap:1.5mm;min-width:0}.zeit-pdf-language h4{margin:0;color:var(--zeit-dark);font-size:8.8pt;font-weight:750;line-height:1.15;text-transform:uppercase;overflow-wrap:anywhere}.zeit-pdf-language>div>span:not(.zeit-pdf-dots){color:var(--zeit-muted);font-size:7.8pt;font-weight:600;line-height:1.15;overflow-wrap:anywhere}
   .zeit-pdf-dots{display:flex;gap:.7mm}.zeit-pdf-dots i{display:block;width:1.35mm;height:1.35mm;border:.25mm solid var(--zeit-muted);border-radius:50%}.zeit-pdf-dots i.filled{border-color:var(--zeit-dark);background:var(--zeit-dark)}
   .zeit-pdf-list{display:flex;flex-direction:column;gap:5mm}.zeit-pdf-entry{break-inside:avoid;page-break-inside:avoid}
   .zeit-pdf-entry-top,.zeit-pdf-entry-role{display:grid;grid-template-columns:minmax(0,1fr) minmax(25mm,35mm);gap:5mm;align-items:start}
-  .zeit-pdf-entry-top h4,.zeit-pdf-entry-role h5{margin:0;overflow-wrap:anywhere}.zeit-pdf-entry-top h4{color:var(--zeit-dark);font-size:10.5pt;font-weight:750;line-height:1.2;text-transform:uppercase}
+  .zeit-pdf-entry-top h4,.zeit-pdf-entry-role h5{margin:0;overflow-wrap:anywhere}.zeit-pdf-entry-top h4{color:var(--zeit-heading);font-size:10.5pt;font-weight:750;line-height:1.2}
   .zeit-pdf-entry-top span,.zeit-pdf-entry-role span{color:var(--zeit-muted);font-size:7.8pt;line-height:1.2;text-align:right;overflow-wrap:anywhere}
-  .zeit-pdf-entry-role{margin-top:.8mm}.zeit-pdf-entry-role h5{color:var(--zeit-heading);font-size:9.2pt;font-weight:600;line-height:1.2}
+  .zeit-pdf-entry-role{margin-top:.8mm}.zeit-pdf-entry-role h5{color:var(--zeit-heading);font-size:9.2pt;font-weight:400;line-height:1.2}
   .zeit-pdf-entry ul,.zeit-pdf-left ul,.zeit-pdf-ats ul{margin:1.5mm 0 0;padding-left:4.5mm}.zeit-pdf-entry li,.zeit-pdf-left li,.zeit-pdf-ats li{margin:.5mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.zeit-pdf-entry li::marker,.zeit-pdf-left li::marker,.zeit-pdf-ats li::marker{color:var(--accent)}
   .zeit-pdf-footer{position:absolute;right:var(--doc-margin);bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;color:var(--zeit-muted);font-size:7.2pt}.zeit-pdf-footer a{color:var(--zeit-dark);text-decoration:none}.zeit-pdf-footer span:last-child{margin-left:auto}
   .zeit-pdf-ats{--zeit-dark:#075e4e;--zeit-heading:#263a35;--zeit-text:#303c39;--zeit-muted:#687277;--zeit-divider:#ccd6d2;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--zeit-text);background:#fff}
   .zeit-pdf-ats .zeit-pdf-header{display:block;min-height:auto;margin:0;padding-bottom:4mm;border-bottom:.35mm solid var(--zeit-divider)}.zeit-pdf-ats .zeit-pdf-identity{padding:0}.zeit-pdf-ats .zeit-pdf-identity h1{font-size:20pt;font-weight:600}.zeit-pdf-ats .zeit-pdf-identity h2{margin:1.5mm 0 0;padding:0;background:transparent;font-size:10pt}
   .zeit-pdf-ats-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 5mm;margin-top:3mm;font-size:7.8pt;font-style:normal}.zeit-pdf-ats-contacts a,.zeit-pdf-ats-contacts span{color:inherit;text-decoration:none;overflow-wrap:anywhere}
-  .zeit-pdf-ats .zeit-pdf-heading i{display:none}.zeit-pdf-ats .zeit-pdf-heading{gap:0;border-bottom-color:var(--zeit-divider)}
+  .zeit-pdf-ats .zeit-pdf-heading i{display:none}.zeit-pdf-ats .zeit-pdf-heading{gap:0;padding-bottom:1.4mm;border-bottom:.45mm solid var(--zeit-divider)}
   .zeit-pdf-ats>section,.zeit-pdf-ats .knowledge-section{margin-top:var(--section-gap)}.zeit-pdf-ats>section>h3,.zeit-pdf-ats .knowledge-section>h3{margin:0 0 3mm;padding-bottom:1.4mm;border-bottom:.45mm solid var(--zeit-divider);color:var(--zeit-dark);font-size:11pt;font-weight:750;text-transform:uppercase}
 `;
 
@@ -487,7 +490,7 @@ const ivyLeagueDocumentCss = `
   .ivy-pdf-list{display:flex;flex-direction:column;gap:4.5mm}.ivy-pdf-entry{min-width:0;break-inside:avoid;page-break-inside:avoid}.ivy-pdf-entry-top,.ivy-pdf-entry-role{display:grid;grid-template-columns:minmax(0,1fr) minmax(32mm,auto);gap:8mm;align-items:baseline}.ivy-pdf-entry h3,.ivy-pdf-entry h4{margin:0;overflow-wrap:anywhere}.ivy-pdf-entry-top h3{color:var(--ivy-accent);font-size:10.5pt;font-weight:500;line-height:1.15}.ivy-pdf-entry-top span,.ivy-pdf-entry-role span{color:var(--ivy-text);font-size:var(--body-size);line-height:1.2;text-align:right;overflow-wrap:anywhere}.ivy-pdf-entry-role{margin-top:.7mm}.ivy-pdf-entry-role h4{color:var(--ivy-heading);font-size:9.7pt;font-weight:500;line-height:1.18}.ivy-pdf-entry-role span{white-space:nowrap}
   .ivy-pdf-entry ul,.ivy-pdf-certifications ul,.ivy-pdf-ats ul{margin:1.3mm 0 0;padding-left:4.5mm}.ivy-pdf-entry li,.ivy-pdf-certifications li,.ivy-pdf-ats li{margin:.35mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word}.ivy-pdf-entry li::marker,.ivy-pdf-certifications li::marker{color:var(--ivy-heading)}.ivy-pdf-education .ivy-pdf-list{gap:3.2mm}.ivy-pdf-knowledge{margin:0;overflow-wrap:anywhere}
   .ivy-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 20mm}.ivy-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2mm;align-items:center;min-width:0}.ivy-pdf-language strong{color:var(--ivy-heading);font-weight:600}.ivy-pdf-language>span:not(.ivy-pdf-dots){overflow-wrap:anywhere}.ivy-pdf-dots{display:flex;gap:1mm}.ivy-pdf-dots i{display:block;width:2.1mm;height:2.1mm;border-radius:50%;background:var(--ivy-inactive)}.ivy-pdf-dots i.filled{background:var(--ivy-heading)}
-  .ivy-pdf-footer{position:absolute;right:var(--ivy-margin);bottom:6mm;left:var(--ivy-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--ivy-muted);font-size:7.1pt}.ivy-pdf-footer a{color:var(--ivy-heading);text-decoration:none}.ivy-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}
+  .ivy-pdf-footer{position:absolute;right:var(--ivy-margin);bottom:6mm;left:var(--ivy-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--ivy-muted);font-size:7.1pt}.ivy-pdf-footer a{color:var(--ivy-muted);text-decoration:none}.ivy-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}
   .ivy-pdf-ats{--ivy-heading:#173b63;--ivy-accent:#173b63;--ivy-text:#303b42;--ivy-divider:#aeb8bf;padding:max(11mm,calc(var(--doc-margin) - 1mm)) var(--doc-margin) 13mm;background:#fff;font-family:Arial,sans-serif}.ivy-pdf-ats .ivy-pdf-header{padding-bottom:3.5mm;border-bottom:.3mm solid var(--ivy-divider)}.ivy-pdf-ats .ivy-pdf-header h1{font-family:Arial,sans-serif;font-size:19pt}.ivy-pdf-ats .ivy-pdf-header h2{color:var(--ivy-heading);font-size:10pt}.ivy-pdf-ats .ivy-pdf-title,.ivy-pdf-ats .knowledge-section>h3{font-family:Arial,sans-serif;font-size:11pt;text-align:left}.ivy-pdf-ats .knowledge-category h4,.ivy-pdf-ats .knowledge-subcategory h5{color:var(--ivy-heading)}
   .ivy-pdf[data-density="compact"]{--section-gap:max(4.5mm,calc(var(--doc-section-gap) - 1mm))}.ivy-pdf[data-density="compact"] .ivy-pdf-list{gap:3.6mm}.ivy-pdf[data-density="dense"]{--section-gap:max(3.8mm,calc(var(--doc-section-gap) - 2mm))}.ivy-pdf[data-density="dense"] .ivy-pdf-list{gap:3mm}.ivy-pdf[data-density="dense"] .ivy-pdf-title{margin-bottom:2mm;font-size:12.5pt}
   @media print{.no-print-background .ivy-pdf-watercolor{display:none!important}}
@@ -705,11 +708,15 @@ export const buildDocumentHtml = (
           ? kreativPaginationOptions
           : template.id === "gepflegt"
             ? gepflegtPaginationOptions
-            : template.id === "tabellarisch"
-              ? tabellarischPaginationOptions
-              : template.id === "modern"
-                ? modernPaginationOptions
-                : undefined,
+            : template.id === "zeitgenoessisch"
+              ? zeitgenoessischPaginationOptions
+              : template.id === "ivy-league"
+                ? ivyLeaguePaginationOptions
+                : template.id === "tabellarisch"
+                  ? tabellarischPaginationOptions
+                  : template.id === "modern"
+                    ? modernPaginationOptions
+                    : undefined,
   );
 
   const renderExperience = (id: string) => {
@@ -1195,13 +1202,46 @@ export const buildDocumentHtml = (
       </section>`;
   };
 
-  const zeitHeading = (title: string, symbol: string) =>
-    `<header class="zeit-pdf-heading"><i aria-hidden="true">${escapeHtml(symbol)}</i><h3>${escapeHtml(title)}</h3></header>`;
+  const zeitIconMarkup = (
+    kind:
+      | "contacts"
+      | "strengths"
+      | "languages"
+      | "summary"
+      | "experience"
+      | "education"
+      | "certifications"
+      | "phone"
+      | "email"
+      | "link"
+      | "location",
+  ) => {
+    const paths = {
+      contacts: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+      strengths: '<path d="m12 3 2.5 5 5.5.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.5-.8z"/>',
+      languages: '<path d="M4 5h10M9 5c0 6-2 10-5 13M6 10c2 3 4 5 7 7M14 9h6M17 7v11M14 15h6"/>',
+      summary: '<circle cx="12" cy="8" r="3"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/>',
+      experience: '<path d="M4 7h16v12H4zM9 7V4h6v3M4 12h16M10 12v2h4v-2"/>',
+      education: '<path d="m3 9 9-5 9 5-9 5zM6 11v5c3 2 9 2 12 0v-5"/>',
+      certifications: '<path d="M7 4h10v16l-5-3-5 3zM9 8h6M9 11h6"/>',
+      phone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.8a2 2 0 0 1-.5 2.1L8.1 9.8a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.8 2.1z"/>',
+      email: '<circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/>',
+      link: '<path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.1 1M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.1-1"/>',
+      location: '<path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0z"/><circle cx="12" cy="10" r="2.5"/>',
+    } as const;
+    return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[kind]}</svg>`;
+  };
+
+  const zeitHeading = (
+    title: string,
+    icon: Parameters<typeof zeitIconMarkup>[0],
+  ) =>
+    `<header class="zeit-pdf-heading"><i aria-hidden="true">${zeitIconMarkup(icon)}</i><h3>${escapeHtml(title)}</h3></header>`;
 
   const zeitContacts = [
     {
       label: "Telefon",
-      symbol: "T",
+      icon: "phone" as const,
       value: profile?.phone,
       href: profile?.phone
         ? `tel:${profile.phone.replace(/[^\d+]/g, "")}`
@@ -1209,25 +1249,29 @@ export const buildDocumentHtml = (
     },
     {
       label: "E-Mail",
-      symbol: "@",
+      icon: "email" as const,
       value: profile?.email,
       href: profile?.email ? `mailto:${profile.email}` : "",
     },
     {
       label: "Portfolio",
-      symbol: "W",
-      value: profile?.portfolio,
+      icon: "link" as const,
+      value: profile?.portfolio
+        ? externalHref(profile.portfolio)
+        : "",
       href: externalHref(profile?.portfolio),
     },
     {
       label: "LinkedIn",
-      symbol: "in",
-      value: profile?.linkedin,
+      icon: "link" as const,
+      value: profile?.linkedin
+        ? externalHref(profile.linkedin)
+        : "",
       href: externalHref(profile?.linkedin),
     },
     {
       label: "Wohnort",
-      symbol: "⌂",
+      icon: "location" as const,
       value: [profile?.postalCode, profile?.city, profile?.country]
         .filter(Boolean)
         .join(" "),
@@ -1235,8 +1279,8 @@ export const buildDocumentHtml = (
     },
     {
       label: "GitHub",
-      symbol: "G",
-      value: profile?.github,
+      icon: "link" as const,
+      value: profile?.github ? externalHref(profile.github) : "",
       href: externalHref(profile?.github),
     },
   ].filter((contact) => contact.value?.trim());
@@ -1253,9 +1297,23 @@ export const buildDocumentHtml = (
         })
         .join("")}</address>`;
     }
-    return `<section>${zeitHeading("Kontakte", "@")}<div class="zeit-pdf-contacts">${zeitContacts
+    return `<section>${zeitHeading("Kontakte", "contacts")}<div class="zeit-pdf-contacts">${zeitContacts
       .map((contact) => {
-        const content = `<i aria-hidden="true">${escapeHtml(contact.symbol)}</i><span>${escapeHtml(contact.value)}</span>`;
+        const contactValue = contact.value ?? "";
+        const breakMarker =
+          contact.label === "LinkedIn"
+            ? "/in/"
+            : contact.label === "GitHub"
+              ? "github.com/"
+              : "";
+        const breakIndex = breakMarker
+          ? contactValue.indexOf(breakMarker) + breakMarker.length
+          : 0;
+        const visibleValue =
+          breakIndex > breakMarker.length
+            ? `${escapeHtml(contactValue.slice(0, breakIndex))}<br>${escapeHtml(contactValue.slice(breakIndex))}`
+            : escapeHtml(contactValue);
+        const content = `<i aria-hidden="true">${zeitIconMarkup(contact.icon)}</i><span>${visibleValue}</span>`;
         return contact.href
           ? `<a class="zeit-pdf-contact" href="${escapeHtml(contact.href)}">${content}</a>`
           : `<span class="zeit-pdf-contact">${content}</span>`;
@@ -1312,10 +1370,10 @@ export const buildDocumentHtml = (
     },
   );
   const zeitVisualLanguages = zeitLanguages.length
-    ? `<section>${zeitHeading("Sprachen", "A")}<div class="zeit-pdf-languages">${zeitLanguages
+    ? `<section>${zeitHeading("Sprachen", "languages")}<div class="zeit-pdf-languages">${zeitLanguages
         .map(
           (language) =>
-            `<article class="zeit-pdf-language"><h4>${escapeHtml(language.name)}</h4><div><span>${escapeHtml(language.level)}</span><span class="zeit-pdf-dots">${Array.from(
+            `<article class="zeit-pdf-language"><div><h4>${escapeHtml(language.name)}</h4><span>${escapeHtml(language.level)}</span><span class="zeit-pdf-dots">${Array.from(
               { length: 5 },
               (_, index) =>
                 `<i class="${index < language.score ? "filled" : ""}"></i>`,
@@ -1324,33 +1382,45 @@ export const buildDocumentHtml = (
         .join("")}</div></section>`
     : "";
   const zeitAtsLanguages = zeitLanguages.length
-    ? `<section class="zeit-pdf-section">${zeitHeading("Sprachen", "A")}<ul>${zeitLanguages
+    ? `<section class="zeit-pdf-section">${zeitHeading("Sprachen", "languages")}<ul>${zeitLanguages
         .map((language) => `<li>${escapeHtml(language.raw)}</li>`)
         .join("")}</ul></section>`
     : "";
-  const zeitVisualStrengths = strengths.length
-    ? `<section>${zeitHeading("Stärken", "◆")}<div class="zeit-pdf-strengths">${strengths
+  const zeitStrengths = strengths.map((value) => {
+    const [strengthTitle, ...description] = value.split(
+      /\s+(?:–|—|:)\s+/,
+    );
+    return {
+      title: strengthTitle.trim(),
+      description: description.join(" – ").trim(),
+    };
+  });
+  const zeitVisualStrengths = zeitStrengths.length
+    ? `<section>${zeitHeading("Stärken", "strengths")}<div class="zeit-pdf-strengths">${zeitStrengths
         .map(
           (strength) =>
-            `<div class="zeit-pdf-strength"><i aria-hidden="true"></i><span>${escapeHtml(strength)}</span></div>`,
+            `<article class="zeit-pdf-strength"><i aria-hidden="true"></i><div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
         )
         .join("")}</div></section>`
     : "";
-  const zeitAtsStrengths = strengths.length
-    ? `<section class="zeit-pdf-section">${zeitHeading("Stärken", "◆")}<ul>${strengths
-        .map((strength) => `<li>${escapeHtml(strength)}</li>`)
+  const zeitAtsStrengths = zeitStrengths.length
+    ? `<section class="zeit-pdf-section">${zeitHeading("Stärken", "strengths")}<ul>${zeitStrengths
+        .map(
+          (strength) =>
+            `<li><strong>${escapeHtml(strength.title)}</strong>${strength.description ? ` – ${escapeHtml(strength.description)}` : ""}</li>`,
+        )
         .join("")}</ul></section>`
     : "";
   const zeitCertifications = uniqueValues(
     profile?.certifications ?? [],
   );
   const zeitVisualCertifications = zeitCertifications.length
-    ? `<section>${zeitHeading("Zertifikate", "✓")}<ul>${zeitCertifications
+    ? `<section>${zeitHeading("Zertifikate", "certifications")}<ul>${zeitCertifications
         .map((item) => `<li>${escapeHtml(item)}</li>`)
         .join("")}</ul></section>`
     : "";
   const zeitAtsCertifications = zeitCertifications.length
-    ? `<section class="zeit-pdf-section">${zeitHeading("Zertifikate", "✓")}<ul>${zeitCertifications
+    ? `<section class="zeit-pdf-section">${zeitHeading("Zertifikate", "certifications")}<ul>${zeitCertifications
         .map((item) => `<li>${escapeHtml(item)}</li>`)
         .join("")}</ul></section>`
     : "";
@@ -1426,16 +1496,16 @@ export const buildDocumentHtml = (
     const isContinuation = plan.pageNumber > 1;
     const isLastPage = plan.pageNumber === resumePlan.length;
     const experienceMarkup = experienceItems
-      ? `<section class="zeit-pdf-section">${zeitHeading(atsMode ? "Berufserfahrung" : "Erfahrung", "▣")}<div class="zeit-pdf-list">${experienceItems}</div></section>`
+      ? `<section class="zeit-pdf-section">${zeitHeading(atsMode ? "Berufserfahrung" : "Erfahrung", "experience")}<div class="zeit-pdf-list">${experienceItems}</div></section>`
       : "";
     const educationMarkup = educationItems
-      ? `<section class="zeit-pdf-section">${zeitHeading("Ausbildung", "⌂")}<div class="zeit-pdf-list">${educationItems}</div></section>`
+      ? `<section class="zeit-pdf-section">${zeitHeading("Ausbildung", "education")}<div class="zeit-pdf-list">${educationItems}</div></section>`
       : "";
 
     if (atsMode) {
       const summaryMarkup =
         sections.profile && !isContinuation
-          ? `<section class="zeit-pdf-section">${zeitHeading("Zusammenfassung", "≡")}<p class="zeit-pdf-summary">${escapeHtml(docs.resumeProfile || profile?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>`
+          ? `<section class="zeit-pdf-section">${zeitHeading("Zusammenfassung", "summary")}<p class="zeit-pdf-summary">${escapeHtml(docs.resumeProfile || profile?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>`
           : "";
       return `
         <section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="zeitgenoessisch" data-no-fit="true">
@@ -1456,7 +1526,7 @@ export const buildDocumentHtml = (
 
     const summaryMarkup =
       sections.profile && !isContinuation
-        ? `<section class="zeit-pdf-section">${zeitHeading("Zusammenfassung", "≡")}<p class="zeit-pdf-summary">${escapeHtml(docs.resumeProfile || profile?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>`
+        ? `<section class="zeit-pdf-section">${zeitHeading("Zusammenfassung", "summary")}<p class="zeit-pdf-summary">${escapeHtml(docs.resumeProfile || profile?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>`
         : "";
     const leftMarkup = isContinuation
       ? ""
@@ -1489,7 +1559,7 @@ export const buildDocumentHtml = (
               }
             </main>
           </div>
-          <footer class="zeit-pdf-footer">${footerLink}<span>Seite ${plan.pageNumber} von ${resumePlan.length}</span></footer>
+          <footer class="zeit-pdf-footer">${footerLink}${resumePlan.length > 1 ? `<span>Seite ${plan.pageNumber} von ${resumePlan.length}</span>` : ""}</footer>
         </div>
       </section>`;
   };
@@ -1840,6 +1910,8 @@ export const buildDocumentHtml = (
       </section>`;
   };
 
+  const ivyProfessionalLink =
+    profile?.linkedin || profile?.portfolio || profile?.github || "";
   const ivyContactValues = [
     {
       value: profile?.phone || "",
@@ -1852,15 +1924,10 @@ export const buildDocumentHtml = (
       href: profile?.email ? `mailto:${profile.email}` : "",
     },
     {
-      value: profile?.linkedin || "",
-      href: profile?.linkedin ? externalHref(profile.linkedin) : "",
-    },
-    {
-      value: profile?.portfolio || profile?.github || "",
-      href:
-        profile?.portfolio || profile?.github
-          ? externalHref(profile?.portfolio || profile?.github || "")
-          : "",
+      value: ivyProfessionalLink
+        ? externalHref(ivyProfessionalLink)
+        : "",
+      href: ivyProfessionalLink ? externalHref(ivyProfessionalLink) : "",
     },
     {
       value: [profile?.city, profile?.country].filter(Boolean).join(", "),
@@ -1954,9 +2021,9 @@ export const buildDocumentHtml = (
     : "";
   const ivyWatercolor = `
     <svg class="ivy-pdf-watercolor" viewBox="0 0 210 297" preserveAspectRatio="none" aria-hidden="true">
-      <defs><filter id="ivy-pdf-blur"><feGaussianBlur stdDeviation="5"/></filter><linearGradient id="ivy-pdf-paper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eef9f8"/><stop offset=".48" stop-color="#fbfdf9"/><stop offset="1" stop-color="#fff8e9"/></linearGradient></defs>
+      <defs><filter id="ivy-pdf-watercolor" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".012 .025" numOctaves="3" seed="17" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="6" xChannelSelector="R" yChannelSelector="B"/><feGaussianBlur stdDeviation="3.4"/></filter><linearGradient id="ivy-pdf-paper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eef9f8"/><stop offset=".48" stop-color="#fbfdf9"/><stop offset="1" stop-color="#fff8e9"/></linearGradient></defs>
       <rect width="210" height="297" fill="url(#ivy-pdf-paper)"/>
-      <g filter="url(#ivy-pdf-blur)" opacity=".62">
+      <g filter="url(#ivy-pdf-watercolor)" opacity=".52">
         <path d="M-18 4C18-9 48 1 73 24c16 15 15 38-4 55-25 23-63 30-91 12z" fill="#d9f1f4"/>
         <path d="M123-15c34 4 78 1 106 30v59c-34 7-79-8-97-31-13-17-15-38-9-58z" fill="#fff1d8"/>
         <path d="M-12 93c38-20 81-12 101 17 20 28-3 56-42 62-28 5-52-2-66-20z" fill="#e3f5ed"/>
@@ -2029,7 +2096,7 @@ export const buildDocumentHtml = (
         ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Zusammenfassung</h3><p class="ivy-pdf-summary">${escapeHtml(docs.resumeProfile || profile?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>`
         : "";
     const footerLink = ivyPortfolio
-      ? `<a href="${escapeHtml(externalHref(ivyPortfolio))}">${escapeHtml(ivyPortfolio)}</a>`
+      ? `<a href="${escapeHtml(externalHref(ivyPortfolio))}">${escapeHtml(externalHref(ivyPortfolio))}</a>`
       : "<span></span>";
     return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="ivy-league" data-no-fit="true">
       <div class="page-content ivy-pdf${atsMode ? " ivy-pdf-ats" : ""}" data-density="${plan.density}">
@@ -2043,7 +2110,7 @@ export const buildDocumentHtml = (
           ${isLastPage ? `${sections.skills ? ivyKnowledge : ""}${sections.languages ? (atsMode ? ivyAtsLanguages : ivyVisualLanguages) : ""}${atsMode && sections.skills ? ivyAtsStrengths : ""}${sections.certifications ? ivyCertifications : ""}` : ""}
           ${!experienceItems && !educationItems && plan.pageNumber === 1 ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}
         </div>
-        <footer class="ivy-pdf-footer">${footerLink}<span>Seite ${plan.pageNumber} / ${resumePlan.length}</span></footer>
+        <footer class="ivy-pdf-footer">${footerLink}${resumePlan.length > 1 ? `<span>Seite ${plan.pageNumber} / ${resumePlan.length}</span>` : ""}</footer>
       </div>
     </section>`;
   };

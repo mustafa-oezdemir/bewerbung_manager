@@ -65,8 +65,8 @@
     minmax(0, 6.25%)
     minmax(0, 65.35%);
   min-width: 0;
-  min-height: 42mm;
-  margin-bottom: 5.5mm;
+  min-height: 36.5mm;
+  margin-bottom: 1.5mm;
   break-after: avoid;
   page-break-after: avoid;
 }
@@ -92,6 +92,7 @@
     .zeitgenoessisch-header__kicker
   ) {
   display: inline-block;
+  width: 100%;
   max-width: 100%;
   margin: 4mm 0 0;
   padding: 2.6mm 4mm;
@@ -248,17 +249,7 @@
 }
 
 .zeitgenoessisch-columns::before {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 31.525%;
-  width: 0.3mm;
-  background: color-mix(
-    in srgb,
-    var(--zeit-primary),
-    transparent 64%
-  );
-  content: "";
+  display: none;
 }
 
 .zeitgenoessisch-columns--continuation {
@@ -272,6 +263,7 @@
 .zeitgenoessisch-left-column {
   grid-column: 1;
   min-width: 0;
+  padding-top: 12mm;
 }
 
 .zeitgenoessisch-main-column {
@@ -297,8 +289,6 @@
   gap: 2mm;
   min-width: 0;
   margin-bottom: 3mm;
-  padding-bottom: 1.4mm;
-  border-bottom: 0.45mm solid var(--zeit-primary);
   break-after: avoid;
   page-break-after: avoid;
 }
@@ -361,24 +351,29 @@
 }
 
 .zeitgenoessisch-contact-item__icon {
-  color: var(--zeit-primary-dark);
-  font-size: 7.2pt;
-  font-weight: 750;
-  line-height: 1.2;
-  text-align: center;
+  display: grid;
+  place-items: start center;
+  color: var(--zeit-primary);
+}
+
+.zeitgenoessisch-contact-item__icon svg {
+  width: 3.8mm;
+  height: 3.8mm;
+  stroke-width: 2.5;
 }
 
 .zeitgenoessisch-contact-item__value {
   min-width: 0;
   color: var(--zeit-text);
-  font-size: var(--zeit-body-size);
-  line-height: 1.25;
+  font-size: 7.7pt;
+  letter-spacing: -0.01em;
+  line-height: 1.28;
   overflow-wrap: anywhere;
 }
 
 .zeitgenoessisch-strengths__list {
   display: grid;
-  gap: 2.5mm;
+  gap: 4.5mm;
 }
 
 .zeitgenoessisch-strength {
@@ -400,10 +395,19 @@
 .zeitgenoessisch-strength h3 {
   margin: 0;
   color: var(--zeit-heading);
-  font-size: 9pt;
+  font-size: 9.5pt;
   font-weight: 700;
   line-height: 1.2;
   overflow-wrap: anywhere;
+}
+
+.zeitgenoessisch-strength p {
+  margin: 1.2mm 0 0;
+  color: var(--zeit-text);
+  font-size: var(--zeit-body-size);
+  line-height: var(--zeit-line-height);
+  hyphens: auto;
+  overflow-wrap: break-word;
 }
 
 .zeitgenoessisch-languages__list {
@@ -412,6 +416,14 @@
 }
 
 .zeitgenoessisch-language {
+  min-width: 0;
+}
+
+.zeitgenoessisch-language > div {
+  display: grid;
+  grid-template-columns: minmax(13mm, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.5mm;
   min-width: 0;
 }
 
@@ -425,14 +437,14 @@
   overflow-wrap: anywhere;
 }
 
-.zeitgenoessisch-language > div {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 2mm;
-  margin-top: 1mm;
+.zeitgenoessisch-language > div > span:not(
+    .zeitgenoessisch-language__dots
+  ) {
   color: var(--zeit-muted);
   font-size: 7.8pt;
+  font-weight: 600;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
 }
 
 .zeitgenoessisch-language__dots {
@@ -505,11 +517,10 @@
 }
 
 .zeitgenoessisch-career-entry__top h3 {
-  color: var(--zeit-primary-dark);
+  color: var(--zeit-heading);
   font-size: 10.5pt;
   font-weight: 750;
   line-height: 1.2;
-  text-transform: uppercase;
 }
 
 .zeitgenoessisch-career-entry__top span,
@@ -528,7 +539,7 @@
 .zeitgenoessisch-career-entry__role-row h4 {
   color: var(--zeit-heading);
   font-size: 9.2pt;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.2;
 }
 
@@ -709,7 +720,8 @@
 
 .zeitgenoessisch-ats .zeitgenoessisch-section-heading {
   gap: 0;
-  border-bottom-color: var(--zeit-divider);
+  padding-bottom: 1.4mm;
+  border-bottom: 0.45mm solid var(--zeit-divider);
 }
 
 .zeitgenoessisch-ats .zeitgenoessisch-career-entry__top,

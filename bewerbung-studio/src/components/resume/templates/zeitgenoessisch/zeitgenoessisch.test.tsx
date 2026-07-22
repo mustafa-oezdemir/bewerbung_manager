@@ -33,7 +33,11 @@ const profile = profileSchema.parse({
   linkedin: "linkedin.com/in/lenahoffmann",
   portfolio: "lena.example.com",
   summary: "Profil aus den Stammdaten",
-  skills: ["Kommunikation", "Prozessoptimierung", "Teamführung"],
+  skills: [
+    "Kommunikation: Abstimmungen zwischen Fachbereichen verbessert.",
+    "Prozessoptimierung",
+    "Teamführung",
+  ],
   experiences: [
     {
       id: firstExperienceId,
@@ -189,6 +193,10 @@ describe("Zeitgenössisch rendering", () => {
     expect(markup).toContain("zeitgenoessisch-main-column");
     expect(markup).toContain("Auf die Stelle zugeschnitten");
     expect(markup).toContain("Beispiel GmbH");
+    expect(markup).toContain(
+      "Abstimmungen zwischen Fachbereichen verbessert.",
+    );
+    expect(markup).toContain("https://linkedin.com/in/lenahoffmann");
     expect(markup).not.toContain("Zukunft AG");
   });
 

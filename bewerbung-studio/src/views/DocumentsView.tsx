@@ -34,12 +34,14 @@ import { analyzeKeywordMatch } from "../lib/keywordMatch";
 import {
   createResumePagePlan,
   getLetterPageStatus,
+  ivyLeaguePaginationOptions,
   kompaktPaginationOptions,
   kreativPaginationOptions,
   gepflegtPaginationOptions,
   modernPaginationOptions,
   tabellarischPaginationOptions,
   type ResumePagePlan,
+  zeitgenoessischPaginationOptions,
   zweispaltigPaginationOptions,
 } from "../shared/documentPagination";
 import {
@@ -374,11 +376,15 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
           ? kreativPaginationOptions
           : template.id === "gepflegt"
             ? gepflegtPaginationOptions
-            : template.id === "tabellarisch"
-              ? tabellarischPaginationOptions
-              : template.id === "modern"
-                ? modernPaginationOptions
-                : undefined,
+            : template.id === "zeitgenoessisch"
+              ? zeitgenoessischPaginationOptions
+              : template.id === "ivy-league"
+                ? ivyLeaguePaginationOptions
+                : template.id === "tabellarisch"
+                  ? tabellarischPaginationOptions
+                  : template.id === "modern"
+                    ? modernPaginationOptions
+                    : undefined,
   );
   const letterStatus = getLetterPageStatus(docs);
   const isAtsMode =

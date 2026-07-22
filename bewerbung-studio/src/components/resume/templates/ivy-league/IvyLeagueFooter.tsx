@@ -11,19 +11,24 @@ export function IvyLeagueFooter({
   totalPages: number;
 }) {
   const portfolio = profile?.portfolio || profile?.github || profile?.linkedin;
+  const portfolioHref = portfolio
+    ? toIvyLeagueExternalHref(portfolio)
+    : "";
   return (
     <footer
       className="ivy-league-footer"
       data-element-id="ivy-league.footer"
     >
       {portfolio ? (
-        <a href={toIvyLeagueExternalHref(portfolio)}>{portfolio}</a>
+        <a href={portfolioHref}>{portfolioHref}</a>
       ) : (
         <span />
       )}
-      <span>
-        Seite {pageNumber} / {totalPages}
-      </span>
+      {totalPages > 1 ? (
+        <span>
+          Seite {pageNumber} / {totalPages}
+        </span>
+      ) : null}
     </footer>
   );
 }

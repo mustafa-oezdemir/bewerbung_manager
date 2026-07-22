@@ -421,7 +421,7 @@
 
 .ivy-league-footer a {
   min-width: 0;
-  color: var(--ivy-primary);
+  color: var(--ivy-muted);
   text-decoration: none;
   overflow-wrap: anywhere;
 }

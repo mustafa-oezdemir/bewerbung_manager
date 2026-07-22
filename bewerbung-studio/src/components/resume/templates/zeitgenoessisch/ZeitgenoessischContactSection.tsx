@@ -1,16 +1,22 @@
-import type { ApplicantProfile } from "../../../../shared/schema";
 import {
-  toZeitgenoessischExternalHref,
-} from "./zeitgenoessisch.model";
+  AtSign,
+  Github,
+  Link2,
+  Linkedin,
+  MapPin,
+  Phone,
+} from "lucide-react";
+import type { ApplicantProfile } from "../../../../shared/schema";
+import { toZeitgenoessischExternalHref } from "./zeitgenoessisch.model";
 import { ZeitgenoessischSectionHeading } from "./ZeitgenoessischSectionHeading";
 
 const contactIcon = {
-  phone: "T",
-  email: "@",
-  portfolio: "W",
-  linkedin: "in",
-  location: "⌂",
-  github: "G",
+  phone: Phone,
+  email: AtSign,
+  portfolio: Link2,
+  linkedin: Linkedin,
+  location: MapPin,
+  github: Github,
 } as const;
 
 export function ZeitgenoessischContactSection({
@@ -36,14 +42,18 @@ export function ZeitgenoessischContactSection({
     },
     {
       kind: "portfolio",
-      value: profile?.portfolio,
+      value: profile?.portfolio
+        ? toZeitgenoessischExternalHref(profile.portfolio)
+        : "",
       href: profile?.portfolio
         ? toZeitgenoessischExternalHref(profile.portfolio)
         : "",
     },
     {
       kind: "linkedin",
-      value: profile?.linkedin,
+      value: profile?.linkedin
+        ? toZeitgenoessischExternalHref(profile.linkedin)
+        : "",
       href: profile?.linkedin
         ? toZeitgenoessischExternalHref(profile.linkedin)
         : "",
@@ -51,7 +61,9 @@ export function ZeitgenoessischContactSection({
     { kind: "location", value: location, href: "" },
     {
       kind: "github",
-      value: profile?.github,
+      value: profile?.github
+        ? toZeitgenoessischExternalHref(profile.github)
+        : "",
       href: profile?.github
         ? toZeitgenoessischExternalHref(profile.github)
         : "",
@@ -72,16 +84,34 @@ export function ZeitgenoessischContactSection({
       <ZeitgenoessischSectionHeading title="Kontakte" icon="contacts" />
       <div className="zeitgenoessisch-contact-list">
         {contacts.map((contact) => {
+          const Icon = contactIcon[contact.kind];
+          const urlBreakMarker =
+            contact.kind === "linkedin"
+              ? "/in/"
+              : contact.kind === "github"
+                ? "github.com/"
+                : "";
+          const urlBreakIndex = urlBreakMarker
+            ? contact.value.indexOf(urlBreakMarker) + urlBreakMarker.length
+            : 0;
           const content = (
             <>
               <span
                 className="zeitgenoessisch-contact-item__icon"
                 aria-hidden="true"
               >
-                {contactIcon[contact.kind]}
+                <Icon />
               </span>
               <span className="zeitgenoessisch-contact-item__value">
-                {contact.value}
+                {urlBreakIndex > urlBreakMarker.length ? (
+                  <>
+                    {contact.value.slice(0, urlBreakIndex)}
+                    <br />
+                    {contact.value.slice(urlBreakIndex)}
+                  </>
+                ) : (
+                  contact.value
+                )}
               </span>
             </>
           );

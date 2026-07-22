@@ -3,7 +3,10 @@ import type { ZeitgenoessischIcon } from "./zeitgenoessisch.types";
 
 const icons: Record<ZeitgenoessischIcon, ReactNode> = {
   contacts: (
-    <path d="M4 5.5h16v13H4zM7 9h4M7 12h7M7 15h5" />
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m3 7 9 6 9-6" />
+    </>
   ),
   strengths: (
     <path d="m12 3 2.5 5 5.5.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.5-.8z" />
@@ -11,7 +14,12 @@ const icons: Record<ZeitgenoessischIcon, ReactNode> = {
   languages: (
     <path d="M4 5h10M9 5c0 6-2 10-5 13M6 10c2 3 4 5 7 7M14 9h6M17 7v11M14 15h6" />
   ),
-  summary: <path d="M5 6h14M5 10h14M5 14h10M5 18h7" />,
+  summary: (
+    <>
+      <circle cx="12" cy="8" r="3" />
+      <path d="M6 20v-2a6 6 0 0 1 12 0v2" />
+    </>
+  ),
   experience: (
     <path d="M4 7h16v12H4zM9 7V4h6v3M4 12h16M10 12v2h4v-2" />
   ),

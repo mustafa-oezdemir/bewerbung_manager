@@ -32,25 +32,23 @@ export function ZeitgenoessischLanguagesSection({
             {atsMode ? (
               <p>{language.raw}</p>
             ) : (
-              <>
+              <div>
                 <h3>{language.name}</h3>
-                <div>
-                  <span>{language.level}</span>
-                  <span
-                    className="zeitgenoessisch-language__dots"
-                    aria-hidden="true"
-                  >
-                    {Array.from({ length: 5 }, (_, index) => (
-                      <i
-                        className={
-                          index < language.score ? "is-filled" : ""
-                        }
-                        key={index}
-                      />
-                    ))}
-                  </span>
-                </div>
-              </>
+                <span>{language.level}</span>
+                <span
+                  className="zeitgenoessisch-language__dots"
+                  aria-hidden="true"
+                >
+                  {Array.from({ length: 5 }, (_, index) => (
+                    <i
+                      className={
+                        index < language.score ? "is-filled" : ""
+                      }
+                      key={index}
+                    />
+                  ))}
+                </span>
+              </div>
             )}
           </article>
         ))}

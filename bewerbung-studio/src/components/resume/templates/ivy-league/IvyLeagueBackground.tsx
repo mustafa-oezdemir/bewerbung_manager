@@ -8,7 +8,13 @@ export function IvyLeagueBackground() {
       aria-hidden="true"
     >
       <defs>
-        <filter id="ivy-watercolor" x="-20%" y="-20%" width="140%" height="140%">
+        <filter
+          id="ivy-watercolor"
+          x="-20%"
+          y="-20%"
+          width="140%"
+          height="140%"
+        >
           <feTurbulence
             type="fractalNoise"
             baseFrequency="0.012 0.025"
@@ -19,11 +25,11 @@ export function IvyLeagueBackground() {
           <feDisplacementMap
             in="SourceGraphic"
             in2="noise"
-            scale="8"
+            scale="6"
             xChannelSelector="R"
             yChannelSelector="B"
           />
-          <feGaussianBlur stdDeviation="4.2" />
+          <feGaussianBlur stdDeviation="3.4" />
         </filter>
         <linearGradient id="ivy-paper" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#eef9f8" />
@@ -32,7 +38,7 @@ export function IvyLeagueBackground() {
         </linearGradient>
       </defs>
       <rect width="210" height="297" fill="url(#ivy-paper)" />
-      <g filter="url(#ivy-watercolor)" opacity=".78">
+      <g filter="url(#ivy-watercolor)" opacity=".52">
         <path
           d="M-18 4C18-9 48 1 73 24c16 15 15 38-4 55-25 23-63 30-91 12z"
           fill="#d9f1f4"

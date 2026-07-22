@@ -1,5 +1,5 @@
 import type { ApplicantProfile } from "../../../../shared/schema";
-import { uniqueZeitgenoessischValues } from "./zeitgenoessisch.model";
+import { parseTemplateStrengths } from "../resume-template-data";
 import { ZeitgenoessischSectionHeading } from "./ZeitgenoessischSectionHeading";
 
 export function ZeitgenoessischStrengthsSection({
@@ -9,7 +9,7 @@ export function ZeitgenoessischStrengthsSection({
   profile: ApplicantProfile | undefined;
   atsMode?: boolean;
 }) {
-  const strengths = uniqueZeitgenoessischValues(profile?.skills ?? []);
+  const strengths = parseTemplateStrengths(profile, 3);
   if (!strengths.length) return null;
 
   return (
@@ -20,12 +20,18 @@ export function ZeitgenoessischStrengthsSection({
       <ZeitgenoessischSectionHeading title="Stärken" icon="strengths" />
       <div className="zeitgenoessisch-strengths__list">
         {strengths.map((strength) => (
-          <article className="zeitgenoessisch-strength" key={strength}>
+          <article
+            className="zeitgenoessisch-strength"
+            key={`${strength.title}-${strength.description}`}
+          >
             <span
               className="zeitgenoessisch-strength__bullet"
               aria-hidden="true"
             />
-            <h3>{strength}</h3>
+            <div>
+              <h3>{strength.title}</h3>
+              {strength.description ? <p>{strength.description}</p> : null}
+            </div>
           </article>
         ))}
       </div>
