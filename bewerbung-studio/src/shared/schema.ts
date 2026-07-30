@@ -352,7 +352,8 @@ export const attachmentSchema = z.object({
   applicationId: z.uuid(),
   category: z.enum(attachmentCategories),
   fileName: z.string().min(1),
-  storedName: z.string().min(1),
+  storedName: z.string().min(1).optional(),
+  archiveRelativePath: z.string().min(1).optional(),
   description: optionalText,
   documentDate: optionalText,
   order: z.number().int().nonnegative(),
@@ -368,6 +369,7 @@ export const appSettingsSchema = z.object({
   autoBackupEnabled: z.boolean().default(true),
   backupRetention: z.number().int().min(3).max(50).default(10),
   autoSaveDelaySeconds: z.number().int().min(1).max(30).default(2),
+  sidebarCollapsed: z.boolean().default(false),
   language: z.literal("de"),
 });
 
@@ -403,5 +405,6 @@ export const defaultSettings: AppSettings = {
   autoBackupEnabled: true,
   backupRetention: 10,
   autoSaveDelaySeconds: 2,
+  sidebarCollapsed: false,
   language: "de",
 };

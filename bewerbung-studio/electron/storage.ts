@@ -10,8 +10,11 @@ import {
   writeFile,
 } from "node:fs/promises";
 import path from "node:path";
+import type { ApplicationPaths } from "../src/config/application-paths";
+import { resolveApplicationPaths } from "../src/config/application-paths";
 import {
   applicationInputSchema,
+  applicationDraftSchema,
   applicationSchema,
   appSettingsSchema,
   attachmentSchema,
@@ -21,6 +24,7 @@ import {
   type ApplicantProfile,
   type Application,
   type ApplicationInput,
+  type ApplicationDraft,
   type ApplicationStatus,
   type AppSettings,
   type Attachment,
@@ -38,6 +42,11 @@ import {
 import { ensureKnowledgeSection } from "../src/features/knowledge/knowledge.service";
 import { formatKnowledgeSectionAsText } from "../src/features/knowledge/knowledge.utils";
 import { buildCoverLetterMarkdown, buildDocumentHtml } from "./documents";
+import {
+  FileManagementService,
+  sanitizeFileName,
+} from "./file-management";
+import { LegacyMigrationService } from "./legacy-migration";
 
 const nowIso = () => new Date().toISOString();
 const createId = () => crypto.randomUUID();
@@ -130,15 +139,6 @@ const emptyWorkspace = (): Workspace => ({
   updatedAt: nowIso(),
 });
 
-export const sanitizeFileName = (value: string) =>
-  value
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[<>:"/\\|?*\u0000-\u001F]/g, "-")
-    .replace(/\s+/g, "_")
-    .replace(/[. ]+$/g, "")
-    .slice(0, 80) || "Bewerbung";
-
 const timestamp = () =>
   new Date().toISOString().replace(/\D/g, "").slice(0, 14);
 
@@ -166,39 +166,60 @@ const splitLanguage = (value: string) => {
 
 export class DataStore {
   readonly dataPath: string;
+  readonly files: FileManagementService;
+  readonly migration: LegacyMigrationService;
   private readonly workspacePath: string;
+  private readonly applicationDraftPath: string;
   private workspace: Workspace = emptyWorkspace();
 
-  constructor(documentsPath: string) {
-    this.dataPath = path.join(documentsPath, "BewerbungsManager", "data");
+  constructor(rootOrPaths: string | ApplicationPaths) {
+    const paths =
+      typeof rootOrPaths === "string"
+        ? resolveApplicationPaths(rootOrPaths)
+        : rootOrPaths;
+    this.files = new FileManagementService(paths);
+    this.migration = new LegacyMigrationService(paths);
+    this.dataPath = paths.dataRoot;
     this.workspacePath = path.join(this.dataPath, "Settings", "workspace.json");
+    this.applicationDraftPath = path.join(
+      this.dataPath,
+      "Settings",
+      "new-application-draft.json",
+    );
   }
 
   async initialize() {
-    const directories = [
-      "Bewerbungen",
-      "Lebenslauf",
-      "Anschreiben",
-      "Zeugnisse",
-      "Zertifikate",
-      path.join("Muster", "Anschreiben"),
-      path.join("Muster", "Lebenslauf"),
-      path.join("Muster", "Deckblatt"),
-      "Profile",
-      "Settings",
-      "Backups",
-    ];
-    await Promise.all(
-      directories.map((directory) =>
-        mkdir(path.join(this.dataPath, directory), { recursive: true }),
-      ),
-    );
+    await this.files.initialize();
     this.workspace = await this.loadWorkspace();
     await this.persist();
   }
 
   getWorkspace() {
     return structuredClone(this.workspace);
+  }
+
+  async getApplicationDraft() {
+    try {
+      const parsed: unknown = JSON.parse(
+        await readFile(this.applicationDraftPath, "utf8"),
+      );
+      return applicationDraftSchema.parse(parsed);
+    } catch {
+      return null;
+    }
+  }
+
+  async saveApplicationDraft(draft: ApplicationDraft) {
+    const validated = applicationDraftSchema.parse(draft);
+    await this.atomicWrite(
+      this.applicationDraftPath,
+      JSON.stringify(validated, null, 2),
+    );
+  }
+
+  async clearApplicationDraft() {
+    await rm(this.applicationDraftPath, { force: true });
+    await rm(`${this.applicationDraftPath}.bak`, { force: true });
   }
 
   private async loadWorkspace() {
@@ -283,7 +304,7 @@ export class DataStore {
   }
 
   private applicationPath(application: Application) {
-    return path.join(this.dataPath, "Bewerbungen", application.folderName);
+    return this.files.applicationDataPath(application.folderName);
   }
 
   getApplicationPath(id: string) {
@@ -293,24 +314,12 @@ export class DataStore {
   }
 
   private async ensureApplicationDirectories(application: Application) {
-    const root = this.applicationPath(application);
-    const folders = [
-      "Stellenanzeige",
-      "Anschreiben",
-      "Deckblatt",
-      "Lebenslauf",
-      "Zeugnisse",
-      "Zertifikate",
-      "Export",
-    ];
-    await Promise.all(
-      folders.map((folder) => mkdir(path.join(root, folder), { recursive: true })),
-    );
-    return root;
+    return this.files.ensureApplicationDirectories(application);
   }
 
   private async persistApplicationFiles(application: Application) {
-    const root = await this.ensureApplicationDirectories(application);
+    const { dataRoot, documents } =
+      await this.ensureApplicationDirectories(application);
     const profile = this.workspace.profiles.find(
       (item) =>
         item.id === application.profileId ||
@@ -318,23 +327,26 @@ export class DataStore {
     );
     await Promise.all([
       this.atomicWrite(
-        path.join(root, "bewerbung.json"),
+        path.join(dataRoot, "bewerbung.json"),
         JSON.stringify(applicationSchema.parse(application), null, 2),
       ),
       this.atomicWrite(
-        path.join(root, "Stellenanzeige", "stellenanzeige.json"),
+        path.join(dataRoot, "Stellenanzeige", "stellenanzeige.json"),
         JSON.stringify(application.job, null, 2),
       ),
       this.atomicWrite(
-        path.join(root, "Stellenanzeige", "stellenanzeige.txt"),
+        path.join(dataRoot, "Stellenanzeige", "stellenanzeige.txt"),
         application.job.fullText,
       ),
       this.atomicWrite(
-        path.join(root, "Anschreiben", `${sanitizeFileName(application.company.name)}.md`),
+        path.join(
+          documents.anschreiben,
+          `${sanitizeFileName(application.company.name)}.md`,
+        ),
         buildCoverLetterMarkdown(application, profile),
       ),
       this.atomicWrite(
-        path.join(root, "Export", "bewerbungsmappe.html"),
+        path.join(dataRoot, "Export", "bewerbungsmappe.html"),
         buildDocumentHtml(application, profile, "mappe"),
       ),
     ]);
@@ -489,7 +501,9 @@ export class DataStore {
   async createApplication(rawInput: ApplicationInput) {
     const input = applicationInputSchema.parse(rawInput);
     const now = nowIso();
-    const folderName = `${sanitizeFileName(input.company.name)}_${timestamp()}`;
+    const folderName = await this.files.allocateApplicationFolderName(
+      input.company.name,
+    );
     const application: Application = {
       schemaVersion: 1,
       id: createId(),
@@ -547,6 +561,7 @@ export class DataStore {
     if (application.status !== status) {
       const now = nowIso();
       const previous = application.status;
+      await this.files.transitionApplicationDocuments(application, status);
       application.status = status;
       application.updatedAt = now;
       application.statusHistory.push({ at: now, from: previous, to: status, note: "" });
@@ -581,10 +596,13 @@ export class DataStore {
     const source = this.workspace.applications.find((item) => item.id === id);
     if (!source) throw new Error("Bewerbung wurde nicht gefunden.");
     const now = nowIso();
+    const folderName = await this.files.allocateApplicationFolderName(
+      source.company.name,
+    );
     const duplicate: Application = {
       ...structuredClone(source),
       id: createId(),
-      folderName: `${sanitizeFileName(source.company.name)}_${timestamp()}`,
+      folderName,
       status: "Entwurf",
       sentAt: undefined,
       rejectionAt: undefined,
@@ -644,20 +662,16 @@ export class DataStore {
     );
     if (!application) throw new Error("Bewerbung wurde nicht gefunden.");
     const sourceName = path.basename(sourcePath);
-    const storedName = `${timestamp()}_${sanitizeFileName(sourceName)}`;
-    const target = path.join(
-      this.applicationPath(application),
+    const archiveRelativePath = this.files.archiveRelativePath(
       category,
-      storedName,
+      sourcePath,
     );
-    await mkdir(path.dirname(target), { recursive: true });
-    await copyFile(sourcePath, target);
     const attachment = {
       id: createId(),
       applicationId,
       category,
       fileName: sourceName,
-      storedName,
+      archiveRelativePath,
       description: "",
       documentDate: "",
       order: application.attachmentIds.length,
@@ -671,6 +685,15 @@ export class DataStore {
   }
 
   private getAttachmentPath(attachment: Attachment) {
+    if (attachment.archiveRelativePath) {
+      return this.files.resolveArchivePath(
+        attachment.category,
+        attachment.archiveRelativePath,
+      );
+    }
+    if (!attachment.storedName) {
+      throw new Error("Der Dokumentverweis ist unvollständig.");
+    }
     const application = this.getApplication(attachment.applicationId);
     if (path.basename(attachment.storedName) !== attachment.storedName)
       throw new Error("Ungültiger gespeicherter Dateiname.");
@@ -700,6 +723,11 @@ export class DataStore {
     if (existing.applicationId !== attachment.applicationId)
       throw new Error("Die Zuordnung einer Datei kann nicht frei geändert werden.");
     if (existing.category !== attachment.category) {
+      if (existing.archiveRelativePath) {
+        throw new Error(
+          "Die Kategorie eines Archivdokuments kann nicht nachträglich geändert werden.",
+        );
+      }
       const oldPath = this.getAttachmentPath(existing);
       const newPath = this.getAttachmentPath(attachment);
       await mkdir(path.dirname(newPath), { recursive: true });
@@ -735,7 +763,9 @@ export class DataStore {
   async removeAttachment(id: string) {
     const attachment = this.workspace.attachments.find((item) => item.id === id);
     if (!attachment) throw new Error("Dokument wurde nicht gefunden.");
-    await rm(this.getAttachmentPath(attachment), { force: true });
+    if (!attachment.archiveRelativePath) {
+      await rm(this.getAttachmentPath(attachment), { force: true });
+    }
     this.workspace.attachments = this.workspace.attachments.filter(
       (item) => item.id !== id,
     );
@@ -1088,13 +1118,13 @@ export class DataStore {
       KENNTNISSE: knowledgeText,
       ...elegantData,
     };
-    const targetRoot = this.applicationPath(application);
+    const documentDirectories = this.files.documentDirectories(application);
     return {
       application,
       targetDirectories: {
-        anschreiben: path.join(targetRoot, "Anschreiben"),
-        deckblatt: path.join(targetRoot, "Deckblatt"),
-        lebenslauf: path.join(targetRoot, "Lebenslauf"),
+        anschreiben: documentDirectories.anschreiben,
+        deckblatt: documentDirectories.deckblatt,
+        lebenslauf: documentDirectories.lebenslauf,
       },
       requestedBaseName: application.company.name,
       data: templateData,
@@ -1132,6 +1162,60 @@ export class DataStore {
       JSON.stringify(workspaceSchema.parse(this.workspace), null, 2),
       "utf8",
     );
+  }
+
+  previewLegacyMigration(sourcePath: string) {
+    return this.migration.preview(sourcePath);
+  }
+
+  async migrateLegacyData(sourcePath: string) {
+    const hasUserData =
+      this.workspace.applications.length > 0 ||
+      this.workspace.profiles.length > 0 ||
+      this.workspace.events.length > 0 ||
+      this.workspace.attachments.length > 0;
+    if (hasUserData) {
+      throw new Error(
+        "Eine Migration ist nur möglich, solange der neue Datenbestand leer ist.",
+      );
+    }
+    const emergencyPath = path.join(
+      this.dataPath,
+      "Backups",
+      `vor-migration-${timestamp()}-${createId()}.json`,
+    );
+    await copyFile(this.workspacePath, emergencyPath);
+    const preview = await this.migration.preview(sourcePath);
+    const previous = this.workspace;
+    try {
+      this.workspace = await this.migration.migrate(sourcePath);
+      await this.persist();
+      await this.atomicWrite(
+        path.join(
+          this.dataPath,
+          "Backups",
+          `migration-${timestamp()}-${createId()}.json`,
+        ),
+        JSON.stringify(
+          {
+            migratedAt: nowIso(),
+            sourcePath: preview.sourcePath,
+            targetPath: this.dataPath,
+            fileCount: preview.fileCount,
+            totalBytes: preview.totalBytes,
+            applications: preview.applications,
+            attachments: preview.attachments,
+            sourceFilesDeleted: false,
+          },
+          null,
+          2,
+        ),
+      );
+      return this.getWorkspace();
+    } catch (error) {
+      this.workspace = previous;
+      throw error;
+    }
   }
 
   async importBackup(filePath: string) {

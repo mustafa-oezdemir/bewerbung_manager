@@ -21,7 +21,10 @@ anschließend unter `windows-release/`:
 - Startmenüeintrag und optionalen Desktop-Link prüfen.
 - Eine Bewerbung anlegen und die Anwendung schließen.
 - Neue Version über die vorhandene Installation installieren.
-- Prüfen, dass Daten unter `Dokumente/BewerbungsManager/data` erhalten bleiben.
+- Prüfen, dass Daten unter dem konfigurierten `BEWERBUNG_ROOT_PATH` erhalten
+  bleiben; Standard ist `D:\bewerbung_mustafa`.
+- Eine Migration nur über die bestätigte Funktion in den Einstellungen
+  ausführen. Die bisherige Quelle muss nach dem Kopieren unverändert bleiben.
 - Portable Ausgabe starten und denselben Datenbestand prüfen.
 - PDF-Export und JSON-Wiederherstellung testen.
 - SHA-256-Prüfsummen mit den ausgelieferten Dateien veröffentlichen.

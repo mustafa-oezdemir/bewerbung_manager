@@ -28,26 +28,41 @@ Erstellung eines konsistenten Sets aus Deckblatt, Anschreiben und Lebenslauf.
 
 ## Datenablage
 
-Die Anwendung legt ihre Daten unter
-`Dokumente/BewerbungsManager/data` an. Für jede Bewerbung entsteht:
+Die Anwendung verwaltet alle Daten standardmäßig unter
+`D:\bewerbung_mustafa`. Der Hauptordner kann vor dem Start über die
+Umgebungsvariable `BEWERBUNG_ROOT_PATH` geändert werden.
 
 ```text
-Bewerbungen/Firma_YYYYMMDDHHmmss/
-├── bewerbung.json
-├── Stellenanzeige/
-│   ├── stellenanzeige.json
-│   └── stellenanzeige.txt
-├── Anschreiben/
-├── Deckblatt/
-├── Lebenslauf/
-├── Zeugnisse/
-├── Zertifikate/
-└── Export/
+D:\bewerbung_mustafa
+├── data
+│   ├── Bewerbungen
+│   ├── Backups
+│   ├── Muster
+│   └── Settings
+├── Anschreiben
+│   └── Firma_YYYY-MM-DD
+├── Lebenslauf
+│   └── Firma_YYYY-MM-DD
+├── Zeugnisse
+├── Zertifikate
+└── Absagen
+    └── Firma_YYYY-MM-DD
 ```
 
 `Settings/workspace.json` ist der zentrale, versionierte Datensatz. Aktive
 Bewerbungen, Gespräche und Absagen sind gefilterte Ansichten dieses Datensatzes
 und keine separaten Kopien.
+
+Zeugnisse und Zertifikate bleiben in ihren zentralen Archivordnern. Eine
+Bewerbung speichert nur die relative Verknüpfung; die Datei wird nicht pro
+Bewerbung kopiert. Bei einer Absage werden firmenspezifische Anschreiben und
+Lebensläufe unter `Absagen/Firma_YYYY-MM-DD` verschoben, der Datensatz bleibt
+erhalten.
+
+Bestehende Daten können in den Einstellungen über **Bisherigen data-Ordner
+migrieren** übernommen werden. Vor dem Kopieren zeigt die Anwendung eine
+Vorschau und verlangt eine ausdrückliche Bestätigung. Quelldateien werden nicht
+gelöscht und vorhandene Zieldateien nicht überschrieben.
 
 ## Befehle
 

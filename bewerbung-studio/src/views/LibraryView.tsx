@@ -46,8 +46,8 @@ export function LibraryView() {
           <p className="eyebrow">Dokumentenablage</p>
           <h2>Zeugnisse & Zertifikate</h2>
           <p>
-            Originaldateien bleiben unverändert. Verwaltet wird ausschließlich
-            die sichere Kopie im jeweiligen Bewerbungsordner.
+            Dateien bleiben im zentralen Archiv und werden ohne zusätzliche
+            Kopie mit der Bewerbung verknüpft.
           </p>
         </div>
         {application && (
@@ -189,7 +189,7 @@ function ManagedDocument({
     void onSave({
       ...attachment,
       fileName: String(data.get("fileName")),
-      category: String(data.get("category")) as AttachmentCategory,
+      category: attachment.category,
       documentDate: String(data.get("documentDate")),
       description: String(data.get("description")),
       includedInPackage: data.get("includedInPackage") === "on",
@@ -210,10 +210,7 @@ function ManagedDocument({
           </label>
           <label className="field">
             <span>Kategorie</span>
-            <select name="category" defaultValue={attachment.category}>
-              <option>Zeugnisse</option>
-              <option>Zertifikate</option>
-            </select>
+            <input value={attachment.category} disabled />
           </label>
           <label className="field">
             <span>Dokumentdatum</span>

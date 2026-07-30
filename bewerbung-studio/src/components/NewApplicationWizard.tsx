@@ -49,37 +49,25 @@ const defaults: ApplicationInput = {
   notes: "",
 };
 
-const draftStorageKey = "bewerbungsmanager-new-application-draft-v1";
-
-const loadDraft = (): ApplicationInput => {
-  try {
-    const rawDraft = window.localStorage.getItem(draftStorageKey);
-    if (!rawDraft) return defaults;
-    const result = applicationDraftSchema.safeParse(JSON.parse(rawDraft));
-    if (!result.success) {
-      window.localStorage.removeItem(draftStorageKey);
-      return defaults;
-    }
-    return {
-      ...defaults,
-      ...result.data,
-      company: { ...defaults.company, ...result.data.company },
-      contact: { ...defaults.contact, ...result.data.contact },
-      job: { ...defaults.job, ...result.data.job },
-      designSettings: {
-        ...defaults.designSettings,
-        ...result.data.designSettings,
-      },
-    };
-  } catch {
-    window.localStorage.removeItem(draftStorageKey);
-    return defaults;
-  }
+const mergeDraft = (draft: unknown): ApplicationInput => {
+  const result = applicationDraftSchema.safeParse(draft);
+  if (!result.success) return defaults;
+  return {
+    ...defaults,
+    ...result.data,
+    company: { ...defaults.company, ...result.data.company },
+    contact: { ...defaults.contact, ...result.data.contact },
+    job: { ...defaults.job, ...result.data.job },
+    designSettings: {
+      ...defaults.designSettings,
+      ...result.data.designSettings,
+    },
+  };
 };
 
 export function NewApplicationWizard({ onClose }: Props) {
   const [step, setStep] = useState(1);
-  const [draftDefaults] = useState(loadDraft);
+  const [draftReady, setDraftReady] = useState(false);
   const completedRef = useRef(false);
   const createApplication = useAppStore((state) => state.createApplication);
   const profiles = useAppStore((state) => state.workspace.profiles);
@@ -90,6 +78,7 @@ export function NewApplicationWizard({ onClose }: Props) {
     register,
     handleSubmit,
     setValue,
+    reset,
     watch,
     trigger,
     formState: { errors, isSubmitting },
@@ -97,9 +86,11 @@ export function NewApplicationWizard({ onClose }: Props) {
     resolver: zodResolver(
       applicationInputSchema,
     ) as Resolver<ApplicationInput>,
-    defaultValues: draftDefaults,
+    defaultValues: defaults,
   });
   const selectedTemplateId = watch("templateId");
+  const sentAt = watch("sentAt");
+  const deadlineAt = watch("deadlineAt");
   const selectedTemplate = useMemo(
     () =>
       templates.find((template) => template.id === selectedTemplateId) ??
@@ -108,26 +99,42 @@ export function NewApplicationWizard({ onClose }: Props) {
   );
 
   useEffect(() => {
+    let active = true;
+    void window.bewerbungsManager.applicationDraft.get().then((draft) => {
+      if (!active) return;
+      reset(mergeDraft(draft));
+      setDraftReady(true);
+    });
+    return () => {
+      active = false;
+    };
+  }, [reset]);
+
+  useEffect(() => {
+    if (!draftReady) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let latestValue: unknown;
+    const saveDraft = (value: unknown) => {
+      const result = applicationDraftSchema.safeParse(value);
+      if (result.success) {
+        void window.bewerbungsManager.applicationDraft.save(result.data);
+      }
+    };
     const subscription = watch((value) => {
       latestValue = value;
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
-        window.localStorage.setItem(draftStorageKey, JSON.stringify(value));
+        saveDraft(value);
       }, autoSaveDelaySeconds * 1_000);
     });
     return () => {
       subscription.unsubscribe();
       if (timer) clearTimeout(timer);
       if (!completedRef.current && latestValue) {
-        window.localStorage.setItem(
-          draftStorageKey,
-          JSON.stringify(latestValue),
-        );
+        saveDraft(latestValue);
       }
     };
-  }, [autoSaveDelaySeconds, watch]);
+  }, [autoSaveDelaySeconds, draftReady, watch]);
 
   const next = async () => {
     const fields =
@@ -143,7 +150,7 @@ export function NewApplicationWizard({ onClose }: Props) {
   const submit = handleSubmit(async (input) => {
     await createApplication(input);
     completedRef.current = true;
-    window.localStorage.removeItem(draftStorageKey);
+    await window.bewerbungsManager.applicationDraft.clear();
     onClose();
   });
 
@@ -259,7 +266,7 @@ export function NewApplicationWizard({ onClose }: Props) {
                   <span>Bewerbungsdatum</span>
                   <input
                     type="date"
-                    defaultValue={draftDefaults.sentAt?.slice(0, 10)}
+                    value={sentAt?.slice(0, 10) ?? ""}
                     onChange={(event) =>
                       setValue(
                         "sentAt",
@@ -274,7 +281,7 @@ export function NewApplicationWizard({ onClose }: Props) {
                   <span>Bewerbungsfrist</span>
                   <input
                     type="date"
-                    defaultValue={draftDefaults.deadlineAt?.slice(0, 10)}
+                    value={deadlineAt?.slice(0, 10) ?? ""}
                     onChange={(event) =>
                       setValue(
                         "deadlineAt",

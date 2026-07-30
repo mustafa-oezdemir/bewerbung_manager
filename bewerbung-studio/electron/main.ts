@@ -1,4 +1,5 @@
 import path from "node:path";
+import { mkdirSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
@@ -12,6 +13,7 @@ import {
 } from "electron";
 import {
   appSettingsSchema,
+  applicationDraftSchema,
   applicationInputSchema,
   applicationSchema,
   attachmentSchema,
@@ -40,6 +42,32 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const isDevelopment = Boolean(process.env.VITE_DEV_SERVER_URL);
+const applicationPaths = resolveApplicationPaths(
+  undefined,
+  path.join(
+    __dirname,
+    isDevelopment ? "../public/templates" : "../dist/templates",
+  ),
+);
+const electronDataPath = path.join(applicationPaths.dataRoot, "Electron");
+const electronSessionPath = path.join(
+  applicationPaths.dataRoot,
+  "ElectronSession",
+);
+const logsPath = path.join(applicationPaths.dataRoot, "Logs");
+const crashDumpsPath = path.join(applicationPaths.dataRoot, "CrashDumps");
+for (const directory of [
+  electronDataPath,
+  electronSessionPath,
+  logsPath,
+  crashDumpsPath,
+]) {
+  mkdirSync(directory, { recursive: true });
+}
+app.setPath("userData", electronDataPath);
+app.setPath("sessionData", electronSessionPath);
+app.setPath("logs", logsPath);
+app.setPath("crashDumps", crashDumpsPath);
 
 if (process.platform === "win32") app.setAppUserModelId(appId);
 
@@ -80,6 +108,13 @@ const createMainWindow = async () => {
 
 const registerIpc = () => {
   ipcMain.handle("workspace:get", () => store.getWorkspace());
+  ipcMain.handle("application-draft:get", () => store.getApplicationDraft());
+  ipcMain.handle("application-draft:save", (_event, value: unknown) =>
+    store.saveApplicationDraft(applicationDraftSchema.parse(value)),
+  );
+  ipcMain.handle("application-draft:clear", () =>
+    store.clearApplicationDraft(),
+  );
   ipcMain.handle("applications:create", (_event, value: unknown) =>
     store.createApplication(applicationInputSchema.parse(value)),
   );
@@ -253,6 +288,7 @@ const registerIpc = () => {
       );
       if (!category) throw new Error("Ungültige Dokumentkategorie.");
       const selection = await dialog.showOpenDialog(mainWindow!, {
+        defaultPath: store.files.archiveRootForCategory(category),
         title: `${category} hinzufügen`,
         properties: ["openFile"],
         filters: [{ name: "PDF-Dokumente", extensions: ["pdf"] }],
@@ -405,6 +441,33 @@ const registerIpc = () => {
     if (result.canceled || !result.filePaths[0]) return null;
     return store.importSettings(result.filePaths[0]);
   });
+  ipcMain.handle("migration:import-legacy", async () => {
+    const selection = await dialog.showOpenDialog(mainWindow!, {
+      title: "Bisherigen data-Ordner auswählen",
+      properties: ["openDirectory"],
+    });
+    if (selection.canceled || !selection.filePaths[0]) return null;
+    const preview = await store.previewLegacyMigration(selection.filePaths[0]);
+    const megabytes = (preview.totalBytes / 1024 / 1024).toFixed(1);
+    const confirmation = await dialog.showMessageBox(mainWindow!, {
+      type: "warning",
+      title: "Datenmigration bestätigen",
+      message: "Bestehende Bewerbungsdaten in den neuen Hauptordner kopieren?",
+      detail: [
+        `Quelle: ${preview.sourcePath}`,
+        `${preview.applications} Bewerbungen, ${preview.attachments} Dokumentverknüpfungen`,
+        `${preview.fileCount} Dateien (${megabytes} MB)`,
+        "",
+        "Die Quelldateien bleiben unverändert. Vorhandene Zieldateien werden nicht überschrieben.",
+      ].join("\n"),
+      buttons: ["Sicher kopieren", "Abbrechen"],
+      defaultId: 1,
+      cancelId: 1,
+      noLink: true,
+    });
+    if (confirmation.response !== 0) return null;
+    return store.migrateLegacyData(preview.sourcePath);
+  });
   ipcMain.handle("system:open-external", async (_event, rawUrl: unknown) => {
     const url = new URL(String(rawUrl));
     if (!["http:", "https:"].includes(url.protocol))
@@ -439,17 +502,9 @@ const notifyDueEvents = () => {
 };
 
 app.whenReady().then(async () => {
-  store = new DataStore(app.getPath("documents"));
+  store = new DataStore(applicationPaths);
   await store.initialize();
-  templateService = new TemplateService(
-    resolveApplicationPaths(
-      app.getPath("documents"),
-      path.join(
-        __dirname,
-        isDevelopment ? "../public/templates" : "../dist/templates",
-      ),
-    ),
-  );
+  templateService = new TemplateService(applicationPaths);
   await templateService.initialize();
   registerIpc();
   await createMainWindow();

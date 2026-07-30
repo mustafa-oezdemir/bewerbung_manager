@@ -60,6 +60,7 @@ type StoreState = {
   importBackup: () => Promise<void>;
   exportSettings: () => Promise<void>;
   importSettings: () => Promise<void>;
+  importLegacyData: () => Promise<void>;
   openFolder: (id: string) => Promise<void>;
   clearMessage: () => void;
 };
@@ -186,7 +187,7 @@ export const useAppStore = create<StoreState>((set, get) => {
       await perform(
         () =>
           window.bewerbungsManager.attachments.add(applicationId, category),
-        "Dokument wurde sicher kopiert.",
+        "Dokument wurde aus dem zentralen Archiv verknüpft.",
       );
     },
     async saveAttachment(attachment) {
@@ -207,7 +208,7 @@ export const useAppStore = create<StoreState>((set, get) => {
       if (!apiAvailable()) return;
       await perform(
         () => window.bewerbungsManager.attachments.remove(id),
-        "Verwaltete Dokumentkopie wurde entfernt.",
+        "Dokumentverknüpfung wurde entfernt.",
       );
     },
     async openAttachment(id) {
@@ -301,6 +302,33 @@ export const useAppStore = create<StoreState>((set, get) => {
             error instanceof Error
               ? error.message
               : "Einstellungen konnten nicht importiert werden.",
+        });
+      }
+    },
+    async importLegacyData() {
+      if (!apiAvailable()) return;
+      set({ loading: true, error: undefined });
+      try {
+        const workspace =
+          await window.bewerbungsManager.migration.importLegacy();
+        if (workspace) {
+          set({
+            workspace,
+            selectedApplicationId: workspace.applications[0]?.id,
+            loading: false,
+            notice:
+              "Bestehende Daten wurden kopiert und in die neue Ordnerstruktur übernommen.",
+          });
+        } else {
+          set({ loading: false });
+        }
+      } catch (error) {
+        set({
+          loading: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Die Datenmigration ist fehlgeschlagen.",
         });
       }
     },

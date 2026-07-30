@@ -1,6 +1,7 @@
 import type {
   ApplicantProfile,
   Application,
+  ApplicationDraft,
   ApplicationInput,
   ApplicationStatus,
   AppSettings,
@@ -20,6 +21,13 @@ import type {
 
 export type ExportTarget = "deckblatt" | "anschreiben" | "lebenslauf" | "mappe";
 export type ProfileMediaKind = "photo" | "signature";
+export type LegacyMigrationPreview = {
+  sourcePath: string;
+  fileCount: number;
+  totalBytes: number;
+  applications: number;
+  attachments: number;
+};
 
 export type PickedProfileMedia = {
   dataUrl: string;
@@ -29,6 +37,11 @@ export type PickedProfileMedia = {
 export interface BewerbungsManagerApi {
   workspace: {
     get: () => Promise<Workspace>;
+  };
+  applicationDraft: {
+    get: () => Promise<ApplicationDraft | null>;
+    save: (draft: ApplicationDraft) => Promise<void>;
+    clear: () => Promise<void>;
   };
   applications: {
     create: (input: ApplicationInput) => Promise<Workspace>;
@@ -84,6 +97,9 @@ export interface BewerbungsManagerApi {
     importBackup: () => Promise<Workspace | null>;
     settings: () => Promise<string | null>;
     importSettings: () => Promise<Workspace | null>;
+  };
+  migration: {
+    importLegacy: () => Promise<Workspace | null>;
   };
   system: {
     openExternal: (url: string) => Promise<void>;

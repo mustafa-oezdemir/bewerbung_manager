@@ -62,11 +62,10 @@ export default function App() {
   const [view, setView] = useState<View>("home");
   const [wizardOpen, setWizardOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(
-    () => window.localStorage.getItem("sidebar-collapsed") === "true",
-  );
   const hydrate = useAppStore((state) => state.hydrate);
   const workspace = useAppStore((state) => state.workspace);
+  const saveSettings = useAppStore((state) => state.saveSettings);
+  const sidebarCollapsed = workspace.settings.sidebarCollapsed;
   const loading = useAppStore((state) => state.loading);
   const error = useAppStore((state) => state.error);
   const notice = useAppStore((state) => state.notice);
@@ -109,13 +108,6 @@ export default function App() {
     setSidebarOpen(false);
   }, [view]);
 
-  useEffect(() => {
-    window.localStorage.setItem(
-      "sidebar-collapsed",
-      String(sidebarCollapsed),
-    );
-  }, [sidebarCollapsed]);
-
   const counts = useMemo(
     () => ({
       active: workspace.applications.filter(
@@ -156,7 +148,12 @@ export default function App() {
           aria-label={sidebarCollapsed ? "Navigation ausklappen" : "Navigation einklappen"}
           aria-expanded={!sidebarCollapsed}
           title={sidebarCollapsed ? "Navigation ausklappen" : "Navigation einklappen"}
-          onClick={() => setSidebarCollapsed((current) => !current)}>
+          onClick={() =>
+            void saveSettings({
+              ...workspace.settings,
+              sidebarCollapsed: !sidebarCollapsed,
+            })
+          }>
           {sidebarCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
         </button>
         <button

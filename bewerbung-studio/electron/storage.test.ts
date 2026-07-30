@@ -1,4 +1,11 @@
-import { mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
+import {
+  access,
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -128,5 +135,95 @@ describe("DataStore backups", () => {
     expect(snapshotHtml).toContain("--accent:#16b8b5");
     expect(snapshotHtml).toContain("--secondary:#087573");
     expect(snapshotHtml).toContain("background-dots");
+  });
+
+  it("creates company-date folders and keeps repeated applications unique", async () => {
+    const first = await store.createApplication(applicationInput("Siemens"));
+    const firstApplication = first.applications[0];
+    expect(firstApplication.folderName).toMatch(
+      /^Siemens_\d{4}-\d{2}-\d{2}$/,
+    );
+    const second = await store.createApplication(applicationInput("Siemens"));
+    const secondApplication = second.applications[0];
+    expect(secondApplication.folderName).toBe(
+      `${firstApplication.folderName}_2`,
+    );
+    await expect(
+      access(
+        path.join(
+          store.files.paths.anschreibenDocuments,
+          firstApplication.folderName,
+        ),
+      ),
+    ).resolves.toBeUndefined();
+    await expect(
+      access(
+        path.join(
+          store.files.paths.lebenslaufDocuments,
+          firstApplication.folderName,
+        ),
+      ),
+    ).resolves.toBeUndefined();
+  });
+
+  it("links central archive documents without copying or deleting them", async () => {
+    const created = await store.createApplication(
+      applicationInput("Archive GmbH"),
+    );
+    const application = created.applications[0];
+    const certificatePath = path.join(
+      store.files.paths.zertifikateArchive,
+      "Certificate.pdf",
+    );
+    await writeFile(certificatePath, "certificate");
+
+    const linked = await store.addAttachment(
+      application.id,
+      "Zertifikate",
+      certificatePath,
+    );
+    const attachment = linked.attachments[0];
+    expect(attachment.archiveRelativePath).toBe("Certificate.pdf");
+    expect(attachment.storedName).toBeUndefined();
+    expect(store.getAttachmentPathById(attachment.id)).toBe(certificatePath);
+
+    await store.removeAttachment(attachment.id);
+    await expect(readFile(certificatePath, "utf8")).resolves.toBe(
+      "certificate",
+    );
+  });
+
+  it("keeps the record and archives company documents when status becomes Absage", async () => {
+    const created = await store.createApplication(
+      applicationInput("Absage GmbH"),
+    );
+    const application = created.applications[0];
+    const active = store.files.documentDirectories(application);
+    await writeFile(path.join(active.lebenslauf, "Lebenslauf.docx"), "resume");
+
+    const rejected = await store.changeStatus(application.id, "Absage");
+    const rejectedApplication = rejected.applications.find(
+      (item) => item.id === application.id,
+    );
+    expect(rejectedApplication?.status).toBe("Absage");
+    const rejectedDirectories = store.files.documentDirectories(
+      rejectedApplication!,
+    );
+    await expect(
+      readFile(
+        path.join(rejectedDirectories.lebenslauf, "Lebenslauf.docx"),
+        "utf8",
+      ),
+    ).resolves.toBe("resume");
+  });
+
+  it("persists and clears the new-application draft below data/Settings", async () => {
+    const draft = applicationInput("Draft GmbH");
+    await store.saveApplicationDraft(draft);
+    await expect(store.getApplicationDraft()).resolves.toMatchObject({
+      company: { name: "Draft GmbH" },
+    });
+    await store.clearApplicationDraft();
+    await expect(store.getApplicationDraft()).resolves.toBeNull();
   });
 });

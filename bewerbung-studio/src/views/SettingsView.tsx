@@ -18,6 +18,7 @@ export function SettingsView() {
   const importBackup = useAppStore((state) => state.importBackup);
   const exportSettings = useAppStore((state) => state.exportSettings);
   const importSettings = useAppStore((state) => state.importSettings);
+  const importLegacyData = useAppStore((state) => state.importLegacyData);
   const [dataPath, setDataPath] = useState("Wird geladen …");
   useEffect(() => {
     if (window.bewerbungsManager) {
@@ -125,6 +126,13 @@ export function SettingsView() {
             </button>
             <button className="button secondary" type="button" onClick={() => void importSettings()}>
               <Upload size={17} /> Einstellungen importieren
+            </button>
+            <button
+              className="button secondary"
+              type="button"
+              onClick={() => void importLegacyData()}
+            >
+              <Database size={17} /> Bisherigen data-Ordner migrieren
             </button>
           </div>
         </section>

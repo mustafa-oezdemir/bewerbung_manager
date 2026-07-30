@@ -168,10 +168,7 @@ export class TemplateService {
 
   async duplicateTemplate(templateId: string) {
     const template = await this.requireTemplate(templateId);
-    const targetRoot =
-      template.source === "existing-document"
-        ? this.paths.anschreibenDocuments
-        : path.dirname(template.filePath);
+    const targetRoot = path.dirname(template.filePath);
     const targetPath = await createUniqueFilePath(
       targetRoot,
       `${path.basename(template.fileName, template.extension)}_Kopie`,
@@ -205,8 +202,16 @@ export class TemplateService {
     options: { atsMode?: boolean } = {},
   ): Promise<CreatedDocumentResult> {
     const template = await this.requireTemplate(templateId);
+    const allowedDocumentRoots = [
+      this.paths.applicationsData,
+      this.paths.anschreibenDocuments,
+      this.paths.lebenslaufDocuments,
+      this.paths.absagenRoot,
+    ];
     if (
-      !isPathInside(path.join(this.paths.dataRoot, "Bewerbungen"), targetDirectory)
+      !allowedDocumentRoots.some((root) =>
+        isPathInside(root, targetDirectory),
+      )
     ) {
       throw new TemplateError("Ungültiger Zielordner.", "INVALID_PATH");
     }

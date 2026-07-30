@@ -5,6 +5,11 @@ const api: BewerbungsManagerApi = {
   workspace: {
     get: () => ipcRenderer.invoke("workspace:get"),
   },
+  applicationDraft: {
+    get: () => ipcRenderer.invoke("application-draft:get"),
+    save: (draft) => ipcRenderer.invoke("application-draft:save", draft),
+    clear: () => ipcRenderer.invoke("application-draft:clear"),
+  },
   applications: {
     create: (input) => ipcRenderer.invoke("applications:create", input),
     save: (application) => ipcRenderer.invoke("applications:save", application),
@@ -64,6 +69,9 @@ const api: BewerbungsManagerApi = {
     importBackup: () => ipcRenderer.invoke("export:import-backup"),
     settings: () => ipcRenderer.invoke("export:settings"),
     importSettings: () => ipcRenderer.invoke("export:import-settings"),
+  },
+  migration: {
+    importLegacy: () => ipcRenderer.invoke("migration:import-legacy"),
   },
   system: {
     openExternal: (url) => ipcRenderer.invoke("system:open-external", url),
