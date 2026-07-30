@@ -145,6 +145,40 @@ describe("Lebenslauf-Dokumente", () => {
     expect(html).toContain("content.dataset.fitScale");
   });
 
+  it("justifies only the body paragraphs of exported cover letters", () => {
+    const html = buildDocumentHtml(application, profile, "anschreiben");
+
+    expect(html).toContain(
+      ".letter-body{text-align:justify;text-justify:inter-word;hyphens:auto}",
+    );
+    expect(html.match(/<p class="letter-body">/g)).toHaveLength(5);
+    expect(html).toContain("<p>Sehr geehrte Damen und Herren,</p>");
+  });
+
+  it("places the applicant contact details above the cover letter rule", () => {
+    const html = buildDocumentHtml(application, profile, "anschreiben");
+
+    expect(html).toContain('<span class="sender-name">Mina Kaya</span>');
+    expect(html).toContain(
+      '<span class="sender-contact">Berlin · mina@example.com</span>',
+    );
+    expect(html).toContain(
+      ".sender-name{color:var(--ink);font-size:14pt;font-weight:400;line-height:1.2}",
+    );
+    expect(html).toContain(
+      ".sender-contact{margin-top:.8mm;font-size:11pt;line-height:1.25}",
+    );
+    expect(html).toContain(
+      ".sender{margin-bottom:2mm;color:var(--muted);text-align:center}",
+    );
+    expect(html.indexOf('<div class="sender">')).toBeLessThan(
+      html.indexOf('<div class="rule"></div>'),
+    );
+    expect(html.indexOf('<div class="rule"></div>')).toBeLessThan(
+      html.indexOf('<div class="recipient">'),
+    );
+  });
+
   it("limits a long resume to two complete A4 sheets", () => {
     const denseProfile = profileSchema.parse({
       ...profile,
@@ -296,6 +330,13 @@ describe("Lebenslauf-Dokumente", () => {
     expect(resumeHtml).toContain(imageData);
     expect(letterHtml).toContain("signature-image");
     expect(letterHtml).toContain(imageData);
+    expect(letterHtml).toContain(
+      '<span class="signature-name">Mina Kaya</span>',
+    );
+    expect(letterHtml).not.toContain("<strong>Mina Kaya</strong>");
+    expect(letterHtml).toContain(
+      ".signature p{margin:0}.signature-image",
+    );
   });
 
   it("renders the Elegant PDF with a full-height right sidebar and no empty photo placeholder", () => {

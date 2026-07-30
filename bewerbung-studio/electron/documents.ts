@@ -214,6 +214,28 @@ const senderLine = (profile?: ApplicantProfile) =>
         .join(" · ")
     : "Bitte unter Profile Ihre Absenderdaten ergänzen.";
 
+const senderHeader = (profile?: ApplicantProfile) => {
+  if (!profile) {
+    return (
+      '<span class="sender-name">Vorname Nachname</span>' +
+      '<span class="sender-contact">E-Mail · Telefon</span>'
+    );
+  }
+  const details = [
+    profile.street,
+    `${profile.postalCode} ${profile.city}`.trim(),
+    profile.email,
+    profile.phone,
+  ]
+    .filter(Boolean)
+    .map(escapeHtml)
+    .join(" · ");
+  return (
+    `<span class="sender-name">${escapeHtml(fullName(profile))}</span>` +
+    `<span class="sender-contact">${details}</span>`
+  );
+};
+
 const documentCss = (
   accent: string,
   secondary: string,
@@ -239,10 +261,10 @@ const documentCss = (
   h1,h2,h3{font-family:var(--heading-font);font-weight:var(--heading-weight)}h1{font-size:29pt;line-height:1.05;margin:8mm 0 4mm}h2{font-size:14pt;color:var(--accent);margin:8mm 0 3mm}
   h3{font-size:11pt;margin:0 0 1mm}.muted{color:var(--muted)}p,li{font-size:var(--body-size);line-height:var(--body-line)}
   .cover-content{display:flex;flex-direction:column;justify-content:flex-end}.cover-content h1{font-size:36pt;max-width:145mm}
-  .contact{padding-top:8mm;border-top:1px solid var(--line)}.sender{font-size:8.5pt;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:2mm}
+  .contact{padding-top:8mm;border-top:1px solid var(--line)}.sender{margin-bottom:2mm;color:var(--muted);text-align:center}.sender-name,.sender-contact{display:block}.sender-name{color:var(--ink);font-size:14pt;font-weight:400;line-height:1.2}.sender-contact{margin-top:.8mm;font-size:11pt;line-height:1.25}
   .recipient{margin-top:13mm;min-height:35mm}.date{text-align:right}.subject{font-weight:800;font-size:12pt;margin:8mm 0 5mm}
-  .signature{margin-top:8mm}.signature-image{display:block;width:auto;max-width:48mm;height:auto;max-height:16mm;margin:2mm 0 1mm;object-fit:contain;object-position:left center}
-  .letter-content{padding:var(--doc-margin)}.letter-content>p:not(.date,.subject){margin:0 0 calc(var(--section-gap) * .72)}
+  .signature{display:flex;flex-direction:column;align-items:flex-start;margin-top:8mm}.signature p{margin:0}.signature-image{display:block;width:auto;max-width:48mm;height:auto;max-height:14mm;margin:1mm 0 .5mm;object-fit:contain;object-position:left center}.signature-name{font-weight:400;line-height:1.2}
+  .letter-content{padding:var(--doc-margin)}.letter-content>p:not(.date,.subject){margin:0 0 calc(var(--section-gap) * .72)}.letter-body{text-align:justify;text-justify:inter-word;hyphens:auto}
   .letter-compact .letter-content{padding:16mm 20mm}.letter-compact .rule{margin-bottom:15mm}.letter-compact .recipient{margin-top:10mm;min-height:30mm}.letter-compact p{font-size:9.6pt;line-height:1.42}.letter-compact .signature{margin-top:6mm}
   .letter-dense .letter-content{padding:14mm 18mm}.letter-dense .rule{height:3px;margin-bottom:10mm}.letter-dense .recipient{margin-top:7mm;min-height:24mm}.letter-dense p{font-size:9pt;line-height:1.32}.letter-dense .letter-content>p:not(.date,.subject){margin-bottom:2.6mm}.letter-dense .subject{margin:5mm 0 3mm}.letter-dense .signature{margin-top:4mm}
   .cv-page{padding:0;display:grid;grid-template:"header header" auto "main side" 1fr/64% 36%;overflow:hidden}
@@ -688,18 +710,18 @@ export const buildDocumentHtml = (
     <section class="page letter-page letter-${letterStatus.density} ${designClasses}">
       ${backgroundLayer}
       <div class="page-content letter-content">
+        <div class="sender">${senderHeader(profile)}</div>
         <div class="rule"></div>
-        <div class="sender">${senderLine(profile)}</div>
         <div class="recipient">${addressBlock(application)}</div>
         <p class="date">${escapeHtml(profile?.city || application.company.city)}, ${today}</p>
         <p class="subject">${escapeHtml(docs.coverSubject || `Bewerbung als ${role}`)}</p>
         <p>${escapeHtml(salutation(application))},</p>
-        <p>${escapeHtml(docs.coverIntroduction || `die ausgeschriebene Position als ${role} bei ${company} spricht mich besonders an, weil sie fachliche Verantwortung mit konkretem Gestaltungsspielraum verbindet.`)}</p>
-        <p>${escapeHtml(docs.coverMotivation || "Meine Motivation entsteht aus der Möglichkeit, vorhandene Erfahrung gezielt einzusetzen, mich fachlich weiterzuentwickeln und gemeinsam mit Ihrem Team messbare Ergebnisse zu erzielen.")}</p>
-        <p>${escapeHtml(docs.coverQualification || profile?.summary || "Ich arbeite strukturiert, zuverlässig und lösungsorientiert. Neue Anforderungen erfasse ich schnell und überführe sie in nachvollziehbare, belastbare Ergebnisse.")}</p>
-        <p>${escapeHtml(docs.coverCompanyFit || `An ${company} überzeugt mich besonders die Verbindung aus professionellem Anspruch und zukunftsorientierter Arbeitsweise.`)}</p>
-        <p>${escapeHtml(docs.coverClosing || "Gerne überzeuge ich Sie in einem persönlichen Gespräch davon, welchen konkreten Beitrag ich in Ihrem Team leisten kann. Auf Ihren Terminvorschlag freue ich mich.")}</p>
-        <div class="signature"><p>Mit freundlichen Grüßen</p>${signatureSource ? `<img class="signature-image" src="${escapeHtml(signatureSource)}" alt="">` : ""}<strong>${escapeHtml(name)}</strong></div>
+        <p class="letter-body">${escapeHtml(docs.coverIntroduction || `die ausgeschriebene Position als ${role} bei ${company} spricht mich besonders an, weil sie fachliche Verantwortung mit konkretem Gestaltungsspielraum verbindet.`)}</p>
+        <p class="letter-body">${escapeHtml(docs.coverMotivation || "Meine Motivation entsteht aus der Möglichkeit, vorhandene Erfahrung gezielt einzusetzen, mich fachlich weiterzuentwickeln und gemeinsam mit Ihrem Team messbare Ergebnisse zu erzielen.")}</p>
+        <p class="letter-body">${escapeHtml(docs.coverQualification || profile?.summary || "Ich arbeite strukturiert, zuverlässig und lösungsorientiert. Neue Anforderungen erfasse ich schnell und überführe sie in nachvollziehbare, belastbare Ergebnisse.")}</p>
+        <p class="letter-body">${escapeHtml(docs.coverCompanyFit || `An ${company} überzeugt mich besonders die Verbindung aus professionellem Anspruch und zukunftsorientierter Arbeitsweise.`)}</p>
+        <p class="letter-body">${escapeHtml(docs.coverClosing || "Gerne überzeuge ich Sie in einem persönlichen Gespräch davon, welchen konkreten Beitrag ich in Ihrem Team leisten kann. Auf Ihren Terminvorschlag freue ich mich.")}</p>
+        <div class="signature"><p>Mit freundlichen Grüßen</p>${signatureSource ? `<img class="signature-image" src="${escapeHtml(signatureSource)}" alt="">` : ""}<span class="signature-name">${escapeHtml(name)}</span></div>
       </div>
     </section>`;
   const experienceById = new Map(

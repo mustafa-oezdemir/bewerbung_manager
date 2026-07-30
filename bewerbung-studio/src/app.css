@@ -1875,10 +1875,27 @@ kbd {
 }
 
 .letter-preview .sender-line {
-  padding-bottom: 2mm;
-  border-bottom: 1px solid #dfe2dd;
+  margin-bottom: 2mm;
   color: #697572;
-  font-size: 8pt;
+  text-align: center;
+}
+
+.letter-preview .sender-name,
+.letter-preview .sender-contact {
+  display: block;
+}
+
+.letter-preview .sender-name {
+  color: #222b2a;
+  font-size: 14pt;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.letter-preview .sender-contact {
+  margin-top: 0.8mm;
+  font-size: 11pt;
+  line-height: 1.25;
 }
 
 .letter-preview address {
@@ -1902,8 +1919,17 @@ kbd {
   margin: 0 0 4mm;
 }
 
+.letter-preview .letter-body {
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+}
+
 .letter-signature {
-  margin-top: 8mm;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 8mm 0 0;
 }
 
 .signature-image {
@@ -1911,10 +1937,15 @@ kbd {
   width: auto;
   max-width: 48mm;
   height: auto;
-  max-height: 16mm;
-  margin: 2mm 0 1mm;
+  max-height: 14mm;
+  margin: 1mm 0 0.5mm;
   object-fit: contain;
   object-position: left center;
+}
+
+.signature-name {
+  font-weight: 400;
+  line-height: 1.2;
 }
 
 .letter-compact {

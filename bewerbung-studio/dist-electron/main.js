@@ -4843,7 +4843,16 @@ var Vs = (e = "", t = 0) => ({
 	`${e.postalCode} ${e.city}`.trim(),
 	e.phone,
 	e.email
-].filter(Boolean).map(Z).join(" · ") : "Bitte unter Profile Ihre Absenderdaten ergänzen.", Oc = (e, t, n, r) => {
+].filter(Boolean).map(Z).join(" · ") : "Bitte unter Profile Ihre Absenderdaten ergänzen.", Oc = (e) => {
+	if (!e) return "<span class=\"sender-name\">Vorname Nachname</span><span class=\"sender-contact\">E-Mail · Telefon</span>";
+	let t = [
+		e.street,
+		`${e.postalCode} ${e.city}`.trim(),
+		e.email,
+		e.phone
+	].filter(Boolean).map(Z).join(" · ");
+	return `<span class="sender-name">${Z(Cc(e))}</span><span class="sender-contact">${t}</span>`;
+}, kc = (e, t, n, r) => {
 	let i = Ro(r.fontId), a = Ro(r.headingFontId);
 	return `
   :root{--accent:${e};--secondary:${t};--on-secondary:${n};--ink:#172026;--muted:#5c6870;--line:#d9e0e3;--doc-margin:${No[r.marginLevel]}mm;--section-gap:${Fo[r.sectionSpacingLevel]}mm;--body-size:${Lo[r.fontSize]}pt;--body-line:${Io[r.lineHeightLevel]};--body-font:${i.family};--heading-font:${a.family};--heading-weight:${a.headingWeight}}
@@ -4857,10 +4866,10 @@ var Vs = (e = "", t = 0) => ({
   h1,h2,h3{font-family:var(--heading-font);font-weight:var(--heading-weight)}h1{font-size:29pt;line-height:1.05;margin:8mm 0 4mm}h2{font-size:14pt;color:var(--accent);margin:8mm 0 3mm}
   h3{font-size:11pt;margin:0 0 1mm}.muted{color:var(--muted)}p,li{font-size:var(--body-size);line-height:var(--body-line)}
   .cover-content{display:flex;flex-direction:column;justify-content:flex-end}.cover-content h1{font-size:36pt;max-width:145mm}
-  .contact{padding-top:8mm;border-top:1px solid var(--line)}.sender{font-size:8.5pt;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:2mm}
+  .contact{padding-top:8mm;border-top:1px solid var(--line)}.sender{margin-bottom:2mm;color:var(--muted);text-align:center}.sender-name,.sender-contact{display:block}.sender-name{color:var(--ink);font-size:14pt;font-weight:400;line-height:1.2}.sender-contact{margin-top:.8mm;font-size:11pt;line-height:1.25}
   .recipient{margin-top:13mm;min-height:35mm}.date{text-align:right}.subject{font-weight:800;font-size:12pt;margin:8mm 0 5mm}
-  .signature{margin-top:8mm}.signature-image{display:block;width:auto;max-width:48mm;height:auto;max-height:16mm;margin:2mm 0 1mm;object-fit:contain;object-position:left center}
-  .letter-content{padding:var(--doc-margin)}.letter-content>p:not(.date,.subject){margin:0 0 calc(var(--section-gap) * .72)}
+  .signature{display:flex;flex-direction:column;align-items:flex-start;margin-top:8mm}.signature p{margin:0}.signature-image{display:block;width:auto;max-width:48mm;height:auto;max-height:14mm;margin:1mm 0 .5mm;object-fit:contain;object-position:left center}.signature-name{font-weight:400;line-height:1.2}
+  .letter-content{padding:var(--doc-margin)}.letter-content>p:not(.date,.subject){margin:0 0 calc(var(--section-gap) * .72)}.letter-body{text-align:justify;text-justify:inter-word;hyphens:auto}
   .letter-compact .letter-content{padding:16mm 20mm}.letter-compact .rule{margin-bottom:15mm}.letter-compact .recipient{margin-top:10mm;min-height:30mm}.letter-compact p{font-size:9.6pt;line-height:1.42}.letter-compact .signature{margin-top:6mm}
   .letter-dense .letter-content{padding:14mm 18mm}.letter-dense .rule{height:3px;margin-bottom:10mm}.letter-dense .recipient{margin-top:7mm;min-height:24mm}.letter-dense p{font-size:9pt;line-height:1.32}.letter-dense .letter-content>p:not(.date,.subject){margin-bottom:2.6mm}.letter-dense .subject{margin:5mm 0 3mm}.letter-dense .signature{margin-top:4mm}
   .cv-page{padding:0;display:grid;grid-template:"header header" auto "main side" 1fr/64% 36%;overflow:hidden}
@@ -4906,14 +4915,14 @@ var Vs = (e = "", t = 0) => ({
   .cv-entry,.cv-page section,.signature{break-inside:avoid;page-break-inside:avoid}.cv-page section>h3{break-after:avoid;page-break-after:avoid}
   @media print{body{background:#fff}.page{margin:0}.no-print-background{background:#fff!important}.no-print-background .document-background-layer{display:none!important}}
 `;
-}, kc = "\n  .elegant-pdf{--elegant-heading:#3b4247;--elegant-text:#4b5359;--elegant-muted:#6d757a;--elegant-line:#b9bfc3;--elegant-sidebar-muted:#f6eaea;display:grid;grid-template-columns:minmax(0,140mm) 70mm;width:100%;height:100%;color:var(--elegant-text);background:#fff;font-family:var(--body-font)}\n  .elegant-pdf *{box-sizing:border-box}\n  .elegant-pdf-main{position:relative;min-width:0;height:100%;padding:max(14mm,calc(var(--doc-margin) - 2mm)) max(10mm,calc(var(--doc-margin) - 6mm)) max(13mm,calc(var(--doc-margin) - 4mm)) var(--doc-margin);overflow:hidden;background:#fff}\n  .elegant-pdf-header{position:relative;padding-bottom:0}\n  .elegant-pdf-header-compact{padding-bottom:3.2mm;border-bottom:.3mm solid var(--elegant-line)}\n  .elegant-pdf-header .kicker{margin:0 0 2.2mm;color:var(--accent);font-size:7.7pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}\n  .elegant-pdf-header h1{margin:0;color:var(--elegant-heading);font-size:22pt;font-weight:500;letter-spacing:.01em;line-height:1.05;text-transform:uppercase;overflow-wrap:anywhere}\n  .elegant-pdf-header h2{margin:2mm 0 0;color:var(--accent);font-size:12pt;font-weight:400;line-height:1.25;overflow-wrap:anywhere}\n  .elegant-pdf-contacts{display:flex;flex-wrap:wrap;gap:1.2mm 3.5mm;margin:3.3mm 0 0;color:var(--elegant-text);font-size:8pt;font-style:normal;line-height:1.3}\n  .elegant-pdf-contacts a,.elegant-pdf-contacts>span{display:inline-flex;align-items:baseline;gap:1mm;min-width:0;color:inherit;text-decoration:none}\n  .elegant-pdf-contacts i{color:var(--elegant-line);font-size:9pt;font-style:normal}\n  .elegant-pdf-contacts span{min-width:0;overflow-wrap:anywhere}\n  .elegant-pdf-section{margin-top:var(--section-gap)}\n  .elegant-pdf-section>h3,.elegant-pdf-ats .knowledge-section>h3{display:block;margin:0 0 3.2mm;padding-bottom:1.5mm;border-bottom:.3mm solid var(--elegant-line);color:var(--elegant-heading);font-size:12pt;font-weight:500;letter-spacing:.055em;line-height:1.1;text-transform:uppercase}\n  .elegant-pdf-list{display:flex;flex-direction:column;gap:5mm}\n  .elegant-pdf-entry{break-inside:avoid;page-break-inside:avoid}\n  .elegant-pdf-entry-head{display:grid;grid-template-columns:minmax(0,1fr) max-content;gap:5mm;align-items:start}\n  .elegant-pdf-entry-head h4{margin:0;color:var(--elegant-heading);font-family:var(--heading-font);font-size:11pt;font-weight:500;line-height:1.2;overflow-wrap:anywhere}\n  .elegant-pdf-entry-head p{margin:.8mm 0 0;color:var(--accent);font-size:11pt;font-weight:400;line-height:1.2;overflow-wrap:anywhere}\n  .elegant-pdf-entry-meta{min-width:24mm;color:var(--elegant-muted);font-size:8pt;line-height:1.3;text-align:right}\n  .elegant-pdf-entry-meta strong,.elegant-pdf-entry-meta span{display:block}\n  .elegant-pdf-entry-meta span{margin-top:.6mm;overflow-wrap:anywhere}\n  .elegant-pdf-entry ul{margin:1.8mm 0 0;padding-left:4.5mm}\n  .elegant-pdf-entry li{margin:.6mm 0;padding-left:.4mm;color:var(--elegant-text);font-size:var(--body-size);line-height:var(--body-line)}\n  .elegant-pdf-entry li::marker{color:var(--accent)}\n  .elegant-pdf-sidebar{position:relative;display:flex;flex-direction:column;gap:var(--section-gap);min-width:0;height:100%;padding:max(13mm,calc(var(--doc-margin) - 3mm)) max(12mm,calc(var(--doc-margin) - 5mm));overflow:hidden;color:#fff;background:var(--secondary);box-shadow:inset 0 3.5mm 0 #600101}\n  .elegant-pdf-photo{display:block;width:27mm;height:27mm;margin:0 auto 8mm;overflow:hidden;border-radius:1.5mm;background:color-mix(in srgb,var(--secondary),white 12%);object-fit:cover}\n  .elegant-pdf-sidebar section{margin:0;break-inside:avoid;page-break-inside:avoid}\n  .elegant-pdf-sidebar section>h3{position:relative;margin:0 0 2.4mm;padding-bottom:1.6mm;border-bottom:.3mm solid rgb(255 255 255 / 75%);color:#fff;font-size:11.5pt;font-weight:400;letter-spacing:.075em;line-height:1.15;text-transform:uppercase}\n  .elegant-pdf-sidebar section p,.elegant-pdf-sidebar section li{color:var(--elegant-sidebar-muted);font-size:var(--body-size);line-height:var(--body-line)}\n  .elegant-pdf-sidebar section p{margin:0}\n  .elegant-pdf-sidebar section ul{margin:0;padding-left:4mm}\n  .elegant-pdf-sidebar .knowledge-category{margin-bottom:2.5mm}\n  .elegant-pdf-sidebar .knowledge-category h4,.elegant-pdf-sidebar .knowledge-subcategory h5{color:#fff;font-size:8.7pt}\n  .elegant-pdf-sidebar .knowledge-tags span{border-color:color-mix(in srgb,white,transparent 50%);color:#fff}\n  .elegant-pdf-strengths{display:grid;gap:3mm}\n  .elegant-pdf-strength{display:grid;grid-template-columns:6mm minmax(0,1fr);gap:2mm;align-items:start}\n  .elegant-pdf-strength i{color:#fff;font-size:11pt;font-style:normal;line-height:1}\n  .elegant-pdf-strength h4{margin:0 0 1.2mm;color:#fff;font-size:10pt;font-weight:400;line-height:1.2}\n  .elegant-pdf-strength p{margin:0;color:var(--elegant-sidebar-muted);font-size:var(--body-size);line-height:var(--body-line);overflow-wrap:anywhere}\n  .elegant-pdf-languages{display:grid;gap:3mm}\n  .elegant-pdf-language{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:1.8mm;align-items:center;color:var(--elegant-sidebar-muted)}\n  .elegant-pdf-language strong{color:#fff;font-size:var(--body-size);font-weight:400}\n  .elegant-pdf-language span{font-size:8pt}\n  .elegant-pdf-language-dots{display:flex;gap:.8mm}\n  .elegant-pdf-language-dots i{display:block;width:1.5mm;height:1.5mm;border-radius:50%;background:rgb(255 255 255 / 28%)}\n  .elegant-pdf-language-dots i.filled{background:#fff}\n  .elegant-pdf-continuation .kicker{color:var(--accent);font-size:8pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}\n  .elegant-pdf-continuation h2{margin:3.5mm 0 0;color:#fff;font-size:18pt;line-height:1.05;overflow-wrap:anywhere}\n  .elegant-pdf-continuation p{margin:1.8mm 0 0;color:var(--elegant-sidebar-muted)}\n  .elegant-pdf-continuation hr{width:18mm;height:.6mm;margin:6mm 0;border:0;background:var(--accent)}\n  .elegant-pdf-continuation a{display:block;margin-top:1.7mm;color:#fff;font-size:8.3pt;text-decoration:none;overflow-wrap:anywhere}\n  .elegant-pdf-footer{position:absolute;right:max(10mm,calc(var(--doc-margin) - 6mm));bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;color:var(--elegant-muted);font-size:7.2pt}\n  .elegant-pdf-footer a{color:var(--accent);text-decoration:none}\n  .elegant-pdf-footer span:last-child{margin-left:auto}\n  .elegant-pdf-ats{--elegant-heading:#3b4247;--elegant-text:#4b5359;--elegant-muted:#6d757a;--elegant-line:#b9bfc3;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--elegant-text);background:#fff}\n  .elegant-pdf-ats .elegant-pdf-contacts{display:block}\n  .elegant-pdf-ats .elegant-pdf-contacts a,.elegant-pdf-ats .elegant-pdf-contacts span{display:block;margin-top:.8mm}\n  .elegant-pdf-ats .elegant-pdf-entry-head{display:block}\n  .elegant-pdf-ats .elegant-pdf-entry-meta{margin-top:.8mm;text-align:left}\n  .elegant-pdf-ats .elegant-pdf-entry-meta strong,.elegant-pdf-ats .elegant-pdf-entry-meta span{display:inline}\n  .elegant-pdf-ats .elegant-pdf-entry-meta span:before{content:\" · \"}\n  .elegant-pdf-ats .knowledge-section{margin-top:var(--section-gap)}\n  .elegant-pdf-ats .knowledge-category h4,.elegant-pdf-ats .knowledge-subcategory h5{color:var(--elegant-heading)}\n", Ac = "\n  .zweispaltig-pdf{--zweispaltig-heading:#253746;--zweispaltig-text:#3f4d59;--zweispaltig-muted:#6b7782;--zweispaltig-divider:#9db7d1;position:relative;width:100%;height:100%;padding:max(14mm,calc(var(--doc-margin) - 3mm)) var(--doc-margin) max(13mm,calc(var(--doc-margin) - 4mm));overflow:hidden;color:var(--zweispaltig-text);background:#fff;font-family:var(--body-font)}\n  .zweispaltig-pdf *{box-sizing:border-box}\n  .zweispaltig-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8mm;padding-bottom:4.5mm;border-bottom:.4mm solid var(--zweispaltig-divider)}\n  .zweispaltig-pdf-header h1{margin:0;color:var(--accent);font-size:24pt;font-weight:750;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}\n  .zweispaltig-pdf-header h2{margin:1.5mm 0 0;color:var(--zweispaltig-heading);font-size:10.5pt;font-weight:650;letter-spacing:.055em;line-height:1.2;text-transform:uppercase;overflow-wrap:anywhere}\n  .zweispaltig-pdf-specializations{margin:1.4mm 0 0;color:color-mix(in srgb,var(--accent),#123f72 48%);font-size:8pt;font-weight:650;letter-spacing:.035em;line-height:1.25}\n  .zweispaltig-pdf-contacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.1mm 5mm;margin:3.2mm 0 0;color:var(--zweispaltig-muted);font-size:7.5pt;font-style:normal;line-height:1.2}\n  .zweispaltig-pdf-contacts a,.zweispaltig-pdf-contacts span{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:1.2mm;min-width:0;color:inherit;text-decoration:none}\n  .zweispaltig-pdf-contacts strong{color:var(--zweispaltig-heading)}\n  .zweispaltig-pdf-contacts i{min-width:0;font-style:normal;overflow-wrap:anywhere}\n  .zweispaltig-pdf-photo{display:block;width:23mm;height:23mm;overflow:hidden;border:.45mm solid var(--accent);border-radius:50%;background:color-mix(in srgb,var(--accent),white 90%);object-fit:cover}\n  .zweispaltig-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1.5mm 4mm;padding-bottom:3.5mm}\n  .zweispaltig-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--accent);font-size:7.3pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}\n  .zweispaltig-pdf-header.compact h1{font-size:15pt}\n  .zweispaltig-pdf-header.compact h2{margin:0;color:var(--zweispaltig-muted);font-size:8.6pt}\n  .zweispaltig-pdf-columns{display:grid;grid-template-columns:minmax(0,62%) minmax(0,38%)}\n  .zweispaltig-pdf-columns.continuation{grid-template-columns:minmax(0,1fr)}\n  .zweispaltig-pdf-main{min-width:0;padding-right:8mm}\n  .zweispaltig-pdf-sidebar{min-width:0;padding-left:8mm;border-left:.35mm solid var(--zweispaltig-divider)}\n  .zweispaltig-pdf-section,.zweispaltig-pdf-sidebar>section,.zweispaltig-pdf-sidebar>.knowledge-section{margin-top:var(--section-gap);break-inside:avoid;page-break-inside:avoid}\n  .zweispaltig-pdf-section>h3,.zweispaltig-pdf-sidebar section>h3,.zweispaltig-pdf-ats section>h3,.zweispaltig-pdf-ats .knowledge-section>h3{margin:0 0 2.5mm;padding-bottom:1.2mm;border-bottom:.45mm solid var(--accent);color:var(--accent);font-size:10.5pt;font-weight:750;letter-spacing:.075em;line-height:1.1;text-transform:uppercase}\n  .zweispaltig-pdf-summary{margin:0;hyphens:auto;overflow-wrap:break-word}\n  .zweispaltig-pdf-list{display:flex;flex-direction:column;gap:4.5mm}\n  .zweispaltig-pdf-entry{break-inside:avoid;page-break-inside:avoid}\n  .zweispaltig-pdf-entry-head{display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:start;gap:4mm}\n  .zweispaltig-pdf-entry-head h4{margin:0;color:var(--zweispaltig-heading);font-size:9.7pt;font-weight:750;line-height:1.18;overflow-wrap:anywhere}\n  .zweispaltig-pdf-entry-head p{margin:.7mm 0 0;color:var(--accent);font-size:8.5pt;font-weight:650;line-height:1.18;overflow-wrap:anywhere}\n  .zweispaltig-pdf-entry-meta{min-width:25mm;color:var(--zweispaltig-muted);font-size:7.5pt;line-height:1.25;text-align:right}\n  .zweispaltig-pdf-entry-meta strong,.zweispaltig-pdf-entry-meta span{display:block}\n  .zweispaltig-pdf-entry-meta span{margin-top:.5mm;overflow-wrap:anywhere}\n  .zweispaltig-pdf-entry ul,.zweispaltig-pdf-sidebar ul,.zweispaltig-pdf-ats ul{margin:1.5mm 0 0;padding-left:4.5mm}\n  .zweispaltig-pdf-entry li,.zweispaltig-pdf-sidebar li,.zweispaltig-pdf-ats li{margin:.5mm 0;padding-left:.3mm;hyphens:auto;overflow-wrap:break-word}\n  .zweispaltig-pdf-entry li::marker,.zweispaltig-pdf-sidebar li::marker,.zweispaltig-pdf-ats li::marker{color:var(--accent)}\n  .zweispaltig-pdf-sidebar .knowledge-category{margin-bottom:2.3mm}\n  .zweispaltig-pdf-sidebar .knowledge-category h4,.zweispaltig-pdf-sidebar .knowledge-subcategory h5{color:var(--zweispaltig-heading);font-size:8.4pt}\n  .zweispaltig-pdf-sidebar .knowledge-section p,.zweispaltig-pdf-sidebar .knowledge-section li{font-size:var(--body-size);line-height:var(--body-line)}\n  .zweispaltig-pdf-strengths{display:grid;gap:2.2mm}\n  .zweispaltig-pdf-strength{display:grid;grid-template-columns:4.2mm minmax(0,1fr);align-items:start;gap:1.7mm}\n  .zweispaltig-pdf-strength i{display:grid;width:3.8mm;height:3.8mm;place-items:center;border-radius:50%;color:#fff;background:var(--accent);font-size:6.8pt;font-style:normal;font-weight:800;line-height:1}\n  .zweispaltig-pdf-strength span{color:var(--zweispaltig-heading);font-size:var(--body-size);font-weight:650;line-height:1.25;overflow-wrap:anywhere}\n  .zweispaltig-pdf-footer{position:absolute;right:var(--doc-margin);bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;padding-top:1.4mm;border-top:.25mm solid var(--zweispaltig-divider);color:var(--zweispaltig-muted);font-size:7pt}\n  .zweispaltig-pdf-footer a{color:var(--accent);text-decoration:none;overflow-wrap:anywhere}\n  .zweispaltig-pdf-footer span:last-child{margin-left:auto}\n  .zweispaltig-pdf-ats{--zweispaltig-heading:#263641;--zweispaltig-text:#303c44;--zweispaltig-muted:#6b7782;--zweispaltig-divider:#c8d0d6;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--zweispaltig-text);background:#fff}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-header{display:block}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-contacts{display:block}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-contacts a,.zweispaltig-pdf-ats .zweispaltig-pdf-contacts span{display:block;margin-top:.7mm}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-contacts strong{margin-right:1.3mm}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-head{display:block}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta{margin-top:.7mm;text-align:left}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta strong,.zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta span{display:inline}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta span:before{content:\" · \"}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-section>h3,.zweispaltig-pdf-ats section>h3,.zweispaltig-pdf-ats .knowledge-section>h3{border-bottom-color:var(--zweispaltig-divider)}\n", jc = "\n  .zeit-pdf{--zeit-dark:#075e4e;--zeit-soft:#cbeccd;--zeit-pale:#e5f5ec;--zeit-heading:#374247;--zeit-text:#434d52;--zeit-muted:#687277;--zeit-divider:#d5deda;position:relative;width:100%;height:100%;padding:max(15mm,calc(var(--doc-margin) - 2mm)) var(--doc-margin) max(14mm,calc(var(--doc-margin) - 3mm));overflow:hidden;color:var(--zeit-text);background:#fff;font-family:var(--body-font)}\n  .zeit-pdf *{box-sizing:border-box}\n  .zeit-pdf-header{display:grid;grid-template-columns:minmax(0,28.4%) minmax(0,6.25%) minmax(0,65.35%);min-height:36.5mm;margin-bottom:1.5mm}\n  .zeit-pdf-identity{grid-column:3;min-width:0;padding-top:4mm}\n  .zeit-pdf-identity h1{margin:0;color:var(--zeit-heading);font-size:25pt;font-weight:350;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}\n  .zeit-pdf-identity h2{display:inline-block;width:100%;max-width:100%;margin:4mm 0 0;padding:2.6mm 4mm;border-radius:3.8mm;color:var(--zeit-dark);background:var(--zeit-soft);font-size:12.5pt;font-weight:600;letter-spacing:.045em;line-height:1.15;text-transform:uppercase;overflow-wrap:anywhere}\n  .zeit-pdf-photo-composition{position:relative;grid-column:1;width:50mm;max-width:100%;height:42mm}\n  .zeit-pdf-photo-composition span{position:absolute;display:block}\n  .zeit-pdf-photo-pale{top:1mm;left:0;width:42mm;height:39mm;border-radius:48% 52% 45% 55%/57% 40% 60% 43%;background:var(--zeit-pale);transform:rotate(-13deg)}\n  .zeit-pdf-photo-soft{top:-2mm;right:0;width:31mm;height:30mm;border-radius:58% 42% 62% 38%/44% 62% 38% 56%;background:color-mix(in srgb,var(--zeit-soft),var(--accent) 15%);transform:rotate(17deg)}\n  .zeit-pdf-photo-accent{right:2mm;bottom:0;width:24mm;height:23mm;border-radius:54% 46% 44% 56%/41% 55% 45% 59%;background:var(--accent);opacity:.92;transform:rotate(-11deg)}\n  .zeit-pdf-photo{position:absolute;top:3mm;left:5mm;z-index:2;display:block;width:36mm;height:36mm;border:1.8mm solid #fff;border-radius:50%;object-fit:cover}\n  .zeit-pdf-header.no-photo{min-height:29mm}.zeit-pdf-header.no-photo .zeit-pdf-identity{grid-column:1/-1;padding-top:0}\n  .zeit-pdf-header.compact{display:block;min-height:auto;margin-bottom:5mm;padding-bottom:3mm;border-bottom:.35mm solid var(--zeit-divider)}\n  .zeit-pdf-header.compact .zeit-pdf-identity{padding:0}.zeit-pdf-header.compact .kicker{margin:0 0 1.5mm;color:var(--zeit-dark);font-size:7.3pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}\n  .zeit-pdf-header.compact h1{font-size:15pt;font-weight:600}.zeit-pdf-header.compact h2{margin:0 0 0 3mm;padding:0;color:var(--zeit-muted);background:transparent;font-size:8.5pt}\n  .zeit-pdf-columns{position:relative;display:grid;grid-template-columns:minmax(0,28.4%) minmax(0,6.25%) minmax(0,65.35%)}\n  .zeit-pdf-columns:before{display:none}\n  .zeit-pdf-columns.continuation{display:block}.zeit-pdf-columns.continuation:before{display:none}\n  .zeit-pdf-left{grid-column:1;min-width:0;padding-top:12mm}.zeit-pdf-main{grid-column:3;min-width:0}\n  .zeit-pdf-section,.zeit-pdf-left>section{margin-top:var(--section-gap);break-inside:avoid;page-break-inside:avoid}\n  .zeit-pdf-left>section:first-child,.zeit-pdf-main>.zeit-pdf-section:first-child{margin-top:0}\n  .zeit-pdf-heading{display:flex;align-items:center;gap:2mm;margin:0 0 3mm}\n  .zeit-pdf-heading i{display:grid;flex:none;width:6.5mm;height:6.5mm;place-items:center;border-radius:1.5mm;color:var(--zeit-dark);background:var(--zeit-soft);font-style:normal}\n  .zeit-pdf-heading i svg{width:4mm;height:4mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.9}\n  .zeit-pdf-heading h3{margin:0;color:var(--zeit-dark);font-size:11pt;font-weight:750;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}\n  .zeit-pdf-summary{margin:0;color:var(--zeit-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}\n  .zeit-pdf-contacts{display:grid;gap:2.3mm}\n  .zeit-pdf-contact{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;min-width:0;color:inherit;font-size:7.7pt;letter-spacing:-.01em;line-height:1.28;text-decoration:none}\n  .zeit-pdf-contact i{display:grid;place-items:start center;color:var(--accent);font-style:normal}.zeit-pdf-contact i svg{width:3.8mm;height:3.8mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.5}.zeit-pdf-contact span{overflow-wrap:anywhere}\n  .zeit-pdf-strengths{display:grid;gap:4.5mm}.zeit-pdf-strength{display:grid;grid-template-columns:3.5mm minmax(0,1fr);gap:1.5mm;align-items:start}\n  .zeit-pdf-strength>i{width:2mm;height:2mm;margin-top:1.2mm;border-radius:50%;background:var(--accent)}.zeit-pdf-strength h4{margin:0;color:var(--zeit-heading);font-size:9.5pt;font-weight:700;line-height:1.2;overflow-wrap:anywhere}.zeit-pdf-strength p{margin:1.2mm 0 0;color:var(--zeit-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}\n  .zeit-pdf-languages{display:grid;gap:3mm}.zeit-pdf-language>div{display:grid;grid-template-columns:minmax(13mm,auto) minmax(0,1fr) auto;align-items:center;gap:1.5mm;min-width:0}.zeit-pdf-language h4{margin:0;color:var(--zeit-dark);font-size:8.8pt;font-weight:750;line-height:1.15;text-transform:uppercase;overflow-wrap:anywhere}.zeit-pdf-language>div>span:not(.zeit-pdf-dots){color:var(--zeit-muted);font-size:7.8pt;font-weight:600;line-height:1.15;overflow-wrap:anywhere}\n  .zeit-pdf-dots{display:flex;gap:.7mm}.zeit-pdf-dots i{display:block;width:1.35mm;height:1.35mm;border:.25mm solid var(--zeit-muted);border-radius:50%}.zeit-pdf-dots i.filled{border-color:var(--zeit-dark);background:var(--zeit-dark)}\n  .zeit-pdf-list{display:flex;flex-direction:column;gap:5mm}.zeit-pdf-entry{break-inside:avoid;page-break-inside:avoid}\n  .zeit-pdf-entry-top,.zeit-pdf-entry-role{display:grid;grid-template-columns:minmax(0,1fr) minmax(25mm,35mm);gap:5mm;align-items:start}\n  .zeit-pdf-entry-top h4,.zeit-pdf-entry-role h5{margin:0;overflow-wrap:anywhere}.zeit-pdf-entry-top h4{color:var(--zeit-heading);font-size:10.5pt;font-weight:750;line-height:1.2}\n  .zeit-pdf-entry-top span,.zeit-pdf-entry-role span{color:var(--zeit-muted);font-size:7.8pt;line-height:1.2;text-align:right;overflow-wrap:anywhere}\n  .zeit-pdf-entry-role{margin-top:.8mm}.zeit-pdf-entry-role h5{color:var(--zeit-heading);font-size:9.2pt;font-weight:400;line-height:1.2}\n  .zeit-pdf-entry ul,.zeit-pdf-left ul,.zeit-pdf-ats ul{margin:1.5mm 0 0;padding-left:4.5mm}.zeit-pdf-entry li,.zeit-pdf-left li,.zeit-pdf-ats li{margin:.5mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.zeit-pdf-entry li::marker,.zeit-pdf-left li::marker,.zeit-pdf-ats li::marker{color:var(--accent)}\n  .zeit-pdf-footer{position:absolute;right:var(--doc-margin);bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;color:var(--zeit-muted);font-size:7.2pt}.zeit-pdf-footer a{color:var(--zeit-dark);text-decoration:none}.zeit-pdf-footer span:last-child{margin-left:auto}\n  .zeit-pdf-ats{--zeit-dark:#075e4e;--zeit-heading:#263a35;--zeit-text:#303c39;--zeit-muted:#687277;--zeit-divider:#ccd6d2;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--zeit-text);background:#fff}\n  .zeit-pdf-ats .zeit-pdf-header{display:block;min-height:auto;margin:0;padding-bottom:4mm;border-bottom:.35mm solid var(--zeit-divider)}.zeit-pdf-ats .zeit-pdf-identity{padding:0}.zeit-pdf-ats .zeit-pdf-identity h1{font-size:20pt;font-weight:600}.zeit-pdf-ats .zeit-pdf-identity h2{margin:1.5mm 0 0;padding:0;background:transparent;font-size:10pt}\n  .zeit-pdf-ats-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 5mm;margin-top:3mm;font-size:7.8pt;font-style:normal}.zeit-pdf-ats-contacts a,.zeit-pdf-ats-contacts span{color:inherit;text-decoration:none;overflow-wrap:anywhere}\n  .zeit-pdf-ats .zeit-pdf-heading i{display:none}.zeit-pdf-ats .zeit-pdf-heading{gap:0;padding-bottom:1.4mm;border-bottom:.45mm solid var(--zeit-divider)}\n  .zeit-pdf-ats>section,.zeit-pdf-ats .knowledge-section{margin-top:var(--section-gap)}.zeit-pdf-ats>section>h3,.zeit-pdf-ats .knowledge-section>h3{margin:0 0 3mm;padding-bottom:1.4mm;border-bottom:.45mm solid var(--zeit-divider);color:var(--zeit-dark);font-size:11pt;font-weight:750;text-transform:uppercase}\n", Mc = "\n  .kreativ-pdf{--kreativ-dark:#075d4e;--kreativ-text:#465156;--kreativ-muted:#687277;--kreativ-divider:#b8c4c0;--kreativ-light:#d7dfdc;--kreativ-inactive:#e1e5e3;--kreativ-margin:calc(var(--doc-margin) + 1mm);--kreativ-column-gap:11mm;--kreativ-section-gap:var(--section-gap);--kreativ-entry-gap:4.5mm;position:relative;width:100%;height:100%;overflow:hidden;color:var(--kreativ-text);background:#fff;font-family:var(--body-font);font-size:var(--body-size);line-height:var(--body-line)}\n  .kreativ-pdf *{box-sizing:border-box}\n  .kreativ-pdf-header{position:relative;z-index:3;display:grid;grid-template-columns:minmax(0,1fr) 28mm;align-items:center;gap:10mm;width:100%;height:46mm;padding:12mm var(--kreativ-margin) 6mm;color:#fff;background:var(--accent)}\n  .kreativ-pdf-identity{min-width:0}.kreativ-pdf-identity h1{margin:0;color:inherit;font-size:23pt;font-weight:750;letter-spacing:.015em;line-height:1;overflow-wrap:anywhere}.kreativ-pdf-identity h2{margin:1.5mm 0 0;color:inherit;font-size:11.5pt;font-weight:650;line-height:1.15;overflow-wrap:anywhere}\n  .kreativ-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 8mm;max-width:118mm;margin:2.2mm 0 0;font-size:7.8pt;font-style:normal;line-height:1.15}.kreativ-pdf-contacts a,.kreativ-pdf-contacts>span{display:grid;grid-template-columns:3.2mm minmax(0,1fr);align-items:center;gap:1.1mm;min-width:0;color:inherit;text-decoration:none}.kreativ-pdf-contacts svg{width:3mm;height:3mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.4}.kreativ-pdf-contacts i{min-width:0;font-style:normal;overflow-wrap:anywhere}\n  .kreativ-pdf-photo{display:block;width:28mm;height:28mm;overflow:hidden;border-radius:1.8mm;background:rgba(255,255,255,.18);object-fit:cover}\n  .kreativ-pdf-header.no-photo{grid-template-columns:minmax(0,1fr)}\n  .kreativ-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1.5mm 4mm;height:auto;min-height:24mm;padding:12mm var(--kreativ-margin) 4mm;color:var(--kreativ-dark);background:#fff;border-bottom:.4mm solid var(--kreativ-divider)}\n  .kreativ-pdf-header.compact .kreativ-pdf-identity{display:contents}.kreativ-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--accent);font-size:7.3pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}.kreativ-pdf-header.compact h1{font-size:15pt}.kreativ-pdf-header.compact h2{margin:0;color:var(--kreativ-muted);font-size:8.7pt}\n  .kreativ-pdf-background{position:absolute;top:46mm;right:-9mm;z-index:1;width:78mm;height:78mm;fill:none;stroke:color-mix(in srgb,var(--accent),transparent 85%);stroke-width:.9;pointer-events:none}.kreativ-pdf-background .wide{stroke-dasharray:1.2 1.5}.kreativ-pdf-background .tight{stroke-dasharray:.8 1.2}\n  .kreativ-pdf-content{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,105fr) minmax(0,64fr);column-gap:var(--kreativ-column-gap);align-items:start;padding:10mm var(--kreativ-margin) max(13mm,calc(var(--kreativ-margin) - 2mm))}\n  .kreativ-pdf-content.continuation{display:block;padding-top:7mm}.kreativ-pdf-left{grid-column:1;min-width:0}.kreativ-pdf-right{position:relative;grid-column:2;min-width:0}\n  .kreativ-pdf-section,.kreativ-pdf-right>section{margin:0 0 var(--kreativ-section-gap);break-inside:avoid;page-break-inside:avoid}\n  .kreativ-pdf-title,.kreativ-pdf-right section>h3,.kreativ-pdf-ats>section>h3,.kreativ-pdf-ats .knowledge-section>h3{margin:0 0 3.5mm;padding-bottom:1.2mm;border-bottom:.65mm solid var(--kreativ-dark);color:var(--kreativ-dark);font-family:var(--heading-font);font-size:14pt;font-weight:750;letter-spacing:.025em;line-height:1;text-transform:uppercase}\n  .kreativ-pdf-summary{margin:0;color:var(--kreativ-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}\n  .kreativ-pdf-list{display:flex;flex-direction:column;gap:var(--kreativ-entry-gap)}.kreativ-pdf-entry{padding-bottom:3mm;border-bottom:.25mm dashed var(--kreativ-light);break-inside:avoid;page-break-inside:avoid}.kreativ-pdf-entry:last-child{padding-bottom:0;border-bottom:0}\n  .kreativ-pdf-entry h4,.kreativ-pdf-entry h5{margin:0;overflow-wrap:anywhere}.kreativ-pdf-entry h4{color:var(--kreativ-dark);font-size:11pt;font-weight:600;line-height:1.15}.kreativ-pdf-entry h5{margin-top:1mm;color:var(--accent);font-size:9.5pt;font-weight:750;line-height:1.2}\n  .kreativ-pdf-entry-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm;color:var(--kreativ-muted);font-size:7.8pt;line-height:1.2}.kreativ-pdf-entry-meta span+span:before{margin-right:1.5mm;color:var(--accent);content:\"·\"}\n  .kreativ-pdf-entry ul,.kreativ-pdf-right ul,.kreativ-pdf-ats ul{margin:0;padding-left:4.5mm}.kreativ-pdf-entry li,.kreativ-pdf-right li,.kreativ-pdf-ats li{margin:.5mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.kreativ-pdf-entry li::marker,.kreativ-pdf-right li::marker,.kreativ-pdf-ats li::marker{color:var(--accent)}\n  .kreativ-pdf-strengths{display:grid}.kreativ-pdf-strength{display:grid;grid-template-columns:7mm minmax(0,1fr);align-items:start;gap:2.5mm;min-width:0;margin-bottom:3mm;padding-bottom:3mm;border-bottom:.25mm dashed var(--kreativ-light)}.kreativ-pdf-strength:last-child{margin:0;padding:0;border:0}.kreativ-pdf-strength svg{width:5.5mm;height:5.5mm;color:var(--accent);fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.2}.kreativ-pdf-strength i{display:grid;place-items:center;width:5.5mm;height:5.5mm;color:var(--accent);font-size:9pt;font-style:normal}.kreativ-pdf-strength h4,.kreativ-pdf-strength span{margin:0;color:var(--kreativ-dark);font-size:9.4pt;font-weight:750;line-height:1.2;overflow-wrap:anywhere}.kreativ-pdf-strength p{margin:1.5mm 0 0;color:var(--kreativ-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}\n  .kreativ-pdf-languages{display:grid;gap:3mm}.kreativ-pdf-language h4{margin:0;color:var(--kreativ-dark);font-size:8.8pt;font-weight:750;line-height:1.15}.kreativ-pdf-language>div{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2mm;margin-top:1mm;color:var(--kreativ-muted);font-size:7.6pt}.kreativ-pdf-dots{display:flex;gap:1mm}.kreativ-pdf-dots i{display:block;width:3.5mm;height:3.5mm;border-radius:50%;background:var(--kreativ-inactive)}.kreativ-pdf-dots i.filled{background:var(--accent)}\n  .kreativ-pdf-skills{display:flex;flex-wrap:wrap;gap:2.5mm 4mm}.kreativ-pdf-skill{max-width:100%;padding:0 1.5mm 1.2mm;border-bottom:.3mm solid var(--kreativ-divider);color:var(--kreativ-text);font-size:8.4pt;font-weight:700;overflow-wrap:anywhere}\n  .kreativ-pdf-footer{position:absolute;right:var(--kreativ-margin);bottom:6mm;left:var(--kreativ-margin);z-index:3;display:flex;justify-content:space-between;gap:6mm;color:var(--kreativ-muted);font-size:7.2pt}.kreativ-pdf-footer a{color:var(--kreativ-dark);text-decoration:none}.kreativ-pdf-footer span:last-child{margin-left:auto}\n  .kreativ-pdf-ats{--kreativ-dark:#173b33;--kreativ-text:#303d3a;--kreativ-muted:#687277;--kreativ-divider:#b8c4c0;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--kreativ-text);background:#fff}\n  .kreativ-pdf-ats .kreativ-pdf-header{display:block;height:auto;min-height:auto;padding:0 0 4mm;color:var(--kreativ-dark);background:#fff;border-bottom:.4mm solid var(--kreativ-divider)}.kreativ-pdf-ats .kreativ-pdf-identity h1{font-size:20pt}.kreativ-pdf-ats .kreativ-pdf-identity h2{font-size:10pt}.kreativ-pdf-ats .kreativ-pdf-contacts{color:var(--kreativ-text)}\n  .kreativ-pdf-ats>section,.kreativ-pdf-ats .knowledge-section{margin-top:var(--section-gap)}.kreativ-pdf-ats .knowledge-category h4,.kreativ-pdf-ats .knowledge-subcategory h5{color:var(--kreativ-dark)}\n  .kreativ-pdf[data-density=\"compact\"]{--kreativ-section-gap:max(5mm,calc(var(--section-gap) - 1mm));--kreativ-entry-gap:3.7mm}.kreativ-pdf[data-density=\"dense\"]{--kreativ-section-gap:max(3.7mm,calc(var(--section-gap) - 2mm));--kreativ-entry-gap:2.8mm}.kreativ-pdf[data-density=\"dense\"] .kreativ-pdf-header{height:42mm;padding-top:6mm;padding-bottom:5mm}.kreativ-pdf[data-density=\"dense\"] .kreativ-pdf-identity h1{font-size:21pt}.kreativ-pdf[data-density=\"dense\"] .kreativ-pdf-content{padding-top:6mm}\n", Nc = "\n  .ivy-pdf{--ivy-heading:var(--accent);--ivy-accent:var(--secondary);--ivy-text:#3f4b50;--ivy-muted:#667177;--ivy-divider:color-mix(in srgb,var(--accent),#0b459a 38%);--ivy-inactive:#dce9e8;--ivy-margin:var(--doc-margin);position:relative;width:100%;height:100%;overflow:hidden;color:var(--ivy-text);background:transparent;font-family:var(--body-font)}\n  .ivy-pdf *{box-sizing:border-box}.ivy-pdf-watercolor{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none}.ivy-pdf-content{position:relative;z-index:2;height:100%;padding:max(11mm,calc(var(--ivy-margin) - 1mm)) var(--ivy-margin) max(13mm,calc(var(--ivy-margin) + 1mm))}\n  .ivy-pdf-header{min-height:19mm;margin:0 0 5.5mm;text-align:center}.ivy-pdf-header .kicker{margin:0 0 1.2mm;color:var(--ivy-muted);font-size:7.2pt}.ivy-pdf-header h1{margin:0;color:var(--ivy-heading);font-family:Georgia,\"Times New Roman\",serif;font-size:17.5pt;font-weight:700;letter-spacing:.015em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.ivy-pdf-header h2{margin:1.5mm 0 1.3mm;color:var(--ivy-accent);font-size:11.5pt;font-weight:400;line-height:1.2;overflow-wrap:anywhere}\n  .ivy-pdf-contacts{display:flex;flex-wrap:wrap;justify-content:center;gap:.7mm 2.3mm;margin:0;color:var(--ivy-text);font-size:7.8pt;font-style:normal;line-height:1.25}.ivy-pdf-contacts a,.ivy-pdf-contacts span{color:inherit;text-decoration:none;overflow-wrap:anywhere}.ivy-pdf-contacts i{color:var(--ivy-text);font-style:normal}.ivy-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;min-height:auto;margin-bottom:5mm;padding-bottom:2.5mm;border-bottom:.3mm solid var(--ivy-divider);text-align:left}.ivy-pdf-header.compact .kicker{flex-basis:100%}.ivy-pdf-header.compact h1{font-size:14pt}.ivy-pdf-header.compact h2{max-width:96mm;margin:0;font-size:8.5pt;text-align:right}\n  .ivy-pdf-section,.ivy-pdf>.ivy-pdf-content>.knowledge-section{position:relative;z-index:2;min-width:0;margin:0 0 var(--section-gap)}.ivy-pdf-title,.ivy-pdf .knowledge-section>h3{position:relative;margin:0 0 2.5mm;padding:0 0 1.5mm;border-bottom:.3mm solid var(--ivy-divider);color:var(--ivy-heading);font-family:Georgia,\"Times New Roman\",serif;font-size:13.5pt;font-weight:700;line-height:1.05;text-align:center;text-transform:none;break-after:avoid;page-break-after:avoid}.ivy-pdf-summary{margin:0;color:var(--ivy-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}\n  .ivy-pdf-strengths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3.5mm 8mm}.ivy-pdf-strength{display:grid;grid-template-columns:5.5mm minmax(0,1fr);gap:1.5mm;min-width:0;break-inside:avoid}.ivy-pdf-strength i{color:var(--ivy-accent);font-size:13pt;font-style:normal;line-height:1}.ivy-pdf-strength h3{margin:0 0 .8mm;color:var(--ivy-heading);font-size:9.5pt;font-weight:600;line-height:1.15;overflow-wrap:anywhere}.ivy-pdf-strength p{margin:0;font-size:var(--body-size);line-height:var(--body-line)}\n  .ivy-pdf-list{display:flex;flex-direction:column;gap:4.5mm}.ivy-pdf-entry{min-width:0;break-inside:avoid;page-break-inside:avoid}.ivy-pdf-entry-top,.ivy-pdf-entry-role{display:grid;grid-template-columns:minmax(0,1fr) minmax(32mm,auto);gap:8mm;align-items:baseline}.ivy-pdf-entry h3,.ivy-pdf-entry h4{margin:0;overflow-wrap:anywhere}.ivy-pdf-entry-top h3{color:var(--ivy-accent);font-size:10.5pt;font-weight:500;line-height:1.15}.ivy-pdf-entry-top span,.ivy-pdf-entry-role span{color:var(--ivy-text);font-size:var(--body-size);line-height:1.2;text-align:right;overflow-wrap:anywhere}.ivy-pdf-entry-role{margin-top:.7mm}.ivy-pdf-entry-role h4{color:var(--ivy-heading);font-size:9.7pt;font-weight:500;line-height:1.18}.ivy-pdf-entry-role span{white-space:nowrap}\n  .ivy-pdf-entry ul,.ivy-pdf-certifications ul,.ivy-pdf-ats ul{margin:1.3mm 0 0;padding-left:4.5mm}.ivy-pdf-entry li,.ivy-pdf-certifications li,.ivy-pdf-ats li{margin:.35mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word}.ivy-pdf-entry li::marker,.ivy-pdf-certifications li::marker{color:var(--ivy-heading)}.ivy-pdf-education .ivy-pdf-list{gap:3.2mm}.ivy-pdf-knowledge{margin:0;overflow-wrap:anywhere}\n  .ivy-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 20mm}.ivy-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2mm;align-items:center;min-width:0}.ivy-pdf-language strong{color:var(--ivy-heading);font-weight:600}.ivy-pdf-language>span:not(.ivy-pdf-dots){overflow-wrap:anywhere}.ivy-pdf-dots{display:flex;gap:1mm}.ivy-pdf-dots i{display:block;width:2.1mm;height:2.1mm;border-radius:50%;background:var(--ivy-inactive)}.ivy-pdf-dots i.filled{background:var(--ivy-heading)}\n  .ivy-pdf-footer{position:absolute;right:var(--ivy-margin);bottom:6mm;left:var(--ivy-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--ivy-muted);font-size:7.1pt}.ivy-pdf-footer a{color:var(--ivy-muted);text-decoration:none}.ivy-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}\n  .ivy-pdf-ats{--ivy-heading:#173b63;--ivy-accent:#173b63;--ivy-text:#303b42;--ivy-divider:#aeb8bf;padding:max(11mm,calc(var(--doc-margin) - 1mm)) var(--doc-margin) 13mm;background:#fff;font-family:Arial,sans-serif}.ivy-pdf-ats .ivy-pdf-header{padding-bottom:3.5mm;border-bottom:.3mm solid var(--ivy-divider)}.ivy-pdf-ats .ivy-pdf-header h1{font-family:Arial,sans-serif;font-size:19pt}.ivy-pdf-ats .ivy-pdf-header h2{color:var(--ivy-heading);font-size:10pt}.ivy-pdf-ats .ivy-pdf-title,.ivy-pdf-ats .knowledge-section>h3{font-family:Arial,sans-serif;font-size:11pt;text-align:left}.ivy-pdf-ats .knowledge-category h4,.ivy-pdf-ats .knowledge-subcategory h5{color:var(--ivy-heading)}\n  .ivy-pdf[data-density=\"compact\"]{--section-gap:max(4.5mm,calc(var(--doc-section-gap) - 1mm))}.ivy-pdf[data-density=\"compact\"] .ivy-pdf-list{gap:3.6mm}.ivy-pdf[data-density=\"dense\"]{--section-gap:max(3.8mm,calc(var(--doc-section-gap) - 2mm))}.ivy-pdf[data-density=\"dense\"] .ivy-pdf-list{gap:3mm}.ivy-pdf[data-density=\"dense\"] .ivy-pdf-title{margin-bottom:2mm;font-size:12.5pt}\n  @media print{.no-print-background .ivy-pdf-watercolor{display:none!important}}\n", Pc = "\n  .managed-pdf{position:relative;width:100%;height:100%;overflow:hidden;color:var(--managed-text);background:#fff;font-family:var(--body-font);font-size:var(--body-size);line-height:var(--body-line)}\n  .managed-pdf *{box-sizing:border-box}.managed-pdf a{color:inherit;text-decoration:none}.managed-pdf-content{position:relative;z-index:2;height:100%}.managed-pdf-background{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none}.managed-pdf-section{min-width:0;margin:0 0 var(--managed-section-gap);break-inside:avoid}.managed-pdf-title{margin:0 0 3mm;color:var(--managed-muted);font-size:9pt;font-weight:500;line-height:1;text-transform:uppercase;break-after:avoid}.managed-pdf-list{display:flex;flex-direction:column;gap:var(--managed-entry-gap)}.managed-pdf-entry{break-inside:avoid}.managed-pdf-entry h3,.managed-pdf-entry h4{margin:0;overflow-wrap:anywhere}.managed-pdf-entry ul,.managed-pdf-ats ul{margin:1mm 0 0;padding-left:4mm}.managed-pdf-entry li,.managed-pdf-ats li{margin:.25mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.managed-pdf-footer{position:absolute;right:var(--managed-margin);bottom:6mm;left:var(--managed-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--managed-muted);font-size:7pt}.managed-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}\n  .stilvoll-pdf{--managed-primary:var(--accent);--managed-dark:var(--secondary);--managed-text:#465156;--managed-muted:#6d777c;--managed-divider:#aeb8b5;--managed-pattern:#dce2df;--managed-margin:max(15mm,var(--doc-margin));--managed-section-gap:var(--section-gap);--managed-entry-gap:5mm}.stilvoll-pdf .managed-pdf-background{color:var(--managed-pattern);opacity:.62}.stilvoll-pdf .managed-pdf-background path{fill:none;stroke:currentColor;stroke-width:.45}.stilvoll-pdf-header{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) 28mm;gap:10mm;min-height:36mm;padding:14mm var(--managed-margin) 0}.stilvoll-pdf-header.no-photo{grid-template-columns:1fr}.stilvoll-pdf-header h1{margin:0;color:var(--managed-dark);font-size:23pt;font-weight:400;line-height:1;letter-spacing:.015em;text-transform:uppercase;overflow-wrap:anywhere}.stilvoll-pdf-header h2{margin:2mm 0 2.5mm;color:var(--managed-primary);font-size:12pt;font-weight:400;line-height:1.2}.stilvoll-pdf-contacts{display:flex;flex-wrap:wrap;gap:1mm 3.5mm;margin:0;color:var(--managed-text);font-size:7.8pt;font-style:normal}.stilvoll-pdf-contacts span{display:inline-flex;gap:1mm}.stilvoll-pdf-contacts i{color:var(--managed-muted);font-style:normal}.stilvoll-pdf-photo{width:26mm;height:26mm;overflow:hidden;border-radius:1.5mm;object-fit:cover}.stilvoll-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:24mm;padding-top:11mm;padding-bottom:3mm;border-bottom:.3mm solid var(--managed-divider)}.stilvoll-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-primary);font-size:7pt;text-transform:uppercase}.stilvoll-pdf-header.compact h1{font-size:15pt}.stilvoll-pdf-header.compact h2{margin:0;font-size:8.5pt}.stilvoll-pdf-columns{display:grid;grid-template-columns:54mm minmax(0,115mm);gap:11mm;padding:10mm var(--managed-margin) 16mm}.stilvoll-pdf-columns.continuation{display:block;padding-top:6mm}.stilvoll-pdf .managed-pdf-title{padding-bottom:1mm;border-bottom:.3mm solid var(--managed-divider)}.stilvoll-pdf-strength{display:grid;grid-template-columns:9mm minmax(0,1fr);gap:3mm;margin-bottom:5mm}.stilvoll-pdf-strength i{display:grid;place-items:center;width:8mm;height:8mm;border-radius:50%;color:var(--managed-primary);background:#f1f3f2;font-style:normal}.stilvoll-pdf-strength h3{margin:0 0 1mm;color:var(--managed-dark);font-size:9.5pt;font-weight:500}.stilvoll-pdf-strength p{margin:0}.stilvoll-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) 11mm;gap:2mm;align-items:center;margin-bottom:3mm}.managed-pdf-dots{display:flex;gap:.6mm}.managed-pdf-dots i{display:block;width:1.5mm;height:1.5mm;border-radius:50%;background:#dde2e0}.managed-pdf-dots i.filled{background:var(--managed-dark)}.stilvoll-pdf-entry h3{color:var(--managed-dark);font-size:11pt;font-weight:400}.stilvoll-pdf-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm}.stilvoll-pdf-meta strong{margin-right:auto;color:var(--managed-primary);font-size:9.8pt;font-weight:400}.stilvoll-pdf-meta span{color:var(--managed-muted);font-size:7.8pt}\n  .kompakt-pdf{isolation:isolate;--managed-primary:var(--accent);--managed-accent:var(--secondary);--managed-text:#3f494f;--managed-muted:#6d757a;--managed-divider:#aeb6ba;--managed-pattern:#ffd7bc;--managed-margin:max(13mm,calc(var(--doc-margin) - 1mm));--managed-section-gap:max(3.5mm,calc(var(--section-gap) - 1mm));--managed-entry-gap:4mm}.kompakt-pdf .managed-pdf-background{z-index:-1;color:var(--managed-pattern);opacity:.72}.kompakt-pdf .managed-pdf-background path,.kompakt-pdf .managed-pdf-background circle{fill:none;stroke:currentColor;stroke-width:.7}.kompakt-pdf-header{position:relative;z-index:2;min-height:22mm;padding:13mm var(--managed-margin) 0}.kompakt-pdf-header h1{max-width:112mm;margin:0;color:var(--managed-primary);font-size:20pt;font-weight:450;line-height:1}.kompakt-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 4mm;padding-top:10mm;border-bottom:.25mm solid var(--managed-divider)}.kompakt-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-accent);font-size:7pt;text-transform:uppercase}.kompakt-pdf-header.compact h1{font-size:14pt}.kompakt-pdf-header h2{margin:0;color:var(--managed-muted);font-size:8.5pt}.kompakt-pdf-columns{display:grid;grid-template-columns:108mm 66mm;gap:10mm;padding:9mm var(--managed-margin) 15mm}.kompakt-pdf-columns.continuation{display:block;padding-top:6mm}.kompakt-pdf-entry h3{color:var(--managed-primary);font-size:10.5pt;font-weight:550}.kompakt-pdf-meta{display:flex;flex-wrap:wrap;gap:.7mm 4mm;margin:.7mm 0 1mm;color:var(--managed-muted);font-size:7.4pt}.kompakt-pdf-meta strong{color:var(--managed-accent);font-size:8.4pt}.kompakt-pdf-contacts{display:grid;gap:3.5mm;margin:0;font-style:normal}.kompakt-pdf-contact{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;align-items:center;color:var(--managed-primary);font-size:8.8pt}.kompakt-pdf-contact i{color:var(--managed-accent);font-size:11pt;font-style:normal}.kompakt-pdf-strength{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;margin-bottom:4mm}.kompakt-pdf-strength i{color:var(--managed-accent);font-size:11pt;font-style:normal}.kompakt-pdf-strength h3{margin:0 0 1mm;color:var(--managed-primary);font-size:9pt}.kompakt-pdf-strength p{margin:0}.kompakt-pdf-skills{display:flex;flex-wrap:wrap;gap:2mm 3mm}.kompakt-pdf-skill{padding:0 1.5mm 1mm;border-bottom:.3mm solid var(--managed-divider);color:var(--managed-primary);font-size:7.8pt;font-weight:700}.kompakt-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 8mm}.kompakt-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:1.5mm;align-items:center}.kompakt-pdf-language strong{color:var(--managed-primary)}.kompakt-pdf-language .managed-pdf-dots i{width:2.2mm;height:2.2mm}.kompakt-pdf-language .managed-pdf-dots i.filled{background:var(--managed-accent)}\n  .einfach-pdf{isolation:isolate;--managed-primary:var(--accent);--managed-accent:var(--secondary);--managed-text:#3e484e;--managed-muted:#68747a;--managed-divider:var(--accent);--managed-pattern:#eaf5fd;--managed-margin:max(15mm,var(--doc-margin));--managed-section-gap:calc(var(--section-gap) + 1.5mm);--managed-entry-gap:4.5mm;font-size:calc(var(--body-size) + 1.2pt);line-height:clamp(1.1,calc(var(--body-line) - .25),1.18)}.einfach-pdf p,.einfach-pdf li{font-size:inherit;line-height:inherit}.einfach-pdf .managed-pdf-background{z-index:-1;color:var(--managed-pattern);opacity:.78}.einfach-pdf .managed-pdf-background path{fill:none;stroke:currentColor;stroke-width:4.2}.einfach-pdf-inner{position:relative;z-index:2;height:100%;padding:max(14mm,calc(var(--managed-margin) - 1mm)) var(--managed-margin) 16mm}.einfach-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 36mm;gap:8mm;min-height:35mm;margin-bottom:5.5mm}.einfach-pdf-header.no-photo{grid-template-columns:1fr}.einfach-pdf-header h1{margin:0;color:var(--managed-primary);font-size:24pt;font-weight:750;line-height:1;text-transform:uppercase}.einfach-pdf-header h2{margin:2mm 0;color:var(--managed-accent);font-size:11.5pt;line-height:1.2}.einfach-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 8mm;max-width:118mm;margin:0;font-size:8.2pt;font-style:normal;line-height:1.18}.einfach-pdf-contact{display:grid;grid-template-columns:4mm minmax(0,1fr);gap:1mm;min-width:0}.einfach-pdf-contact i{color:var(--managed-accent);font-style:normal;font-weight:700}.einfach-pdf-contact a,.einfach-pdf-contact span{min-width:0;overflow-wrap:anywhere}.einfach-pdf-photo{width:34mm;height:34mm;border-radius:50%;object-fit:cover}.einfach-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:auto;margin-bottom:6mm;padding-bottom:3mm;border-bottom:.5mm solid var(--managed-primary)}.einfach-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-accent);font-size:7pt;text-transform:uppercase}.einfach-pdf-header.compact h1{font-size:16pt}.einfach-pdf-header.compact h2{margin:0;font-size:9pt}.einfach-pdf .managed-pdf-section>p{margin:0;hyphens:auto;overflow-wrap:break-word}.einfach-pdf .managed-pdf-title{margin-bottom:3.5mm;padding-bottom:1mm;border-bottom:.65mm solid var(--managed-primary);color:var(--managed-primary);font-size:13.5pt;font-weight:750}.einfach-pdf-strengths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4mm 15mm}.einfach-pdf-strength{display:grid;grid-template-columns:7mm minmax(0,1fr);gap:2mm}.einfach-pdf-strength i{color:var(--managed-accent);font-size:14pt;font-style:normal}.einfach-pdf-strength h3{margin:0 0 1.5mm;color:var(--managed-primary);font-size:9.5pt}.einfach-pdf-strength p{margin:0}.einfach-pdf-entry{padding-bottom:3mm;border-bottom:.25mm dashed #d4d9dc}.einfach-pdf-entry:last-child{padding-bottom:0;border-bottom:0}.einfach-pdf-entry h3{color:var(--managed-primary);font-size:11.5pt;font-weight:500;line-height:1.15}.einfach-pdf-entry h4{margin-top:1mm;color:var(--managed-accent);font-size:10pt;line-height:1.15}.einfach-pdf-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm;color:var(--managed-muted);font-size:8.1pt}.einfach-pdf-meta span:first-child:before{margin-right:1.5mm;color:var(--managed-accent);content:\"▦\"}.einfach-pdf-meta span+span:before{margin-right:1.5mm;color:var(--managed-accent);content:\"⌖\"}.einfach-pdf-entry li{margin:.3mm 0}.einfach-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 15mm}.einfach-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:3mm;align-items:center}.einfach-pdf-language strong{color:var(--managed-primary);font-size:9.5pt}.einfach-pdf-language .managed-pdf-dots{gap:1mm}.einfach-pdf-language .managed-pdf-dots i{width:2.8mm;height:2.8mm}.einfach-pdf-language .managed-pdf-dots i.filled{background:var(--managed-accent)}\n  .managed-pdf[data-density=\"compact\"]{--managed-entry-gap:max(3.2mm,calc(var(--managed-entry-gap) - 1mm));--managed-section-gap:max(4mm,calc(var(--managed-section-gap) - 1mm))}.managed-pdf[data-density=\"dense\"]{--managed-entry-gap:3mm;--managed-section-gap:4mm}.kompakt-pdf[data-density=\"dense\"]{--managed-entry-gap:2.5mm;--managed-section-gap:3.5mm;font-size:max(7.5pt,calc(var(--body-size) - .5pt));line-height:max(1.18,calc(var(--body-line) - .07))}.einfach-pdf[data-density=\"compact\"]{--managed-section-gap:max(5mm,var(--section-gap));--managed-entry-gap:3.8mm}.einfach-pdf[data-density=\"dense\"]{--managed-section-gap:max(4.5mm,calc(var(--section-gap) - .5mm));--managed-entry-gap:3mm}\n  .managed-pdf-ats{--managed-primary:#173b63;--managed-dark:#173b63;--managed-accent:#173b63;--managed-text:#303b42;--managed-muted:#626e75;--managed-divider:#aeb8bf;padding:14mm var(--managed-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.managed-pdf-ats .managed-pdf-header{display:block;min-height:auto;margin:0;padding:0 0 4mm;border-bottom:.3mm solid var(--managed-divider)}.managed-pdf-ats .managed-pdf-header h1{max-width:none;font-size:19pt}.managed-pdf-ats .managed-pdf-header h2{margin-top:1mm;color:var(--managed-primary);font-size:10pt}.managed-pdf-ats .managed-pdf-section{margin-top:var(--managed-section-gap);margin-bottom:0}.managed-pdf-ats .managed-pdf-title{margin-bottom:2mm;padding-bottom:1mm;border-bottom:.3mm solid var(--managed-divider);color:var(--managed-primary);font-size:10.5pt;font-weight:700}.managed-pdf-ats .managed-pdf-list{gap:var(--managed-entry-gap)}\n  @media print{.no-print-background .managed-pdf-background{display:none!important}}\n", Fc = "\n  .klassisch-pdf{isolation:isolate;--klassisch-primary:var(--accent);--klassisch-accent:var(--secondary);--klassisch-heading:#5a6267;--klassisch-text:#3f484d;--klassisch-muted:#68747a;--klassisch-soft:#cdeff3;--klassisch-border:#d5dbde;--klassisch-margin:max(15mm,var(--doc-margin));--klassisch-section-gap:var(--section-gap);--klassisch-entry-gap:4.2mm;position:relative;width:100%;height:100%;overflow:hidden;color:var(--klassisch-text);background:#fff;font-family:var(--body-font);font-size:var(--body-size);line-height:var(--body-line)}\n  .klassisch-pdf *{box-sizing:border-box}.klassisch-pdf a{color:inherit;text-decoration:none}.klassisch-pdf-background{position:absolute;inset:0;z-index:-1;width:100%;height:100%;pointer-events:none}.klassisch-pdf-background .fill{fill:var(--klassisch-soft)}.klassisch-pdf-background .line{fill:none;stroke:rgba(255,255,255,.92);stroke-width:.28;vector-effect:non-scaling-stroke}.klassisch-pdf-content{position:relative;z-index:2;height:100%;padding:14mm var(--klassisch-margin) 17mm}\n  .klassisch-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 34mm;gap:8mm;align-items:start;min-height:33mm;margin-bottom:7mm}.klassisch-pdf-header.no-photo{grid-template-columns:1fr}.klassisch-pdf-header h1{max-width:138mm;margin:0;color:var(--klassisch-primary);font-size:26pt;font-weight:750;letter-spacing:-.01em;line-height:1;overflow-wrap:anywhere}.klassisch-pdf-header h2{margin:2mm 0 1.5mm;color:var(--klassisch-text);font-size:12.2pt;font-weight:400;line-height:1.12;overflow-wrap:anywhere}.klassisch-pdf-contacts{display:flex;flex-wrap:wrap;gap:.5mm 3.2mm;max-width:146mm;margin:0;color:var(--klassisch-text);font-size:8pt;font-style:normal;line-height:1.25}.klassisch-pdf-contacts span{min-width:0;overflow-wrap:anywhere}.klassisch-pdf-contacts span+span:before{margin-right:3.2mm;color:var(--klassisch-muted);content:\"·\"}.klassisch-pdf-photo{justify-self:end;width:32mm;height:32mm;border-radius:50%;object-fit:cover;background:#edf1f3}\n  .klassisch-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:auto;margin-bottom:6mm;padding-bottom:2.5mm;border-bottom:.3mm solid var(--klassisch-border)}.klassisch-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--klassisch-accent);font-size:7pt;font-weight:700;letter-spacing:.09em;text-transform:uppercase}.klassisch-pdf-header.compact h1{font-size:15.5pt}.klassisch-pdf-header.compact h2{margin:0;font-size:8.8pt}\n  .klassisch-pdf-section{min-width:0;margin:0 0 var(--klassisch-section-gap);break-inside:avoid;page-break-inside:avoid}.klassisch-pdf-title{margin:0 0 3mm;color:var(--klassisch-heading);font-size:10.4pt;font-weight:750;letter-spacing:.01em;line-height:1;text-transform:uppercase;break-after:avoid}.klassisch-pdf-section>p{margin:0;hyphens:auto;overflow-wrap:break-word}\n  .klassisch-pdf-strengths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4mm 9mm}.klassisch-pdf-strength h3{margin:0 0 1.2mm;color:var(--klassisch-accent);font-size:9.8pt;font-weight:750;line-height:1.1;overflow-wrap:anywhere}.klassisch-pdf-strength p{margin:0;hyphens:auto}\n  .klassisch-pdf-list{display:flex;flex-direction:column;gap:var(--klassisch-entry-gap)}.klassisch-pdf-entry{min-width:0;break-inside:avoid}.klassisch-pdf-entry-head{display:grid;grid-template-columns:minmax(0,1fr) 34mm;gap:7mm;align-items:start}.klassisch-pdf-entry h3,.klassisch-pdf-entry h4{margin:0;overflow-wrap:anywhere}.klassisch-pdf-entry h3{color:var(--klassisch-primary);font-size:12.2pt;font-weight:450;line-height:1.08}.klassisch-pdf-entry h4{margin-top:1mm;color:var(--klassisch-accent);font-size:10pt;font-weight:650;line-height:1.12}.klassisch-pdf-entry-meta{display:flex;flex-direction:column;gap:2mm;margin:0;color:var(--klassisch-muted);font-size:7.8pt;line-height:1.15;text-align:right}.klassisch-pdf-entry ul,.klassisch-pdf-certifications{margin:1.2mm 0 0;padding-left:4.3mm}.klassisch-pdf-entry li,.klassisch-pdf-certifications li{margin:.15mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word}.klassisch-pdf-education .klassisch-pdf-list{gap:3.5mm}.klassisch-pdf-education .klassisch-pdf-entry h3{font-size:11.7pt}.klassisch-pdf-education .klassisch-pdf-entry h4{color:var(--klassisch-text);font-size:9.4pt;font-weight:450}\n  .klassisch-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2mm 18mm;max-width:112mm}.klassisch-pdf-language{display:flex;gap:3mm;margin:0;color:var(--klassisch-text);font-size:9pt}.klassisch-pdf-language strong{color:var(--klassisch-primary);font-weight:500}.klassisch-pdf-footer{position:absolute;right:var(--klassisch-margin);bottom:6mm;left:var(--klassisch-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--klassisch-muted);font-size:7pt}.klassisch-pdf-footer span:last-child{margin-left:auto}\n  .klassisch-pdf[data-density=\"compact\"]{--klassisch-section-gap:max(4.8mm,calc(var(--section-gap) - 1mm));--klassisch-entry-gap:3.5mm}.klassisch-pdf[data-density=\"dense\"]{--klassisch-section-gap:max(3.8mm,calc(var(--section-gap) - 2mm));--klassisch-entry-gap:2.8mm;font-size:max(8pt,calc(var(--body-size) - .3pt))}.klassisch-pdf[data-density=\"dense\"] .klassisch-pdf-header{min-height:29mm;margin-bottom:5mm}.klassisch-pdf[data-density=\"dense\"] .klassisch-pdf-header h1{font-size:23pt}\n  .klassisch-pdf-ats{--klassisch-primary:#173b63;--klassisch-accent:#173b63;--klassisch-heading:#173b63;--klassisch-text:#303b42;--klassisch-muted:#626e75;--klassisch-border:#aeb8bf;padding:14mm var(--klassisch-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.klassisch-pdf-ats .klassisch-pdf-header{display:block;min-height:auto;margin:0 0 5mm;padding-bottom:3mm;border-bottom:.3mm solid var(--klassisch-border)}.klassisch-pdf-ats .klassisch-pdf-header h1{font-size:19pt}.klassisch-pdf-ats .klassisch-pdf-header h2{color:var(--klassisch-primary);font-size:10pt}.klassisch-pdf-ats .klassisch-pdf-title{margin-bottom:2mm;padding-bottom:1mm;border-bottom:.3mm solid var(--klassisch-border);font-size:10.5pt}.klassisch-pdf-ats .klassisch-pdf-strengths,.klassisch-pdf-ats .klassisch-pdf-languages{display:block;max-width:none}.klassisch-pdf-ats .klassisch-pdf-strength,.klassisch-pdf-ats .klassisch-pdf-language{margin:.7mm 0}\n  @media print{.no-print-background .klassisch-pdf-background{display:none!important}}\n", Ic = `${Fc.replaceAll("klassisch", "mehrspaltig")}
+}, Ac = "\n  .elegant-pdf{--elegant-heading:#3b4247;--elegant-text:#4b5359;--elegant-muted:#6d757a;--elegant-line:#b9bfc3;--elegant-sidebar-muted:#f6eaea;display:grid;grid-template-columns:minmax(0,140mm) 70mm;width:100%;height:100%;color:var(--elegant-text);background:#fff;font-family:var(--body-font)}\n  .elegant-pdf *{box-sizing:border-box}\n  .elegant-pdf-main{position:relative;min-width:0;height:100%;padding:max(14mm,calc(var(--doc-margin) - 2mm)) max(10mm,calc(var(--doc-margin) - 6mm)) max(13mm,calc(var(--doc-margin) - 4mm)) var(--doc-margin);overflow:hidden;background:#fff}\n  .elegant-pdf-header{position:relative;padding-bottom:0}\n  .elegant-pdf-header-compact{padding-bottom:3.2mm;border-bottom:.3mm solid var(--elegant-line)}\n  .elegant-pdf-header .kicker{margin:0 0 2.2mm;color:var(--accent);font-size:7.7pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}\n  .elegant-pdf-header h1{margin:0;color:var(--elegant-heading);font-size:22pt;font-weight:500;letter-spacing:.01em;line-height:1.05;text-transform:uppercase;overflow-wrap:anywhere}\n  .elegant-pdf-header h2{margin:2mm 0 0;color:var(--accent);font-size:12pt;font-weight:400;line-height:1.25;overflow-wrap:anywhere}\n  .elegant-pdf-contacts{display:flex;flex-wrap:wrap;gap:1.2mm 3.5mm;margin:3.3mm 0 0;color:var(--elegant-text);font-size:8pt;font-style:normal;line-height:1.3}\n  .elegant-pdf-contacts a,.elegant-pdf-contacts>span{display:inline-flex;align-items:baseline;gap:1mm;min-width:0;color:inherit;text-decoration:none}\n  .elegant-pdf-contacts i{color:var(--elegant-line);font-size:9pt;font-style:normal}\n  .elegant-pdf-contacts span{min-width:0;overflow-wrap:anywhere}\n  .elegant-pdf-section{margin-top:var(--section-gap)}\n  .elegant-pdf-section>h3,.elegant-pdf-ats .knowledge-section>h3{display:block;margin:0 0 3.2mm;padding-bottom:1.5mm;border-bottom:.3mm solid var(--elegant-line);color:var(--elegant-heading);font-size:12pt;font-weight:500;letter-spacing:.055em;line-height:1.1;text-transform:uppercase}\n  .elegant-pdf-list{display:flex;flex-direction:column;gap:5mm}\n  .elegant-pdf-entry{break-inside:avoid;page-break-inside:avoid}\n  .elegant-pdf-entry-head{display:grid;grid-template-columns:minmax(0,1fr) max-content;gap:5mm;align-items:start}\n  .elegant-pdf-entry-head h4{margin:0;color:var(--elegant-heading);font-family:var(--heading-font);font-size:11pt;font-weight:500;line-height:1.2;overflow-wrap:anywhere}\n  .elegant-pdf-entry-head p{margin:.8mm 0 0;color:var(--accent);font-size:11pt;font-weight:400;line-height:1.2;overflow-wrap:anywhere}\n  .elegant-pdf-entry-meta{min-width:24mm;color:var(--elegant-muted);font-size:8pt;line-height:1.3;text-align:right}\n  .elegant-pdf-entry-meta strong,.elegant-pdf-entry-meta span{display:block}\n  .elegant-pdf-entry-meta span{margin-top:.6mm;overflow-wrap:anywhere}\n  .elegant-pdf-entry ul{margin:1.8mm 0 0;padding-left:4.5mm}\n  .elegant-pdf-entry li{margin:.6mm 0;padding-left:.4mm;color:var(--elegant-text);font-size:var(--body-size);line-height:var(--body-line)}\n  .elegant-pdf-entry li::marker{color:var(--accent)}\n  .elegant-pdf-sidebar{position:relative;display:flex;flex-direction:column;gap:var(--section-gap);min-width:0;height:100%;padding:max(13mm,calc(var(--doc-margin) - 3mm)) max(12mm,calc(var(--doc-margin) - 5mm));overflow:hidden;color:#fff;background:var(--secondary);box-shadow:inset 0 3.5mm 0 #600101}\n  .elegant-pdf-photo{display:block;width:27mm;height:27mm;margin:0 auto 8mm;overflow:hidden;border-radius:1.5mm;background:color-mix(in srgb,var(--secondary),white 12%);object-fit:cover}\n  .elegant-pdf-sidebar section{margin:0;break-inside:avoid;page-break-inside:avoid}\n  .elegant-pdf-sidebar section>h3{position:relative;margin:0 0 2.4mm;padding-bottom:1.6mm;border-bottom:.3mm solid rgb(255 255 255 / 75%);color:#fff;font-size:11.5pt;font-weight:400;letter-spacing:.075em;line-height:1.15;text-transform:uppercase}\n  .elegant-pdf-sidebar section p,.elegant-pdf-sidebar section li{color:var(--elegant-sidebar-muted);font-size:var(--body-size);line-height:var(--body-line)}\n  .elegant-pdf-sidebar section p{margin:0}\n  .elegant-pdf-sidebar section ul{margin:0;padding-left:4mm}\n  .elegant-pdf-sidebar .knowledge-category{margin-bottom:2.5mm}\n  .elegant-pdf-sidebar .knowledge-category h4,.elegant-pdf-sidebar .knowledge-subcategory h5{color:#fff;font-size:8.7pt}\n  .elegant-pdf-sidebar .knowledge-tags span{border-color:color-mix(in srgb,white,transparent 50%);color:#fff}\n  .elegant-pdf-strengths{display:grid;gap:3mm}\n  .elegant-pdf-strength{display:grid;grid-template-columns:6mm minmax(0,1fr);gap:2mm;align-items:start}\n  .elegant-pdf-strength i{color:#fff;font-size:11pt;font-style:normal;line-height:1}\n  .elegant-pdf-strength h4{margin:0 0 1.2mm;color:#fff;font-size:10pt;font-weight:400;line-height:1.2}\n  .elegant-pdf-strength p{margin:0;color:var(--elegant-sidebar-muted);font-size:var(--body-size);line-height:var(--body-line);overflow-wrap:anywhere}\n  .elegant-pdf-languages{display:grid;gap:3mm}\n  .elegant-pdf-language{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:1.8mm;align-items:center;color:var(--elegant-sidebar-muted)}\n  .elegant-pdf-language strong{color:#fff;font-size:var(--body-size);font-weight:400}\n  .elegant-pdf-language span{font-size:8pt}\n  .elegant-pdf-language-dots{display:flex;gap:.8mm}\n  .elegant-pdf-language-dots i{display:block;width:1.5mm;height:1.5mm;border-radius:50%;background:rgb(255 255 255 / 28%)}\n  .elegant-pdf-language-dots i.filled{background:#fff}\n  .elegant-pdf-continuation .kicker{color:var(--accent);font-size:8pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}\n  .elegant-pdf-continuation h2{margin:3.5mm 0 0;color:#fff;font-size:18pt;line-height:1.05;overflow-wrap:anywhere}\n  .elegant-pdf-continuation p{margin:1.8mm 0 0;color:var(--elegant-sidebar-muted)}\n  .elegant-pdf-continuation hr{width:18mm;height:.6mm;margin:6mm 0;border:0;background:var(--accent)}\n  .elegant-pdf-continuation a{display:block;margin-top:1.7mm;color:#fff;font-size:8.3pt;text-decoration:none;overflow-wrap:anywhere}\n  .elegant-pdf-footer{position:absolute;right:max(10mm,calc(var(--doc-margin) - 6mm));bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;color:var(--elegant-muted);font-size:7.2pt}\n  .elegant-pdf-footer a{color:var(--accent);text-decoration:none}\n  .elegant-pdf-footer span:last-child{margin-left:auto}\n  .elegant-pdf-ats{--elegant-heading:#3b4247;--elegant-text:#4b5359;--elegant-muted:#6d757a;--elegant-line:#b9bfc3;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--elegant-text);background:#fff}\n  .elegant-pdf-ats .elegant-pdf-contacts{display:block}\n  .elegant-pdf-ats .elegant-pdf-contacts a,.elegant-pdf-ats .elegant-pdf-contacts span{display:block;margin-top:.8mm}\n  .elegant-pdf-ats .elegant-pdf-entry-head{display:block}\n  .elegant-pdf-ats .elegant-pdf-entry-meta{margin-top:.8mm;text-align:left}\n  .elegant-pdf-ats .elegant-pdf-entry-meta strong,.elegant-pdf-ats .elegant-pdf-entry-meta span{display:inline}\n  .elegant-pdf-ats .elegant-pdf-entry-meta span:before{content:\" · \"}\n  .elegant-pdf-ats .knowledge-section{margin-top:var(--section-gap)}\n  .elegant-pdf-ats .knowledge-category h4,.elegant-pdf-ats .knowledge-subcategory h5{color:var(--elegant-heading)}\n", jc = "\n  .zweispaltig-pdf{--zweispaltig-heading:#253746;--zweispaltig-text:#3f4d59;--zweispaltig-muted:#6b7782;--zweispaltig-divider:#9db7d1;position:relative;width:100%;height:100%;padding:max(14mm,calc(var(--doc-margin) - 3mm)) var(--doc-margin) max(13mm,calc(var(--doc-margin) - 4mm));overflow:hidden;color:var(--zweispaltig-text);background:#fff;font-family:var(--body-font)}\n  .zweispaltig-pdf *{box-sizing:border-box}\n  .zweispaltig-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8mm;padding-bottom:4.5mm;border-bottom:.4mm solid var(--zweispaltig-divider)}\n  .zweispaltig-pdf-header h1{margin:0;color:var(--accent);font-size:24pt;font-weight:750;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}\n  .zweispaltig-pdf-header h2{margin:1.5mm 0 0;color:var(--zweispaltig-heading);font-size:10.5pt;font-weight:650;letter-spacing:.055em;line-height:1.2;text-transform:uppercase;overflow-wrap:anywhere}\n  .zweispaltig-pdf-specializations{margin:1.4mm 0 0;color:color-mix(in srgb,var(--accent),#123f72 48%);font-size:8pt;font-weight:650;letter-spacing:.035em;line-height:1.25}\n  .zweispaltig-pdf-contacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.1mm 5mm;margin:3.2mm 0 0;color:var(--zweispaltig-muted);font-size:7.5pt;font-style:normal;line-height:1.2}\n  .zweispaltig-pdf-contacts a,.zweispaltig-pdf-contacts span{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:1.2mm;min-width:0;color:inherit;text-decoration:none}\n  .zweispaltig-pdf-contacts strong{color:var(--zweispaltig-heading)}\n  .zweispaltig-pdf-contacts i{min-width:0;font-style:normal;overflow-wrap:anywhere}\n  .zweispaltig-pdf-photo{display:block;width:23mm;height:23mm;overflow:hidden;border:.45mm solid var(--accent);border-radius:50%;background:color-mix(in srgb,var(--accent),white 90%);object-fit:cover}\n  .zweispaltig-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1.5mm 4mm;padding-bottom:3.5mm}\n  .zweispaltig-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--accent);font-size:7.3pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}\n  .zweispaltig-pdf-header.compact h1{font-size:15pt}\n  .zweispaltig-pdf-header.compact h2{margin:0;color:var(--zweispaltig-muted);font-size:8.6pt}\n  .zweispaltig-pdf-columns{display:grid;grid-template-columns:minmax(0,62%) minmax(0,38%)}\n  .zweispaltig-pdf-columns.continuation{grid-template-columns:minmax(0,1fr)}\n  .zweispaltig-pdf-main{min-width:0;padding-right:8mm}\n  .zweispaltig-pdf-sidebar{min-width:0;padding-left:8mm;border-left:.35mm solid var(--zweispaltig-divider)}\n  .zweispaltig-pdf-section,.zweispaltig-pdf-sidebar>section,.zweispaltig-pdf-sidebar>.knowledge-section{margin-top:var(--section-gap);break-inside:avoid;page-break-inside:avoid}\n  .zweispaltig-pdf-section>h3,.zweispaltig-pdf-sidebar section>h3,.zweispaltig-pdf-ats section>h3,.zweispaltig-pdf-ats .knowledge-section>h3{margin:0 0 2.5mm;padding-bottom:1.2mm;border-bottom:.45mm solid var(--accent);color:var(--accent);font-size:10.5pt;font-weight:750;letter-spacing:.075em;line-height:1.1;text-transform:uppercase}\n  .zweispaltig-pdf-summary{margin:0;hyphens:auto;overflow-wrap:break-word}\n  .zweispaltig-pdf-list{display:flex;flex-direction:column;gap:4.5mm}\n  .zweispaltig-pdf-entry{break-inside:avoid;page-break-inside:avoid}\n  .zweispaltig-pdf-entry-head{display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:start;gap:4mm}\n  .zweispaltig-pdf-entry-head h4{margin:0;color:var(--zweispaltig-heading);font-size:9.7pt;font-weight:750;line-height:1.18;overflow-wrap:anywhere}\n  .zweispaltig-pdf-entry-head p{margin:.7mm 0 0;color:var(--accent);font-size:8.5pt;font-weight:650;line-height:1.18;overflow-wrap:anywhere}\n  .zweispaltig-pdf-entry-meta{min-width:25mm;color:var(--zweispaltig-muted);font-size:7.5pt;line-height:1.25;text-align:right}\n  .zweispaltig-pdf-entry-meta strong,.zweispaltig-pdf-entry-meta span{display:block}\n  .zweispaltig-pdf-entry-meta span{margin-top:.5mm;overflow-wrap:anywhere}\n  .zweispaltig-pdf-entry ul,.zweispaltig-pdf-sidebar ul,.zweispaltig-pdf-ats ul{margin:1.5mm 0 0;padding-left:4.5mm}\n  .zweispaltig-pdf-entry li,.zweispaltig-pdf-sidebar li,.zweispaltig-pdf-ats li{margin:.5mm 0;padding-left:.3mm;hyphens:auto;overflow-wrap:break-word}\n  .zweispaltig-pdf-entry li::marker,.zweispaltig-pdf-sidebar li::marker,.zweispaltig-pdf-ats li::marker{color:var(--accent)}\n  .zweispaltig-pdf-sidebar .knowledge-category{margin-bottom:2.3mm}\n  .zweispaltig-pdf-sidebar .knowledge-category h4,.zweispaltig-pdf-sidebar .knowledge-subcategory h5{color:var(--zweispaltig-heading);font-size:8.4pt}\n  .zweispaltig-pdf-sidebar .knowledge-section p,.zweispaltig-pdf-sidebar .knowledge-section li{font-size:var(--body-size);line-height:var(--body-line)}\n  .zweispaltig-pdf-strengths{display:grid;gap:2.2mm}\n  .zweispaltig-pdf-strength{display:grid;grid-template-columns:4.2mm minmax(0,1fr);align-items:start;gap:1.7mm}\n  .zweispaltig-pdf-strength i{display:grid;width:3.8mm;height:3.8mm;place-items:center;border-radius:50%;color:#fff;background:var(--accent);font-size:6.8pt;font-style:normal;font-weight:800;line-height:1}\n  .zweispaltig-pdf-strength span{color:var(--zweispaltig-heading);font-size:var(--body-size);font-weight:650;line-height:1.25;overflow-wrap:anywhere}\n  .zweispaltig-pdf-footer{position:absolute;right:var(--doc-margin);bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;padding-top:1.4mm;border-top:.25mm solid var(--zweispaltig-divider);color:var(--zweispaltig-muted);font-size:7pt}\n  .zweispaltig-pdf-footer a{color:var(--accent);text-decoration:none;overflow-wrap:anywhere}\n  .zweispaltig-pdf-footer span:last-child{margin-left:auto}\n  .zweispaltig-pdf-ats{--zweispaltig-heading:#263641;--zweispaltig-text:#303c44;--zweispaltig-muted:#6b7782;--zweispaltig-divider:#c8d0d6;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--zweispaltig-text);background:#fff}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-header{display:block}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-contacts{display:block}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-contacts a,.zweispaltig-pdf-ats .zweispaltig-pdf-contacts span{display:block;margin-top:.7mm}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-contacts strong{margin-right:1.3mm}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-head{display:block}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta{margin-top:.7mm;text-align:left}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta strong,.zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta span{display:inline}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-entry-meta span:before{content:\" · \"}\n  .zweispaltig-pdf-ats .zweispaltig-pdf-section>h3,.zweispaltig-pdf-ats section>h3,.zweispaltig-pdf-ats .knowledge-section>h3{border-bottom-color:var(--zweispaltig-divider)}\n", Mc = "\n  .zeit-pdf{--zeit-dark:#075e4e;--zeit-soft:#cbeccd;--zeit-pale:#e5f5ec;--zeit-heading:#374247;--zeit-text:#434d52;--zeit-muted:#687277;--zeit-divider:#d5deda;position:relative;width:100%;height:100%;padding:max(15mm,calc(var(--doc-margin) - 2mm)) var(--doc-margin) max(14mm,calc(var(--doc-margin) - 3mm));overflow:hidden;color:var(--zeit-text);background:#fff;font-family:var(--body-font)}\n  .zeit-pdf *{box-sizing:border-box}\n  .zeit-pdf-header{display:grid;grid-template-columns:minmax(0,28.4%) minmax(0,6.25%) minmax(0,65.35%);min-height:36.5mm;margin-bottom:1.5mm}\n  .zeit-pdf-identity{grid-column:3;min-width:0;padding-top:4mm}\n  .zeit-pdf-identity h1{margin:0;color:var(--zeit-heading);font-size:25pt;font-weight:350;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}\n  .zeit-pdf-identity h2{display:inline-block;width:100%;max-width:100%;margin:4mm 0 0;padding:2.6mm 4mm;border-radius:3.8mm;color:var(--zeit-dark);background:var(--zeit-soft);font-size:12.5pt;font-weight:600;letter-spacing:.045em;line-height:1.15;text-transform:uppercase;overflow-wrap:anywhere}\n  .zeit-pdf-photo-composition{position:relative;grid-column:1;width:50mm;max-width:100%;height:42mm}\n  .zeit-pdf-photo-composition span{position:absolute;display:block}\n  .zeit-pdf-photo-pale{top:1mm;left:0;width:42mm;height:39mm;border-radius:48% 52% 45% 55%/57% 40% 60% 43%;background:var(--zeit-pale);transform:rotate(-13deg)}\n  .zeit-pdf-photo-soft{top:-2mm;right:0;width:31mm;height:30mm;border-radius:58% 42% 62% 38%/44% 62% 38% 56%;background:color-mix(in srgb,var(--zeit-soft),var(--accent) 15%);transform:rotate(17deg)}\n  .zeit-pdf-photo-accent{right:2mm;bottom:0;width:24mm;height:23mm;border-radius:54% 46% 44% 56%/41% 55% 45% 59%;background:var(--accent);opacity:.92;transform:rotate(-11deg)}\n  .zeit-pdf-photo{position:absolute;top:3mm;left:5mm;z-index:2;display:block;width:36mm;height:36mm;border:1.8mm solid #fff;border-radius:50%;object-fit:cover}\n  .zeit-pdf-header.no-photo{min-height:29mm}.zeit-pdf-header.no-photo .zeit-pdf-identity{grid-column:1/-1;padding-top:0}\n  .zeit-pdf-header.compact{display:block;min-height:auto;margin-bottom:5mm;padding-bottom:3mm;border-bottom:.35mm solid var(--zeit-divider)}\n  .zeit-pdf-header.compact .zeit-pdf-identity{padding:0}.zeit-pdf-header.compact .kicker{margin:0 0 1.5mm;color:var(--zeit-dark);font-size:7.3pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}\n  .zeit-pdf-header.compact h1{font-size:15pt;font-weight:600}.zeit-pdf-header.compact h2{margin:0 0 0 3mm;padding:0;color:var(--zeit-muted);background:transparent;font-size:8.5pt}\n  .zeit-pdf-columns{position:relative;display:grid;grid-template-columns:minmax(0,28.4%) minmax(0,6.25%) minmax(0,65.35%)}\n  .zeit-pdf-columns:before{display:none}\n  .zeit-pdf-columns.continuation{display:block}.zeit-pdf-columns.continuation:before{display:none}\n  .zeit-pdf-left{grid-column:1;min-width:0;padding-top:12mm}.zeit-pdf-main{grid-column:3;min-width:0}\n  .zeit-pdf-section,.zeit-pdf-left>section{margin-top:var(--section-gap);break-inside:avoid;page-break-inside:avoid}\n  .zeit-pdf-left>section:first-child,.zeit-pdf-main>.zeit-pdf-section:first-child{margin-top:0}\n  .zeit-pdf-heading{display:flex;align-items:center;gap:2mm;margin:0 0 3mm}\n  .zeit-pdf-heading i{display:grid;flex:none;width:6.5mm;height:6.5mm;place-items:center;border-radius:1.5mm;color:var(--zeit-dark);background:var(--zeit-soft);font-style:normal}\n  .zeit-pdf-heading i svg{width:4mm;height:4mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.9}\n  .zeit-pdf-heading h3{margin:0;color:var(--zeit-dark);font-size:11pt;font-weight:750;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}\n  .zeit-pdf-summary{margin:0;color:var(--zeit-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}\n  .zeit-pdf-contacts{display:grid;gap:2.3mm}\n  .zeit-pdf-contact{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;min-width:0;color:inherit;font-size:7.7pt;letter-spacing:-.01em;line-height:1.28;text-decoration:none}\n  .zeit-pdf-contact i{display:grid;place-items:start center;color:var(--accent);font-style:normal}.zeit-pdf-contact i svg{width:3.8mm;height:3.8mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.5}.zeit-pdf-contact span{overflow-wrap:anywhere}\n  .zeit-pdf-strengths{display:grid;gap:4.5mm}.zeit-pdf-strength{display:grid;grid-template-columns:3.5mm minmax(0,1fr);gap:1.5mm;align-items:start}\n  .zeit-pdf-strength>i{width:2mm;height:2mm;margin-top:1.2mm;border-radius:50%;background:var(--accent)}.zeit-pdf-strength h4{margin:0;color:var(--zeit-heading);font-size:9.5pt;font-weight:700;line-height:1.2;overflow-wrap:anywhere}.zeit-pdf-strength p{margin:1.2mm 0 0;color:var(--zeit-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}\n  .zeit-pdf-languages{display:grid;gap:3mm}.zeit-pdf-language>div{display:grid;grid-template-columns:minmax(13mm,auto) minmax(0,1fr) auto;align-items:center;gap:1.5mm;min-width:0}.zeit-pdf-language h4{margin:0;color:var(--zeit-dark);font-size:8.8pt;font-weight:750;line-height:1.15;text-transform:uppercase;overflow-wrap:anywhere}.zeit-pdf-language>div>span:not(.zeit-pdf-dots){color:var(--zeit-muted);font-size:7.8pt;font-weight:600;line-height:1.15;overflow-wrap:anywhere}\n  .zeit-pdf-dots{display:flex;gap:.7mm}.zeit-pdf-dots i{display:block;width:1.35mm;height:1.35mm;border:.25mm solid var(--zeit-muted);border-radius:50%}.zeit-pdf-dots i.filled{border-color:var(--zeit-dark);background:var(--zeit-dark)}\n  .zeit-pdf-list{display:flex;flex-direction:column;gap:5mm}.zeit-pdf-entry{break-inside:avoid;page-break-inside:avoid}\n  .zeit-pdf-entry-top,.zeit-pdf-entry-role{display:grid;grid-template-columns:minmax(0,1fr) minmax(25mm,35mm);gap:5mm;align-items:start}\n  .zeit-pdf-entry-top h4,.zeit-pdf-entry-role h5{margin:0;overflow-wrap:anywhere}.zeit-pdf-entry-top h4{color:var(--zeit-heading);font-size:10.5pt;font-weight:750;line-height:1.2}\n  .zeit-pdf-entry-top span,.zeit-pdf-entry-role span{color:var(--zeit-muted);font-size:7.8pt;line-height:1.2;text-align:right;overflow-wrap:anywhere}\n  .zeit-pdf-entry-role{margin-top:.8mm}.zeit-pdf-entry-role h5{color:var(--zeit-heading);font-size:9.2pt;font-weight:400;line-height:1.2}\n  .zeit-pdf-entry ul,.zeit-pdf-left ul,.zeit-pdf-ats ul{margin:1.5mm 0 0;padding-left:4.5mm}.zeit-pdf-entry li,.zeit-pdf-left li,.zeit-pdf-ats li{margin:.5mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.zeit-pdf-entry li::marker,.zeit-pdf-left li::marker,.zeit-pdf-ats li::marker{color:var(--accent)}\n  .zeit-pdf-footer{position:absolute;right:var(--doc-margin);bottom:6mm;left:var(--doc-margin);display:flex;justify-content:space-between;gap:6mm;color:var(--zeit-muted);font-size:7.2pt}.zeit-pdf-footer a{color:var(--zeit-dark);text-decoration:none}.zeit-pdf-footer span:last-child{margin-left:auto}\n  .zeit-pdf-ats{--zeit-dark:#075e4e;--zeit-heading:#263a35;--zeit-text:#303c39;--zeit-muted:#687277;--zeit-divider:#ccd6d2;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--zeit-text);background:#fff}\n  .zeit-pdf-ats .zeit-pdf-header{display:block;min-height:auto;margin:0;padding-bottom:4mm;border-bottom:.35mm solid var(--zeit-divider)}.zeit-pdf-ats .zeit-pdf-identity{padding:0}.zeit-pdf-ats .zeit-pdf-identity h1{font-size:20pt;font-weight:600}.zeit-pdf-ats .zeit-pdf-identity h2{margin:1.5mm 0 0;padding:0;background:transparent;font-size:10pt}\n  .zeit-pdf-ats-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 5mm;margin-top:3mm;font-size:7.8pt;font-style:normal}.zeit-pdf-ats-contacts a,.zeit-pdf-ats-contacts span{color:inherit;text-decoration:none;overflow-wrap:anywhere}\n  .zeit-pdf-ats .zeit-pdf-heading i{display:none}.zeit-pdf-ats .zeit-pdf-heading{gap:0;padding-bottom:1.4mm;border-bottom:.45mm solid var(--zeit-divider)}\n  .zeit-pdf-ats>section,.zeit-pdf-ats .knowledge-section{margin-top:var(--section-gap)}.zeit-pdf-ats>section>h3,.zeit-pdf-ats .knowledge-section>h3{margin:0 0 3mm;padding-bottom:1.4mm;border-bottom:.45mm solid var(--zeit-divider);color:var(--zeit-dark);font-size:11pt;font-weight:750;text-transform:uppercase}\n", Nc = "\n  .kreativ-pdf{--kreativ-dark:#075d4e;--kreativ-text:#465156;--kreativ-muted:#687277;--kreativ-divider:#b8c4c0;--kreativ-light:#d7dfdc;--kreativ-inactive:#e1e5e3;--kreativ-margin:calc(var(--doc-margin) + 1mm);--kreativ-column-gap:11mm;--kreativ-section-gap:var(--section-gap);--kreativ-entry-gap:4.5mm;position:relative;width:100%;height:100%;overflow:hidden;color:var(--kreativ-text);background:#fff;font-family:var(--body-font);font-size:var(--body-size);line-height:var(--body-line)}\n  .kreativ-pdf *{box-sizing:border-box}\n  .kreativ-pdf-header{position:relative;z-index:3;display:grid;grid-template-columns:minmax(0,1fr) 28mm;align-items:center;gap:10mm;width:100%;height:46mm;padding:12mm var(--kreativ-margin) 6mm;color:#fff;background:var(--accent)}\n  .kreativ-pdf-identity{min-width:0}.kreativ-pdf-identity h1{margin:0;color:inherit;font-size:23pt;font-weight:750;letter-spacing:.015em;line-height:1;overflow-wrap:anywhere}.kreativ-pdf-identity h2{margin:1.5mm 0 0;color:inherit;font-size:11.5pt;font-weight:650;line-height:1.15;overflow-wrap:anywhere}\n  .kreativ-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 8mm;max-width:118mm;margin:2.2mm 0 0;font-size:7.8pt;font-style:normal;line-height:1.15}.kreativ-pdf-contacts a,.kreativ-pdf-contacts>span{display:grid;grid-template-columns:3.2mm minmax(0,1fr);align-items:center;gap:1.1mm;min-width:0;color:inherit;text-decoration:none}.kreativ-pdf-contacts svg{width:3mm;height:3mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.4}.kreativ-pdf-contacts i{min-width:0;font-style:normal;overflow-wrap:anywhere}\n  .kreativ-pdf-photo{display:block;width:28mm;height:28mm;overflow:hidden;border-radius:1.8mm;background:rgba(255,255,255,.18);object-fit:cover}\n  .kreativ-pdf-header.no-photo{grid-template-columns:minmax(0,1fr)}\n  .kreativ-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1.5mm 4mm;height:auto;min-height:24mm;padding:12mm var(--kreativ-margin) 4mm;color:var(--kreativ-dark);background:#fff;border-bottom:.4mm solid var(--kreativ-divider)}\n  .kreativ-pdf-header.compact .kreativ-pdf-identity{display:contents}.kreativ-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--accent);font-size:7.3pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}.kreativ-pdf-header.compact h1{font-size:15pt}.kreativ-pdf-header.compact h2{margin:0;color:var(--kreativ-muted);font-size:8.7pt}\n  .kreativ-pdf-background{position:absolute;top:46mm;right:-9mm;z-index:1;width:78mm;height:78mm;fill:none;stroke:color-mix(in srgb,var(--accent),transparent 85%);stroke-width:.9;pointer-events:none}.kreativ-pdf-background .wide{stroke-dasharray:1.2 1.5}.kreativ-pdf-background .tight{stroke-dasharray:.8 1.2}\n  .kreativ-pdf-content{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,105fr) minmax(0,64fr);column-gap:var(--kreativ-column-gap);align-items:start;padding:10mm var(--kreativ-margin) max(13mm,calc(var(--kreativ-margin) - 2mm))}\n  .kreativ-pdf-content.continuation{display:block;padding-top:7mm}.kreativ-pdf-left{grid-column:1;min-width:0}.kreativ-pdf-right{position:relative;grid-column:2;min-width:0}\n  .kreativ-pdf-section,.kreativ-pdf-right>section{margin:0 0 var(--kreativ-section-gap);break-inside:avoid;page-break-inside:avoid}\n  .kreativ-pdf-title,.kreativ-pdf-right section>h3,.kreativ-pdf-ats>section>h3,.kreativ-pdf-ats .knowledge-section>h3{margin:0 0 3.5mm;padding-bottom:1.2mm;border-bottom:.65mm solid var(--kreativ-dark);color:var(--kreativ-dark);font-family:var(--heading-font);font-size:14pt;font-weight:750;letter-spacing:.025em;line-height:1;text-transform:uppercase}\n  .kreativ-pdf-summary{margin:0;color:var(--kreativ-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}\n  .kreativ-pdf-list{display:flex;flex-direction:column;gap:var(--kreativ-entry-gap)}.kreativ-pdf-entry{padding-bottom:3mm;border-bottom:.25mm dashed var(--kreativ-light);break-inside:avoid;page-break-inside:avoid}.kreativ-pdf-entry:last-child{padding-bottom:0;border-bottom:0}\n  .kreativ-pdf-entry h4,.kreativ-pdf-entry h5{margin:0;overflow-wrap:anywhere}.kreativ-pdf-entry h4{color:var(--kreativ-dark);font-size:11pt;font-weight:600;line-height:1.15}.kreativ-pdf-entry h5{margin-top:1mm;color:var(--accent);font-size:9.5pt;font-weight:750;line-height:1.2}\n  .kreativ-pdf-entry-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm;color:var(--kreativ-muted);font-size:7.8pt;line-height:1.2}.kreativ-pdf-entry-meta span+span:before{margin-right:1.5mm;color:var(--accent);content:\"·\"}\n  .kreativ-pdf-entry ul,.kreativ-pdf-right ul,.kreativ-pdf-ats ul{margin:0;padding-left:4.5mm}.kreativ-pdf-entry li,.kreativ-pdf-right li,.kreativ-pdf-ats li{margin:.5mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.kreativ-pdf-entry li::marker,.kreativ-pdf-right li::marker,.kreativ-pdf-ats li::marker{color:var(--accent)}\n  .kreativ-pdf-strengths{display:grid}.kreativ-pdf-strength{display:grid;grid-template-columns:7mm minmax(0,1fr);align-items:start;gap:2.5mm;min-width:0;margin-bottom:3mm;padding-bottom:3mm;border-bottom:.25mm dashed var(--kreativ-light)}.kreativ-pdf-strength:last-child{margin:0;padding:0;border:0}.kreativ-pdf-strength svg{width:5.5mm;height:5.5mm;color:var(--accent);fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.2}.kreativ-pdf-strength i{display:grid;place-items:center;width:5.5mm;height:5.5mm;color:var(--accent);font-size:9pt;font-style:normal}.kreativ-pdf-strength h4,.kreativ-pdf-strength span{margin:0;color:var(--kreativ-dark);font-size:9.4pt;font-weight:750;line-height:1.2;overflow-wrap:anywhere}.kreativ-pdf-strength p{margin:1.5mm 0 0;color:var(--kreativ-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}\n  .kreativ-pdf-languages{display:grid;gap:3mm}.kreativ-pdf-language h4{margin:0;color:var(--kreativ-dark);font-size:8.8pt;font-weight:750;line-height:1.15}.kreativ-pdf-language>div{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2mm;margin-top:1mm;color:var(--kreativ-muted);font-size:7.6pt}.kreativ-pdf-dots{display:flex;gap:1mm}.kreativ-pdf-dots i{display:block;width:3.5mm;height:3.5mm;border-radius:50%;background:var(--kreativ-inactive)}.kreativ-pdf-dots i.filled{background:var(--accent)}\n  .kreativ-pdf-skills{display:flex;flex-wrap:wrap;gap:2.5mm 4mm}.kreativ-pdf-skill{max-width:100%;padding:0 1.5mm 1.2mm;border-bottom:.3mm solid var(--kreativ-divider);color:var(--kreativ-text);font-size:8.4pt;font-weight:700;overflow-wrap:anywhere}\n  .kreativ-pdf-footer{position:absolute;right:var(--kreativ-margin);bottom:6mm;left:var(--kreativ-margin);z-index:3;display:flex;justify-content:space-between;gap:6mm;color:var(--kreativ-muted);font-size:7.2pt}.kreativ-pdf-footer a{color:var(--kreativ-dark);text-decoration:none}.kreativ-pdf-footer span:last-child{margin-left:auto}\n  .kreativ-pdf-ats{--kreativ-dark:#173b33;--kreativ-text:#303d3a;--kreativ-muted:#687277;--kreativ-divider:#b8c4c0;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--kreativ-text);background:#fff}\n  .kreativ-pdf-ats .kreativ-pdf-header{display:block;height:auto;min-height:auto;padding:0 0 4mm;color:var(--kreativ-dark);background:#fff;border-bottom:.4mm solid var(--kreativ-divider)}.kreativ-pdf-ats .kreativ-pdf-identity h1{font-size:20pt}.kreativ-pdf-ats .kreativ-pdf-identity h2{font-size:10pt}.kreativ-pdf-ats .kreativ-pdf-contacts{color:var(--kreativ-text)}\n  .kreativ-pdf-ats>section,.kreativ-pdf-ats .knowledge-section{margin-top:var(--section-gap)}.kreativ-pdf-ats .knowledge-category h4,.kreativ-pdf-ats .knowledge-subcategory h5{color:var(--kreativ-dark)}\n  .kreativ-pdf[data-density=\"compact\"]{--kreativ-section-gap:max(5mm,calc(var(--section-gap) - 1mm));--kreativ-entry-gap:3.7mm}.kreativ-pdf[data-density=\"dense\"]{--kreativ-section-gap:max(3.7mm,calc(var(--section-gap) - 2mm));--kreativ-entry-gap:2.8mm}.kreativ-pdf[data-density=\"dense\"] .kreativ-pdf-header{height:42mm;padding-top:6mm;padding-bottom:5mm}.kreativ-pdf[data-density=\"dense\"] .kreativ-pdf-identity h1{font-size:21pt}.kreativ-pdf[data-density=\"dense\"] .kreativ-pdf-content{padding-top:6mm}\n", Pc = "\n  .ivy-pdf{--ivy-heading:var(--accent);--ivy-accent:var(--secondary);--ivy-text:#3f4b50;--ivy-muted:#667177;--ivy-divider:color-mix(in srgb,var(--accent),#0b459a 38%);--ivy-inactive:#dce9e8;--ivy-margin:var(--doc-margin);position:relative;width:100%;height:100%;overflow:hidden;color:var(--ivy-text);background:transparent;font-family:var(--body-font)}\n  .ivy-pdf *{box-sizing:border-box}.ivy-pdf-watercolor{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none}.ivy-pdf-content{position:relative;z-index:2;height:100%;padding:max(11mm,calc(var(--ivy-margin) - 1mm)) var(--ivy-margin) max(13mm,calc(var(--ivy-margin) + 1mm))}\n  .ivy-pdf-header{min-height:19mm;margin:0 0 5.5mm;text-align:center}.ivy-pdf-header .kicker{margin:0 0 1.2mm;color:var(--ivy-muted);font-size:7.2pt}.ivy-pdf-header h1{margin:0;color:var(--ivy-heading);font-family:Georgia,\"Times New Roman\",serif;font-size:17.5pt;font-weight:700;letter-spacing:.015em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.ivy-pdf-header h2{margin:1.5mm 0 1.3mm;color:var(--ivy-accent);font-size:11.5pt;font-weight:400;line-height:1.2;overflow-wrap:anywhere}\n  .ivy-pdf-contacts{display:flex;flex-wrap:wrap;justify-content:center;gap:.7mm 2.3mm;margin:0;color:var(--ivy-text);font-size:7.8pt;font-style:normal;line-height:1.25}.ivy-pdf-contacts a,.ivy-pdf-contacts span{color:inherit;text-decoration:none;overflow-wrap:anywhere}.ivy-pdf-contacts i{color:var(--ivy-text);font-style:normal}.ivy-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;min-height:auto;margin-bottom:5mm;padding-bottom:2.5mm;border-bottom:.3mm solid var(--ivy-divider);text-align:left}.ivy-pdf-header.compact .kicker{flex-basis:100%}.ivy-pdf-header.compact h1{font-size:14pt}.ivy-pdf-header.compact h2{max-width:96mm;margin:0;font-size:8.5pt;text-align:right}\n  .ivy-pdf-section,.ivy-pdf>.ivy-pdf-content>.knowledge-section{position:relative;z-index:2;min-width:0;margin:0 0 var(--section-gap)}.ivy-pdf-title,.ivy-pdf .knowledge-section>h3{position:relative;margin:0 0 2.5mm;padding:0 0 1.5mm;border-bottom:.3mm solid var(--ivy-divider);color:var(--ivy-heading);font-family:Georgia,\"Times New Roman\",serif;font-size:13.5pt;font-weight:700;line-height:1.05;text-align:center;text-transform:none;break-after:avoid;page-break-after:avoid}.ivy-pdf-summary{margin:0;color:var(--ivy-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}\n  .ivy-pdf-strengths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3.5mm 8mm}.ivy-pdf-strength{display:grid;grid-template-columns:5.5mm minmax(0,1fr);gap:1.5mm;min-width:0;break-inside:avoid}.ivy-pdf-strength i{color:var(--ivy-accent);font-size:13pt;font-style:normal;line-height:1}.ivy-pdf-strength h3{margin:0 0 .8mm;color:var(--ivy-heading);font-size:9.5pt;font-weight:600;line-height:1.15;overflow-wrap:anywhere}.ivy-pdf-strength p{margin:0;font-size:var(--body-size);line-height:var(--body-line)}\n  .ivy-pdf-list{display:flex;flex-direction:column;gap:4.5mm}.ivy-pdf-entry{min-width:0;break-inside:avoid;page-break-inside:avoid}.ivy-pdf-entry-top,.ivy-pdf-entry-role{display:grid;grid-template-columns:minmax(0,1fr) minmax(32mm,auto);gap:8mm;align-items:baseline}.ivy-pdf-entry h3,.ivy-pdf-entry h4{margin:0;overflow-wrap:anywhere}.ivy-pdf-entry-top h3{color:var(--ivy-accent);font-size:10.5pt;font-weight:500;line-height:1.15}.ivy-pdf-entry-top span,.ivy-pdf-entry-role span{color:var(--ivy-text);font-size:var(--body-size);line-height:1.2;text-align:right;overflow-wrap:anywhere}.ivy-pdf-entry-role{margin-top:.7mm}.ivy-pdf-entry-role h4{color:var(--ivy-heading);font-size:9.7pt;font-weight:500;line-height:1.18}.ivy-pdf-entry-role span{white-space:nowrap}\n  .ivy-pdf-entry ul,.ivy-pdf-certifications ul,.ivy-pdf-ats ul{margin:1.3mm 0 0;padding-left:4.5mm}.ivy-pdf-entry li,.ivy-pdf-certifications li,.ivy-pdf-ats li{margin:.35mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word}.ivy-pdf-entry li::marker,.ivy-pdf-certifications li::marker{color:var(--ivy-heading)}.ivy-pdf-education .ivy-pdf-list{gap:3.2mm}.ivy-pdf-knowledge{margin:0;overflow-wrap:anywhere}\n  .ivy-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 20mm}.ivy-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2mm;align-items:center;min-width:0}.ivy-pdf-language strong{color:var(--ivy-heading);font-weight:600}.ivy-pdf-language>span:not(.ivy-pdf-dots){overflow-wrap:anywhere}.ivy-pdf-dots{display:flex;gap:1mm}.ivy-pdf-dots i{display:block;width:2.1mm;height:2.1mm;border-radius:50%;background:var(--ivy-inactive)}.ivy-pdf-dots i.filled{background:var(--ivy-heading)}\n  .ivy-pdf-footer{position:absolute;right:var(--ivy-margin);bottom:6mm;left:var(--ivy-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--ivy-muted);font-size:7.1pt}.ivy-pdf-footer a{color:var(--ivy-muted);text-decoration:none}.ivy-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}\n  .ivy-pdf-ats{--ivy-heading:#173b63;--ivy-accent:#173b63;--ivy-text:#303b42;--ivy-divider:#aeb8bf;padding:max(11mm,calc(var(--doc-margin) - 1mm)) var(--doc-margin) 13mm;background:#fff;font-family:Arial,sans-serif}.ivy-pdf-ats .ivy-pdf-header{padding-bottom:3.5mm;border-bottom:.3mm solid var(--ivy-divider)}.ivy-pdf-ats .ivy-pdf-header h1{font-family:Arial,sans-serif;font-size:19pt}.ivy-pdf-ats .ivy-pdf-header h2{color:var(--ivy-heading);font-size:10pt}.ivy-pdf-ats .ivy-pdf-title,.ivy-pdf-ats .knowledge-section>h3{font-family:Arial,sans-serif;font-size:11pt;text-align:left}.ivy-pdf-ats .knowledge-category h4,.ivy-pdf-ats .knowledge-subcategory h5{color:var(--ivy-heading)}\n  .ivy-pdf[data-density=\"compact\"]{--section-gap:max(4.5mm,calc(var(--doc-section-gap) - 1mm))}.ivy-pdf[data-density=\"compact\"] .ivy-pdf-list{gap:3.6mm}.ivy-pdf[data-density=\"dense\"]{--section-gap:max(3.8mm,calc(var(--doc-section-gap) - 2mm))}.ivy-pdf[data-density=\"dense\"] .ivy-pdf-list{gap:3mm}.ivy-pdf[data-density=\"dense\"] .ivy-pdf-title{margin-bottom:2mm;font-size:12.5pt}\n  @media print{.no-print-background .ivy-pdf-watercolor{display:none!important}}\n", Fc = "\n  .managed-pdf{position:relative;width:100%;height:100%;overflow:hidden;color:var(--managed-text);background:#fff;font-family:var(--body-font);font-size:var(--body-size);line-height:var(--body-line)}\n  .managed-pdf *{box-sizing:border-box}.managed-pdf a{color:inherit;text-decoration:none}.managed-pdf-content{position:relative;z-index:2;height:100%}.managed-pdf-background{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none}.managed-pdf-section{min-width:0;margin:0 0 var(--managed-section-gap);break-inside:avoid}.managed-pdf-title{margin:0 0 3mm;color:var(--managed-muted);font-size:9pt;font-weight:500;line-height:1;text-transform:uppercase;break-after:avoid}.managed-pdf-list{display:flex;flex-direction:column;gap:var(--managed-entry-gap)}.managed-pdf-entry{break-inside:avoid}.managed-pdf-entry h3,.managed-pdf-entry h4{margin:0;overflow-wrap:anywhere}.managed-pdf-entry ul,.managed-pdf-ats ul{margin:1mm 0 0;padding-left:4mm}.managed-pdf-entry li,.managed-pdf-ats li{margin:.25mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.managed-pdf-footer{position:absolute;right:var(--managed-margin);bottom:6mm;left:var(--managed-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--managed-muted);font-size:7pt}.managed-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}\n  .stilvoll-pdf{--managed-primary:var(--accent);--managed-dark:var(--secondary);--managed-text:#465156;--managed-muted:#6d777c;--managed-divider:#aeb8b5;--managed-pattern:#dce2df;--managed-margin:max(15mm,var(--doc-margin));--managed-section-gap:var(--section-gap);--managed-entry-gap:5mm}.stilvoll-pdf .managed-pdf-background{color:var(--managed-pattern);opacity:.62}.stilvoll-pdf .managed-pdf-background path{fill:none;stroke:currentColor;stroke-width:.45}.stilvoll-pdf-header{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) 28mm;gap:10mm;min-height:36mm;padding:14mm var(--managed-margin) 0}.stilvoll-pdf-header.no-photo{grid-template-columns:1fr}.stilvoll-pdf-header h1{margin:0;color:var(--managed-dark);font-size:23pt;font-weight:400;line-height:1;letter-spacing:.015em;text-transform:uppercase;overflow-wrap:anywhere}.stilvoll-pdf-header h2{margin:2mm 0 2.5mm;color:var(--managed-primary);font-size:12pt;font-weight:400;line-height:1.2}.stilvoll-pdf-contacts{display:flex;flex-wrap:wrap;gap:1mm 3.5mm;margin:0;color:var(--managed-text);font-size:7.8pt;font-style:normal}.stilvoll-pdf-contacts span{display:inline-flex;gap:1mm}.stilvoll-pdf-contacts i{color:var(--managed-muted);font-style:normal}.stilvoll-pdf-photo{width:26mm;height:26mm;overflow:hidden;border-radius:1.5mm;object-fit:cover}.stilvoll-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:24mm;padding-top:11mm;padding-bottom:3mm;border-bottom:.3mm solid var(--managed-divider)}.stilvoll-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-primary);font-size:7pt;text-transform:uppercase}.stilvoll-pdf-header.compact h1{font-size:15pt}.stilvoll-pdf-header.compact h2{margin:0;font-size:8.5pt}.stilvoll-pdf-columns{display:grid;grid-template-columns:54mm minmax(0,115mm);gap:11mm;padding:10mm var(--managed-margin) 16mm}.stilvoll-pdf-columns.continuation{display:block;padding-top:6mm}.stilvoll-pdf .managed-pdf-title{padding-bottom:1mm;border-bottom:.3mm solid var(--managed-divider)}.stilvoll-pdf-strength{display:grid;grid-template-columns:9mm minmax(0,1fr);gap:3mm;margin-bottom:5mm}.stilvoll-pdf-strength i{display:grid;place-items:center;width:8mm;height:8mm;border-radius:50%;color:var(--managed-primary);background:#f1f3f2;font-style:normal}.stilvoll-pdf-strength h3{margin:0 0 1mm;color:var(--managed-dark);font-size:9.5pt;font-weight:500}.stilvoll-pdf-strength p{margin:0}.stilvoll-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) 11mm;gap:2mm;align-items:center;margin-bottom:3mm}.managed-pdf-dots{display:flex;gap:.6mm}.managed-pdf-dots i{display:block;width:1.5mm;height:1.5mm;border-radius:50%;background:#dde2e0}.managed-pdf-dots i.filled{background:var(--managed-dark)}.stilvoll-pdf-entry h3{color:var(--managed-dark);font-size:11pt;font-weight:400}.stilvoll-pdf-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm}.stilvoll-pdf-meta strong{margin-right:auto;color:var(--managed-primary);font-size:9.8pt;font-weight:400}.stilvoll-pdf-meta span{color:var(--managed-muted);font-size:7.8pt}\n  .kompakt-pdf{isolation:isolate;--managed-primary:var(--accent);--managed-accent:var(--secondary);--managed-text:#3f494f;--managed-muted:#6d757a;--managed-divider:#aeb6ba;--managed-pattern:#ffd7bc;--managed-margin:max(13mm,calc(var(--doc-margin) - 1mm));--managed-section-gap:max(3.5mm,calc(var(--section-gap) - 1mm));--managed-entry-gap:4mm}.kompakt-pdf .managed-pdf-background{z-index:-1;color:var(--managed-pattern);opacity:.72}.kompakt-pdf .managed-pdf-background path,.kompakt-pdf .managed-pdf-background circle{fill:none;stroke:currentColor;stroke-width:.7}.kompakt-pdf-header{position:relative;z-index:2;min-height:22mm;padding:13mm var(--managed-margin) 0}.kompakt-pdf-header h1{max-width:112mm;margin:0;color:var(--managed-primary);font-size:20pt;font-weight:450;line-height:1}.kompakt-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 4mm;padding-top:10mm;border-bottom:.25mm solid var(--managed-divider)}.kompakt-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-accent);font-size:7pt;text-transform:uppercase}.kompakt-pdf-header.compact h1{font-size:14pt}.kompakt-pdf-header h2{margin:0;color:var(--managed-muted);font-size:8.5pt}.kompakt-pdf-columns{display:grid;grid-template-columns:108mm 66mm;gap:10mm;padding:9mm var(--managed-margin) 15mm}.kompakt-pdf-columns.continuation{display:block;padding-top:6mm}.kompakt-pdf-entry h3{color:var(--managed-primary);font-size:10.5pt;font-weight:550}.kompakt-pdf-meta{display:flex;flex-wrap:wrap;gap:.7mm 4mm;margin:.7mm 0 1mm;color:var(--managed-muted);font-size:7.4pt}.kompakt-pdf-meta strong{color:var(--managed-accent);font-size:8.4pt}.kompakt-pdf-contacts{display:grid;gap:3.5mm;margin:0;font-style:normal}.kompakt-pdf-contact{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;align-items:center;color:var(--managed-primary);font-size:8.8pt}.kompakt-pdf-contact i{color:var(--managed-accent);font-size:11pt;font-style:normal}.kompakt-pdf-strength{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;margin-bottom:4mm}.kompakt-pdf-strength i{color:var(--managed-accent);font-size:11pt;font-style:normal}.kompakt-pdf-strength h3{margin:0 0 1mm;color:var(--managed-primary);font-size:9pt}.kompakt-pdf-strength p{margin:0}.kompakt-pdf-skills{display:flex;flex-wrap:wrap;gap:2mm 3mm}.kompakt-pdf-skill{padding:0 1.5mm 1mm;border-bottom:.3mm solid var(--managed-divider);color:var(--managed-primary);font-size:7.8pt;font-weight:700}.kompakt-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 8mm}.kompakt-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:1.5mm;align-items:center}.kompakt-pdf-language strong{color:var(--managed-primary)}.kompakt-pdf-language .managed-pdf-dots i{width:2.2mm;height:2.2mm}.kompakt-pdf-language .managed-pdf-dots i.filled{background:var(--managed-accent)}\n  .einfach-pdf{isolation:isolate;--managed-primary:var(--accent);--managed-accent:var(--secondary);--managed-text:#3e484e;--managed-muted:#68747a;--managed-divider:var(--accent);--managed-pattern:#eaf5fd;--managed-margin:max(15mm,var(--doc-margin));--managed-section-gap:calc(var(--section-gap) + 1.5mm);--managed-entry-gap:4.5mm;font-size:calc(var(--body-size) + 1.2pt);line-height:clamp(1.1,calc(var(--body-line) - .25),1.18)}.einfach-pdf p,.einfach-pdf li{font-size:inherit;line-height:inherit}.einfach-pdf .managed-pdf-background{z-index:-1;color:var(--managed-pattern);opacity:.78}.einfach-pdf .managed-pdf-background path{fill:none;stroke:currentColor;stroke-width:4.2}.einfach-pdf-inner{position:relative;z-index:2;height:100%;padding:max(14mm,calc(var(--managed-margin) - 1mm)) var(--managed-margin) 16mm}.einfach-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 36mm;gap:8mm;min-height:35mm;margin-bottom:5.5mm}.einfach-pdf-header.no-photo{grid-template-columns:1fr}.einfach-pdf-header h1{margin:0;color:var(--managed-primary);font-size:24pt;font-weight:750;line-height:1;text-transform:uppercase}.einfach-pdf-header h2{margin:2mm 0;color:var(--managed-accent);font-size:11.5pt;line-height:1.2}.einfach-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 8mm;max-width:118mm;margin:0;font-size:8.2pt;font-style:normal;line-height:1.18}.einfach-pdf-contact{display:grid;grid-template-columns:4mm minmax(0,1fr);gap:1mm;min-width:0}.einfach-pdf-contact i{color:var(--managed-accent);font-style:normal;font-weight:700}.einfach-pdf-contact a,.einfach-pdf-contact span{min-width:0;overflow-wrap:anywhere}.einfach-pdf-photo{width:34mm;height:34mm;border-radius:50%;object-fit:cover}.einfach-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:auto;margin-bottom:6mm;padding-bottom:3mm;border-bottom:.5mm solid var(--managed-primary)}.einfach-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-accent);font-size:7pt;text-transform:uppercase}.einfach-pdf-header.compact h1{font-size:16pt}.einfach-pdf-header.compact h2{margin:0;font-size:9pt}.einfach-pdf .managed-pdf-section>p{margin:0;hyphens:auto;overflow-wrap:break-word}.einfach-pdf .managed-pdf-title{margin-bottom:3.5mm;padding-bottom:1mm;border-bottom:.65mm solid var(--managed-primary);color:var(--managed-primary);font-size:13.5pt;font-weight:750}.einfach-pdf-strengths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4mm 15mm}.einfach-pdf-strength{display:grid;grid-template-columns:7mm minmax(0,1fr);gap:2mm}.einfach-pdf-strength i{color:var(--managed-accent);font-size:14pt;font-style:normal}.einfach-pdf-strength h3{margin:0 0 1.5mm;color:var(--managed-primary);font-size:9.5pt}.einfach-pdf-strength p{margin:0}.einfach-pdf-entry{padding-bottom:3mm;border-bottom:.25mm dashed #d4d9dc}.einfach-pdf-entry:last-child{padding-bottom:0;border-bottom:0}.einfach-pdf-entry h3{color:var(--managed-primary);font-size:11.5pt;font-weight:500;line-height:1.15}.einfach-pdf-entry h4{margin-top:1mm;color:var(--managed-accent);font-size:10pt;line-height:1.15}.einfach-pdf-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm;color:var(--managed-muted);font-size:8.1pt}.einfach-pdf-meta span:first-child:before{margin-right:1.5mm;color:var(--managed-accent);content:\"▦\"}.einfach-pdf-meta span+span:before{margin-right:1.5mm;color:var(--managed-accent);content:\"⌖\"}.einfach-pdf-entry li{margin:.3mm 0}.einfach-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 15mm}.einfach-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:3mm;align-items:center}.einfach-pdf-language strong{color:var(--managed-primary);font-size:9.5pt}.einfach-pdf-language .managed-pdf-dots{gap:1mm}.einfach-pdf-language .managed-pdf-dots i{width:2.8mm;height:2.8mm}.einfach-pdf-language .managed-pdf-dots i.filled{background:var(--managed-accent)}\n  .managed-pdf[data-density=\"compact\"]{--managed-entry-gap:max(3.2mm,calc(var(--managed-entry-gap) - 1mm));--managed-section-gap:max(4mm,calc(var(--managed-section-gap) - 1mm))}.managed-pdf[data-density=\"dense\"]{--managed-entry-gap:3mm;--managed-section-gap:4mm}.kompakt-pdf[data-density=\"dense\"]{--managed-entry-gap:2.5mm;--managed-section-gap:3.5mm;font-size:max(7.5pt,calc(var(--body-size) - .5pt));line-height:max(1.18,calc(var(--body-line) - .07))}.einfach-pdf[data-density=\"compact\"]{--managed-section-gap:max(5mm,var(--section-gap));--managed-entry-gap:3.8mm}.einfach-pdf[data-density=\"dense\"]{--managed-section-gap:max(4.5mm,calc(var(--section-gap) - .5mm));--managed-entry-gap:3mm}\n  .managed-pdf-ats{--managed-primary:#173b63;--managed-dark:#173b63;--managed-accent:#173b63;--managed-text:#303b42;--managed-muted:#626e75;--managed-divider:#aeb8bf;padding:14mm var(--managed-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.managed-pdf-ats .managed-pdf-header{display:block;min-height:auto;margin:0;padding:0 0 4mm;border-bottom:.3mm solid var(--managed-divider)}.managed-pdf-ats .managed-pdf-header h1{max-width:none;font-size:19pt}.managed-pdf-ats .managed-pdf-header h2{margin-top:1mm;color:var(--managed-primary);font-size:10pt}.managed-pdf-ats .managed-pdf-section{margin-top:var(--managed-section-gap);margin-bottom:0}.managed-pdf-ats .managed-pdf-title{margin-bottom:2mm;padding-bottom:1mm;border-bottom:.3mm solid var(--managed-divider);color:var(--managed-primary);font-size:10.5pt;font-weight:700}.managed-pdf-ats .managed-pdf-list{gap:var(--managed-entry-gap)}\n  @media print{.no-print-background .managed-pdf-background{display:none!important}}\n", Ic = "\n  .klassisch-pdf{isolation:isolate;--klassisch-primary:var(--accent);--klassisch-accent:var(--secondary);--klassisch-heading:#5a6267;--klassisch-text:#3f484d;--klassisch-muted:#68747a;--klassisch-soft:#cdeff3;--klassisch-border:#d5dbde;--klassisch-margin:max(15mm,var(--doc-margin));--klassisch-section-gap:var(--section-gap);--klassisch-entry-gap:4.2mm;position:relative;width:100%;height:100%;overflow:hidden;color:var(--klassisch-text);background:#fff;font-family:var(--body-font);font-size:var(--body-size);line-height:var(--body-line)}\n  .klassisch-pdf *{box-sizing:border-box}.klassisch-pdf a{color:inherit;text-decoration:none}.klassisch-pdf-background{position:absolute;inset:0;z-index:-1;width:100%;height:100%;pointer-events:none}.klassisch-pdf-background .fill{fill:var(--klassisch-soft)}.klassisch-pdf-background .line{fill:none;stroke:rgba(255,255,255,.92);stroke-width:.28;vector-effect:non-scaling-stroke}.klassisch-pdf-content{position:relative;z-index:2;height:100%;padding:14mm var(--klassisch-margin) 17mm}\n  .klassisch-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 34mm;gap:8mm;align-items:start;min-height:33mm;margin-bottom:7mm}.klassisch-pdf-header.no-photo{grid-template-columns:1fr}.klassisch-pdf-header h1{max-width:138mm;margin:0;color:var(--klassisch-primary);font-size:26pt;font-weight:750;letter-spacing:-.01em;line-height:1;overflow-wrap:anywhere}.klassisch-pdf-header h2{margin:2mm 0 1.5mm;color:var(--klassisch-text);font-size:12.2pt;font-weight:400;line-height:1.12;overflow-wrap:anywhere}.klassisch-pdf-contacts{display:flex;flex-wrap:wrap;gap:.5mm 3.2mm;max-width:146mm;margin:0;color:var(--klassisch-text);font-size:8pt;font-style:normal;line-height:1.25}.klassisch-pdf-contacts span{min-width:0;overflow-wrap:anywhere}.klassisch-pdf-contacts span+span:before{margin-right:3.2mm;color:var(--klassisch-muted);content:\"·\"}.klassisch-pdf-photo{justify-self:end;width:32mm;height:32mm;border-radius:50%;object-fit:cover;background:#edf1f3}\n  .klassisch-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:auto;margin-bottom:6mm;padding-bottom:2.5mm;border-bottom:.3mm solid var(--klassisch-border)}.klassisch-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--klassisch-accent);font-size:7pt;font-weight:700;letter-spacing:.09em;text-transform:uppercase}.klassisch-pdf-header.compact h1{font-size:15.5pt}.klassisch-pdf-header.compact h2{margin:0;font-size:8.8pt}\n  .klassisch-pdf-section{min-width:0;margin:0 0 var(--klassisch-section-gap);break-inside:avoid;page-break-inside:avoid}.klassisch-pdf-title{margin:0 0 3mm;color:var(--klassisch-heading);font-size:10.4pt;font-weight:750;letter-spacing:.01em;line-height:1;text-transform:uppercase;break-after:avoid}.klassisch-pdf-section>p{margin:0;hyphens:auto;overflow-wrap:break-word}\n  .klassisch-pdf-strengths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4mm 9mm}.klassisch-pdf-strength h3{margin:0 0 1.2mm;color:var(--klassisch-accent);font-size:9.8pt;font-weight:750;line-height:1.1;overflow-wrap:anywhere}.klassisch-pdf-strength p{margin:0;hyphens:auto}\n  .klassisch-pdf-list{display:flex;flex-direction:column;gap:var(--klassisch-entry-gap)}.klassisch-pdf-entry{min-width:0;break-inside:avoid}.klassisch-pdf-entry-head{display:grid;grid-template-columns:minmax(0,1fr) 34mm;gap:7mm;align-items:start}.klassisch-pdf-entry h3,.klassisch-pdf-entry h4{margin:0;overflow-wrap:anywhere}.klassisch-pdf-entry h3{color:var(--klassisch-primary);font-size:12.2pt;font-weight:450;line-height:1.08}.klassisch-pdf-entry h4{margin-top:1mm;color:var(--klassisch-accent);font-size:10pt;font-weight:650;line-height:1.12}.klassisch-pdf-entry-meta{display:flex;flex-direction:column;gap:2mm;margin:0;color:var(--klassisch-muted);font-size:7.8pt;line-height:1.15;text-align:right}.klassisch-pdf-entry ul,.klassisch-pdf-certifications{margin:1.2mm 0 0;padding-left:4.3mm}.klassisch-pdf-entry li,.klassisch-pdf-certifications li{margin:.15mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word}.klassisch-pdf-education .klassisch-pdf-list{gap:3.5mm}.klassisch-pdf-education .klassisch-pdf-entry h3{font-size:11.7pt}.klassisch-pdf-education .klassisch-pdf-entry h4{color:var(--klassisch-text);font-size:9.4pt;font-weight:450}\n  .klassisch-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2mm 18mm;max-width:112mm}.klassisch-pdf-language{display:flex;gap:3mm;margin:0;color:var(--klassisch-text);font-size:9pt}.klassisch-pdf-language strong{color:var(--klassisch-primary);font-weight:500}.klassisch-pdf-footer{position:absolute;right:var(--klassisch-margin);bottom:6mm;left:var(--klassisch-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--klassisch-muted);font-size:7pt}.klassisch-pdf-footer span:last-child{margin-left:auto}\n  .klassisch-pdf[data-density=\"compact\"]{--klassisch-section-gap:max(4.8mm,calc(var(--section-gap) - 1mm));--klassisch-entry-gap:3.5mm}.klassisch-pdf[data-density=\"dense\"]{--klassisch-section-gap:max(3.8mm,calc(var(--section-gap) - 2mm));--klassisch-entry-gap:2.8mm;font-size:max(8pt,calc(var(--body-size) - .3pt))}.klassisch-pdf[data-density=\"dense\"] .klassisch-pdf-header{min-height:29mm;margin-bottom:5mm}.klassisch-pdf[data-density=\"dense\"] .klassisch-pdf-header h1{font-size:23pt}\n  .klassisch-pdf-ats{--klassisch-primary:#173b63;--klassisch-accent:#173b63;--klassisch-heading:#173b63;--klassisch-text:#303b42;--klassisch-muted:#626e75;--klassisch-border:#aeb8bf;padding:14mm var(--klassisch-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.klassisch-pdf-ats .klassisch-pdf-header{display:block;min-height:auto;margin:0 0 5mm;padding-bottom:3mm;border-bottom:.3mm solid var(--klassisch-border)}.klassisch-pdf-ats .klassisch-pdf-header h1{font-size:19pt}.klassisch-pdf-ats .klassisch-pdf-header h2{color:var(--klassisch-primary);font-size:10pt}.klassisch-pdf-ats .klassisch-pdf-title{margin-bottom:2mm;padding-bottom:1mm;border-bottom:.3mm solid var(--klassisch-border);font-size:10.5pt}.klassisch-pdf-ats .klassisch-pdf-strengths,.klassisch-pdf-ats .klassisch-pdf-languages{display:block;max-width:none}.klassisch-pdf-ats .klassisch-pdf-strength,.klassisch-pdf-ats .klassisch-pdf-language{margin:.7mm 0}\n  @media print{.no-print-background .klassisch-pdf-background{display:none!important}}\n", Lc = `${Ic.replaceAll("klassisch", "mehrspaltig")}
   .mehrspaltig-pdf{--mehrspaltig-primary:#003c96;--mehrspaltig-accent:#57adf4;--mehrspaltig-heading:#003c96;--mehrspaltig-border:#d7dee3;--mehrspaltig-margin:max(15mm,var(--doc-margin));font-size:calc(var(--body-size) + .1pt);line-height:min(1.22,var(--body-line))}.mehrspaltig-pdf-background .fill,.mehrspaltig-pdf-background .line{display:none}.mehrspaltig-pdf-background .ribbon{fill:none;stroke-width:2.3;stroke-linecap:round}.mehrspaltig-pdf-background .red{stroke:#f26b67}.mehrspaltig-pdf-background .orange{stroke:#f7a24c}.mehrspaltig-pdf-background .yellow{stroke:#f3cf54}.mehrspaltig-pdf-background .green{stroke:#73bf80}.mehrspaltig-pdf-background .blue{stroke:#59afe9}.mehrspaltig-pdf-background .purple{stroke:#a686cc}
   .mehrspaltig-pdf-content{padding:14mm var(--mehrspaltig-margin) 16mm}.mehrspaltig-pdf-header{position:relative;grid-template-columns:minmax(0,1fr) 30mm;gap:7mm;min-height:31mm;margin-bottom:5mm;padding-right:28mm}.mehrspaltig-pdf-header h1,.mehrspaltig-pdf-title,.mehrspaltig-pdf-entry h3,.mehrspaltig-pdf-strength h3{font-family:Georgia,"Times New Roman",serif}.mehrspaltig-pdf-header h1{max-width:none;color:var(--mehrspaltig-primary);font-size:25pt;font-weight:700;letter-spacing:.012em;line-height:.96;text-transform:uppercase}.mehrspaltig-pdf-header h2{margin:2.2mm 0 2mm;color:var(--mehrspaltig-accent);font-family:Georgia,"Times New Roman",serif;font-size:11.4pt;font-weight:700}.mehrspaltig-pdf-contacts{gap:1mm 4mm;max-width:none;font-size:7.7pt;line-height:1.15}.mehrspaltig-pdf-contacts span+span:before{margin-right:0;content:""}.mehrspaltig-pdf-photo{width:30mm;height:30mm}.mehrspaltig-pdf-header.compact{margin-bottom:5mm;border-color:var(--mehrspaltig-primary)}
   .mehrspaltig-pdf-columns{display:grid;grid-template-columns:40mm minmax(0,1fr) 40mm;gap:9mm;align-items:start}.mehrspaltig-pdf-columns.continuation{display:block}.mehrspaltig-pdf-column{min-width:0}.mehrspaltig-pdf-section{margin:0 0 5.4mm}.mehrspaltig-pdf-title{margin:0 0 2.4mm;padding-bottom:1.2mm;border-bottom:.45mm solid var(--mehrspaltig-primary);color:var(--mehrspaltig-primary);font-size:10.6pt;font-weight:700}.mehrspaltig-pdf-section>p{margin:0}.mehrspaltig-pdf-skills{display:flex;flex-direction:column;gap:1.5mm}.mehrspaltig-pdf-skills strong{padding-bottom:1.1mm;border-bottom:.25mm solid var(--mehrspaltig-border);color:var(--mehrspaltig-primary);font-size:8.1pt}
   .mehrspaltig-pdf-strengths{display:flex;flex-direction:column;gap:4.2mm}.mehrspaltig-pdf-strength{display:grid;grid-template-columns:8mm minmax(0,1fr);column-gap:2mm}.mehrspaltig-pdf-strength i{grid-row:span 2;display:grid;place-items:center;width:7.5mm;height:7.5mm;border-radius:50%;color:var(--mehrspaltig-accent);background:#f0f2f3;font-size:12pt;font-style:normal}.mehrspaltig-pdf-strength h3{margin:0 0 .8mm;color:var(--mehrspaltig-primary);font-size:9.4pt;font-weight:700}.mehrspaltig-pdf-strength p{margin:0}
   .mehrspaltig-pdf-list{gap:4mm}.mehrspaltig-pdf-entry-head{display:block}.mehrspaltig-pdf-entry h3{color:var(--mehrspaltig-primary);font-size:12.2pt;font-weight:400;line-height:1.06}.mehrspaltig-pdf-entry h4{margin-top:.9mm;color:var(--mehrspaltig-accent);font-size:9.5pt;font-weight:700}.mehrspaltig-pdf-entry-meta{display:flex;flex-direction:row;flex-wrap:wrap;gap:1mm 4mm;margin:1.2mm 0;color:var(--mehrspaltig-muted);font-size:7.2pt;text-align:left}.mehrspaltig-pdf-entry ul{margin:0;padding-left:3.5mm}.mehrspaltig-pdf-entry li::marker{color:var(--mehrspaltig-primary)}.mehrspaltig-pdf-education .mehrspaltig-pdf-entry h3{font-size:11.3pt}.mehrspaltig-pdf-education .mehrspaltig-pdf-entry h4{color:var(--mehrspaltig-text);font-weight:400}
   .mehrspaltig-pdf-languages{display:flex;flex-direction:column;gap:2.3mm;max-width:none}.mehrspaltig-pdf-language{display:block;margin:0;font-size:8pt}.mehrspaltig-pdf-language strong{color:var(--mehrspaltig-primary);font-weight:700}.mehrspaltig-pdf-language span{display:block;color:var(--mehrspaltig-muted)}.mehrspaltig-pdf-footer{bottom:5.5mm}.mehrspaltig-pdf[data-density="dense"] .mehrspaltig-pdf-columns{gap:7mm}.mehrspaltig-pdf-ats .mehrspaltig-pdf-title{border-color:var(--mehrspaltig-border);font-family:Arial,sans-serif}.mehrspaltig-pdf-ats .mehrspaltig-pdf-columns{display:block}
-`, Lc = "\n  .modern-pdf{--modern-primary:var(--accent);--modern-soft:var(--secondary);--modern-heading:#303437;--modern-text:#444b4f;--modern-muted:#686f73;--modern-divider:#aeb4b6;--modern-icon-bg:#f2f3f3;--modern-margin:15mm;--modern-section-gap:7mm;--modern-entry-gap:4.5mm;position:relative;width:100%;height:100%;overflow:hidden;color:var(--modern-text);background:#fff;font-family:var(--body-font);font-size:8.4pt;line-height:1.27}\n  .modern-pdf *{box-sizing:border-box}.modern-pdf a{color:inherit;text-decoration:none}.modern-pdf-content{position:relative;z-index:2;height:100%;padding:14mm var(--modern-margin) 14mm}\n  .modern-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 29mm;gap:9mm;align-items:start;min-height:25mm;margin-bottom:4mm}.modern-pdf-header.no-photo{grid-template-columns:1fr}.modern-pdf-identity{min-width:0}.modern-pdf-header h1{margin:0;color:var(--modern-heading);font-size:24pt;font-weight:700;letter-spacing:.01em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.modern-pdf-header h2{margin:2mm 0 0;color:var(--modern-primary);font-size:12pt;font-weight:500;line-height:1.18;overflow-wrap:anywhere}.modern-pdf-photo{justify-self:end;width:25mm;height:25mm;border-radius:50%;object-fit:cover;background:var(--modern-icon-bg)}\n  .modern-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:auto;margin-bottom:7mm;padding-bottom:3mm;border-bottom:.35mm solid var(--modern-divider)}.modern-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--modern-primary);font-size:7pt;letter-spacing:.08em;text-transform:uppercase}.modern-pdf-header.compact h1{font-size:15pt}.modern-pdf-header.compact h2{margin:0;font-size:9pt}\n  .modern-pdf-columns{display:grid;grid-template-columns:102mm 67mm;gap:11mm;align-items:start}.modern-pdf-columns.continuation{display:block}.modern-pdf-left,.modern-pdf-right{display:flex;min-width:0;flex-direction:column;gap:var(--modern-section-gap)}\n  .modern-pdf-section{min-width:0;break-inside:auto}.modern-pdf-title{margin:0 0 3.2mm;padding-bottom:1mm;border-bottom:.35mm solid var(--modern-divider);color:var(--modern-muted);font-size:9.2pt;font-weight:500;letter-spacing:.025em;line-height:1;text-transform:uppercase;break-after:avoid}.modern-pdf-list{display:flex;flex-direction:column;gap:var(--modern-entry-gap)}\n  .modern-pdf-entry{break-inside:auto}.modern-pdf-entry h3{margin:0 0 1mm;color:var(--modern-heading);font-size:11pt;font-weight:500;line-height:1.15;overflow-wrap:anywhere;break-after:avoid}.modern-pdf-entry-meta{display:flex;flex-wrap:wrap;align-items:center;gap:1mm 4mm;margin:0 0 1.5mm;color:var(--modern-muted);font-size:7.9pt;line-height:1.2;break-after:avoid}.modern-pdf-entry-meta strong{margin-right:auto;color:var(--modern-primary);font-weight:600}.modern-pdf-entry-meta span{display:flex;align-items:center;gap:1mm;white-space:nowrap}.modern-pdf-entry-meta i{color:var(--modern-muted);font-size:6.8pt;font-style:normal}.modern-pdf-entry ul,.modern-pdf-certifications,.modern-pdf-ats ul{margin:0;padding-left:4mm}.modern-pdf-entry li,.modern-pdf-certifications li,.modern-pdf-ats li{margin:.35mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word;break-inside:avoid}\n  .modern-pdf-contacts{display:grid;gap:3.2mm;margin:0;font-style:normal}.modern-pdf-contact{display:grid;grid-template-columns:8.5mm minmax(0,1fr);gap:3mm;align-items:center;min-width:0}.modern-pdf-contact i{display:grid;place-items:center;width:8.5mm;height:8.5mm;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:7pt;font-style:normal;font-weight:700}.modern-pdf-contact span,.modern-pdf-contact a{min-width:0;color:var(--modern-text);font-size:8.4pt;line-height:1.2;overflow-wrap:anywhere}\n  .modern-pdf-contacts.inline{display:flex;flex-wrap:nowrap;align-items:center;gap:1.8mm;max-width:145mm;margin-top:3mm}.modern-pdf-contacts.inline .modern-pdf-contact{display:flex;flex:0 0 auto;grid-template-columns:none;gap:.8mm;min-width:0}.modern-pdf-contacts.inline .modern-pdf-contact i{display:block;width:3.2mm;height:auto;border-radius:0;color:var(--modern-muted);background:transparent;font-size:6.8pt;line-height:1.2}.modern-pdf-contacts.inline .modern-pdf-contact span,.modern-pdf-contacts.inline .modern-pdf-contact a{display:block;max-width:44mm;overflow:hidden;color:var(--modern-muted);font-size:7.4pt;text-overflow:ellipsis;white-space:nowrap}\n  .modern-pdf-summary{margin:0;hyphens:auto;overflow-wrap:break-word}.modern-pdf-strengths{display:flex;flex-direction:column;gap:4mm}.modern-pdf-strength{display:grid;grid-template-columns:10mm minmax(0,1fr);gap:3mm;align-items:start}.modern-pdf-strength>i{display:grid;width:9mm;height:9mm;place-items:center;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:10pt;font-style:normal;font-weight:700}.modern-pdf-strength h3{margin:0 0 .5mm;color:var(--modern-heading);font-size:9.5pt;font-weight:600}.modern-pdf-strength p{margin:0;hyphens:auto;overflow-wrap:break-word}.modern-pdf-languages{display:flex;flex-direction:column;gap:2.5mm}.modern-pdf-language{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4mm;align-items:center}.modern-pdf-language>div{display:flex;min-width:0;justify-content:space-between;gap:2mm}.modern-pdf-language strong{color:var(--modern-heading);font-weight:600}.modern-pdf-language em{color:var(--modern-muted);font-size:7.9pt;font-style:normal}.modern-pdf-dots{display:flex;gap:1.1mm;color:var(--modern-primary);font-size:6pt;white-space:nowrap}\n  .modern-pdf-knowledge{display:flex;flex-wrap:wrap;gap:2.5mm 3mm}.modern-pdf-knowledge span{padding:0 2mm 1mm;border-bottom:.3mm solid var(--modern-divider);color:var(--modern-text);font-size:8.2pt;line-height:1.15}.modern-pdf-achievements{display:flex;flex-direction:column;gap:4mm}.modern-pdf-achievements article{display:grid;grid-template-columns:9mm minmax(0,1fr);gap:3mm;align-items:start}.modern-pdf-achievements i{display:grid;width:9mm;height:9mm;place-items:center;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:8pt;font-style:normal}.modern-pdf-achievements p{margin:0;line-height:1.25}\n  .modern-pdf-footer{position:absolute;right:var(--modern-margin);bottom:6mm;left:var(--modern-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--modern-muted);font-size:7.2pt}.modern-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}\n  .modern-pdf[data-density=\"compact\"]{--modern-section-gap:5mm;--modern-entry-gap:3.7mm;font-size:8.1pt}.modern-pdf[data-density=\"dense\"]{--modern-section-gap:4mm;--modern-entry-gap:3mm;font-size:7.7pt;line-height:1.2}.modern-pdf[data-density=\"dense\"] .modern-pdf-title{margin-bottom:2.5mm}.modern-pdf[data-density=\"dense\"] .modern-pdf-contacts{gap:2.5mm}.modern-pdf[data-density=\"dense\"] .modern-pdf-strengths{gap:3mm}\n  .modern-pdf-ats{--modern-primary:#173b63;--modern-heading:#26343e;--modern-text:#303b42;--modern-muted:#626e75;--modern-divider:#aeb8bf;padding:14mm var(--modern-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.modern-pdf-ats .modern-pdf-header{display:block;min-height:auto;margin-bottom:5mm;padding-bottom:3mm;border-bottom:.35mm solid var(--modern-divider)}.modern-pdf-ats .modern-pdf-header h1{font-size:19pt}.modern-pdf-ats .modern-pdf-header h2{margin-top:1mm;color:var(--modern-heading);font-size:10pt}.modern-pdf-ats .modern-pdf-section{margin-bottom:5mm}.modern-pdf-ats .modern-pdf-title{margin-bottom:2mm;color:var(--modern-heading);font-size:10.5pt;font-weight:700}.modern-pdf-ats .modern-pdf-contacts{display:flex;flex-wrap:wrap;gap:1mm 5mm}.modern-pdf-ats .modern-pdf-contact{display:block}.modern-pdf-ats .modern-pdf-contact i{display:none}.modern-pdf-ats .modern-pdf-language{display:block}.modern-pdf-ats .modern-pdf-dots{display:none}\n  @media print{.no-print-background .modern-pdf-background{display:none!important}}\n", Rc = "\n  .gepflegt-pdf{--gepflegt-sidebar:var(--secondary);--gepflegt-accent:var(--accent);--gepflegt-heading:#354147;--gepflegt-text:#3f494e;--gepflegt-muted:#657075;--gepflegt-divider:#c7ced1;--gepflegt-sidebar-text:#fff;--gepflegt-sidebar-muted:#d8f0ef;--gepflegt-sidebar-width:72mm;--gepflegt-section-gap:7mm;--gepflegt-entry-gap:4.5mm;position:relative;display:grid;grid-template-columns:var(--gepflegt-sidebar-width) minmax(0,1fr);width:100%;height:100%;overflow:hidden;color:var(--gepflegt-text);background:#fff;font-family:var(--body-font);font-size:8.8pt;line-height:1.28}\n  .gepflegt-pdf *{box-sizing:border-box}.gepflegt-pdf a{color:inherit;text-decoration:none}.gepflegt-pdf:before{position:absolute;top:0;right:0;left:0;z-index:4;height:3.5mm;background:color-mix(in srgb,var(--gepflegt-sidebar),#003f3e 32%);content:\"\"}\n  .gepflegt-pdf-sidebar{min-width:0;height:100%;overflow:hidden;padding:9mm 10mm 13mm;color:var(--gepflegt-sidebar-text);background:var(--gepflegt-sidebar)}.gepflegt-pdf-photo{display:block;width:26mm;height:26mm;margin:0 auto 16mm;border-radius:1.5mm;background:rgba(255,255,255,.16);object-fit:cover}.gepflegt-pdf-sidebar section{margin:0 0 8.5mm;break-inside:avoid}.gepflegt-pdf-sidebar h3{margin:0 0 3.5mm;padding:0 0 2.2mm;border-bottom:.35mm solid rgba(255,255,255,.78);color:var(--gepflegt-sidebar-text);font-size:12.5pt;font-weight:500;letter-spacing:.01em;line-height:1.05;text-transform:uppercase}.gepflegt-pdf-summary,.gepflegt-pdf-knowledge{margin:0;color:var(--gepflegt-sidebar-text);font-size:8.8pt;line-height:1.3;hyphens:auto;overflow-wrap:break-word}\n  .gepflegt-pdf-strengths{display:flex;flex-direction:column;gap:5mm}.gepflegt-pdf-strength{display:grid;grid-template-columns:5.5mm minmax(0,1fr);gap:2mm;align-items:start}.gepflegt-pdf-strength svg{width:4mm;height:4mm;margin-top:.4mm;fill:none;stroke:var(--gepflegt-sidebar-text);stroke-linecap:round;stroke-linejoin:round;stroke-width:2.3}.gepflegt-pdf-strength h4{margin:0 0 1.5mm;color:var(--gepflegt-sidebar-text);font-size:10.2pt;font-weight:600;line-height:1.15}.gepflegt-pdf-strength p{margin:0;color:var(--gepflegt-sidebar-muted);font-size:8.5pt;line-height:1.28;hyphens:auto}.gepflegt-pdf-languages{display:flex;flex-direction:column;gap:3.2mm}.gepflegt-pdf-language{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2.5mm;align-items:center}.gepflegt-pdf-language>div{display:flex;min-width:0;justify-content:space-between;gap:2mm}.gepflegt-pdf-language strong,.gepflegt-pdf-language span{font-size:8.6pt;font-weight:400}.gepflegt-pdf-language em{color:var(--gepflegt-sidebar-muted);font-style:normal}.gepflegt-pdf-dots{display:flex;gap:1.05mm}.gepflegt-pdf-dots i{width:1.7mm;height:1.7mm;border:.3mm solid rgba(255,255,255,.7);border-radius:50%}.gepflegt-pdf-dots i.filled{border-color:#fff;background:#fff}.gepflegt-pdf-certifications{margin:0;padding-left:4mm}.gepflegt-pdf-certifications li{margin:0 0 1.3mm;padding-left:.7mm;color:var(--gepflegt-sidebar-text);font-size:8.5pt;line-height:1.25}\n  .gepflegt-pdf-content{position:relative;min-width:0;height:100%;overflow:hidden;padding:9mm 10mm 13mm 9mm}.gepflegt-pdf-header{min-width:0;margin:0 0 12mm}.gepflegt-pdf-header h1{margin:0;color:var(--gepflegt-heading);font-family:var(--heading-font);font-size:24pt;font-weight:750;letter-spacing:.005em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.gepflegt-pdf-header h2{max-width:120mm;margin:2.4mm 0 0;color:var(--gepflegt-accent);font-size:13.5pt;font-weight:500;line-height:1.15;overflow-wrap:break-word}.gepflegt-pdf-contacts{display:flex;flex-wrap:wrap;gap:2.1mm 4mm;margin:4mm 0 0;color:var(--gepflegt-text);font-size:8.2pt;font-style:normal;font-weight:500;line-height:1.2}.gepflegt-pdf-contact{display:inline-flex;min-width:0;max-width:90mm;align-items:center;gap:1.4mm}.gepflegt-pdf-contact svg{width:3.4mm;height:3.4mm;flex:0 0 auto;fill:none;stroke:#b9bec0;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.7}.gepflegt-pdf-contact span{min-width:0;overflow-wrap:anywhere;white-space:nowrap}\n  .gepflegt-pdf-main{display:flex;min-width:0;flex-direction:column;gap:var(--gepflegt-section-gap)}.gepflegt-pdf-section{min-width:0;break-inside:auto}.gepflegt-pdf-title{margin:0 0 3.6mm;padding:0 0 2.2mm;border-bottom:.35mm solid var(--gepflegt-divider);color:var(--gepflegt-heading);font-family:var(--heading-font);font-size:14.5pt;font-weight:500;letter-spacing:.015em;line-height:1;text-transform:uppercase;break-after:avoid}.gepflegt-pdf-list{display:flex;flex-direction:column;gap:var(--gepflegt-entry-gap)}.gepflegt-pdf-entry{min-width:0;break-inside:avoid}.gepflegt-pdf-entry-heading,.gepflegt-pdf-entry-subheading{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5mm;align-items:baseline}.gepflegt-pdf-entry-heading h4{min-width:0;margin:0;color:var(--gepflegt-heading);font-size:11.5pt;font-weight:500;line-height:1.15;overflow-wrap:anywhere}.gepflegt-pdf-entry-heading span,.gepflegt-pdf-entry-subheading span{max-width:31mm;color:var(--gepflegt-text);font-size:8.8pt;line-height:1.15;text-align:right}.gepflegt-pdf-entry-subheading{margin-top:1.5mm}.gepflegt-pdf-entry-subheading strong{color:var(--gepflegt-accent);font-size:9.8pt;font-weight:600;line-height:1.15;overflow-wrap:anywhere}.gepflegt-pdf-entry ul{margin:2mm 0 0;padding-left:4.8mm}.gepflegt-pdf-entry li{margin:.45mm 0;padding-left:.6mm;color:var(--gepflegt-text);font-size:8.8pt;line-height:1.28;hyphens:auto;overflow-wrap:break-word}\n  .gepflegt-pdf-footer{position:absolute;right:10mm;bottom:5.5mm;left:9mm;display:flex;justify-content:flex-end;gap:8mm;color:var(--gepflegt-muted);font-size:7.2pt}.gepflegt-pdf-footer span:first-child{margin-right:auto}.gepflegt-pdf-sidebar-continuation{display:flex;align-items:center}.gepflegt-pdf-sidebar-continuation p,.gepflegt-pdf-sidebar-continuation h2,.gepflegt-pdf-sidebar-continuation span,.gepflegt-pdf-sidebar-continuation small{display:block;margin:0}.gepflegt-pdf-sidebar-continuation p{font-size:8pt;letter-spacing:.12em;text-transform:uppercase}.gepflegt-pdf-sidebar-continuation h2{margin-top:2mm;color:#fff;font-size:16pt;line-height:1.05;text-transform:uppercase}.gepflegt-pdf-sidebar-continuation span{margin-top:2mm;color:var(--gepflegt-sidebar-muted)}.gepflegt-pdf-sidebar-continuation i{display:block;width:16mm;height:.5mm;margin:8mm 0;background:#fff}.gepflegt-pdf-header.compact{margin-bottom:8mm;padding-bottom:3mm;border-bottom:.35mm solid var(--gepflegt-divider)}.gepflegt-pdf-header.compact .kicker{margin:0 0 1mm;color:var(--gepflegt-accent);font-size:7.3pt}.gepflegt-pdf-header.compact h1{font-size:16pt}.gepflegt-pdf-header.compact h2{margin-top:1mm;font-size:9.5pt}\n  .gepflegt-pdf[data-density=\"compact\"]{--gepflegt-section-gap:5.7mm;--gepflegt-entry-gap:3.6mm;font-size:8.35pt;line-height:1.23}.gepflegt-pdf[data-density=\"compact\"] .gepflegt-pdf-header{margin-bottom:9mm}.gepflegt-pdf[data-density=\"compact\"] .gepflegt-pdf-sidebar section{margin-bottom:6.5mm}.gepflegt-pdf[data-density=\"compact\"] .gepflegt-pdf-entry li{font-size:8.35pt;line-height:1.23}.gepflegt-pdf[data-density=\"dense\"]{--gepflegt-section-gap:4.4mm;--gepflegt-entry-gap:2.8mm;font-size:7.8pt;line-height:1.18}.gepflegt-pdf[data-density=\"dense\"] .gepflegt-pdf-header{margin-bottom:7mm}.gepflegt-pdf[data-density=\"dense\"] .gepflegt-pdf-photo{margin-bottom:10mm}.gepflegt-pdf[data-density=\"dense\"] .gepflegt-pdf-sidebar section{margin-bottom:5mm}.gepflegt-pdf[data-density=\"dense\"] .gepflegt-pdf-entry li{font-size:7.8pt;line-height:1.18}\n  .gepflegt-pdf-ats{display:block;padding:14mm 16mm 16mm;background:#fff;font-family:Arial,sans-serif}.gepflegt-pdf-ats:before{display:none}.gepflegt-pdf-ats .gepflegt-pdf-header{margin-bottom:6mm;padding-bottom:3mm;border-bottom:.35mm solid var(--gepflegt-divider)}.gepflegt-pdf-ats .gepflegt-pdf-header h1{font-size:20pt}.gepflegt-pdf-ats .gepflegt-pdf-header h2{color:var(--gepflegt-heading);font-size:10.5pt}.gepflegt-pdf-ats .gepflegt-pdf-contacts{gap:1mm 5mm;margin-top:2mm}.gepflegt-pdf-ats .gepflegt-pdf-contact{max-width:none}.gepflegt-pdf-ats-summary{margin-bottom:var(--gepflegt-section-gap)}.gepflegt-pdf-ats-summary p{margin:0}.gepflegt-pdf-ats-extra{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5mm 10mm;margin-top:var(--gepflegt-section-gap)}.gepflegt-pdf-ats-extra section{margin:0}.gepflegt-pdf-ats-extra h3{margin:0 0 2mm;padding-bottom:1.5mm;border-bottom:.35mm solid var(--gepflegt-divider);color:var(--gepflegt-heading);font-size:10.5pt;text-transform:uppercase}.gepflegt-pdf-ats-extra p,.gepflegt-pdf-ats-extra li{font-size:8.5pt}.gepflegt-pdf-ats-extra ul{margin:0;padding-left:4mm}\n", zc = "\n  .tabellarisch-pdf{--tab-primary:var(--secondary);--tab-accent:var(--accent);--tab-text:#3f4850;--tab-muted:#6d747a;--tab-line:#c8cdd1;--tab-margin:max(15mm,var(--doc-margin));--tab-section-gap:max(6.3mm,var(--section-gap));--tab-entry-gap:4.4mm;position:relative;width:100%;height:100%;overflow:hidden;color:var(--tab-text);background:#fff;font-family:var(--body-font);font-size:max(8.7pt,var(--body-size));line-height:max(1.28,var(--body-line))}\n  .tabellarisch-pdf *{box-sizing:border-box}.tabellarisch-pdf a{color:inherit;text-decoration:none}.tabellarisch-pdf-content{position:relative;z-index:2;height:100%;padding:max(15mm,var(--doc-margin)) var(--tab-margin) max(19mm,calc(var(--doc-margin) + 5mm))}\n  .tabellarisch-pdf-background{position:absolute;top:0;right:0;z-index:0;width:100%;height:58mm;fill:none;stroke:var(--tab-line);stroke-width:1.15;opacity:.62;pointer-events:none}\n  .tabellarisch-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 32mm;gap:10mm;align-items:start;min-height:30mm}.tabellarisch-pdf-header.no-photo{grid-template-columns:1fr}.tabellarisch-pdf-identity{min-width:0;padding-top:1mm}.tabellarisch-pdf-header h1{margin:0;color:var(--tab-primary);font-family:var(--heading-font);font-size:25pt;font-weight:750;letter-spacing:.015em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.tabellarisch-pdf-header h2{margin:2.3mm 0 0;color:var(--tab-accent);font-family:var(--heading-font);font-size:13.5pt;font-weight:650;line-height:1.15;overflow-wrap:anywhere}.tabellarisch-pdf-photo{display:block;width:30mm;height:30mm;justify-self:end;border-radius:50%;background:#e8ebed;object-fit:cover}\n  .tabellarisch-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.15mm 7mm;max-width:118mm;margin:2.5mm 0 0;color:var(--tab-text);font-size:8.4pt;font-style:normal;font-weight:600;line-height:1.2}.tabellarisch-pdf-contact{display:grid;grid-template-columns:3.2mm minmax(0,1fr);gap:1.2mm;align-items:center;min-width:0}.tabellarisch-pdf-contact svg{width:3mm;height:3mm;fill:none;stroke:var(--tab-accent);stroke-linecap:round;stroke-linejoin:round;stroke-width:2.4}.tabellarisch-pdf-contact span,.tabellarisch-pdf-contact a{min-width:0;overflow-wrap:anywhere}\n  .tabellarisch-pdf-section{min-width:0;margin-top:var(--tab-section-gap);break-inside:auto}.tabellarisch-pdf-title{display:flex;align-items:baseline;gap:2.5mm;margin:0 0 3.5mm;color:var(--tab-primary);font-family:var(--heading-font);font-size:15pt;font-weight:750;letter-spacing:.01em;line-height:1.05;text-transform:uppercase;break-after:avoid}.tabellarisch-pdf-title small{color:var(--tab-muted);font-size:7.5pt;font-weight:600;text-transform:none}.tabellarisch-pdf-summary{margin:0;hyphens:auto;overflow-wrap:break-word}\n  .tabellarisch-pdf-strengths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5mm 12mm}.tabellarisch-pdf-strength{display:grid;grid-template-columns:8mm minmax(0,1fr);gap:2.5mm;align-items:start;break-inside:avoid}.tabellarisch-pdf-strength svg{width:6mm;height:6mm;fill:none;stroke:var(--tab-accent);stroke-linecap:round;stroke-linejoin:round;stroke-width:2.1}.tabellarisch-pdf-strength h3{margin:0 0 1.5mm;color:var(--tab-primary);font-size:10.3pt;font-weight:700;line-height:1.2}.tabellarisch-pdf-strength p{margin:0;hyphens:auto;overflow-wrap:break-word}\n  .tabellarisch-pdf-timeline{display:flex;flex-direction:column}.tabellarisch-pdf-entry{display:grid;grid-template-columns:minmax(30mm,35mm) 7mm minmax(0,1fr);gap:4mm;min-width:0;padding-bottom:var(--tab-entry-gap);break-inside:avoid}.tabellarisch-pdf-entry:last-child{padding-bottom:0}.tabellarisch-pdf-meta{padding-top:.45mm}.tabellarisch-pdf-date,.tabellarisch-pdf-location{margin:0}.tabellarisch-pdf-date{color:var(--tab-primary);font-size:10pt;font-weight:750;line-height:1.15}.tabellarisch-pdf-location{margin-top:2mm;color:var(--tab-text);font-size:8.4pt;line-height:1.3}.tabellarisch-pdf-rail{position:relative;display:block;min-height:100%}.tabellarisch-pdf-rail:before{position:absolute;top:2.5mm;bottom:-1mm;left:50%;width:.35mm;background:var(--tab-line);content:\"\";transform:translateX(-50%)}.tabellarisch-pdf-rail:after{position:absolute;top:.6mm;left:50%;width:2.3mm;height:2.3mm;border-radius:50%;background:var(--tab-primary);content:\"\";transform:translateX(-50%)}.tabellarisch-pdf-timeline:not(.continues) .tabellarisch-pdf-entry:last-child .tabellarisch-pdf-rail:before{bottom:auto;height:1mm}.tabellarisch-pdf-entry-content{min-width:0}.tabellarisch-pdf-entry h3{margin:0;color:var(--tab-primary);font-family:var(--heading-font);font-size:12pt;font-weight:500;line-height:1.15;overflow-wrap:anywhere}.tabellarisch-pdf-organization{margin:1mm 0 1.5mm;color:var(--tab-accent);font-size:10.2pt;font-weight:700;line-height:1.2;overflow-wrap:anywhere}.tabellarisch-pdf-entry ul,.tabellarisch-pdf-list ul,.tabellarisch-pdf-ats ul{margin:0;padding-left:4.5mm}.tabellarisch-pdf-entry li,.tabellarisch-pdf-list li,.tabellarisch-pdf-ats li{margin:.45mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word}.tabellarisch-pdf-entry li::marker{color:var(--tab-muted)}\n  .tabellarisch-pdf-additional{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12mm}.tabellarisch-pdf-list ul.inline{display:flex;flex-wrap:wrap;gap:1mm 6mm;padding:0;list-style:none}.tabellarisch-pdf-list ul.inline li:before{margin-right:1.5mm;color:var(--tab-accent);content:\"•\"}\n  .tabellarisch-pdf-continuation{display:flex;align-items:baseline;justify-content:space-between;gap:8mm;margin-bottom:6mm;padding-bottom:2.5mm;border-bottom:.35mm solid var(--tab-line)}.tabellarisch-pdf-continuation strong{color:var(--tab-primary);font-family:var(--heading-font);font-size:13pt}.tabellarisch-pdf-continuation span{color:var(--tab-accent);font-size:9pt;font-weight:600;text-align:right}.tabellarisch-pdf-footer{position:absolute;right:var(--tab-margin);bottom:6mm;left:var(--tab-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--tab-muted);font-size:7.5pt}.tabellarisch-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}\n  .tabellarisch-pdf[data-density=\"compact\"]{--tab-section-gap:5.2mm;--tab-entry-gap:3.4mm;font-size:max(8.3pt,var(--body-size));line-height:max(1.24,var(--body-line))}.tabellarisch-pdf[data-density=\"dense\"]{--tab-section-gap:4.1mm;--tab-entry-gap:2.6mm;--tab-margin:max(13mm,var(--doc-margin));font-size:8pt;line-height:1.22}.tabellarisch-pdf[data-density=\"dense\"] .tabellarisch-pdf-content{padding-top:13mm}.tabellarisch-pdf[data-density=\"dense\"] .tabellarisch-pdf-header{min-height:29mm}.tabellarisch-pdf[data-density=\"dense\"] .tabellarisch-pdf-header h1{font-size:22pt}.tabellarisch-pdf[data-density=\"dense\"] .tabellarisch-pdf-header h2{font-size:12pt}.tabellarisch-pdf[data-density=\"dense\"] .tabellarisch-pdf-title{margin-bottom:2.4mm;font-size:13.5pt}\n  .tabellarisch-pdf-ats{--tab-primary:#222b30;--tab-accent:#222b30;--tab-line:#cfd4d7;padding:14mm var(--tab-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.tabellarisch-pdf-ats .tabellarisch-pdf-header{display:block;min-height:0;padding-bottom:4mm;border-bottom:.35mm solid var(--tab-line)}.tabellarisch-pdf-ats .tabellarisch-pdf-contacts{display:flex;flex-wrap:wrap;gap:1mm 5mm}.tabellarisch-pdf-ats .tabellarisch-pdf-contact{display:block}.tabellarisch-pdf-ats .tabellarisch-pdf-contact svg{display:none}.tabellarisch-pdf-ats .tabellarisch-pdf-title{font-size:11pt}.tabellarisch-pdf-ats .tabellarisch-pdf-entry{display:block}.tabellarisch-pdf-ats .tabellarisch-pdf-entry h3{font-size:11pt}.tabellarisch-pdf-ats .tabellarisch-pdf-organization{margin-bottom:1mm}.tabellarisch-pdf-ats-meta{margin:0 0 1.5mm;color:var(--tab-muted);font-size:8.3pt}\n  @media print{.no-print-background .tabellarisch-pdf-background{display:none!important}}\n", Bc = "\n  <script>\n    (() => {\n      const fit = (page) => {\n        const content = page.querySelector(\".page-content\");\n        if (!content) return;\n        if (page.dataset.noFit === \"true\") {\n          content.dataset.fitScale = \"1.000\";\n          return;\n        }\n        content.style.transform = \"\";\n        content.style.width = \"100%\";\n        const heightRatio = page.clientHeight / Math.max(content.scrollHeight, 1);\n        const widthRatio = page.clientWidth / Math.max(content.scrollWidth, 1);\n        const scale = Math.min(1, heightRatio, widthRatio);\n        if (scale < 0.999) {\n          content.style.transform = \"scale(\" + scale + \")\";\n          content.style.width = 100 / scale + \"%\";\n          content.dataset.fitScale = scale.toFixed(3);\n        } else {\n          content.dataset.fitScale = \"1.000\";\n        }\n      };\n      document.querySelectorAll(\".page\").forEach(fit);\n    })();\n  <\/script>", Vc = (e, t, n) => {
+`, Rc = "\n  .modern-pdf{--modern-primary:var(--accent);--modern-soft:var(--secondary);--modern-heading:#303437;--modern-text:#444b4f;--modern-muted:#686f73;--modern-divider:#aeb4b6;--modern-icon-bg:#f2f3f3;--modern-margin:15mm;--modern-section-gap:7mm;--modern-entry-gap:4.5mm;position:relative;width:100%;height:100%;overflow:hidden;color:var(--modern-text);background:#fff;font-family:var(--body-font);font-size:8.4pt;line-height:1.27}\n  .modern-pdf *{box-sizing:border-box}.modern-pdf a{color:inherit;text-decoration:none}.modern-pdf-content{position:relative;z-index:2;height:100%;padding:14mm var(--modern-margin) 14mm}\n  .modern-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 29mm;gap:9mm;align-items:start;min-height:25mm;margin-bottom:4mm}.modern-pdf-header.no-photo{grid-template-columns:1fr}.modern-pdf-identity{min-width:0}.modern-pdf-header h1{margin:0;color:var(--modern-heading);font-size:24pt;font-weight:700;letter-spacing:.01em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.modern-pdf-header h2{margin:2mm 0 0;color:var(--modern-primary);font-size:12pt;font-weight:500;line-height:1.18;overflow-wrap:anywhere}.modern-pdf-photo{justify-self:end;width:25mm;height:25mm;border-radius:50%;object-fit:cover;background:var(--modern-icon-bg)}\n  .modern-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:auto;margin-bottom:7mm;padding-bottom:3mm;border-bottom:.35mm solid var(--modern-divider)}.modern-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--modern-primary);font-size:7pt;letter-spacing:.08em;text-transform:uppercase}.modern-pdf-header.compact h1{font-size:15pt}.modern-pdf-header.compact h2{margin:0;font-size:9pt}\n  .modern-pdf-columns{display:grid;grid-template-columns:102mm 67mm;gap:11mm;align-items:start}.modern-pdf-columns.continuation{display:block}.modern-pdf-left,.modern-pdf-right{display:flex;min-width:0;flex-direction:column;gap:var(--modern-section-gap)}\n  .modern-pdf-section{min-width:0;break-inside:auto}.modern-pdf-title{margin:0 0 3.2mm;padding-bottom:1mm;border-bottom:.35mm solid var(--modern-divider);color:var(--modern-muted);font-size:9.2pt;font-weight:500;letter-spacing:.025em;line-height:1;text-transform:uppercase;break-after:avoid}.modern-pdf-list{display:flex;flex-direction:column;gap:var(--modern-entry-gap)}\n  .modern-pdf-entry{break-inside:auto}.modern-pdf-entry h3{margin:0 0 1mm;color:var(--modern-heading);font-size:11pt;font-weight:500;line-height:1.15;overflow-wrap:anywhere;break-after:avoid}.modern-pdf-entry-meta{display:flex;flex-wrap:wrap;align-items:center;gap:1mm 4mm;margin:0 0 1.5mm;color:var(--modern-muted);font-size:7.9pt;line-height:1.2;break-after:avoid}.modern-pdf-entry-meta strong{margin-right:auto;color:var(--modern-primary);font-weight:600}.modern-pdf-entry-meta span{display:flex;align-items:center;gap:1mm;white-space:nowrap}.modern-pdf-entry-meta i{color:var(--modern-muted);font-size:6.8pt;font-style:normal}.modern-pdf-entry ul,.modern-pdf-certifications,.modern-pdf-ats ul{margin:0;padding-left:4mm}.modern-pdf-entry li,.modern-pdf-certifications li,.modern-pdf-ats li{margin:.35mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word;break-inside:avoid}\n  .modern-pdf-contacts{display:grid;gap:3.2mm;margin:0;font-style:normal}.modern-pdf-contact{display:grid;grid-template-columns:8.5mm minmax(0,1fr);gap:3mm;align-items:center;min-width:0}.modern-pdf-contact i{display:grid;place-items:center;width:8.5mm;height:8.5mm;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:7pt;font-style:normal;font-weight:700}.modern-pdf-contact span,.modern-pdf-contact a{min-width:0;color:var(--modern-text);font-size:8.4pt;line-height:1.2;overflow-wrap:anywhere}\n  .modern-pdf-contacts.inline{display:flex;flex-wrap:nowrap;align-items:center;gap:1.8mm;max-width:145mm;margin-top:3mm}.modern-pdf-contacts.inline .modern-pdf-contact{display:flex;flex:0 0 auto;grid-template-columns:none;gap:.8mm;min-width:0}.modern-pdf-contacts.inline .modern-pdf-contact i{display:block;width:3.2mm;height:auto;border-radius:0;color:var(--modern-muted);background:transparent;font-size:6.8pt;line-height:1.2}.modern-pdf-contacts.inline .modern-pdf-contact span,.modern-pdf-contacts.inline .modern-pdf-contact a{display:block;max-width:44mm;overflow:hidden;color:var(--modern-muted);font-size:7.4pt;text-overflow:ellipsis;white-space:nowrap}\n  .modern-pdf-summary{margin:0;hyphens:auto;overflow-wrap:break-word}.modern-pdf-strengths{display:flex;flex-direction:column;gap:4mm}.modern-pdf-strength{display:grid;grid-template-columns:10mm minmax(0,1fr);gap:3mm;align-items:start}.modern-pdf-strength>i{display:grid;width:9mm;height:9mm;place-items:center;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:10pt;font-style:normal;font-weight:700}.modern-pdf-strength h3{margin:0 0 .5mm;color:var(--modern-heading);font-size:9.5pt;font-weight:600}.modern-pdf-strength p{margin:0;hyphens:auto;overflow-wrap:break-word}.modern-pdf-languages{display:flex;flex-direction:column;gap:2.5mm}.modern-pdf-language{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4mm;align-items:center}.modern-pdf-language>div{display:flex;min-width:0;justify-content:space-between;gap:2mm}.modern-pdf-language strong{color:var(--modern-heading);font-weight:600}.modern-pdf-language em{color:var(--modern-muted);font-size:7.9pt;font-style:normal}.modern-pdf-dots{display:flex;gap:1.1mm;color:var(--modern-primary);font-size:6pt;white-space:nowrap}\n  .modern-pdf-knowledge{display:flex;flex-wrap:wrap;gap:2.5mm 3mm}.modern-pdf-knowledge span{padding:0 2mm 1mm;border-bottom:.3mm solid var(--modern-divider);color:var(--modern-text);font-size:8.2pt;line-height:1.15}.modern-pdf-achievements{display:flex;flex-direction:column;gap:4mm}.modern-pdf-achievements article{display:grid;grid-template-columns:9mm minmax(0,1fr);gap:3mm;align-items:start}.modern-pdf-achievements i{display:grid;width:9mm;height:9mm;place-items:center;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:8pt;font-style:normal}.modern-pdf-achievements p{margin:0;line-height:1.25}\n  .modern-pdf-footer{position:absolute;right:var(--modern-margin);bottom:6mm;left:var(--modern-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--modern-muted);font-size:7.2pt}.modern-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}\n  .modern-pdf[data-density=\"compact\"]{--modern-section-gap:5mm;--modern-entry-gap:3.7mm;font-size:8.1pt}.modern-pdf[data-density=\"dense\"]{--modern-section-gap:4mm;--modern-entry-gap:3mm;font-size:7.7pt;line-height:1.2}.modern-pdf[data-density=\"dense\"] .modern-pdf-title{margin-bottom:2.5mm}.modern-pdf[data-density=\"dense\"] .modern-pdf-contacts{gap:2.5mm}.modern-pdf[data-density=\"dense\"] .modern-pdf-strengths{gap:3mm}\n  .modern-pdf-ats{--modern-primary:#173b63;--modern-heading:#26343e;--modern-text:#303b42;--modern-muted:#626e75;--modern-divider:#aeb8bf;padding:14mm var(--modern-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.modern-pdf-ats .modern-pdf-header{display:block;min-height:auto;margin-bottom:5mm;padding-bottom:3mm;border-bottom:.35mm solid var(--modern-divider)}.modern-pdf-ats .modern-pdf-header h1{font-size:19pt}.modern-pdf-ats .modern-pdf-header h2{margin-top:1mm;color:var(--modern-heading);font-size:10pt}.modern-pdf-ats .modern-pdf-section{margin-bottom:5mm}.modern-pdf-ats .modern-pdf-title{margin-bottom:2mm;color:var(--modern-heading);font-size:10.5pt;font-weight:700}.modern-pdf-ats .modern-pdf-contacts{display:flex;flex-wrap:wrap;gap:1mm 5mm}.modern-pdf-ats .modern-pdf-contact{display:block}.modern-pdf-ats .modern-pdf-contact i{display:none}.modern-pdf-ats .modern-pdf-language{display:block}.modern-pdf-ats .modern-pdf-dots{display:none}\n  @media print{.no-print-background .modern-pdf-background{display:none!important}}\n", zc = "\n  .gepflegt-pdf{--gepflegt-sidebar:var(--secondary);--gepflegt-accent:var(--accent);--gepflegt-heading:#354147;--gepflegt-text:#3f494e;--gepflegt-muted:#657075;--gepflegt-divider:#c7ced1;--gepflegt-sidebar-text:#fff;--gepflegt-sidebar-muted:#d8f0ef;--gepflegt-sidebar-width:72mm;--gepflegt-section-gap:7mm;--gepflegt-entry-gap:4.5mm;position:relative;display:grid;grid-template-columns:var(--gepflegt-sidebar-width) minmax(0,1fr);width:100%;height:100%;overflow:hidden;color:var(--gepflegt-text);background:#fff;font-family:var(--body-font);font-size:8.8pt;line-height:1.28}\n  .gepflegt-pdf *{box-sizing:border-box}.gepflegt-pdf a{color:inherit;text-decoration:none}.gepflegt-pdf:before{position:absolute;top:0;right:0;left:0;z-index:4;height:3.5mm;background:color-mix(in srgb,var(--gepflegt-sidebar),#003f3e 32%);content:\"\"}\n  .gepflegt-pdf-sidebar{min-width:0;height:100%;overflow:hidden;padding:9mm 10mm 13mm;color:var(--gepflegt-sidebar-text);background:var(--gepflegt-sidebar)}.gepflegt-pdf-photo{display:block;width:26mm;height:26mm;margin:0 auto 16mm;border-radius:1.5mm;background:rgba(255,255,255,.16);object-fit:cover}.gepflegt-pdf-sidebar section{margin:0 0 8.5mm;break-inside:avoid}.gepflegt-pdf-sidebar h3{margin:0 0 3.5mm;padding:0 0 2.2mm;border-bottom:.35mm solid rgba(255,255,255,.78);color:var(--gepflegt-sidebar-text);font-size:12.5pt;font-weight:500;letter-spacing:.01em;line-height:1.05;text-transform:uppercase}.gepflegt-pdf-summary,.gepflegt-pdf-knowledge{margin:0;color:var(--gepflegt-sidebar-text);font-size:8.8pt;line-height:1.3;hyphens:auto;overflow-wrap:break-word}\n  .gepflegt-pdf-strengths{display:flex;flex-direction:column;gap:5mm}.gepflegt-pdf-strength{display:grid;grid-template-columns:5.5mm minmax(0,1fr);gap:2mm;align-items:start}.gepflegt-pdf-strength svg{width:4mm;height:4mm;margin-top:.4mm;fill:none;stroke:var(--gepflegt-sidebar-text);stroke-linecap:round;stroke-linejoin:round;stroke-width:2.3}.gepflegt-pdf-strength h4{margin:0 0 1.5mm;color:var(--gepflegt-sidebar-text);font-size:10.2pt;font-weight:600;line-height:1.15}.gepflegt-pdf-strength p{margin:0;color:var(--gepflegt-sidebar-muted);font-size:8.5pt;line-height:1.28;hyphens:auto}.gepflegt-pdf-languages{display:flex;flex-direction:column;gap:3.2mm}.gepflegt-pdf-language{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2.5mm;align-items:center}.gepflegt-pdf-language>div{display:flex;min-width:0;justify-content:space-between;gap:2mm}.gepflegt-pdf-language strong,.gepflegt-pdf-language span{font-size:8.6pt;font-weight:400}.gepflegt-pdf-language em{color:var(--gepflegt-sidebar-muted);font-style:normal}.gepflegt-pdf-dots{display:flex;gap:1.05mm}.gepflegt-pdf-dots i{width:1.7mm;height:1.7mm;border:.3mm solid rgba(255,255,255,.7);border-radius:50%}.gepflegt-pdf-dots i.filled{border-color:#fff;background:#fff}.gepflegt-pdf-certifications{margin:0;padding-left:4mm}.gepflegt-pdf-certifications li{margin:0 0 1.3mm;padding-left:.7mm;color:var(--gepflegt-sidebar-text);font-size:8.5pt;line-height:1.25}\n  .gepflegt-pdf-content{position:relative;min-width:0;height:100%;overflow:hidden;padding:9mm 10mm 13mm 9mm}.gepflegt-pdf-header{min-width:0;margin:0 0 12mm}.gepflegt-pdf-header h1{margin:0;color:var(--gepflegt-heading);font-family:var(--heading-font);font-size:24pt;font-weight:750;letter-spacing:.005em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.gepflegt-pdf-header h2{max-width:120mm;margin:2.4mm 0 0;color:var(--gepflegt-accent);font-size:13.5pt;font-weight:500;line-height:1.15;overflow-wrap:break-word}.gepflegt-pdf-contacts{display:flex;flex-wrap:wrap;gap:2.1mm 4mm;margin:4mm 0 0;color:var(--gepflegt-text);font-size:8.2pt;font-style:normal;font-weight:500;line-height:1.2}.gepflegt-pdf-contact{display:inline-flex;min-width:0;max-width:90mm;align-items:center;gap:1.4mm}.gepflegt-pdf-contact svg{width:3.4mm;height:3.4mm;flex:0 0 auto;fill:none;stroke:#b9bec0;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.7}.gepflegt-pdf-contact span{min-width:0;overflow-wrap:anywhere;white-space:nowrap}\n  .gepflegt-pdf-main{display:flex;min-width:0;flex-direction:column;gap:var(--gepflegt-section-gap)}.gepflegt-pdf-section{min-width:0;break-inside:auto}.gepflegt-pdf-title{margin:0 0 3.6mm;padding:0 0 2.2mm;border-bottom:.35mm solid var(--gepflegt-divider);color:var(--gepflegt-heading);font-family:var(--heading-font);font-size:14.5pt;font-weight:500;letter-spacing:.015em;line-height:1;text-transform:uppercase;break-after:avoid}.gepflegt-pdf-list{display:flex;flex-direction:column;gap:var(--gepflegt-entry-gap)}.gepflegt-pdf-entry{min-width:0;break-inside:avoid}.gepflegt-pdf-entry-heading,.gepflegt-pdf-entry-subheading{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5mm;align-items:baseline}.gepflegt-pdf-entry-heading h4{min-width:0;margin:0;color:var(--gepflegt-heading);font-size:11.5pt;font-weight:500;line-height:1.15;overflow-wrap:anywhere}.gepflegt-pdf-entry-heading span,.gepflegt-pdf-entry-subheading span{max-width:31mm;color:var(--gepflegt-text);font-size:8.8pt;line-height:1.15;text-align:right}.gepflegt-pdf-entry-subheading{margin-top:1.5mm}.gepflegt-pdf-entry-subheading strong{color:var(--gepflegt-accent);font-size:9.8pt;font-weight:600;line-height:1.15;overflow-wrap:anywhere}.gepflegt-pdf-entry ul{margin:2mm 0 0;padding-left:4.8mm}.gepflegt-pdf-entry li{margin:.45mm 0;padding-left:.6mm;color:var(--gepflegt-text);font-size:8.8pt;line-height:1.28;hyphens:auto;overflow-wrap:break-word}\n  .gepflegt-pdf-footer{position:absolute;right:10mm;bottom:5.5mm;left:9mm;display:flex;justify-content:flex-end;gap:8mm;color:var(--gepflegt-muted);font-size:7.2pt}.gepflegt-pdf-footer span:first-child{margin-right:auto}.gepflegt-pdf-sidebar-continuation{display:flex;align-items:center}.gepflegt-pdf-sidebar-continuation p,.gepflegt-pdf-sidebar-continuation h2,.gepflegt-pdf-sidebar-continuation span,.gepflegt-pdf-sidebar-continuation small{display:block;margin:0}.gepflegt-pdf-sidebar-continuation p{font-size:8pt;letter-spacing:.12em;text-transform:uppercase}.gepflegt-pdf-sidebar-continuation h2{margin-top:2mm;color:#fff;font-size:16pt;line-height:1.05;text-transform:uppercase}.gepflegt-pdf-sidebar-continuation span{margin-top:2mm;color:var(--gepflegt-sidebar-muted)}.gepflegt-pdf-sidebar-continuation i{display:block;width:16mm;height:.5mm;margin:8mm 0;background:#fff}.gepflegt-pdf-header.compact{margin-bottom:8mm;padding-bottom:3mm;border-bottom:.35mm solid var(--gepflegt-divider)}.gepflegt-pdf-header.compact .kicker{margin:0 0 1mm;color:var(--gepflegt-accent);font-size:7.3pt}.gepflegt-pdf-header.compact h1{font-size:16pt}.gepflegt-pdf-header.compact h2{margin-top:1mm;font-size:9.5pt}\n  .gepflegt-pdf[data-density=\"compact\"]{--gepflegt-section-gap:5.7mm;--gepflegt-entry-gap:3.6mm;font-size:8.35pt;line-height:1.23}.gepflegt-pdf[data-density=\"compact\"] .gepflegt-pdf-header{margin-bottom:9mm}.gepflegt-pdf[data-density=\"compact\"] .gepflegt-pdf-sidebar section{margin-bottom:6.5mm}.gepflegt-pdf[data-density=\"compact\"] .gepflegt-pdf-entry li{font-size:8.35pt;line-height:1.23}.gepflegt-pdf[data-density=\"dense\"]{--gepflegt-section-gap:4.4mm;--gepflegt-entry-gap:2.8mm;font-size:7.8pt;line-height:1.18}.gepflegt-pdf[data-density=\"dense\"] .gepflegt-pdf-header{margin-bottom:7mm}.gepflegt-pdf[data-density=\"dense\"] .gepflegt-pdf-photo{margin-bottom:10mm}.gepflegt-pdf[data-density=\"dense\"] .gepflegt-pdf-sidebar section{margin-bottom:5mm}.gepflegt-pdf[data-density=\"dense\"] .gepflegt-pdf-entry li{font-size:7.8pt;line-height:1.18}\n  .gepflegt-pdf-ats{display:block;padding:14mm 16mm 16mm;background:#fff;font-family:Arial,sans-serif}.gepflegt-pdf-ats:before{display:none}.gepflegt-pdf-ats .gepflegt-pdf-header{margin-bottom:6mm;padding-bottom:3mm;border-bottom:.35mm solid var(--gepflegt-divider)}.gepflegt-pdf-ats .gepflegt-pdf-header h1{font-size:20pt}.gepflegt-pdf-ats .gepflegt-pdf-header h2{color:var(--gepflegt-heading);font-size:10.5pt}.gepflegt-pdf-ats .gepflegt-pdf-contacts{gap:1mm 5mm;margin-top:2mm}.gepflegt-pdf-ats .gepflegt-pdf-contact{max-width:none}.gepflegt-pdf-ats-summary{margin-bottom:var(--gepflegt-section-gap)}.gepflegt-pdf-ats-summary p{margin:0}.gepflegt-pdf-ats-extra{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5mm 10mm;margin-top:var(--gepflegt-section-gap)}.gepflegt-pdf-ats-extra section{margin:0}.gepflegt-pdf-ats-extra h3{margin:0 0 2mm;padding-bottom:1.5mm;border-bottom:.35mm solid var(--gepflegt-divider);color:var(--gepflegt-heading);font-size:10.5pt;text-transform:uppercase}.gepflegt-pdf-ats-extra p,.gepflegt-pdf-ats-extra li{font-size:8.5pt}.gepflegt-pdf-ats-extra ul{margin:0;padding-left:4mm}\n", Bc = "\n  .tabellarisch-pdf{--tab-primary:var(--secondary);--tab-accent:var(--accent);--tab-text:#3f4850;--tab-muted:#6d747a;--tab-line:#c8cdd1;--tab-margin:max(15mm,var(--doc-margin));--tab-section-gap:max(6.3mm,var(--section-gap));--tab-entry-gap:4.4mm;position:relative;width:100%;height:100%;overflow:hidden;color:var(--tab-text);background:#fff;font-family:var(--body-font);font-size:max(8.7pt,var(--body-size));line-height:max(1.28,var(--body-line))}\n  .tabellarisch-pdf *{box-sizing:border-box}.tabellarisch-pdf a{color:inherit;text-decoration:none}.tabellarisch-pdf-content{position:relative;z-index:2;height:100%;padding:max(15mm,var(--doc-margin)) var(--tab-margin) max(19mm,calc(var(--doc-margin) + 5mm))}\n  .tabellarisch-pdf-background{position:absolute;top:0;right:0;z-index:0;width:100%;height:58mm;fill:none;stroke:var(--tab-line);stroke-width:1.15;opacity:.62;pointer-events:none}\n  .tabellarisch-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 32mm;gap:10mm;align-items:start;min-height:30mm}.tabellarisch-pdf-header.no-photo{grid-template-columns:1fr}.tabellarisch-pdf-identity{min-width:0;padding-top:1mm}.tabellarisch-pdf-header h1{margin:0;color:var(--tab-primary);font-family:var(--heading-font);font-size:25pt;font-weight:750;letter-spacing:.015em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.tabellarisch-pdf-header h2{margin:2.3mm 0 0;color:var(--tab-accent);font-family:var(--heading-font);font-size:13.5pt;font-weight:650;line-height:1.15;overflow-wrap:anywhere}.tabellarisch-pdf-photo{display:block;width:30mm;height:30mm;justify-self:end;border-radius:50%;background:#e8ebed;object-fit:cover}\n  .tabellarisch-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.15mm 7mm;max-width:118mm;margin:2.5mm 0 0;color:var(--tab-text);font-size:8.4pt;font-style:normal;font-weight:600;line-height:1.2}.tabellarisch-pdf-contact{display:grid;grid-template-columns:3.2mm minmax(0,1fr);gap:1.2mm;align-items:center;min-width:0}.tabellarisch-pdf-contact svg{width:3mm;height:3mm;fill:none;stroke:var(--tab-accent);stroke-linecap:round;stroke-linejoin:round;stroke-width:2.4}.tabellarisch-pdf-contact span,.tabellarisch-pdf-contact a{min-width:0;overflow-wrap:anywhere}\n  .tabellarisch-pdf-section{min-width:0;margin-top:var(--tab-section-gap);break-inside:auto}.tabellarisch-pdf-title{display:flex;align-items:baseline;gap:2.5mm;margin:0 0 3.5mm;color:var(--tab-primary);font-family:var(--heading-font);font-size:15pt;font-weight:750;letter-spacing:.01em;line-height:1.05;text-transform:uppercase;break-after:avoid}.tabellarisch-pdf-title small{color:var(--tab-muted);font-size:7.5pt;font-weight:600;text-transform:none}.tabellarisch-pdf-summary{margin:0;hyphens:auto;overflow-wrap:break-word}\n  .tabellarisch-pdf-strengths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5mm 12mm}.tabellarisch-pdf-strength{display:grid;grid-template-columns:8mm minmax(0,1fr);gap:2.5mm;align-items:start;break-inside:avoid}.tabellarisch-pdf-strength svg{width:6mm;height:6mm;fill:none;stroke:var(--tab-accent);stroke-linecap:round;stroke-linejoin:round;stroke-width:2.1}.tabellarisch-pdf-strength h3{margin:0 0 1.5mm;color:var(--tab-primary);font-size:10.3pt;font-weight:700;line-height:1.2}.tabellarisch-pdf-strength p{margin:0;hyphens:auto;overflow-wrap:break-word}\n  .tabellarisch-pdf-timeline{display:flex;flex-direction:column}.tabellarisch-pdf-entry{display:grid;grid-template-columns:minmax(30mm,35mm) 7mm minmax(0,1fr);gap:4mm;min-width:0;padding-bottom:var(--tab-entry-gap);break-inside:avoid}.tabellarisch-pdf-entry:last-child{padding-bottom:0}.tabellarisch-pdf-meta{padding-top:.45mm}.tabellarisch-pdf-date,.tabellarisch-pdf-location{margin:0}.tabellarisch-pdf-date{color:var(--tab-primary);font-size:10pt;font-weight:750;line-height:1.15}.tabellarisch-pdf-location{margin-top:2mm;color:var(--tab-text);font-size:8.4pt;line-height:1.3}.tabellarisch-pdf-rail{position:relative;display:block;min-height:100%}.tabellarisch-pdf-rail:before{position:absolute;top:2.5mm;bottom:-1mm;left:50%;width:.35mm;background:var(--tab-line);content:\"\";transform:translateX(-50%)}.tabellarisch-pdf-rail:after{position:absolute;top:.6mm;left:50%;width:2.3mm;height:2.3mm;border-radius:50%;background:var(--tab-primary);content:\"\";transform:translateX(-50%)}.tabellarisch-pdf-timeline:not(.continues) .tabellarisch-pdf-entry:last-child .tabellarisch-pdf-rail:before{bottom:auto;height:1mm}.tabellarisch-pdf-entry-content{min-width:0}.tabellarisch-pdf-entry h3{margin:0;color:var(--tab-primary);font-family:var(--heading-font);font-size:12pt;font-weight:500;line-height:1.15;overflow-wrap:anywhere}.tabellarisch-pdf-organization{margin:1mm 0 1.5mm;color:var(--tab-accent);font-size:10.2pt;font-weight:700;line-height:1.2;overflow-wrap:anywhere}.tabellarisch-pdf-entry ul,.tabellarisch-pdf-list ul,.tabellarisch-pdf-ats ul{margin:0;padding-left:4.5mm}.tabellarisch-pdf-entry li,.tabellarisch-pdf-list li,.tabellarisch-pdf-ats li{margin:.45mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word}.tabellarisch-pdf-entry li::marker{color:var(--tab-muted)}\n  .tabellarisch-pdf-additional{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12mm}.tabellarisch-pdf-list ul.inline{display:flex;flex-wrap:wrap;gap:1mm 6mm;padding:0;list-style:none}.tabellarisch-pdf-list ul.inline li:before{margin-right:1.5mm;color:var(--tab-accent);content:\"•\"}\n  .tabellarisch-pdf-continuation{display:flex;align-items:baseline;justify-content:space-between;gap:8mm;margin-bottom:6mm;padding-bottom:2.5mm;border-bottom:.35mm solid var(--tab-line)}.tabellarisch-pdf-continuation strong{color:var(--tab-primary);font-family:var(--heading-font);font-size:13pt}.tabellarisch-pdf-continuation span{color:var(--tab-accent);font-size:9pt;font-weight:600;text-align:right}.tabellarisch-pdf-footer{position:absolute;right:var(--tab-margin);bottom:6mm;left:var(--tab-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--tab-muted);font-size:7.5pt}.tabellarisch-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}\n  .tabellarisch-pdf[data-density=\"compact\"]{--tab-section-gap:5.2mm;--tab-entry-gap:3.4mm;font-size:max(8.3pt,var(--body-size));line-height:max(1.24,var(--body-line))}.tabellarisch-pdf[data-density=\"dense\"]{--tab-section-gap:4.1mm;--tab-entry-gap:2.6mm;--tab-margin:max(13mm,var(--doc-margin));font-size:8pt;line-height:1.22}.tabellarisch-pdf[data-density=\"dense\"] .tabellarisch-pdf-content{padding-top:13mm}.tabellarisch-pdf[data-density=\"dense\"] .tabellarisch-pdf-header{min-height:29mm}.tabellarisch-pdf[data-density=\"dense\"] .tabellarisch-pdf-header h1{font-size:22pt}.tabellarisch-pdf[data-density=\"dense\"] .tabellarisch-pdf-header h2{font-size:12pt}.tabellarisch-pdf[data-density=\"dense\"] .tabellarisch-pdf-title{margin-bottom:2.4mm;font-size:13.5pt}\n  .tabellarisch-pdf-ats{--tab-primary:#222b30;--tab-accent:#222b30;--tab-line:#cfd4d7;padding:14mm var(--tab-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.tabellarisch-pdf-ats .tabellarisch-pdf-header{display:block;min-height:0;padding-bottom:4mm;border-bottom:.35mm solid var(--tab-line)}.tabellarisch-pdf-ats .tabellarisch-pdf-contacts{display:flex;flex-wrap:wrap;gap:1mm 5mm}.tabellarisch-pdf-ats .tabellarisch-pdf-contact{display:block}.tabellarisch-pdf-ats .tabellarisch-pdf-contact svg{display:none}.tabellarisch-pdf-ats .tabellarisch-pdf-title{font-size:11pt}.tabellarisch-pdf-ats .tabellarisch-pdf-entry{display:block}.tabellarisch-pdf-ats .tabellarisch-pdf-entry h3{font-size:11pt}.tabellarisch-pdf-ats .tabellarisch-pdf-organization{margin-bottom:1mm}.tabellarisch-pdf-ats-meta{margin:0 0 1.5mm;color:var(--tab-muted);font-size:8.3pt}\n  @media print{.no-print-background .tabellarisch-pdf-background{display:none!important}}\n", Vc = "\n  <script>\n    (() => {\n      const fit = (page) => {\n        const content = page.querySelector(\".page-content\");\n        if (!content) return;\n        if (page.dataset.noFit === \"true\") {\n          content.dataset.fitScale = \"1.000\";\n          return;\n        }\n        content.style.transform = \"\";\n        content.style.width = \"100%\";\n        const heightRatio = page.clientHeight / Math.max(content.scrollHeight, 1);\n        const widthRatio = page.clientWidth / Math.max(content.scrollWidth, 1);\n        const scale = Math.min(1, heightRatio, widthRatio);\n        if (scale < 0.999) {\n          content.style.transform = \"scale(\" + scale + \")\";\n          content.style.width = 100 / scale + \"%\";\n          content.dataset.fitScale = scale.toFixed(3);\n        } else {\n          content.dataset.fitScale = \"1.000\";\n        }\n      };\n      document.querySelectorAll(\".page\").forEach(fit);\n    })();\n  <\/script>", Hc = (e, t, n) => {
 	let r = Rs(e.templateId), i = e.accentColor || r.accent, a = e.secondaryColor || r.secondary, o = zs(a), s = e.designSettings, c = s.resumeOutputMode === "ats" || s.columnLayout === "compact-ats", l = c ? "compact-ats" : s.columnLayout, u = `background-${s.backgroundId} ${s.showBackgroundInPrint ? "print-background" : "no-print-background"}`, d = bc(s, c), f = e.documents, p = t?.resumeSections ?? {
 		profile: !0,
 		experience: !0,
@@ -4942,18 +4951,18 @@ var Vs = (e = "", t = 0) => ({
     <section class="page letter-page letter-${C.density} ${u}">
       ${d}
       <div class="page-content letter-content">
+        <div class="sender">${Oc(t)}</div>
         <div class="rule"></div>
-        <div class="sender">${Dc(t)}</div>
         <div class="recipient">${Ec(e)}</div>
         <p class="date">${Z(t?.city || e.company.city)}, ${S}</p>
         <p class="subject">${Z(f.coverSubject || `Bewerbung als ${h}`)}</p>
         <p>${Z(Tc(e))},</p>
-        <p>${Z(f.coverIntroduction || `die ausgeschriebene Position als ${h} bei ${g} spricht mich besonders an, weil sie fachliche Verantwortung mit konkretem Gestaltungsspielraum verbindet.`)}</p>
-        <p>${Z(f.coverMotivation || "Meine Motivation entsteht aus der Möglichkeit, vorhandene Erfahrung gezielt einzusetzen, mich fachlich weiterzuentwickeln und gemeinsam mit Ihrem Team messbare Ergebnisse zu erzielen.")}</p>
-        <p>${Z(f.coverQualification || t?.summary || "Ich arbeite strukturiert, zuverlässig und lösungsorientiert. Neue Anforderungen erfasse ich schnell und überführe sie in nachvollziehbare, belastbare Ergebnisse.")}</p>
-        <p>${Z(f.coverCompanyFit || `An ${g} überzeugt mich besonders die Verbindung aus professionellem Anspruch und zukunftsorientierter Arbeitsweise.`)}</p>
-        <p>${Z(f.coverClosing || "Gerne überzeuge ich Sie in einem persönlichen Gespräch davon, welchen konkreten Beitrag ich in Ihrem Team leisten kann. Auf Ihren Terminvorschlag freue ich mich.")}</p>
-        <div class="signature"><p>Mit freundlichen Grüßen</p>${y ? `<img class="signature-image" src="${Z(y)}" alt="">` : ""}<strong>${Z(m)}</strong></div>
+        <p class="letter-body">${Z(f.coverIntroduction || `die ausgeschriebene Position als ${h} bei ${g} spricht mich besonders an, weil sie fachliche Verantwortung mit konkretem Gestaltungsspielraum verbindet.`)}</p>
+        <p class="letter-body">${Z(f.coverMotivation || "Meine Motivation entsteht aus der Möglichkeit, vorhandene Erfahrung gezielt einzusetzen, mich fachlich weiterzuentwickeln und gemeinsam mit Ihrem Team messbare Ergebnisse zu erzielen.")}</p>
+        <p class="letter-body">${Z(f.coverQualification || t?.summary || "Ich arbeite strukturiert, zuverlässig und lösungsorientiert. Neue Anforderungen erfasse ich schnell und überführe sie in nachvollziehbare, belastbare Ergebnisse.")}</p>
+        <p class="letter-body">${Z(f.coverCompanyFit || `An ${g} überzeugt mich besonders die Verbindung aus professionellem Anspruch und zukunftsorientierter Arbeitsweise.`)}</p>
+        <p class="letter-body">${Z(f.coverClosing || "Gerne überzeuge ich Sie in einem persönlichen Gespräch davon, welchen konkreten Beitrag ich in Ihrem Team leisten kann. Auf Ihren Terminvorschlag freue ich mich.")}</p>
+        <div class="signature"><p>Mit freundlichen Grüßen</p>${y ? `<img class="signature-image" src="${Z(y)}" alt="">` : ""}<span class="signature-name">${Z(m)}</span></div>
       </div>
     </section>`, E = new Map((t?.experiences ?? []).map((e) => [e.id, e])), D = new Map((t?.education ?? []).map((e) => [e.id, e])), O = p.profile ? `<section><h3>Zusammenfassung</h3><p>${Z(f.resumeProfile || t?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>` : "", k = p.skills ? Sc(t, c) : "", A = p.languages && t?.languages.length ? `<section><h3>Sprachen</h3>${t.languages.map((e) => c ? `<p class="language language-plain"><span>${Z(e)}</span></p>` : `<p class="language"><span>${Z(e)}</span><i>●●●●○</i></p>`).join("")}</section>` : "", j = p.certifications && t?.certifications.length ? `<section><h3>Zertifikate</h3><ul>${t.certifications.map((e) => `<li>${Z(e)}</li>`).join("")}</ul></section>` : "", M = mc(t ? {
 		...t,
@@ -6077,8 +6086,8 @@ var Vs = (e = "", t = 0) => ({
 		T,
 		Fn
 	] : n === "deckblatt" ? [w] : n === "anschreiben" ? [T] : [Fn];
-	return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${Z(g)} – ${Z(h)}</title><style>${Oc(i, a, o, s)}${kc}${Ac}${jc}${Mc}${Nc}${Pc}${Fc}${Ic}${Lc}${Rc}${zc}</style></head><body>${In.join("")}${Bc}</body></html>`;
-}, Hc = (e, t) => {
+	return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${Z(g)} – ${Z(h)}</title><style>${kc(i, a, o, s)}${Ac}${jc}${Mc}${Nc}${Pc}${Fc}${Ic}${Lc}${Rc}${zc}${Bc}</style></head><body>${In.join("")}${Vc}</body></html>`;
+}, Uc = (e, t) => {
 	let n = e.documents;
 	return `# ${n.coverSubject || `Bewerbung als ${e.job.title}`}
 
@@ -6098,19 +6107,19 @@ Mit freundlichen Grüßen
 
 ${Cc(t)}
 `;
-}, Uc = /^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)/i, Wc = (e) => {
+}, Wc = /^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)/i, Gc = (e) => {
 	let t = e.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[<>:"/\\|?*\u0000-\u001F]+/g, "_").replace(/\s+/g, "_").replace(/_+/g, "_").replace(/^_+|_+$/g, "").replace(/^[. ]+|[. ]+$/g, "").slice(0, 80);
-	return t ? Uc.test(t) ? `_${t}` : t : "Bewerbung";
-}, Gc = (e) => `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`, Kc = (t, n) => {
+	return t ? Wc.test(t) ? `_${t}` : t : "Bewerbung";
+}, Kc = (e) => `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`, qc = (t, n) => {
 	let r = e.resolve(t), i = e.resolve(n);
 	return i === r || i.startsWith(`${r}${e.sep}`);
-}, qc = async (e) => {
+}, Jc = async (e) => {
 	try {
 		return await r(e), !0;
 	} catch {
 		return !1;
 	}
-}, Jc = class {
+}, Yc = class {
 	constructor(e) {
 		this.paths = e;
 	}
@@ -6137,12 +6146,12 @@ ${Cc(t)}
 	}
 	applicationDataPath(t) {
 		let n = e.resolve(this.paths.applicationsData, t);
-		if (!Kc(this.paths.applicationsData, n)) throw Error("Ungültiger Bewerbungsordner.");
+		if (!qc(this.paths.applicationsData, n)) throw Error("Ungültiger Bewerbungsordner.");
 		return n;
 	}
 	rejectionPath(t) {
 		let n = e.resolve(this.paths.absagenRoot, t);
-		if (!Kc(this.paths.absagenRoot, n)) throw Error("Ungültiger Absageordner.");
+		if (!qc(this.paths.absagenRoot, n)) throw Error("Ungültiger Absageordner.");
 		return n;
 	}
 	documentDirectories(t) {
@@ -6162,14 +6171,14 @@ ${Cc(t)}
 		};
 	}
 	async allocateApplicationFolderName(t, n = /* @__PURE__ */ new Date()) {
-		let r = `${Wc(t)}_${Gc(n)}`;
+		let r = `${Gc(t)}_${Kc(n)}`;
 		for (let t = 1; t < 1e4; t += 1) {
 			let n = t === 1 ? r : `${r}_${t}`;
 			if (!(await Promise.all([
-				qc(this.applicationDataPath(n)),
-				qc(e.join(this.paths.anschreibenDocuments, n)),
-				qc(e.join(this.paths.lebenslaufDocuments, n)),
-				qc(this.rejectionPath(n))
+				Jc(this.applicationDataPath(n)),
+				Jc(e.join(this.paths.anschreibenDocuments, n)),
+				Jc(e.join(this.paths.lebenslaufDocuments, n)),
+				Jc(this.rejectionPath(n))
 			])).some(Boolean)) try {
 				return await a(this.applicationDataPath(n)), n;
 			} catch (e) {
@@ -6196,12 +6205,12 @@ ${Cc(t)}
 	}
 	archiveRelativePath(t, n) {
 		let r = this.archiveRootForCategory(t), i = e.resolve(n);
-		if (!Kc(r, i) || i === e.resolve(r)) throw Error(`Bitte wählen Sie eine Datei aus dem zentralen Ordner „${t}“.`);
+		if (!qc(r, i) || i === e.resolve(r)) throw Error(`Bitte wählen Sie eine Datei aus dem zentralen Ordner „${t}“.`);
 		return e.relative(r, i);
 	}
 	resolveArchivePath(t, n) {
 		let r = this.archiveRootForCategory(t), i = e.resolve(r, n);
-		if (!Kc(r, i) || i === e.resolve(r)) throw Error("Ungültiger Dokumentpfad.");
+		if (!qc(r, i) || i === e.resolve(r)) throw Error("Ungültiger Dokumentpfad.");
 		return i;
 	}
 	async transitionApplicationDocuments(t, n) {
@@ -6211,8 +6220,8 @@ ${Cc(t)}
 			status: n
 		}), o = [[r.anschreiben, i.anschreiben], [r.lebenslauf, i.lebenslauf]], s = [];
 		try {
-			for (let [t, n] of o) if (await qc(t)) {
-				if (await qc(n)) throw Error(`Der Zielordner existiert bereits: ${n}`);
+			for (let [t, n] of o) if (await Jc(t)) {
+				if (await Jc(n)) throw Error(`Der Zielordner existiert bereits: ${n}`);
 				await a(e.dirname(n), { recursive: !0 }), await l(t, n), s.push([t, n]);
 			}
 		} catch (e) {
@@ -6222,26 +6231,26 @@ ${Cc(t)}
 			throw e;
 		}
 	}
-}, Yc = async (e) => {
+}, Xc = async (e) => {
 	try {
 		return await d(e), !0;
 	} catch {
 		return !1;
 	}
-}, Xc = async (e, t) => {
+}, Zc = async (e, t) => {
 	let [n, r] = await Promise.all([d(e), d(t)]);
 	if (n.size !== r.size) return !1;
 	let [i, a] = await Promise.all([s(e), s(t)]);
 	return i.equals(a);
-}, Zc = async (t) => {
-	if (!await Yc(t)) return t;
+}, Qc = async (t) => {
+	if (!await Xc(t)) return t;
 	let n = e.extname(t), r = e.basename(t, n), i = e.dirname(t);
 	for (let t = 2; t < 1e4; t += 1) {
 		let a = e.join(i, `${r}_${t}${n}`);
-		if (!await Yc(a)) return a;
+		if (!await Xc(a)) return a;
 	}
 	throw Error(`Für „${t}“ konnte kein eindeutiger Dateiname erzeugt werden.`);
-}, Qc = async (t) => {
+}, $c = async (t) => {
 	let n = [], r = [t];
 	for (; r.length;) {
 		let t = r.pop();
@@ -6251,28 +6260,28 @@ ${Cc(t)}
 		}
 	}
 	return n;
-}, $c = async (t, n) => {
-	if (await a(e.dirname(n), { recursive: !0 }), await Yc(n)) {
-		if (await Xc(t, n)) return n;
-		let e = await Zc(n);
+}, el = async (t, n) => {
+	if (await a(e.dirname(n), { recursive: !0 }), await Xc(n)) {
+		if (await Zc(t, n)) return n;
+		let e = await Qc(n);
 		return await i(t, e), e;
 	}
 	return await i(t, n), n;
-}, el = async (t, n, r = () => !0) => {
-	if (await Yc(t)) for (let i of await Qc(t)) {
+}, tl = async (t, n, r = () => !0) => {
+	if (await Xc(t)) for (let i of await $c(t)) {
 		let a = e.relative(t, i);
 		if (r(a)) {
-			if (!Kc(t, i)) throw Error("Ungültiger Migrationsquellpfad.");
-			await $c(i, e.join(n, a));
+			if (!qc(t, i)) throw Error("Ungültiger Migrationsquellpfad.");
+			await el(i, e.join(n, a));
 		}
 	}
-}, tl = class {
+}, nl = class {
 	constructor(e) {
-		this.paths = e, this.files = new Jc(e);
+		this.paths = e, this.files = new Yc(e);
 	}
 	async readWorkspace(t) {
 		let n = e.resolve(t);
-		if (n === this.paths.dataRoot || Kc(this.paths.root, n)) throw Error("Der Migrationsquellordner muss außerhalb des neuen Hauptordners liegen.");
+		if (n === this.paths.dataRoot || qc(this.paths.root, n)) throw Error("Der Migrationsquellordner muss außerhalb des neuen Hauptordners liegen.");
 		let r = e.join(n, "Settings", "workspace.json"), i = JSON.parse(await s(r, "utf8"));
 		return {
 			sourcePath: n,
@@ -6280,7 +6289,7 @@ ${Cc(t)}
 		};
 	}
 	async preview(e) {
-		let t = await this.readWorkspace(e), n = await Qc(t.sourcePath), r = 0;
+		let t = await this.readWorkspace(e), n = await $c(t.sourcePath), r = 0;
 		for (let e of n) r += (await d(e)).size;
 		return {
 			sourcePath: t.sourcePath,
@@ -6296,13 +6305,13 @@ ${Cc(t)}
 			"Muster",
 			"Profile",
 			"Backups"
-		]) await el(e.join(t, n), n === "Bewerbungen" ? this.paths.applicationsData : e.join(this.paths.dataRoot, n));
-		await el(e.join(t, "Settings"), e.join(this.paths.dataRoot, "Settings"), (e) => !["workspace.json", "workspace.json.bak"].includes(e)), await el(e.join(t, "Anschreiben"), e.join(this.paths.anschreibenDocuments, "Bestand")), await el(e.join(t, "Lebenslauf"), e.join(this.paths.lebenslaufDocuments, "Bestand")), await el(e.join(t, "Zeugnisse"), this.paths.zeugnisseArchive), await el(e.join(t, "Zertifikate"), this.paths.zertifikateArchive);
+		]) await tl(e.join(t, n), n === "Bewerbungen" ? this.paths.applicationsData : e.join(this.paths.dataRoot, n));
+		await tl(e.join(t, "Settings"), e.join(this.paths.dataRoot, "Settings"), (e) => !["workspace.json", "workspace.json.bak"].includes(e)), await tl(e.join(t, "Anschreiben"), e.join(this.paths.anschreibenDocuments, "Bestand")), await tl(e.join(t, "Lebenslauf"), e.join(this.paths.lebenslaufDocuments, "Bestand")), await tl(e.join(t, "Zeugnisse"), this.paths.zeugnisseArchive), await tl(e.join(t, "Zertifikate"), this.paths.zertifikateArchive);
 	}
 	async migrateApplicationDocuments(t, n) {
 		for (let r of n.applications) {
 			let n = e.join(t, "Bewerbungen", r.folderName), i = this.files.documentDirectories(r);
-			await el(e.join(n, "Anschreiben"), i.anschreiben), await el(e.join(n, "Lebenslauf"), i.lebenslauf);
+			await tl(e.join(n, "Anschreiben"), i.anschreiben), await tl(e.join(n, "Lebenslauf"), i.lebenslauf);
 		}
 	}
 	async migrateAttachment(t, n, r) {
@@ -6310,8 +6319,8 @@ ${Cc(t)}
 		let i = n.applications.find((e) => e.id === r.applicationId);
 		if (!i) return r;
 		let a = e.join(t, "Bewerbungen", i.folderName, r.category, r.storedName);
-		if (!await Yc(a)) return r;
-		let o = this.files.archiveRootForCategory(r.category), s = await $c(a, e.join(o, Wc(r.fileName)));
+		if (!await Xc(a)) return r;
+		let o = this.files.archiveRootForCategory(r.category), s = await el(a, e.join(o, Gc(r.fileName)));
 		return {
 			...r,
 			archiveRelativePath: e.relative(o, s)
@@ -6326,22 +6335,22 @@ ${Cc(t)}
 			attachments: n
 		});
 	}
-}, nl = () => (/* @__PURE__ */ new Date()).toISOString(), rl = () => crypto.randomUUID(), il = /* @__PURE__ */ new Set([
+}, rl = () => (/* @__PURE__ */ new Date()).toISOString(), il = () => crypto.randomUUID(), al = /* @__PURE__ */ new Set([
 	"Zusage",
 	"Absage",
 	"Zurückgezogen",
 	"Archiviert"
-]), al = (e, t) => t?.trim() ? `${e}: ${t.trim()}` : "", ol = (e) => {
+]), ol = (e, t) => t?.trim() ? `${e}: ${t.trim()}` : "", sl = (e) => {
 	let t = e.toLocaleLowerCase("de-DE"), n = /muttersprache|c2|native/.test(t) ? 5 : /c1|verhandlungssicher|versiert|fließend/.test(t) || /b2|gute kenntnisse/.test(t) ? 4 : /b1|grundkenntnisse/.test(t) ? 3 : /a2/.test(t) ? 2 : /a1/.test(t) ? 1 : e ? 3 : 0;
 	return `${"●".repeat(n)}${"○".repeat(5 - n)}`;
-}, sl = (e) => Ro(e).family.match(/"([^"]+)"|([^,]+)/)?.[1] ?? Ro(e).family.match(/"([^"]+)"|([^,]+)/)?.[2]?.trim() ?? "Arial", cl = (e, t, n) => {
+}, cl = (e) => Ro(e).family.match(/"([^"]+)"|([^,]+)/)?.[1] ?? Ro(e).family.match(/"([^"]+)"|([^,]+)/)?.[2]?.trim() ?? "Arial", ll = (e, t, n) => {
 	let r = (e) => [
 		1,
 		3,
 		5
 	].map((t) => Number.parseInt(e.replace("#", "").slice(t - 1, t + 1), 16)), i = r(e), a = r(t);
 	return `#${i.map((e, t) => Math.round(e * (1 - n) + a[t] * n).toString(16).padStart(2, "0")).join("")}`;
-}, ll = {
+}, ul = {
 	"application-sent": [],
 	"application-deadline": [4320, 1440],
 	interview: [1440, 60],
@@ -6357,28 +6366,28 @@ ${Cc(t)}
 	"fixed-term-end": [20160],
 	"probation-end": [20160],
 	custom: []
-}, ul = () => ({
+}, dl = () => ({
 	schemaVersion: 1,
 	applications: [],
 	profiles: [],
 	events: [],
 	attachments: [],
 	settings: As,
-	updatedAt: nl()
-}), dl = () => (/* @__PURE__ */ new Date()).toISOString().replace(/\D/g, "").slice(0, 14), fl = (e, t) => {
+	updatedAt: rl()
+}), fl = () => (/* @__PURE__ */ new Date()).toISOString().replace(/\D/g, "").slice(0, 14), pl = (e, t) => {
 	let n = new Date(e);
 	return n.setDate(n.getDate() + t), n.setHours(9, 0, 0, 0), n.toISOString();
-}, pl = (e, t = " | ") => e.map((e) => e?.trim()).filter(Boolean).join(t), ml = (e) => {
+}, ml = (e, t = " | ") => e.map((e) => e?.trim()).filter(Boolean).join(t), hl = (e) => {
 	let [t, ...n] = e.split(/\s+(?:\||–|—|:)\s+|\s+-\s+/).map((e) => e.trim());
 	return {
 		name: t ?? "",
 		level: n.join(" – ")
 	};
-}, hl = class {
+}, gl = class {
 	constructor(t) {
-		this.workspace = ul();
+		this.workspace = dl();
 		let n = typeof t == "string" ? Ns(t) : t;
-		this.files = new Jc(n), this.migration = new tl(n), this.dataPath = n.dataRoot, this.workspacePath = e.join(this.dataPath, "Settings", "workspace.json"), this.applicationDraftPath = e.join(this.dataPath, "Settings", "new-application-draft.json");
+		this.files = new Yc(n), this.migration = new nl(n), this.dataPath = n.dataRoot, this.workspacePath = e.join(this.dataPath, "Settings", "workspace.json"), this.applicationDraftPath = e.join(this.dataPath, "Settings", "new-application-draft.json");
 	}
 	async initialize() {
 		await this.files.initialize(), this.workspace = await this.loadWorkspace(), await this.persist();
@@ -6406,11 +6415,11 @@ ${Cc(t)}
 			let t = JSON.parse(await s(e, "utf8")), n = ks.safeParse(t);
 			if (n.success) return n.data;
 		} catch {}
-		return ul();
+		return dl();
 	}
 	async atomicWrite(t, n) {
 		await a(e.dirname(t), { recursive: !0 });
-		let r = `${t}.${rl()}.tmp`, s = `${t}.bak`, c = await o(r, "w");
+		let r = `${t}.${il()}.tmp`, s = `${t}.bak`, c = await o(r, "w");
 		try {
 			await c.writeFile(n, "utf8"), await c.sync();
 		} finally {
@@ -6426,7 +6435,7 @@ ${Cc(t)}
 		}
 	}
 	async persist() {
-		this.workspace.updatedAt = nl();
+		this.workspace.updatedAt = rl();
 		let e = ks.parse(this.workspace);
 		await this.atomicWrite(this.workspacePath, JSON.stringify(e, null, 2)), await Promise.all(e.applications.map((e) => this.persistApplicationFiles(e))), await this.createAutomaticBackup();
 	}
@@ -6464,14 +6473,14 @@ ${Cc(t)}
 			this.atomicWrite(e.join(n, "bewerbung.json"), JSON.stringify(Ss.parse(t), null, 2)),
 			this.atomicWrite(e.join(n, "Stellenanzeige", "stellenanzeige.json"), JSON.stringify(t.job, null, 2)),
 			this.atomicWrite(e.join(n, "Stellenanzeige", "stellenanzeige.txt"), t.job.fullText),
-			this.atomicWrite(e.join(r.anschreiben, `${Wc(t.company.name)}.md`), Hc(t, i)),
-			this.atomicWrite(e.join(n, "Export", "bewerbungsmappe.html"), Vc(t, i, "mappe"))
+			this.atomicWrite(e.join(r.anschreiben, `${Gc(t.company.name)}.md`), Uc(t, i)),
+			this.atomicWrite(e.join(n, "Export", "bewerbungsmappe.html"), Hc(t, i, "mappe"))
 		]);
 	}
 	createEvent(e, t, n, r, i) {
-		let a = nl();
+		let a = rl();
 		return {
-			id: rl(),
+			id: il(),
 			applicationId: e,
 			type: t,
 			title: n,
@@ -6480,7 +6489,7 @@ ${Cc(t)}
 			allDay: i,
 			completed: !1,
 			cancelled: !1,
-			reminderMinutes: ll[t],
+			reminderMinutes: ul[t],
 			createdAt: a,
 			updatedAt: a
 		};
@@ -6488,7 +6497,7 @@ ${Cc(t)}
 	ensureEvent(e, t, n, r, i = !1) {
 		let a = this.workspace.events.find((n) => n.applicationId === e.id && n.type === t);
 		if (!r) {
-			a && (a.cancelled = !0, a.updatedAt = nl());
+			a && (a.cancelled = !0, a.updatedAt = rl());
 			return;
 		}
 		if (a) {
@@ -6497,7 +6506,7 @@ ${Cc(t)}
 				startAt: r,
 				allDay: i,
 				cancelled: !1,
-				updatedAt: nl()
+				updatedAt: rl()
 			});
 			return;
 		}
@@ -6506,8 +6515,8 @@ ${Cc(t)}
 	syncEvents(e) {
 		let t = e.company.name;
 		this.ensureEvent(e, "application-sent", `Bewerbung gesendet · ${t}`, e.sentAt, !0), this.ensureEvent(e, "application-deadline", `Bewerbungsfrist · ${t}`, e.deadlineAt, !0), this.ensureEvent(e, "interview", `Vorstellungsgespräch · ${t}`, e.interviewAt), this.ensureEvent(e, "second-interview", `Zweites Gespräch · ${t}`, e.secondInterviewAt), this.ensureEvent(e, "contract-start", `Vertragsbeginn · ${t}`, e.startAt, !0), this.ensureEvent(e, "contract-end", `Vertragsende · ${t}`, e.contractEndAt, !0), this.ensureEvent(e, "fixed-term-end", `Befristungsende · ${t}`, e.fixedTermEndAt, !0), this.ensureEvent(e, "probation-end", `Probezeitende · ${t}`, e.probationEndAt, !0);
-		let n = e.status === "Beworben" && e.sentAt && this.workspace.settings.followUpDays !== null ? fl(e.sentAt, this.workspace.settings.followUpDays) : void 0;
-		if (this.ensureEvent(e, "follow-up-call", `Bei ${t} zum Stand der Bewerbung nachfragen`, n), il.has(e.status)) {
+		let n = e.status === "Beworben" && e.sentAt && this.workspace.settings.followUpDays !== null ? pl(e.sentAt, this.workspace.settings.followUpDays) : void 0;
+		if (this.ensureEvent(e, "follow-up-call", `Bei ${t} zum Stand der Bewerbung nachfragen`, n), al.has(e.status)) {
 			let t = /* @__PURE__ */ new Set([
 				"application-sent",
 				"contract-start",
@@ -6516,14 +6525,14 @@ ${Cc(t)}
 				"probation-end"
 			]);
 			this.workspace.events.forEach((n) => {
-				n.applicationId === e.id && !t.has(n.type) && new Date(n.startAt) > /* @__PURE__ */ new Date() && (n.cancelled = !0, n.updatedAt = nl());
+				n.applicationId === e.id && !t.has(n.type) && new Date(n.startAt) > /* @__PURE__ */ new Date() && (n.cancelled = !0, n.updatedAt = rl());
 			});
 		}
 	}
 	async createApplication(e) {
-		let t = Cs.parse(e), n = nl(), r = await this.files.allocateApplicationFolderName(t.company.name), i = {
+		let t = Cs.parse(e), n = rl(), r = await this.files.allocateApplicationFolderName(t.company.name), i = {
 			schemaVersion: 1,
-			id: rl(),
+			id: il(),
 			folderName: r,
 			...t,
 			status: t.sentAt ? "Beworben" : "Entwurf",
@@ -6551,13 +6560,13 @@ ${Cc(t)}
 	async saveApplication(e) {
 		let t = Ss.parse(e), n = this.workspace.applications.findIndex((e) => e.id === t.id);
 		if (n < 0) throw Error("Bewerbung wurde nicht gefunden.");
-		return t.updatedAt = nl(), this.workspace.applications[n] = t, this.syncEvents(t), await this.persist(), this.getWorkspace();
+		return t.updatedAt = rl(), this.workspace.applications[n] = t, this.syncEvents(t), await this.persist(), this.getWorkspace();
 	}
 	async changeStatus(e, t, n) {
 		let r = this.workspace.applications.find((t) => t.id === e);
 		if (!r) throw Error("Bewerbung wurde nicht gefunden.");
 		if (r.status !== t) {
-			let e = nl(), i = r.status;
+			let e = rl(), i = r.status;
 			await this.files.transitionApplicationDocuments(r, t), r.status = t, r.updatedAt = e, r.statusHistory.push({
 				at: e,
 				from: i,
@@ -6573,9 +6582,9 @@ ${Cc(t)}
 	async duplicateApplication(e) {
 		let t = this.workspace.applications.find((t) => t.id === e);
 		if (!t) throw Error("Bewerbung wurde nicht gefunden.");
-		let n = nl(), r = await this.files.allocateApplicationFolderName(t.company.name), i = {
+		let n = rl(), r = await this.files.allocateApplicationFolderName(t.company.name), i = {
 			...structuredClone(t),
-			id: rl(),
+			id: il(),
 			folderName: r,
 			status: "Entwurf",
 			sentAt: void 0,
@@ -6613,7 +6622,7 @@ ${Cc(t)}
 		let i = this.workspace.applications.find((e) => e.id === t);
 		if (!i) throw Error("Bewerbung wurde nicht gefunden.");
 		let a = e.basename(r), o = this.files.archiveRelativePath(n, r), s = {
-			id: rl(),
+			id: il(),
 			applicationId: t,
 			category: n,
 			fileName: a,
@@ -6622,7 +6631,7 @@ ${Cc(t)}
 			documentDate: "",
 			order: i.attachmentIds.length,
 			includedInPackage: !0,
-			createdAt: nl()
+			createdAt: rl()
 		};
 		return this.workspace.attachments.push(s), i.attachmentIds.push(s.id), await this.persist(), this.getWorkspace();
 	}
@@ -6702,24 +6711,24 @@ ${Cc(t)}
 			GEBURTSDATUM: n?.birthDate ?? "",
 			GEBURTSORT: n?.birthPlace ?? "",
 			GEBURTSZEILE: n?.birthDate || n?.birthPlace ? `Geb. ${n?.birthDate ?? ""}${n?.birthDate && n?.birthPlace ? " in " : ""}${n?.birthPlace ?? ""}` : "",
-			KONTAKT_ZEILE_1: pl([n?.phone, n?.email]),
-			KONTAKT_ZEILE_2: pl([n?.portfolio || n?.github, n?.linkedin]),
-			KONTAKT_ZEILE_3: pl([
+			KONTAKT_ZEILE_1: ml([n?.phone, n?.email]),
+			KONTAKT_ZEILE_2: ml([n?.portfolio || n?.github, n?.linkedin]),
+			KONTAKT_ZEILE_3: ml([
 				n?.city,
 				n?.birthDate,
 				n?.birthPlace
 			]),
 			KONTAKTE_TITEL: n?.phone || n?.email || n?.portfolio || n?.github || n?.linkedin || n?.city ? "KONTAKTE" : "",
 			KONTAKTDATEN_TITEL: n?.phone || n?.email || n?.portfolio || n?.github || n?.linkedin || n?.city || n?.birthDate || n?.birthPlace ? "KONTAKTDATEN" : "",
-			TELEFON_ZEILE: al("Telefon", n?.phone),
-			EMAIL_ZEILE: al("E-Mail", n?.email),
-			WEBSITE_ZEILE: al("Website", n?.portfolio || n?.github),
-			LINKEDIN_ZEILE: al("LinkedIn", n?.linkedin),
-			ORT_ZEILE: al("Ort", n?.city),
+			TELEFON_ZEILE: ol("Telefon", n?.phone),
+			EMAIL_ZEILE: ol("E-Mail", n?.email),
+			WEBSITE_ZEILE: ol("Website", n?.portfolio || n?.github),
+			LINKEDIN_ZEILE: ol("LinkedIn", n?.linkedin),
+			ORT_ZEILE: ol("Ort", n?.city),
 			HEADER_KONTAKT_1: n?.phone ?? "",
 			HEADER_KONTAKT_2: n?.email ?? "",
 			HEADER_KONTAKT_3: n?.linkedin ?? "",
-			HEADER_KONTAKT_4: pl([n?.city, n?.country]),
+			HEADER_KONTAKT_4: ml([n?.city, n?.country]),
 			HEADER_KONTAKT_5: n?.birthDate || n?.birthPlace ? `Geb. ${n?.birthDate ?? ""}${n?.birthDate && n?.birthPlace ? " in " : ""}${n?.birthPlace ?? ""}` : "",
 			HEADER_KONTAKT_6: n?.portfolio || n?.github || "",
 			PROFILFOTO: n?.photoPath ?? "",
@@ -6760,9 +6769,9 @@ ${Cc(t)}
 			INTERESSEN: "",
 			DESIGN_PRIMARY: t.accentColor,
 			DESIGN_ACCENT: t.secondaryColor,
-			DESIGN_SOFT_ACCENT: cl(t.accentColor, "#ffffff", .78),
-			DESIGN_TITLE_BACKGROUND: cl(t.accentColor, "#ffffff", .62),
-			DESIGN_FONT: sl(t.designSettings.fontId),
+			DESIGN_SOFT_ACCENT: ll(t.accentColor, "#ffffff", .78),
+			DESIGN_TITLE_BACKGROUND: ll(t.accentColor, "#ffffff", .62),
+			DESIGN_FONT: cl(t.designSettings.fontId),
 			DESIGN_MARGIN_VERTICAL_MM: String(Po[t.designSettings.marginLevel].vertical),
 			DESIGN_MARGIN_HORIZONTAL_MM: String(Po[t.designSettings.marginLevel].horizontal),
 			DEKORATION_AKTIV: t.designSettings.showBackgroundInPrint ? "true" : "false",
@@ -6778,8 +6787,8 @@ ${Cc(t)}
 			c[`ABSCHLUSS_${t}`] = r?.degree ?? "", c[`FACHRICHTUNG_${t}`] = "", c[`HOCHSCHULE_${t}`] = r?.institution ?? "", c[`AUSBILDUNG_START_${t}`] = r?.from ?? "", c[`AUSBILDUNG_DATUM_TRENNER_${t}`] = r?.from && r.to ? " – " : "", c[`AUSBILDUNG_ENDE_${t}`] = r?.to ?? "", c[`AUSBILDUNG_ORT_${t}`] = r?.city ?? "", c[`AUSBILDUNG_METADATA_TRENNER_${t}`] = (r?.from || r?.to) && r?.city ? "·" : "";
 			let i = n?.skills[e] ?? "";
 			c[`STAERKE_${t}_TITEL`] = i, c[`STAERKE_${t}_BESCHREIBUNG`] = "";
-			let a = ml(n?.languages[e] ?? "");
-			c[`SPRACHE_${t}`] = a.name, c[`SPRACHNIVEAU_${t}`] = a.level, c[`SPRACHE_${t}_PUNKTE`] = ol(a.level);
+			let a = hl(n?.languages[e] ?? "");
+			c[`SPRACHE_${t}`] = a.name, c[`SPRACHNIVEAU_${t}`] = a.level, c[`SPRACHE_${t}_PUNKTE`] = sl(a.level);
 		}
 		o.categories.filter((e) => e.isVisible).sort((e, t) => e.sortOrder - t.sortOrder).slice(0, 6).forEach((e, t) => {
 			let n = [...e.items.filter((e) => e.isVisible && e.name.trim()).sort((e, t) => e.sortOrder - t.sortOrder).map((e) => e.name), ...e.subcategories.filter((e) => e.isVisible).sort((e, t) => e.sortOrder - t.sortOrder).flatMap((e) => e.items.filter((e) => e.isVisible && e.name.trim()).sort((e, t) => e.sortOrder - t.sortOrder).map((e) => e.name))];
@@ -6830,11 +6839,11 @@ ${Cc(t)}
 	getExportHtml(e, t, n) {
 		let r = n ? Ss.parse(n) : this.getApplication(e);
 		if (r.id !== e) throw Error("Die Exportdaten gehören nicht zur ausgewählten Bewerbung.");
-		return Vc(r, this.getProfileForApplication(r), t);
+		return Hc(r, this.getProfileForApplication(r), t);
 	}
 	getExportDefaultName(e, t) {
 		let n = this.getApplication(e);
-		return `${Wc(n.company.name)}_${Wc(n.job.title)}_${t}.pdf`;
+		return `${Gc(n.company.name)}_${Gc(n.job.title)}_${t}.pdf`;
 	}
 	async writeBackup(e) {
 		await f(e, JSON.stringify(ks.parse(this.workspace), null, 2), "utf8");
@@ -6844,12 +6853,12 @@ ${Cc(t)}
 	}
 	async migrateLegacyData(t) {
 		if (this.workspace.applications.length > 0 || this.workspace.profiles.length > 0 || this.workspace.events.length > 0 || this.workspace.attachments.length > 0) throw Error("Eine Migration ist nur möglich, solange der neue Datenbestand leer ist.");
-		let n = e.join(this.dataPath, "Backups", `vor-migration-${dl()}-${rl()}.json`);
+		let n = e.join(this.dataPath, "Backups", `vor-migration-${fl()}-${il()}.json`);
 		await i(this.workspacePath, n);
 		let r = await this.migration.preview(t), a = this.workspace;
 		try {
-			return this.workspace = await this.migration.migrate(t), await this.persist(), await this.atomicWrite(e.join(this.dataPath, "Backups", `migration-${dl()}-${rl()}.json`), JSON.stringify({
-				migratedAt: nl(),
+			return this.workspace = await this.migration.migrate(t), await this.persist(), await this.atomicWrite(e.join(this.dataPath, "Backups", `migration-${fl()}-${il()}.json`), JSON.stringify({
+				migratedAt: rl(),
 				sourcePath: r.sourcePath,
 				targetPath: this.dataPath,
 				fileCount: r.fileCount,
@@ -6863,7 +6872,7 @@ ${Cc(t)}
 		}
 	}
 	async importBackup(t) {
-		let n = JSON.parse(await s(t, "utf8")), r = ks.parse(n), a = e.join(this.dataPath, "Backups", `vor-import-${dl()}.json`);
+		let n = JSON.parse(await s(t, "utf8")), r = ks.parse(n), a = e.join(this.dataPath, "Backups", `vor-import-${fl()}.json`);
 		await i(this.workspacePath, a);
 		let o = this.workspace;
 		try {
@@ -6895,7 +6904,7 @@ ${Cc(t)}
 	getTemplateIds() {
 		return new Set(Is.map((e) => e.id));
 	}
-}, gl = async (e, t, n) => {
+}, _l = async (e, t, n) => {
 	try {
 		let n = await S.load(t);
 		(await e.copyPages(n, n.getPageIndices())).forEach((t) => e.addPage(t));
@@ -6903,21 +6912,21 @@ ${Cc(t)}
 		let t = e instanceof Error ? e.message : "Unbekannter Fehler";
 		throw Error(`PDF „${n}“ konnte nicht verarbeitet werden: ${t}`);
 	}
-}, _l = async (e, t) => {
+}, vl = async (e, t) => {
 	let n = await S.create();
-	await gl(n, e, "Bewerbungsunterlagen");
-	for (let e of t) await gl(n, e.bytes, e.fileName);
+	await _l(n, e, "Bewerbungsunterlagen");
+	for (let e of t) await _l(n, e.bytes, e.fileName);
 	return n.save();
-}, vl = /* @__PURE__ */ new Set([
+}, yl = /* @__PURE__ */ new Set([
 	".docx",
 	".dotx",
 	".doc"
-]), yl = {
+]), bl = {
 	"muster-folder": "Musterordner",
 	"existing-document": "Eigenes Dokument",
 	"uploaded-word-template": "Eigene Word-Vorlage",
 	"system-word-template": "System Word-Vorlage"
-}, bl = 1e3, xl = {
+}, xl = 1e3, Sl = {
 	id: "word-muster-anschreiben",
 	fileName: "Anschreiben_Muster.docx",
 	name: "Word Muster",
@@ -6936,7 +6945,7 @@ ${Cc(t)}
 		"DOCX",
 		"Anschreiben"
 	]
-}, Sl = {
+}, Cl = {
 	id: "word-lebenslauf-elegant",
 	fileName: "Elegant_Lebenslauf_Muster.docx",
 	atsFileName: "Elegant_Lebenslauf_ATS.docx",
@@ -6966,7 +6975,7 @@ ${Cc(t)}
 		"Foto"
 	],
 	cardHighlights: ["Breite Hauptspalte für Berufserfahrung", "Rote Seitenleiste für persönliche Highlights"]
-}, Cl = {
+}, wl = {
 	id: "word-lebenslauf-zeitgenoessisch",
 	fileName: "Zeitgenoessisch_Lebenslauf_Muster.docx",
 	atsFileName: "Zeitgenoessisch_Lebenslauf_ATS.docx",
@@ -6997,7 +7006,7 @@ ${Cc(t)}
 		"Grün"
 	],
 	cardHighlights: ["Grüne moderne Word-Lebenslaufvorlage", "Foto, Stärken, Zusammenfassung und Erfahrung"]
-}, wl = {
+}, Tl = {
 	id: "word-lebenslauf-gepflegt",
 	fileName: "Gepflegt_Lebenslauf_Muster.docx",
 	atsFileName: "Gepflegt_Lebenslauf_ATS.docx",
@@ -7028,7 +7037,7 @@ ${Cc(t)}
 		"Kundenorientiert"
 	],
 	cardHighlights: ["Linke Farbfläche für Profil und Kernkompetenzen", "Klare Business-Hierarchie für kundenorientierte Rollen"]
-}, Tl = {
+}, El = {
 	id: "word-lebenslauf-modern",
 	fileName: "Modern_Lebenslauf_Muster.docx",
 	atsFileName: "Modern_Lebenslauf_ATS.docx",
@@ -7060,7 +7069,7 @@ ${Cc(t)}
 		"Professionell"
 	],
 	cardHighlights: ["Türkise Wellenmuster für professionelle Ausstrahlung", "Zwei Spalten mit separaten Kontakt- und Erfahrungsbereichen"]
-}, El = {
+}, Dl = {
 	id: "word-lebenslauf-kreativ",
 	fileName: "Kreativ_Lebenslauf_Muster.docx",
 	atsFileName: "Kreativ_Lebenslauf_ATS.docx",
@@ -7102,7 +7111,7 @@ ${Cc(t)}
 		orange: "#D97706"
 	},
 	cardHighlights: ["Viele Informationen übersichtlich auf einer Seite", "Zweispaltig · Mit Foto · DOCX"]
-}, Dl = {
+}, Ol = {
 	id: "word-lebenslauf-ivy-league",
 	fileName: "Ivy_League_Lebenslauf_Muster.docx",
 	atsFileName: "Ivy_League_Lebenslauf_ATS.docx",
@@ -7136,7 +7145,7 @@ ${Cc(t)}
 		"Klassisch"
 	],
 	cardHighlights: ["Klassische Serifentypografie mit ruhiger Einspaltenstruktur", "Pastell-Hintergrund · Ohne Foto · ATS-freundlich"]
-}, Ol = {
+}, kl = {
 	id: "word-lebenslauf-kompakt",
 	fileName: "Kompakt_Lebenslauf_Muster.docx",
 	atsFileName: "Kompakt_Lebenslauf_ATS.docx",
@@ -7177,7 +7186,7 @@ ${Cc(t)}
 		dunkelgruen: "#185D47"
 	},
 	cardHighlights: ["Einseitig · Hohe Informationsdichte", "Zweispaltig · Ohne Foto · ATS-freundlich · DOCX"]
-}, kl = {
+}, Al = {
 	id: "word-lebenslauf-stilvoll",
 	fileName: "Stilvoll_Lebenslauf_Muster.docx",
 	atsFileName: "Stilvoll_Lebenslauf_ATS.docx",
@@ -7211,7 +7220,7 @@ ${Cc(t)}
 		"Grün"
 	],
 	cardHighlights: ["Kompakte Profilspalte und breite Karrierespalte", "Geometrisches Muster · Mit Foto · ATS-freundlich"]
-}, Al = {
+}, jl = {
 	id: "word-lebenslauf-einspaltig",
 	fileName: "Einfach_Lebenslauf_Muster.docx",
 	atsFileName: "Einfach_Lebenslauf_ATS.docx",
@@ -7245,7 +7254,7 @@ ${Cc(t)}
 		"Blau"
 	],
 	cardHighlights: ["Klare Einspaltenstruktur mit kräftigen Abschnittslinien", "Mit Foto · Geometrisches Dekor · ATS-freundlich"]
-}, jl = {
+}, Ml = {
 	id: "word-lebenslauf-klassisch",
 	fileName: "Klassisch_Lebenslauf_Muster.docx",
 	atsFileName: "Klassisch_Lebenslauf_ATS.docx",
@@ -7279,7 +7288,7 @@ ${Cc(t)}
 		"Konservative Branchen"
 	],
 	cardHighlights: ["Traditionelles Layout mit modernem hellblauem Wellendekor", "Einspaltig · Mit Foto · ATS-freundlich · DOCX"]
-}, Ml = {
+}, Nl = {
 	id: "word-lebenslauf-mehrspaltig",
 	fileName: "Mehrspaltig_Lebenslauf_Muster.docx",
 	atsFileName: "Mehrspaltig_Lebenslauf_ATS.docx",
@@ -7313,7 +7322,7 @@ ${Cc(t)}
 		"Blau"
 	],
 	cardHighlights: ["Dreispaltiges Layout für hohe Informationsdichte", "Mit Foto · ATS-freundlich · DOCX"]
-}, Nl = [
+}, Pl = [
 	"BEWERBER_NAME",
 	"BEWERBER_VORNAME",
 	"BEWERBER_NACHNAME",
@@ -7338,7 +7347,7 @@ ${Cc(t)}
 	"GRUSSFORMEL",
 	"UNTERSCHRIFT",
 	"KENNTNISSE"
-], Pl = {
+], Fl = {
 	FIRMA_ADI: "FIRMA_NAME",
 	FIRMA_ADRESI: "FIRMA_ADRESSE",
 	POSTA_KODU: "FIRMA_PLZ",
@@ -7348,9 +7357,9 @@ ${Cc(t)}
 	REFERENZNUMMER: "STELLENNUMMER",
 	ANSCHREIBEN_METNI: "HAUPTTEXT",
 	KAPANIS: "SCHLUSSTEXT"
-}, Fl = /* @__PURE__ */ "VORNAME.NACHNAME.BERUFSBEZEICHNUNG.FACHGEBIET_1.FACHGEBIET_2.FACHGEBIETE.TELEFON.EMAIL.WEBSITE.LINKEDIN.ORT.GEBURTSDATUM.GEBURTSORT.GEBURTSZEILE.GITHUB.KONTAKTDATEN_TITEL.KONTAKT_ZEILE_1.KONTAKT_ZEILE_2.KONTAKT_ZEILE_3.KONTAKTE_TITEL.HEADER_KONTAKT_1.HEADER_KONTAKT_2.HEADER_KONTAKT_3.HEADER_KONTAKT_4.HEADER_KONTAKT_5.HEADER_KONTAKT_6.TELEFON_ZEILE.EMAIL_ZEILE.WEBSITE_ZEILE.LINKEDIN_ZEILE.ORT_ZEILE.PROFILFOTO.ZUSAMMENFASSUNG_TITEL.ZUSAMMENFASSUNG.STAERKEN_TITEL.STAERKEN_ATS.ERFOLGE_TITEL.ERFOLGE_ATS.ERFOLG_HIGHLIGHT_1_TITEL.ERFOLG_HIGHLIGHT_1_BESCHREIBUNG.ERFOLG_HIGHLIGHT_2_TITEL.ERFOLG_HIGHLIGHT_2_BESCHREIBUNG.KENNTNISSE_TITEL.SPRACHEN_TITEL.SPRACHEN_ATS.BERUFSERFAHRUNG_TITEL.ERFAHRUNG_TITEL.AUSBILDUNG_TITEL.PROJEKTE_TITEL.PROJEKTE.WEITERBILDUNGEN_TITEL.WEITERBILDUNGEN.ZERTIFIKATE_TITEL.ZERTIFIKATE.VEROEFFENTLICHUNGEN_TITEL.VEROEFFENTLICHUNGEN.EHRENAMT_TITEL.EHRENAMT.SOFTWARE_TITEL.SOFTWARE.ZUSATZANGABEN_TITEL.ZUSATZANGABEN.FUEHRERSCHEIN_TITEL.FUEHRERSCHEIN.INTERESSEN_TITEL.INTERESSEN.ATS_MODUS".split("."), Il = (e, t) => Array.from({ length: e }, (e, n) => t.map((e) => `${e}_${n + 1}`)).flat(), Ll = [
-	...Fl,
-	...Il(8, [
+}, Il = /* @__PURE__ */ "VORNAME.NACHNAME.BERUFSBEZEICHNUNG.FACHGEBIET_1.FACHGEBIET_2.FACHGEBIETE.TELEFON.EMAIL.WEBSITE.LINKEDIN.ORT.GEBURTSDATUM.GEBURTSORT.GEBURTSZEILE.GITHUB.KONTAKTDATEN_TITEL.KONTAKT_ZEILE_1.KONTAKT_ZEILE_2.KONTAKT_ZEILE_3.KONTAKTE_TITEL.HEADER_KONTAKT_1.HEADER_KONTAKT_2.HEADER_KONTAKT_3.HEADER_KONTAKT_4.HEADER_KONTAKT_5.HEADER_KONTAKT_6.TELEFON_ZEILE.EMAIL_ZEILE.WEBSITE_ZEILE.LINKEDIN_ZEILE.ORT_ZEILE.PROFILFOTO.ZUSAMMENFASSUNG_TITEL.ZUSAMMENFASSUNG.STAERKEN_TITEL.STAERKEN_ATS.ERFOLGE_TITEL.ERFOLGE_ATS.ERFOLG_HIGHLIGHT_1_TITEL.ERFOLG_HIGHLIGHT_1_BESCHREIBUNG.ERFOLG_HIGHLIGHT_2_TITEL.ERFOLG_HIGHLIGHT_2_BESCHREIBUNG.KENNTNISSE_TITEL.SPRACHEN_TITEL.SPRACHEN_ATS.BERUFSERFAHRUNG_TITEL.ERFAHRUNG_TITEL.AUSBILDUNG_TITEL.PROJEKTE_TITEL.PROJEKTE.WEITERBILDUNGEN_TITEL.WEITERBILDUNGEN.ZERTIFIKATE_TITEL.ZERTIFIKATE.VEROEFFENTLICHUNGEN_TITEL.VEROEFFENTLICHUNGEN.EHRENAMT_TITEL.EHRENAMT.SOFTWARE_TITEL.SOFTWARE.ZUSATZANGABEN_TITEL.ZUSATZANGABEN.FUEHRERSCHEIN_TITEL.FUEHRERSCHEIN.INTERESSEN_TITEL.INTERESSEN.ATS_MODUS".split("."), Ll = (e, t) => Array.from({ length: e }, (e, n) => t.map((e) => `${e}_${n + 1}`)).flat(), Rl = [
+	...Il,
+	...Ll(8, [
 		"POSITION",
 		"UNTERNEHMEN",
 		"STARTDATUM",
@@ -7363,7 +7372,7 @@ ${Cc(t)}
 		"ERFAHRUNG_TRENNER"
 	]),
 	...Array.from({ length: 8 }, (e, t) => Array.from({ length: 5 }, (e, n) => `ERFOLG_${t + 1}_${n + 1}`)).flat(),
-	...Il(3, [
+	...Ll(3, [
 		"ABSCHLUSS",
 		"FACHRICHTUNG",
 		"HOCHSCHULE",
@@ -7373,28 +7382,28 @@ ${Cc(t)}
 		"AUSBILDUNG_ORT",
 		"AUSBILDUNG_METADATA_TRENNER"
 	]),
-	...Il(3, ["SPRACHE", "SPRACHNIVEAU"]),
+	...Ll(3, ["SPRACHE", "SPRACHNIVEAU"]),
 	...Array.from({ length: 3 }, (e, t) => `SPRACHE_${t + 1}_PUNKTE`),
 	...Array.from({ length: 4 }, (e, t) => [`STAERKE_${t + 1}_TITEL`, `STAERKE_${t + 1}_BESCHREIBUNG`]).flat(),
-	...Il(6, ["KENNTNIS_KATEGORIE", "KENNTNIS_EINTRAEGE"])
-], Rl = [...Nl, ...Ll], zl = class extends Error {
+	...Ll(6, ["KENNTNIS_KATEGORIE", "KENNTNIS_EINTRAEGE"])
+], zl = [...Pl, ...Rl], Bl = class extends Error {
 	code;
 	constructor(e, t) {
 		super(e), this.code = t, this.name = "TemplateError";
 	}
-}, Bl = (e) => {
-	if (e instanceof zl) return e;
+}, Vl = (e) => {
+	if (e instanceof Bl) return e;
 	let t = typeof e == "object" && e && "code" in e ? String(e.code) : "";
 	return [
 		"EBUSY",
 		"EPERM",
 		"EACCES"
-	].includes(t) ? new zl("Die Datei wird von einem anderen Programm verwendet.", "LOCKED") : [
+	].includes(t) ? new Bl("Die Datei wird von einem anderen Programm verwendet.", "LOCKED") : [
 		"ENOENT",
 		"ENODATA",
 		"EIO"
-	].includes(t) ? new zl("Die Vorlage ist derzeit nicht lokal verfügbar. Die Datei wird möglicherweise noch von OneDrive synchronisiert.", "NOT_LOCAL") : new zl("Die Vorlage konnte nicht gelesen werden.", "CORRUPT");
-}, Vl = (e) => e.replaceAll("Ä", "Ae").replaceAll("Ö", "Oe").replaceAll("Ü", "Ue").replaceAll("ä", "ae").replaceAll("ö", "oe").replaceAll("ü", "ue").replaceAll("ß", "ss").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-").replace(/\s+/g, "_").replace(/[. ]+$/g, "").slice(0, 100) || "Vorlage", Hl = (e = /* @__PURE__ */ new Date()) => {
+	].includes(t) ? new Bl("Die Vorlage ist derzeit nicht lokal verfügbar. Die Datei wird möglicherweise noch von OneDrive synchronisiert.", "NOT_LOCAL") : new Bl("Die Vorlage konnte nicht gelesen werden.", "CORRUPT");
+}, Hl = (e) => e.replaceAll("Ä", "Ae").replaceAll("Ö", "Oe").replaceAll("Ü", "Ue").replaceAll("ä", "ae").replaceAll("ö", "oe").replaceAll("ü", "ue").replaceAll("ß", "ss").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-").replace(/\s+/g, "_").replace(/[. ]+$/g, "").slice(0, 100) || "Vorlage", Ul = (e = /* @__PURE__ */ new Date()) => {
 	let t = (e) => String(e).padStart(2, "0");
 	return [
 		e.getFullYear(),
@@ -7405,8 +7414,8 @@ ${Cc(t)}
 		t(e.getMinutes()),
 		t(e.getSeconds())
 	].join("");
-}, Ul = async (t, n, i) => {
-	let a = Vl(n), o = e.join(t, `${a}${i}`);
+}, Wl = async (t, n, i) => {
+	let a = Hl(n), o = e.join(t, `${a}${i}`);
 	try {
 		await r(o);
 	} catch {
@@ -7420,8 +7429,8 @@ ${Cc(t)}
 			return o;
 		}
 	}
-	return e.join(t, `${a}_${Hl()}${i}`);
-}, Wl = /* @__PURE__ */ A(((e) => {
+	return e.join(t, `${a}_${Ul()}${i}`);
+}, Gl = /* @__PURE__ */ A(((e) => {
 	function t(e, t, n) {
 		if (n === void 0 && (n = Array.prototype), e && typeof n.find == "function") return n.find.call(e, t);
 		for (var i = 0; i < e.length; i++) if (r(e, i)) {
@@ -7527,8 +7536,8 @@ ${Cc(t)}
 		XMLNS: "http://www.w3.org/2000/xmlns/"
 	});
 	e.assign = i, e.find = t, e.freeze = n, e.HTML_BOOLEAN_ATTRIBUTES = a, e.HTML_RAW_TEXT_ELEMENTS = l, e.HTML_VOID_ELEMENTS = s, e.hasDefaultHTMLNamespace = p, e.hasOwn = r, e.isHTMLBooleanAttribute = o, e.isHTMLRawTextElement = u, e.isHTMLEscapableRawTextElement = d, e.isHTMLMimeType = f, e.isHTMLVoidElement = c, e.isValidMimeType = g, e.MIME_TYPE = m, e.NAMESPACE = _;
-})), Gl = /* @__PURE__ */ A(((e) => {
-	var t = Wl();
+})), Kl = /* @__PURE__ */ A(((e) => {
+	var t = Gl();
 	function n(e, t) {
 		e.prototype = Object.create(Error.prototype, {
 			constructor: { value: e },
@@ -7628,7 +7637,7 @@ ${Cc(t)}
 		this.message = e, this.locator = t, Error.captureStackTrace && Error.captureStackTrace(this, f);
 	}
 	n(f), e.DOMException = s, e.DOMExceptionName = r, e.ExceptionCode = c, e.ParseError = f;
-})), Kl = /* @__PURE__ */ A(((e) => {
+})), ql = /* @__PURE__ */ A(((e) => {
 	function t(e) {
 		try {
 			typeof e != "function" && (e = RegExp);
@@ -7667,8 +7676,8 @@ ${Cc(t)}
 	n && (m = a("[", r(m), "\\u{10000}-\\u{10FFFF}", "]"));
 	var h = a("[", r(m), r(/[-.0-9\xB7]/), r(/[\u0300-\u036F\u203F-\u2040]/), "]"), g = a(m, h, "*"), _ = a(h, "+"), v = o(a("&", g, ";"), "|", o(/&#[0-9]+;|&#x[0-9a-fA-F]+;/)), y = a("%", g, ";"), b = o(a("\"", o(/[^%&"]/, "|", y, "|", v), "*", "\""), "|", a("'", o(/[^%&']/, "|", y, "|", v), "*", "'")), x = o("\"", o(/[^<&"]/, "|", v), "*", "\"", "|", "'", o(/[^<&']/, "|", v), "*", "'"), S = a(i(m, ":"), i(h, ":"), "*"), C = a(S, o(":", S), "?"), w = a("^", C, "$"), T = a("(", C, ")"), E = o(/"[^"]*"|'[^']*'/), D = a(/^<\?/, "(", g, ")", o(f, "(", c, "*?)"), "?", /\?>/), O = /[\x20\x0D\x0Aa-zA-Z0-9-'()+,./:=?;!*#@$_%]/, k = o("\"", O, "*\"", "|", "'", i(O, "'"), "*'"), A = "<!--", j = "-->", M = a(A, o(i(c, "-"), "|", a("-", i(c, "-"))), "*", j), ee = "#PCDATA", N = o("EMPTY", "|", "ANY", "|", o(a(/\(/, p, ee, o(p, /\|/, p, C), "*", p, /\)\*/), "|", a(/\(/, p, ee, p, /\)/)), "|", a(/\([^>]+\)/, /[?*+]?/)), P = a("<!ELEMENT", f, o(C, "|", y), f, o(N, "|", y), p, ">"), te = a("<!ATTLIST", f, g, o(f, g, f, o(/CDATA|ID|IDREF|IDREFS|ENTITY|ENTITIES|NMTOKEN|NMTOKENS/, "|", o(a("NOTATION", f, /\(/, p, g, o(p, /\|/, p, g), "*", p, /\)/), "|", a(/\(/, p, _, o(p, /\|/, p, _), "*", p, /\)/))), f, o(/#REQUIRED|#IMPLIED/, "|", o(o("#FIXED", f), "?", x))), "*", p, ">"), F = "about:legacy-compat", I = o("\"" + F + "\"", "|", "'" + F + "'"), L = "SYSTEM", R = "PUBLIC", z = o(o(L, f, E), "|", o(R, f, k, f, E)), B = a("^", o(o(L, f, "(?<SystemLiteralOnly>", E, ")"), "|", o(R, f, "(?<PubidLiteral>", k, ")", f, "(?<SystemLiteral>", E, ")"))), V = a("^", k, "$"), ne = a("^", E, "$"), re = o(b, "|", o(z, o(f, "NDATA", f, g), "?")), H = "<!ENTITY", ie = o(a(H, f, g, f, re, p, ">"), "|", a(H, f, "%", f, g, f, o(b, "|", z), p, ">")), U = a("<!NOTATION", f, g, f, o(z, "|", a(R, f, k)), p, ">"), W = a(p, "=", p), ae = /1[.]\d+/, oe = a(f, "version", W, o("'", ae, "'", "|", "\"", ae, "\"")), G = /[A-Za-z][-A-Za-z0-9._]*/, se = a(/^<\?xml/, oe, o(f, "encoding", W, o("\"", G, "\"", "|", "'", G, "'")), "?", o(f, "standalone", W, o("'", o("yes", "|", "no"), "'", "|", "\"", o("yes", "|", "no"), "\"")), "?", p, /\?>/), ce = "<!DOCTYPE", le = "<![CDATA[", ue = "]]>", de = a(/<!\[CDATA\[/, a(c, "*?", /\]\]>/));
 	e.chars = r, e.chars_without = i, e.detectUnicodeSupport = t, e.reg = a, e.regg = o, e.ABOUT_LEGACY_COMPAT = F, e.ABOUT_LEGACY_COMPAT_SystemLiteral = I, e.AttlistDecl = te, e.CDATA_START = le, e.CDATA_END = ue, e.CDSect = de, e.Char = c, e.Comment = M, e.COMMENT_START = A, e.COMMENT_END = j, e.DOCTYPE_DECL_START = ce, e.elementdecl = P, e.EntityDecl = ie, e.EntityValue = b, e.ExternalID = z, e.ExternalID_match = B, e.Name = g, e.NotationDecl = U, e.Reference = v, e.PEReference = y, e.PI = D, e.PUBLIC = R, e.PubidLiteral = k, e.PubidLiteral_match = V, e.QName = C, e.QName_exact = w, e.QName_group = T, e.S = f, e.SChar_s = d, e.S_OPT = p, e.SYSTEM = L, e.SystemLiteral = E, e.SystemLiteral_match = ne, e.InvalidChar = l, e.UNICODE_REPLACEMENT_CHARACTER = s, e.UNICODE_SUPPORT = n, e.XMLDecl = se;
-})), ql = /* @__PURE__ */ A(((e) => {
-	var t = Wl(), n = t.find, r = t.hasDefaultHTMLNamespace, i = t.hasOwn, a = t.isHTMLMimeType, o = t.isHTMLRawTextElement, s = t.isHTMLVoidElement, c = t.MIME_TYPE, l = t.NAMESPACE, u = Symbol(), d = Gl(), f = d.DOMException, p = d.DOMExceptionName, m = Kl();
+})), Jl = /* @__PURE__ */ A(((e) => {
+	var t = Gl(), n = t.find, r = t.hasDefaultHTMLNamespace, i = t.hasOwn, a = t.isHTMLMimeType, o = t.isHTMLRawTextElement, s = t.isHTMLVoidElement, c = t.MIME_TYPE, l = t.NAMESPACE, u = Symbol(), d = Kl(), f = d.DOMException, p = d.DOMExceptionName, m = ql();
 	function h(e) {
 		if (e !== u) throw TypeError("Illegal constructor");
 	}
@@ -8702,8 +8711,8 @@ ${Cc(t)}
 		});
 	} catch {}
 	e._updateLiveList = V, e.Attr = Ce, e.CDATASection = De, e.CharacterData = we, e.Comment = Ee, e.Document = se, e.DocumentFragment = je, e.DocumentType = Oe, e.DOMImplementation = U, e.Element = Se, e.Entity = ke, e.EntityReference = Ae, e.LiveNodeList = B, e.NamedNodeMap = ne, e.Node = W, e.NodeList = z, e.Notation = q, e.Text = Te, e.ProcessingInstruction = Me, e.walkDOM = G, e.XMLSerializer = Ne;
-})), Jl = /* @__PURE__ */ A(((e) => {
-	var t = Wl().freeze;
+})), Yl = /* @__PURE__ */ A(((e) => {
+	var t = Gl().freeze;
 	e.XML_ENTITIES = t({
 		amp: "&",
 		apos: "'",
@@ -10837,8 +10846,8 @@ ${Cc(t)}
 		zwj: "‍",
 		zwnj: "‌"
 	}), e.entityMap = e.HTML_ENTITIES;
-})), Yl = /* @__PURE__ */ A(((e) => {
-	var t = Wl(), n = Kl(), r = Gl(), i = t.isHTMLEscapableRawTextElement, a = t.isHTMLMimeType, o = t.isHTMLRawTextElement, s = t.hasOwn, c = t.NAMESPACE, l = r.ParseError, u = r.DOMException, d = 0, f = 1, p = 2, m = 3, h = 4, g = 5, _ = 6, v = 7;
+})), Xl = /* @__PURE__ */ A(((e) => {
+	var t = Gl(), n = ql(), r = Kl(), i = t.isHTMLEscapableRawTextElement, a = t.isHTMLMimeType, o = t.isHTMLRawTextElement, s = t.hasOwn, c = t.NAMESPACE, l = r.ParseError, u = r.DOMException, d = 0, f = 1, p = 2, m = 3, h = 4, g = 5, _ = 6, v = 7;
 	function y() {}
 	y.prototype = { parse: function(e, t, n) {
 		var r = this.domBuilder;
@@ -11200,8 +11209,8 @@ ${Cc(t)}
 			return this[e].value;
 		}
 	}, e.XMLReader = y, e.parseUtils = D, e.parseDoctypeCommentOrCData = k;
-})), Xl = /* @__PURE__ */ A(((e) => {
-	var t = Wl(), n = ql(), r = Gl(), i = Jl(), a = Yl(), o = n.DOMImplementation, s = t.hasDefaultHTMLNamespace, c = t.isHTMLMimeType, l = t.isValidMimeType, u = t.MIME_TYPE, d = t.NAMESPACE, f = r.ParseError, p = a.XMLReader;
+})), Zl = /* @__PURE__ */ A(((e) => {
+	var t = Gl(), n = Jl(), r = Kl(), i = Yl(), a = Xl(), o = n.DOMImplementation, s = t.hasDefaultHTMLNamespace, c = t.isHTMLMimeType, l = t.isValidMimeType, u = t.MIME_TYPE, d = t.NAMESPACE, f = r.ParseError, p = a.XMLReader;
 	function m(e) {
 		return e.replace(/\r[\n\u0085]/g, "\n").replace(/[\r\u0085\u2028\u2029]/g, "\n");
 	}
@@ -11323,16 +11332,16 @@ ${Cc(t)}
 		throw "onWarningStopParsing";
 	}
 	e.__DOMHandler = g, e.DOMParser = h, e.normalizeLineEndings = m, e.onErrorStopParsing = x, e.onWarningStopParsing = S;
-})), Zl = /* @__PURE__ */ A(((e) => {
-	var t = Wl();
+})), Ql = /* @__PURE__ */ A(((e) => {
+	var t = Gl();
 	e.assign = t.assign, e.hasDefaultHTMLNamespace = t.hasDefaultHTMLNamespace, e.isHTMLMimeType = t.isHTMLMimeType, e.isValidMimeType = t.isValidMimeType, e.MIME_TYPE = t.MIME_TYPE, e.NAMESPACE = t.NAMESPACE;
-	var n = Gl();
+	var n = Kl();
 	e.DOMException = n.DOMException, e.DOMExceptionName = n.DOMExceptionName, e.ExceptionCode = n.ExceptionCode, e.ParseError = n.ParseError;
-	var r = ql();
+	var r = Jl();
 	e.Attr = r.Attr, e.CDATASection = r.CDATASection, e.CharacterData = r.CharacterData, e.Comment = r.Comment, e.Document = r.Document, e.DocumentFragment = r.DocumentFragment, e.DocumentType = r.DocumentType, e.DOMImplementation = r.DOMImplementation, e.Element = r.Element, e.Entity = r.Entity, e.EntityReference = r.EntityReference, e.LiveNodeList = r.LiveNodeList, e.NamedNodeMap = r.NamedNodeMap, e.Node = r.Node, e.NodeList = r.NodeList, e.Notation = r.Notation, e.ProcessingInstruction = r.ProcessingInstruction, e.Text = r.Text, e.XMLSerializer = r.XMLSerializer;
-	var i = Xl();
+	var i = Zl();
 	e.DOMParser = i.DOMParser, e.normalizeLineEndings = i.normalizeLineEndings, e.onErrorStopParsing = i.onErrorStopParsing, e.onWarningStopParsing = i.onWarningStopParsing;
-})), Ql = /* @__PURE__ */ A(((e, t) => {
+})), $l = /* @__PURE__ */ A(((e, t) => {
 	function n(e) {
 		return e[e.length - 1];
 	}
@@ -11343,7 +11352,7 @@ ${Cc(t)}
 		last: n,
 		first: r
 	};
-})), $l = /* @__PURE__ */ A(((e, t) => {
+})), eu = /* @__PURE__ */ A(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -11395,7 +11404,7 @@ ${Cc(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = Ql(), l = c.last, u = c.first;
+	var c = $l(), l = c.last, u = c.first;
 	function d(e) {
 		this.name = "GenericError", this.message = e, this.stack = Error(e).stack;
 	}
@@ -11711,7 +11720,7 @@ ${Cc(t)}
 		throwRenderInvalidTemplate: z,
 		throwRenderTwice: B
 	};
-})), eu = /* @__PURE__ */ A(((e, t) => {
+})), tu = /* @__PURE__ */ A(((e, t) => {
 	function n(e, t) {
 		return s(e) || o(e, t) || i(e, t) || r();
 	}
@@ -11754,7 +11763,7 @@ ${Cc(t)}
 	function s(e) {
 		if (Array.isArray(e)) return e;
 	}
-	var c = Zl(), l = c.DOMParser, u = c.XMLSerializer, d = $l().throwXmlTagNotFound, f = Ql(), p = f.last, m = f.first, h = Object.prototype.hasOwnProperty, g = Function.prototype.bind, _ = Function.prototype.call, v = _.bind(_, g)(_, _, h);
+	var c = Ql(), l = c.DOMParser, u = c.XMLSerializer, d = eu().throwXmlTagNotFound, f = $l(), p = f.last, m = f.first, h = Object.prototype.hasOwnProperty, g = Function.prototype.bind, _ = Function.prototype.call, v = _.bind(_, g)(_, _, h);
 	function y(e) {
 		return /^[ \n\r\t]+$/.test(e);
 	}
@@ -12052,7 +12061,7 @@ ${Cc(t)}
 		isWhiteSpace: y,
 		stableSort: me
 	};
-})), tu = /* @__PURE__ */ A(((e, t) => {
+})), nu = /* @__PURE__ */ A(((e, t) => {
 	function n(e, t) {
 		return s(e) || o(e, t) || i(e, t) || r();
 	}
@@ -12362,8 +12371,8 @@ ${Cc(t)}
 			}
 		]);
 	}();
-})), nu = /* @__PURE__ */ A(((e, t) => {
-	var n = eu().str2xml, r = "_rels/.rels";
+})), ru = /* @__PURE__ */ A(((e, t) => {
+	var n = tu().str2xml, r = "_rels/.rels";
 	function i(e) {
 		for (var t = e.files[r], i = t ? n(t.asText()) : null, a = i ? i.getElementsByTagName("Relationship") : [], o = {}, s = 0; s < a.length; s++) {
 			var c = a[s];
@@ -12372,8 +12381,8 @@ ${Cc(t)}
 		return o;
 	}
 	t.exports = { getRelsTypes: i };
-})), ru = /* @__PURE__ */ A(((e, t) => {
-	var n = eu().str2xml, r = "[Content_Types].xml";
+})), iu = /* @__PURE__ */ A(((e, t) => {
+	var n = tu().str2xml, r = "[Content_Types].xml";
 	function i(e, t, n) {
 		for (var i = {}, a = 0; a < e.length; a++) {
 			var o = e[a], s = o.getAttribute("ContentType"), c = o.getAttribute("PartName").substr(1);
@@ -12400,8 +12409,8 @@ ${Cc(t)}
 		collectContentTypes: i,
 		getContentTypes: a
 	};
-})), iu = /* @__PURE__ */ A(((e, t) => {
-	var n = $l().XTInternalError;
+})), au = /* @__PURE__ */ A(((e, t) => {
+	var n = eu().XTInternalError;
 	function r() {}
 	function i(e) {
 		return e;
@@ -12439,7 +12448,7 @@ ${Cc(t)}
 		for (var o in t) e[o] || (e[o] = t[o]);
 		return e;
 	};
-})), au = /* @__PURE__ */ A(((e, t) => {
+})), ou = /* @__PURE__ */ A(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -12545,7 +12554,7 @@ ${Cc(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var v = eu(), y = v.getRightOrNull, b = v.getRight, x = v.getLeft, S = v.getLeftOrNull, C = v.chunkBy, w = v.isTagStart, T = v.isTagEnd, E = v.isContent, D = v.last, O = v.first, k = $l(), A = k.XTTemplateError, j = k.throwExpandNotFound, M = k.getLoopPositionProducesInvalidXMLError;
+	var v = tu(), y = v.getRightOrNull, b = v.getRight, x = v.getLeft, S = v.getLeftOrNull, C = v.chunkBy, w = v.isTagStart, T = v.isTagEnd, E = v.isContent, D = v.last, O = v.first, k = eu(), A = k.XTTemplateError, j = k.throwExpandNotFound, M = k.getLoopPositionProducesInvalidXMLError;
 	function ee(e, t) {
 		return e.length !== 0 && D(e).substr(1).indexOf(t) === 0;
 	}
@@ -12697,7 +12706,7 @@ ${Cc(t)}
 		expandToOne: B,
 		getExpandToDefault: te
 	};
-})), ou = /* @__PURE__ */ A(((e, t) => {
+})), su = /* @__PURE__ */ A(((e, t) => {
 	var n = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml", r = "application/vnd.ms-word.document.macroEnabled.main+xml", i = "application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml", a = "application/vnd.ms-word.template.macroEnabledTemplate.main+xml", o = "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml", s = "application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml", c = "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml", l = "application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml", u = "application/vnd.openxmlformats-officedocument.presentationml.slide+xml", d = "application/vnd.openxmlformats-officedocument.presentationml.slideMaster+xml", f = "application/vnd.openxmlformats-officedocument.presentationml.slideLayout+xml", p = "application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml", m = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml", h = "application/vnd.ms-excel.sheet.macroEnabled.main+xml", g = "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml", _ = [
 		n,
 		r,
@@ -12723,7 +12732,7 @@ ${Cc(t)}
 			g
 		]
 	};
-})), su = /* @__PURE__ */ A(((e, t) => {
+})), cu = /* @__PURE__ */ A(((e, t) => {
 	t.exports = {
 		settingsContentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml",
 		coreContentType: "application/vnd.openxmlformats-package.core-properties+xml",
@@ -12732,7 +12741,7 @@ ${Cc(t)}
 		diagramDataContentType: "application/vnd.openxmlformats-officedocument.drawingml.diagramData+xml",
 		diagramDrawingContentType: "application/vnd.ms-office.drawingml.diagramDrawing+xml"
 	};
-})), cu = /* @__PURE__ */ A(((e, t) => {
+})), lu = /* @__PURE__ */ A(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -12767,7 +12776,7 @@ ${Cc(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = eu().pushArray, l = iu(), u = ou(), d = su(), f = [
+	var c = tu().pushArray, l = au(), u = su(), d = cu(), f = [
 		d.settingsContentType,
 		d.coreContentType,
 		d.appContentType,
@@ -12806,7 +12815,7 @@ ${Cc(t)}
 	t.exports = function() {
 		return l(new p());
 	};
-})), lu = /* @__PURE__ */ A(((e, t) => {
+})), uu = /* @__PURE__ */ A(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -12841,7 +12850,7 @@ ${Cc(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = $l().getScopeParserExecutionError, l = Ql().last, u = eu().concatArrays;
+	var c = eu().getScopeParserExecutionError, l = $l().last, u = tu().concatArrays;
 	function d(e, t) {
 		for (var n = e.length >>> 0, r, i = 0; i < n; i++) if (r = e[i], t.call(this, r, i, e)) return r;
 	}
@@ -13008,7 +13017,7 @@ ${Cc(t)}
 	t.exports = function(e) {
 		return e.scopePath = [], e.scopePathItem = [], e.scopePathLength = [], e.scopeTypes = [], e.scopeLindex = [], e.scopeList = [e.tags], new m(e);
 	};
-})), uu = /* @__PURE__ */ A(((e, t) => {
+})), du = /* @__PURE__ */ A(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -13102,7 +13111,7 @@ ${Cc(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var m = $l(), h = m.getUnclosedTagException, g = m.getUnopenedTagException, _ = m.getDuplicateOpenTagException, v = m.getDuplicateCloseTagException, y = m.throwMalformedXml, b = m.throwXmlInvalid, x = m.XTTemplateError, S = eu(), C = S.isTextStart, w = S.isTextEnd, T = S.wordToUtf8, E = S.pushArray, D = 0, O = 1, k = 2, A = 3;
+	var m = eu(), h = m.getUnclosedTagException, g = m.getUnopenedTagException, _ = m.getDuplicateOpenTagException, v = m.getDuplicateCloseTagException, y = m.throwMalformedXml, b = m.throwXmlInvalid, x = m.XTTemplateError, S = tu(), C = S.isTextStart, w = S.isTextEnd, T = S.wordToUtf8, E = S.pushArray, D = 0, O = 1, k = 2, A = 3;
 	function j(e, t) {
 		return e[0] <= t.offset && t.offset < e[1];
 	}
@@ -13327,7 +13336,7 @@ ${Cc(t)}
 			}), i;
 		}
 	};
-})), du = /* @__PURE__ */ A(((e, t) => {
+})), fu = /* @__PURE__ */ A(((e, t) => {
 	function n(e) {
 		return o(e) || a(e) || i(e) || r();
 	}
@@ -13417,8 +13426,8 @@ ${Cc(t)}
 		getTags: l,
 		isPlaceholder: c
 	};
-})), fu = /* @__PURE__ */ A(((e, t) => {
-	var n = eu().pushArray;
+})), pu = /* @__PURE__ */ A(((e, t) => {
+	var n = tu().pushArray;
 	function r(e, t) {
 		return t instanceof Error ? n(Object.getOwnPropertyNames(t), ["stack"]).reduce(function(e, n) {
 			return e[n] = t[n], n === "stack" && (e[n] = t[n].toString()), e;
@@ -13433,13 +13442,13 @@ ${Cc(t)}
 		}
 	}
 	t.exports = i;
-})), pu = /* @__PURE__ */ A(((e, t) => {
-	var n = eu().pregMatchAll;
+})), mu = /* @__PURE__ */ A(((e, t) => {
+	var n = tu().pregMatchAll;
 	t.exports = function(e, t) {
 		var r = { content: e }, i = t.join("|");
 		return r.matches = n(RegExp(`(?:(<(?:${i})[^>]*>)([^<>]*)</(?:${i})>)|(<(?:${i})[^>]*/>)`, "g"), r.content), r;
 	};
-})), mu = /* @__PURE__ */ A(((e, t) => {
+})), hu = /* @__PURE__ */ A(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -13475,7 +13484,7 @@ ${Cc(t)}
 		getValue: o,
 		getValues: s
 	};
-})), hu = /* @__PURE__ */ A(((e, t) => {
+})), gu = /* @__PURE__ */ A(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -13569,7 +13578,7 @@ ${Cc(t)}
 	function p(e) {
 		if (Array.isArray(e)) return e;
 	}
-	var m = eu(), h = m.wordToUtf8, g = m.pushArray, _ = m.isParagraphStart, v = m.isBreakTag, y = mu(), b = y.match, x = y.getValue, S = y.getValues;
+	var m = tu(), h = m.wordToUtf8, g = m.pushArray, _ = m.isParagraphStart, v = m.isBreakTag, y = hu(), b = y.match, x = y.getValue, S = y.getValues;
 	function C(e, t) {
 		for (var n = [], r = 0; r < e.length; r++) {
 			var i = e[r];
@@ -13673,15 +13682,15 @@ ${Cc(t)}
 			};
 		}
 	};
-})), gu = /* @__PURE__ */ A(((e, t) => {
+})), _u = /* @__PURE__ */ A(((e, t) => {
 	function n(e, t) {
 		if (e.lIndex == null) return null;
 		var n = t.scopeManager.scopePathItem;
 		return e.parentPart && (n = n.slice(0, n.length - 1)), t.filePath + "@" + e.lIndex.toString() + "-" + n.join("-");
 	}
 	t.exports = n;
-})), _u = /* @__PURE__ */ A(((e, t) => {
-	var n = $l(), r = n.throwUnimplementedTagType, i = n.XTScopeParserError, a = eu().pushArray, o = gu();
+})), vu = /* @__PURE__ */ A(((e, t) => {
+	var n = eu(), r = n.throwUnimplementedTagType, i = n.XTScopeParserError, a = tu().pushArray, o = _u();
 	function s(e, t) {
 		for (var n = 0, r = t.modules; n < r.length; n++) {
 			var i = r[n].render(e, t);
@@ -13727,7 +13736,7 @@ ${Cc(t)}
 		};
 	}
 	t.exports = c;
-})), vu = /* @__PURE__ */ A(((e, t) => {
+})), yu = /* @__PURE__ */ A(((e, t) => {
 	function n(e) {
 		var t, n, r, i, a = 0, o = e.length;
 		for (r = 0; r < o; r++) t = e.charCodeAt(r), (t & 64512) == 55296 && r + 1 < o && (n = e.charCodeAt(r + 1), (n & 64512) == 56320 && (t = 65536 + (t - 55296 << 10) + (n - 56320), r++)), a += t < 128 ? 1 : t < 2048 ? 2 : t < 65536 ? 3 : 4;
@@ -13754,7 +13763,7 @@ ${Cc(t)}
 		return g;
 	}
 	t.exports = r;
-})), yu = /* @__PURE__ */ A(((e, t) => {
+})), bu = /* @__PURE__ */ A(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -13806,7 +13815,7 @@ ${Cc(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = eu().pushArray, l = gu();
+	var c = tu().pushArray, l = _u();
 	function u(e, t) {
 		for (var n = 0, r = t.modules; n < r.length; n++) {
 			var i = r[n].resolve(e, t);
@@ -13870,8 +13879,8 @@ ${Cc(t)}
 		});
 	}
 	t.exports = f;
-})), bu = /* @__PURE__ */ A(((e, t) => {
-	var n = eu(), r = n.startsWith, i = n.endsWith, a = n.isStarting, o = n.isEnding, s = n.isWhiteSpace, c = ou();
+})), xu = /* @__PURE__ */ A(((e, t) => {
+	var n = tu(), r = n.startsWith, i = n.endsWith, a = n.isStarting, o = n.isEnding, s = n.isWhiteSpace, c = su();
 	function l(e) {
 		for (var t = "", n = 0, a = e.length; n < a; n++) {
 			var o = e[n];
@@ -13915,7 +13924,7 @@ ${Cc(t)}
 		return e;
 	}
 	t.exports = u;
-})), xu = /* @__PURE__ */ A(((e, t) => {
+})), Su = /* @__PURE__ */ A(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -13950,7 +13959,7 @@ ${Cc(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = eu(), l = c.pushArray, u = c.wordToUtf8, d = c.convertSpaces, f = pu(), p = uu(), m = hu(), h = _u(), g = vu(), _ = yu(), v = bu(), y = Function.prototype.bind, b = Function.prototype.call, x = b.bind(b, y);
+	var c = tu(), l = c.pushArray, u = c.wordToUtf8, d = c.convertSpaces, f = mu(), p = du(), m = gu(), h = vu(), g = yu(), _ = bu(), v = xu(), y = Function.prototype.bind, b = Function.prototype.call, x = b.bind(b, y);
 	function S(e, t) {
 		for (var n = f(e, t), r = [], i = 0, a = n.matches; i < a.length; i++) {
 			var o = a[i];
@@ -14106,7 +14115,7 @@ ${Cc(t)}
 			}
 		]);
 	}();
-})), Su = /* @__PURE__ */ A(((e, t) => {
+})), Cu = /* @__PURE__ */ A(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -14212,7 +14221,7 @@ ${Cc(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var _ = eu(), v = _.chunkBy, y = _.last, b = _.isParagraphStart, x = _.isModule, S = _.pushArray, C = _.isParagraphEnd, w = _.isContent, T = _.startsWith, E = _.isTagEnd, D = _.isTagStart, O = _.getSingleAttribute, k = _.setSingleAttribute, A = ou(), j = iu(), M = eu().isWhiteSpace, ee = "loop";
+	var _ = tu(), v = _.chunkBy, y = _.last, b = _.isParagraphStart, x = _.isModule, S = _.pushArray, C = _.isParagraphEnd, w = _.isContent, T = _.startsWith, E = _.isTagEnd, D = _.isTagStart, O = _.getSingleAttribute, k = _.setSingleAttribute, A = su(), j = au(), M = tu().isWhiteSpace, ee = "loop";
 	function N(e) {
 		for (var t = 0; t < e.length; t++) {
 			var n = e[t];
@@ -14515,7 +14524,7 @@ ${Cc(t)}
 	t.exports = function() {
 		return j(new G());
 	};
-})), Cu = /* @__PURE__ */ A(((e, t) => {
+})), wu = /* @__PURE__ */ A(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -14550,7 +14559,7 @@ ${Cc(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = iu(), l = eu(), u = l.isTextStart, d = l.isTextEnd, f = l.endsWith, p = l.startsWith, m = l.pushArray, h = "<w:t xml:space=\"preserve\">", g = h.length, _ = "</w:t>", v = _.length;
+	var c = au(), l = tu(), u = l.isTextStart, d = l.isTextEnd, f = l.endsWith, p = l.startsWith, m = l.pushArray, h = "<w:t xml:space=\"preserve\">", g = h.length, _ = "</w:t>", v = _.length;
 	function y(e) {
 		return u(e) && e.tag === "w:t";
 	}
@@ -14591,7 +14600,7 @@ ${Cc(t)}
 	t.exports = function() {
 		return c(new S());
 	};
-})), wu = /* @__PURE__ */ A(((e, t) => {
+})), Tu = /* @__PURE__ */ A(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -14626,7 +14635,7 @@ ${Cc(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = au(), l = eu(), u = l.isContent, d = l.getPartWithDelimiters, f = $l(), p = f.throwRawTagShouldBeOnlyTextInParagraph, m = f.getInvalidRawXMLValueException, h = iu(), g = "rawxml";
+	var c = ou(), l = tu(), u = l.isContent, d = l.getPartWithDelimiters, f = eu(), p = f.throwRawTagShouldBeOnlyTextInParagraph, m = f.getInvalidRawXMLValueException, h = au(), g = "rawxml";
 	function _(e) {
 		for (var t = e.part, n = e.left, r = e.right, i = e.postparsed, a = e.index, o = i.slice(n + 1, r), s = 0, c = o.length; s < c; s++) if (s !== a - n - 1) {
 			var l = o[s];
@@ -14696,7 +14705,7 @@ ${Cc(t)}
 	t.exports = function() {
 		return h(new v());
 	};
-})), Tu = /* @__PURE__ */ A(((e, t) => {
+})), Eu = /* @__PURE__ */ A(((e, t) => {
 	function n(e, t) {
 		for (var n = -1, r = 0, i = e.length; r < i; r++) t[r] >= e[r].length || (n === -1 || e[r][t[r]].offset < e[n][t[n]].offset) && (n = r);
 		return n;
@@ -14717,7 +14726,7 @@ ${Cc(t)}
 		}
 		return o;
 	};
-})), Eu = /* @__PURE__ */ A(((e, t) => {
+})), Du = /* @__PURE__ */ A(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -14752,7 +14761,7 @@ ${Cc(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = Tu(), l = eu(), u = l.getLeft, d = l.getRight, f = l.pushArray, p = iu(), m = au().getExpandToDefault, h = $l(), g = h.getUnmatchedLoopException, _ = h.getClosingTagNotMatchOpeningTag, v = h.getUnbalancedLoopException;
+	var c = Eu(), l = tu(), u = l.getLeft, d = l.getRight, f = l.pushArray, p = au(), m = ou().getExpandToDefault, h = eu(), g = h.getUnmatchedLoopException, _ = h.getClosingTagNotMatchOpeningTag, v = h.getUnbalancedLoopException;
 	function y(e) {
 		switch (e.location) {
 			case "start": return 1;
@@ -14890,7 +14899,7 @@ ${Cc(t)}
 	t.exports = function() {
 		return p(new C());
 	};
-})), Du = /* @__PURE__ */ A(((e, t) => {
+})), Ou = /* @__PURE__ */ A(((e, t) => {
 	function n(e) {
 		"@babel/helpers - typeof";
 		return n = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -14925,7 +14934,7 @@ ${Cc(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var c = iu(), l = $l(), u = l.getScopeCompilationError, d = l.getCorruptCharactersException, f = eu(), p = f.utf8ToWord, m = f.hasCorruptCharacters, h = f.removeCorruptCharacters, g = su(), _ = [
+	var c = au(), l = eu(), u = l.getScopeCompilationError, d = l.getCorruptCharactersException, f = tu(), p = f.utf8ToWord, m = f.hasCorruptCharacters, h = f.removeCorruptCharacters, g = cu(), _ = [
 		g.settingsContentType,
 		g.coreContentType,
 		g.appContentType,
@@ -15029,8 +15038,8 @@ ${Cc(t)}
 	t.exports = function() {
 		return c(new y());
 	};
-})), Ou = /* @__PURE__ */ A(((e, t) => {
-	var n = Su(), r = Cu(), i = wu(), a = Eu(), o = Du();
+})), ku = /* @__PURE__ */ A(((e, t) => {
+	var n = Cu(), r = wu(), i = Tu(), a = Du(), o = Ou();
 	function s() {
 		return {
 			getTemplatedFiles: function() {
@@ -15197,7 +15206,7 @@ ${Cc(t)}
 		docx: s,
 		pptx: c
 	};
-})), ku = /* @__PURE__ */ A(((e, t) => {
+})), Au = /* @__PURE__ */ A(((e, t) => {
 	var n = ["modules"];
 	function r(e, t) {
 		var n = Object.keys(e);
@@ -15322,7 +15331,7 @@ ${Cc(t)}
 		}
 		return (t === "string" ? String : Number)(e);
 	}
-	var b = eu(), x = tu(), S = x.object({
+	var b = tu(), x = nu(), S = x.object({
 		allowUnopenedTag: x.boolean().optional(),
 		allowUnclosedTag: x.boolean().optional(),
 		allowUnbalancedLoops: x.boolean().optional(),
@@ -15341,7 +15350,7 @@ ${Cc(t)}
 		syntax: S.optional(),
 		stripInvalidXMLChars: x.boolean().optional(),
 		warnFn: x.function().optional()
-	}).strict(), w = nu().getRelsTypes, T = ru(), E = T.collectContentTypes, D = T.getContentTypes, O = iu(), k = au(), A = cu(), j = lu(), M = uu(), ee = du().getTags, N = fu(), P = $l(), te = P.throwMultiError, F = P.throwResolveBeforeCompile, I = P.throwRenderInvalidTemplate, L = P.throwRenderTwice, R = P.XTInternalError, z = P.XTTemplateError, B = P.throwFileTypeNotIdentified, V = P.throwFileTypeNotHandled, ne = P.throwApiVersionError;
+	}).strict(), w = ru().getRelsTypes, T = iu(), E = T.collectContentTypes, D = T.getContentTypes, O = au(), k = ou(), A = lu(), j = uu(), M = du(), ee = fu().getTags, N = pu(), P = eu(), te = P.throwMultiError, F = P.throwResolveBeforeCompile, I = P.throwRenderInvalidTemplate, L = P.throwRenderTwice, R = P.XTInternalError, z = P.XTTemplateError, B = P.throwFileTypeNotIdentified, V = P.throwFileTypeNotHandled, ne = P.throwApiVersionError;
 	b.getRelsTypes = w, b.traits = k, b.moduleWrapper = O, b.collectContentTypes = E, b.getContentTypes = D;
 	var re = b.getDefaults, H = b.str2xml, ie = b.xml2str, U = b.concatArrays, W = b.uniq, ae = b.getDuplicates, oe = b.stableSort, G = b.pushArray, se = b.utf8ToWord, ce = b.invertMap, le = "[Content_Types].xml", ue = "_rels/.rels", de = [
 		3,
@@ -15818,8 +15827,8 @@ ${Cc(t)}
 			}
 		]);
 	}();
-	be.DocUtils = b, be.Errors = $l(), be.XmlTemplater = xu(), be.FileTypeConfig = Ou(), be.XmlMatcher = pu(), t.exports = be, t.exports.default = be;
-})), Au = /* @__PURE__ */ A(((e) => {
+	be.DocUtils = b, be.Errors = eu(), be.XmlTemplater = Su(), be.FileTypeConfig = ku(), be.XmlMatcher = mu(), t.exports = be, t.exports.default = be;
+})), ju = /* @__PURE__ */ A(((e) => {
 	var t = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 	e.encode = function(e) {
 		for (var n = "", r, i, a, o, s, c, l, u = 0; u < e.length;) r = e.charCodeAt(u++), i = e.charCodeAt(u++), a = e.charCodeAt(u++), o = r >> 2, s = (r & 3) << 4 | i >> 4, c = (i & 15) << 2 | a >> 6, l = a & 63, isNaN(i) ? c = l = 64 : isNaN(a) && (l = 64), n = n + t.charAt(o) + t.charAt(s) + t.charAt(c) + t.charAt(l);
@@ -15829,7 +15838,7 @@ ${Cc(t)}
 		for (e = e.replace(/[^A-Za-z0-9\+\/\=]/g, ""); u < e.length;) o = t.indexOf(e.charAt(u++)), s = t.indexOf(e.charAt(u++)), c = t.indexOf(e.charAt(u++)), l = t.indexOf(e.charAt(u++)), r = o << 2 | s >> 4, i = (s & 15) << 4 | c >> 2, a = (c & 3) << 6 | l, n += String.fromCharCode(r), c !== 64 && (n += String.fromCharCode(i)), l !== 64 && (n += String.fromCharCode(a));
 		return n;
 	};
-})), ju = /* @__PURE__ */ A(((e) => {
+})), Mu = /* @__PURE__ */ A(((e) => {
 	if (e.base64 = !0, e.array = !0, e.string = !0, e.arraybuffer = typeof ArrayBuffer < "u" && typeof Uint8Array < "u", e.nodebuffer = typeof Buffer < "u", e.uint8array = typeof Uint8Array < "u", typeof ArrayBuffer > "u") e.blob = !1;
 	else {
 		var t = /* @__PURE__ */ new ArrayBuffer(0);
@@ -15844,7 +15853,7 @@ ${Cc(t)}
 			}
 		}
 	}
-})), Mu = /* @__PURE__ */ A(((e, t) => {
+})), Nu = /* @__PURE__ */ A(((e, t) => {
 	(function(n, r) {
 		typeof e == "object" && t !== void 0 ? r(e) : typeof define == "function" && define.amd ? define(["exports"], r) : r((n = typeof globalThis < "u" ? globalThis : n || self).pako = {});
 	})(e, (function(e) {
@@ -17299,14 +17308,14 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		};
 		e.Deflate = mn, e.Inflate = vn, e.constants = Sn, e.default = Cn, e.deflate = hn, e.deflateRaw = gn, e.gzip = _n, e.inflate = yn, e.inflateRaw = bn, e.ungzip = xn, Object.defineProperty(e, "__esModule", { value: !0 });
 	}));
-})), Nu = /* @__PURE__ */ A(((e) => {
-	var t = typeof Uint8Array < "u" && typeof Uint16Array < "u" && typeof Uint32Array < "u", n = Mu();
+})), Pu = /* @__PURE__ */ A(((e) => {
+	var t = typeof Uint8Array < "u" && typeof Uint16Array < "u" && typeof Uint32Array < "u", n = Nu();
 	e.uncompressInputType = t ? "uint8array" : "array", e.compressInputType = t ? "uint8array" : "array", e.magic = "\b\0", e.compress = function(e, t) {
 		return n.deflateRaw(e, { level: t.level || -1 });
 	}, e.uncompress = function(e) {
 		return n.inflateRaw(e);
 	};
-})), Pu = /* @__PURE__ */ A(((e) => {
+})), Fu = /* @__PURE__ */ A(((e) => {
 	e.STORE = {
 		magic: "\0\0",
 		compress: function(e) {
@@ -17317,14 +17326,14 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		},
 		compressInputType: null,
 		uncompressInputType: null
-	}, e.DEFLATE = Nu();
-})), Fu = /* @__PURE__ */ A(((e, t) => {
+	}, e.DEFLATE = Pu();
+})), Iu = /* @__PURE__ */ A(((e, t) => {
 	t.exports = function(e, t) {
 		return typeof e == "number" ? Buffer.alloc(e) : Buffer.from(e, t);
 	}, t.exports.test = function(e) {
 		return Buffer.isBuffer(e);
 	};
-})), Iu = /* @__PURE__ */ A(((e) => {
+})), Lu = /* @__PURE__ */ A(((e) => {
 	function t(e) {
 		"@babel/helpers - typeof";
 		return t = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(e) {
@@ -17333,7 +17342,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			return e && typeof Symbol == "function" && e.constructor === Symbol && e !== Symbol.prototype ? "symbol" : typeof e;
 		}, t(e);
 	}
-	var n = ju(), r = Pu(), i = Fu();
+	var n = Mu(), r = Fu(), i = Iu();
 	e.string2binary = function(e) {
 		for (var t = "", n = 0; n < e.length; n++) t += String.fromCharCode(e.charCodeAt(n) & 255);
 		return t;
@@ -17483,8 +17492,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		for (t = 0; t < arguments.length; t++) for (n in arguments[t]) arguments[t].hasOwnProperty(n) && e[n] === void 0 && (e[n] = arguments[t][n]);
 		return e;
 	};
-})), Lu = /* @__PURE__ */ A(((e, t) => {
-	var n = Iu(), r = [
+})), Ru = /* @__PURE__ */ A(((e, t) => {
+	var n = Lu(), r = [
 		0,
 		1996959894,
 		3993919788,
@@ -17751,11 +17760,11 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		for (var c = 0, l = e.length; c < l; c++) s = i ? e[c] : e.charCodeAt(c), o = (t ^ s) & 255, a = r[o], t = t >>> 8 ^ a;
 		return t ^ -1;
 	};
-})), Ru = /* @__PURE__ */ A(((e) => {
-	e.LOCAL_FILE_HEADER = "PK", e.CENTRAL_FILE_HEADER = "PK", e.CENTRAL_DIRECTORY_END = "PK", e.ZIP64_CENTRAL_DIRECTORY_LOCATOR = "PK\x07", e.ZIP64_CENTRAL_DIRECTORY_END = "PK", e.DATA_DESCRIPTOR = "PK\x07\b";
 })), zu = /* @__PURE__ */ A(((e) => {
+	e.LOCAL_FILE_HEADER = "PK", e.CENTRAL_FILE_HEADER = "PK", e.CENTRAL_DIRECTORY_END = "PK", e.ZIP64_CENTRAL_DIRECTORY_LOCATOR = "PK\x07", e.ZIP64_CENTRAL_DIRECTORY_END = "PK", e.DATA_DESCRIPTOR = "PK\x07\b";
+})), Bu = /* @__PURE__ */ A(((e) => {
 	e.base64 = !1, e.binary = !1, e.dir = !1, e.createFolders = !1, e.date = null, e.compression = null, e.compressionOptions = null, e.comment = null, e.unixPermissions = null, e.dosPermissions = null;
-})), Bu = /* @__PURE__ */ A(((e, t) => {
+})), Vu = /* @__PURE__ */ A(((e, t) => {
 	function n() {
 		this.compressedSize = 0, this.uncompressedSize = 0, this.crc32 = 0, this.compressionMethod = null, this.compressedContent = null;
 	}
@@ -17767,8 +17776,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			return null;
 		}
 	}, t.exports = n;
-})), Vu = /* @__PURE__ */ A(((e) => {
-	for (var t = Iu(), n = ju(), r = Fu(), i = Array(256), a = 0; a < 256; a++) i[a] = a >= 252 ? 6 : a >= 248 ? 5 : a >= 240 ? 4 : a >= 224 ? 3 : a >= 192 ? 2 : 1;
+})), Hu = /* @__PURE__ */ A(((e) => {
+	for (var t = Lu(), n = Mu(), r = Iu(), i = Array(256), a = 0; a < 256; a++) i[a] = a >= 252 ? 6 : a >= 248 ? 5 : a >= 240 ? 4 : a >= 224 ? 3 : a >= 192 ? 2 : 1;
 	i[254] = i[254] = 1;
 	function o(e) {
 		var t, r, i, a, o, s = 0, c = e.length;
@@ -17812,8 +17821,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		}
 		return r.join("");
 	};
-})), Hu = /* @__PURE__ */ A(((e, t) => {
-	var n = Iu();
+})), Uu = /* @__PURE__ */ A(((e, t) => {
+	var n = Lu();
 	function r() {
 		this.data = [];
 	}
@@ -17825,8 +17834,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			return this.data.join("");
 		}
 	}, t.exports = r;
-})), Uu = /* @__PURE__ */ A(((e, t) => {
-	var n = Iu();
+})), Wu = /* @__PURE__ */ A(((e, t) => {
+	var n = Lu();
 	function r(e) {
 		this.data = new Uint8Array(e), this.index = 0;
 	}
@@ -17838,7 +17847,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			return this.data;
 		}
 	}, t.exports = r;
-})), Wu = /* @__PURE__ */ A(((e, t) => {
+})), Gu = /* @__PURE__ */ A(((e, t) => {
 	function n(e, t) {
 		var n = typeof Symbol < "u" && e[Symbol.iterator] || e["@@iterator"];
 		if (!n) {
@@ -17894,7 +17903,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		for (var n = 0, r = Array(t); n < t; n++) r[n] = e[n];
 		return r;
 	}
-	var a = ju(), o = Iu(), s = Lu(), c = Ru(), l = zu(), u = Au(), d = Pu(), f = Bu(), p = Fu(), m = Vu(), h = Hu(), g = Uu();
+	var a = Mu(), o = Lu(), s = Ru(), c = zu(), l = Bu(), u = ju(), d = Fu(), f = Vu(), p = Iu(), m = Hu(), h = Uu(), g = Wu();
 	function _(e) {
 		if (e._data instanceof f && (e._data = e._data.getContent(), e.options.binary = !0, e.options.base64 = !1, o.getTypeOf(e._data) === "uint8array")) {
 			var t = e._data;
@@ -18086,8 +18095,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		};
 	}
 	t.exports = y;
-})), Gu = /* @__PURE__ */ A(((e, t) => {
-	var n = Iu();
+})), Ku = /* @__PURE__ */ A(((e, t) => {
+	var n = Lu();
 	function r() {
 		this.data = null, this.length = 0, this.index = 0, this.zero = 0;
 	}
@@ -18120,8 +18129,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			return new Date((e >> 25 & 127) + 1980, (e >> 21 & 15) - 1, e >> 16 & 31, e >> 11 & 31, e >> 5 & 63, (e & 31) << 1);
 		}
 	}, t.exports = r;
-})), Ku = /* @__PURE__ */ A(((e, t) => {
-	var n = Gu(), r = Iu();
+})), qu = /* @__PURE__ */ A(((e, t) => {
+	var n = Ku(), r = Lu();
 	function i(e, t) {
 		this.data = e, t || (this.data = r.string2binary(this.data)), this.length = this.data.length, this.index = 0, this.zero = 0;
 	}
@@ -18134,8 +18143,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		var t = this.data.slice(this.zero + this.index, this.zero + this.index + e);
 		return this.index += e, t;
 	}, t.exports = i;
-})), qu = /* @__PURE__ */ A(((e, t) => {
-	var n = Gu();
+})), Ju = /* @__PURE__ */ A(((e, t) => {
+	var n = Ku();
 	function r(e) {
 		if (e) {
 			this.data = e, this.length = this.data.length, this.index = 0, this.zero = 0;
@@ -18152,8 +18161,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		var t = this.data.slice(this.zero + this.index, this.zero + this.index + e);
 		return this.index += e, t;
 	}, t.exports = r;
-})), Ju = /* @__PURE__ */ A(((e, t) => {
-	var n = qu();
+})), Yu = /* @__PURE__ */ A(((e, t) => {
+	var n = Ju();
 	function r(e) {
 		e && (this.data = e, this.length = this.data.length, this.index = 0, this.zero = 0);
 	}
@@ -18162,8 +18171,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		var t = this.data.subarray(this.zero + this.index, this.zero + this.index + e);
 		return this.index += e, t;
 	}, t.exports = r;
-})), Yu = /* @__PURE__ */ A(((e, t) => {
-	var n = Ju();
+})), Xu = /* @__PURE__ */ A(((e, t) => {
+	var n = Yu();
 	function r(e) {
 		this.data = e, this.length = this.data.length, this.index = 0, this.zero = 0;
 	}
@@ -18172,8 +18181,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		var t = this.data.slice(this.zero + this.index, this.zero + this.index + e);
 		return this.index += e, t;
 	}, t.exports = r;
-})), Xu = /* @__PURE__ */ A(((e, t) => {
-	var n = Ku(), r = Iu(), i = Bu(), a = Wu(), o = ju(), s = 0, c = 3;
+})), Zu = /* @__PURE__ */ A(((e, t) => {
+	var n = qu(), r = Lu(), i = Vu(), a = Gu(), o = Mu(), s = 0, c = 3;
 	function l(e, t) {
 		this.options = e, this.loadOptions = t;
 	}
@@ -18265,8 +18274,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			return null;
 		}
 	}, t.exports = l;
-})), Zu = /* @__PURE__ */ A(((e, t) => {
-	var n = Ku(), r = Yu(), i = Ju(), a = qu(), o = Iu(), s = Ru(), c = Xu(), l = ju();
+})), Qu = /* @__PURE__ */ A(((e, t) => {
+	var n = qu(), r = Xu(), i = Yu(), a = Ju(), o = Lu(), s = zu(), c = Zu(), l = Mu();
 	function u(e, t) {
 		this.files = [], this.loadOptions = t, e && this.load(e);
 	}
@@ -18334,8 +18343,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			this.prepareReader(e), this.readEndOfCentral(), this.readCentralDir(), this.readLocalFiles();
 		}
 	}, t.exports = u;
-})), Qu = /* @__PURE__ */ A(((e, t) => {
-	var n = Au(), r = Vu(), i = Iu(), a = Zu();
+})), $u = /* @__PURE__ */ A(((e, t) => {
+	var n = ju(), r = Hu(), i = Lu(), a = Qu();
 	t.exports = function(e, t) {
 		var o, s;
 		t = i.extend(t || {}, {
@@ -18358,8 +18367,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		});
 		return c.zipComment.length && (this.comment = c.zipComment), this;
 	};
-})), $u = /* @__PURE__ */ A(((e) => {
-	var t = Iu();
+})), ed = /* @__PURE__ */ A(((e) => {
+	var t = Lu();
 	e.string2binary = function(e) {
 		return t.string2binary(e);
 	}, e.string2Uint8Array = function(e) {
@@ -18384,8 +18393,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 	}, e.isRegExp = function(e) {
 		return t.isRegExp(e);
 	};
-})), ed = /* @__PURE__ */ A(((e, t) => {
-	var n = Au();
+})), td = /* @__PURE__ */ A(((e, t) => {
+	var n = ju();
 	function r(e, t) {
 		if (!(this instanceof r)) return new r(e, t);
 		this.files = {}, this.comment = null, this.root = "", e && this.load(e, t), this.clone = function() {
@@ -18399,15 +18408,31 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			return e;
 		};
 	}
-	r.prototype = Wu(), r.prototype.load = Qu(), r.support = ju(), r.defaults = zu(), r.utils = $u(), r.base64 = {
+	r.prototype = Gu(), r.prototype.load = $u(), r.support = Mu(), r.defaults = Bu(), r.utils = ed(), r.base64 = {
 		encode: function(e) {
 			return n.encode(e);
 		},
 		decode: function(e) {
 			return n.decode(e);
 		}
-	}, r.compressions = Pu(), t.exports = r, t.exports.default = r;
-})), td = /* @__PURE__ */ M(ku(), 1), nd = /* @__PURE__ */ M(ed(), 1), rd = /^data:image\/png;base64,([a-z0-9+/=\s]+)$/i, id = (e) => e.replaceAll("&amp;", "&").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&quot;", "\"").replaceAll("&apos;", "'"), ad = (e) => e.replace(/<w:p\b[\s\S]*?<\/w:p>/g, (e) => e.includes("w:pStyle w:val=\"CellTerminator\"") || e.includes("<w:drawing") || Array.from(e.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g), (e) => id(e[1]).trim()).join("") ? e : ""), od = (e) => {
+	}, r.compressions = Fu(), t.exports = r, t.exports.default = r;
+})), nd = /* @__PURE__ */ M(Au(), 1), rd = /* @__PURE__ */ M(td(), 1), id = /^data:image\/png;base64,([a-z0-9+/=\s]+)$/i, ad = (e) => e.replaceAll("&amp;", "&").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&quot;", "\"").replaceAll("&apos;", "'"), od = (e) => e.replace(/<w:p\b[\s\S]*?<\/w:p>/g, (e) => e.includes("w:pStyle w:val=\"CellTerminator\"") || e.includes("<w:drawing") || Array.from(e.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g), (e) => ad(e[1]).trim()).join("") ? e : ""), sd = /* @__PURE__ */ new Set([
+	"EINLEITUNG",
+	"HAUPTTEXT",
+	"SCHLUSSTEXT",
+	"ANSCHREIBEN_METNI",
+	"KAPANIS"
+]), cd = (e) => {
+	let t = e.file("word/document.xml");
+	if (!t) return;
+	let n = t.asText().replace(/<w:p\b[\s\S]*?<\/w:p>/g, (e) => {
+		let t = Array.from(e.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g), (e) => ad(e[1])).join("");
+		if (!Array.from(t.matchAll(/\{\{([A-Z0-9_]+)\}\}/g), (e) => e[1]).some((e) => sd.has(e))) return e;
+		let n = "<w:jc w:val=\"both\"/>";
+		return /<w:pPr\b[^>]*>[\s\S]*?<\/w:pPr>/.test(e) ? e.replace(/<w:pPr\b([^>]*)>([\s\S]*?)<\/w:pPr>/, (e, t, r) => `<w:pPr${t}>${/<w:jc\b[^>]*(?:\/>|>[\s\S]*?<\/w:jc>)/.test(r) ? r.replace(/<w:jc\b[^>]*(?:\/>|>[\s\S]*?<\/w:jc>)/, n) : `${r}${n}`}</w:pPr>`) : /<w:pPr\b[^>]*\/>/.test(e) ? e.replace(/<w:pPr\b([^>]*)\/>/, `<w:pPr$1>${n}</w:pPr>`) : e.replace(/^(<w:p\b[^>]*>)/, `$1<w:pPr>${n}</w:pPr>`);
+	});
+	e.file("word/document.xml", n);
+}, ld = (e) => {
 	let t = [], n = [];
 	for (let r of e.matchAll(/<\/?w:tbl\b[^>]*>/g)) if (r[0].startsWith("</")) {
 		let e = n.pop();
@@ -18418,16 +18443,16 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 	} else r[0].endsWith("/>") || n.push(r.index);
 	let r = t.filter(({ start: t, end: n }) => {
 		let r = e.slice(t, n);
-		return !r.includes("<w:drawing") && !Array.from(r.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g), (e) => id(e[1]).trim()).join("");
+		return !r.includes("<w:drawing") && !Array.from(r.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g), (e) => ad(e[1]).trim()).join("");
 	}), i = Array.from(e.matchAll(/<w:p\b[\s\S]*?<\/w:p>/g), (e) => {
-		let n = e[0], r = e.index, i = r + n.length, a = Array.from(n.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g), (e) => id(e[1]).trim()).join(""), o = t.some((e) => e.start < r && e.end > i);
+		let n = e[0], r = e.index, i = r + n.length, a = Array.from(n.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g), (e) => ad(e[1]).trim()).join(""), o = t.some((e) => e.start < r && e.end > i);
 		return !a && !n.includes("<w:drawing") && (!o || n.includes("w:pStyle w:val=\"ListBullet\"")) ? {
 			start: r,
 			end: i
 		} : null;
 	}).filter((e) => !!e);
 	return [...r, ...i].filter((e, t, n) => !n.some((t) => t.start < e.start && t.end > e.end)).sort((e, t) => t.start - e.start).reduce((e, t) => e.slice(0, t.start) + e.slice(t.end), e);
-}, sd = (e) => {
+}, ud = (e) => {
 	if (e.length < 24 || e.toString("ascii", 1, 4) !== "PNG") return {
 		left: 0,
 		top: 0,
@@ -18457,35 +18482,35 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		right: 0,
 		bottom: r
 	};
-}, cd = (e, t) => {
+}, dd = (e, t) => {
 	let n = e?.replace("#", "").toUpperCase();
 	return n && /^[0-9A-F]{6}$/.test(n) ? n : t;
-}, ld = (e, t, n) => {
-	let r = e === Dl.id ? /* @__PURE__ */ new Map([["073C8C", cd(n.DESIGN_PRIMARY, "073C8C")], ["FF6A00", cd(n.DESIGN_ACCENT, "FF6A00")]]) : e === Ol.id ? /* @__PURE__ */ new Map([
-		["0A3485", cd(n.DESIGN_PRIMARY, "0A3485")],
-		["FF6500", cd(n.DESIGN_ACCENT, "FF6500")],
-		["FFD8BF", cd(n.DESIGN_SOFT_ACCENT, "FFD8BF")]
-	]) : e === kl.id ? /* @__PURE__ */ new Map([
-		["36B873", cd(n.DESIGN_PRIMARY, "36B873")],
-		["075E50", cd(n.DESIGN_ACCENT, "075E50")],
-		["D9F2E5", cd(n.DESIGN_SOFT_ACCENT, "D9F2E5")]
+}, fd = (e, t, n) => {
+	let r = e === Ol.id ? /* @__PURE__ */ new Map([["073C8C", dd(n.DESIGN_PRIMARY, "073C8C")], ["FF6A00", dd(n.DESIGN_ACCENT, "FF6A00")]]) : e === kl.id ? /* @__PURE__ */ new Map([
+		["0A3485", dd(n.DESIGN_PRIMARY, "0A3485")],
+		["FF6500", dd(n.DESIGN_ACCENT, "FF6500")],
+		["FFD8BF", dd(n.DESIGN_SOFT_ACCENT, "FFD8BF")]
 	]) : e === Al.id ? /* @__PURE__ */ new Map([
-		["073B8F", cd(n.DESIGN_PRIMARY, "0B3485")],
-		["4AA7F5", cd(n.DESIGN_ACCENT, "4AAAF4")],
-		["EAF6FD", cd(n.DESIGN_SOFT_ACCENT, "EAF5FD")]
+		["36B873", dd(n.DESIGN_PRIMARY, "36B873")],
+		["075E50", dd(n.DESIGN_ACCENT, "075E50")],
+		["D9F2E5", dd(n.DESIGN_SOFT_ACCENT, "D9F2E5")]
 	]) : e === jl.id ? /* @__PURE__ */ new Map([
-		["2B2F32", cd(n.DESIGN_PRIMARY, "2B2F32")],
-		["00AFC5", cd(n.DESIGN_ACCENT, "00AFC5")],
-		["CDEFF3", cd(n.DESIGN_SOFT_ACCENT, "CDEFF3")]
-	]) : e === El.id ? /* @__PURE__ */ new Map([
-		["154F45", cd(n.DESIGN_PRIMARY, "154F45")],
-		["39B774", cd(n.DESIGN_PRIMARY, "39B774")],
-		["E4EBE8", cd(n.DESIGN_SOFT_ACCENT, "E4EBE8")]
+		["073B8F", dd(n.DESIGN_PRIMARY, "0B3485")],
+		["4AA7F5", dd(n.DESIGN_ACCENT, "4AAAF4")],
+		["EAF6FD", dd(n.DESIGN_SOFT_ACCENT, "EAF5FD")]
+	]) : e === Ml.id ? /* @__PURE__ */ new Map([
+		["2B2F32", dd(n.DESIGN_PRIMARY, "2B2F32")],
+		["00AFC5", dd(n.DESIGN_ACCENT, "00AFC5")],
+		["CDEFF3", dd(n.DESIGN_SOFT_ACCENT, "CDEFF3")]
+	]) : e === Dl.id ? /* @__PURE__ */ new Map([
+		["154F45", dd(n.DESIGN_PRIMARY, "154F45")],
+		["39B774", dd(n.DESIGN_PRIMARY, "39B774")],
+		["E4EBE8", dd(n.DESIGN_SOFT_ACCENT, "E4EBE8")]
 	]) : /* @__PURE__ */ new Map([
-		["0F5B4A", cd(n.DESIGN_PRIMARY, "0F5B4A")],
-		["36B779", cd(n.DESIGN_ACCENT, "36B779")],
-		["CDEEDF", cd(n.DESIGN_SOFT_ACCENT, "CDEEDF")],
-		["9DDBB9", cd(n.DESIGN_TITLE_BACKGROUND, "9DDBB9")]
+		["0F5B4A", dd(n.DESIGN_PRIMARY, "0F5B4A")],
+		["36B779", dd(n.DESIGN_ACCENT, "36B779")],
+		["CDEEDF", dd(n.DESIGN_SOFT_ACCENT, "CDEEDF")],
+		["9DDBB9", dd(n.DESIGN_TITLE_BACKGROUND, "9DDBB9")]
 	]), i = n.DESIGN_FONT?.trim() || "Arial";
 	for (let e of Object.keys(t.files)) {
 		if (!/^word\/.*\.xml$/i.test(e)) continue;
@@ -18495,10 +18520,10 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		for (let [e, t] of r) a = a.replaceAll(e, t);
 		a = a.replaceAll("w:ascii=\"Arial\"", `w:ascii="${i}"`).replaceAll("w:hAnsi=\"Arial\"", `w:hAnsi="${i}"`).replaceAll("w:cs=\"Arial\"", `w:cs="${i}"`), t.file(e, a);
 	}
-}, ud = (e) => e.replaceAll("&", "&amp;").replaceAll("\"", "&quot;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"), dd = (e) => {
+}, pd = (e) => e.replaceAll("&", "&amp;").replaceAll("\"", "&quot;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"), md = (e) => {
 	let t = e.trim();
 	return t ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t) ? `mailto:${t}` : /^\+?[\d\s()./-]{7,}$/.test(t) ? `tel:${t.replace(/[^\d+]/g, "")}` : /^https?:\/\//i.test(t) ? t : /^(?:www\.|linkedin\.com\/|github\.com\/|[\w.-]+\.[a-z]{2,}(?:\/|$))/i.test(t) ? `https://${t}` : null : null;
-}, fd = (e, t) => {
+}, hd = (e, t) => {
 	for (let n of Object.keys(e.files)) {
 		if (!/^word\/_rels\/.*\.rels$/i.test(n)) continue;
 		let r = e.file(n);
@@ -18510,12 +18535,12 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			} catch {}
 			let i = r.match(/\{\{([A-Z0-9_]+)\}\}/i)?.[1];
 			if (!i) return e;
-			let a = dd(t[i] ?? "");
-			return a ? `Target="${ud(a)}"` : "Target=\"about:blank\"";
+			let a = md(t[i] ?? "");
+			return a ? `Target="${pd(a)}"` : "Target=\"about:blank\"";
 		});
 		e.file(n, i);
 	}
-}, pd = (e, t) => {
+}, gd = (e, t) => {
 	let n = e.file("word/document.xml"), r = e.file("word/_rels/document.xml.rels");
 	if (!n || !r) return;
 	let i = n.asText(), a = r.asText(), o = Number(t.DESIGN_MARGIN_VERTICAL_MM), s = Number(t.DESIGN_MARGIN_HORIZONTAL_MM);
@@ -18525,31 +18550,31 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 	}
 	if (t.DEKORATION_AKTIV?.trim().toLowerCase() === "false") {
 		let e = i.match(/<w:drawing>[\s\S]*?<\/w:drawing>/g)?.find((e) => e.includes("KOMPAKT_DEKORATION"));
-		e && (i = ad(i.replace(e, "")));
+		e && (i = od(i.replace(e, "")));
 	}
 	let c = 0;
 	i = i.replace(/<w:p\b[\s\S]*?<\/w:p>/g, (e) => {
 		if (!e.includes("w:pStyle w:val=\"ContactLink\"") || e.includes("<w:hyperlink")) return e;
-		let t = dd(Array.from(e.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g), (e) => id(e[1])).join("").trim());
+		let t = md(Array.from(e.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g), (e) => ad(e[1])).join("").trim());
 		if (!t) return e;
 		c += 1;
 		let n = `rIdKompaktLink${c}`;
-		return a = a.replace("</Relationships>", `<Relationship Id="${n}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="${ud(t)}" TargetMode="External"/></Relationships>`), e.replace(/(<w:r\b[\s\S]*?<\/w:r>)/, `<w:hyperlink r:id="${n}" w:history="1">$1</w:hyperlink>`);
+		return a = a.replace("</Relationships>", `<Relationship Id="${n}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="${pd(t)}" TargetMode="External"/></Relationships>`), e.replace(/(<w:r\b[\s\S]*?<\/w:r>)/, `<w:hyperlink r:id="${n}" w:history="1">$1</w:hyperlink>`);
 	}), e.file("word/document.xml", i), e.file("word/_rels/document.xml.rels", a);
-}, md = (t, n, r = !0) => {
+}, _d = (t, n, r = !0) => {
 	let i = t.file("word/document.xml"), a = t.file("word/_rels/document.xml.rels");
 	if (!i || !a) return { found: !1 };
 	let o = i.asText(), s = o.match(/<w:drawing>[\s\S]*?<\/w:drawing>/g)?.find((e) => /<wp:docPr\b[^>]*(?:descr|title)="PROFILFOTO"[^>]*\/>/.test(e));
 	if (!s) return { found: !1 };
-	let c = s.match(/<a:blip\b[^>]*r:embed="([^"]+)"/)?.[1], l = n.match(rd)?.[1];
-	if (!c || !l) return o = o.replace(s, ""), t.file("word/document.xml", r ? ad(o) : o), { found: !0 };
+	let c = s.match(/<a:blip\b[^>]*r:embed="([^"]+)"/)?.[1], l = n.match(id)?.[1];
+	if (!c || !l) return o = o.replace(s, ""), t.file("word/document.xml", r ? od(o) : o), { found: !0 };
 	let u = a.asText(), d = c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), f = u.match(RegExp(`<Relationship\\b(?=[^>]*\\bId="${d}")(?=[^>]*\\bTarget="([^"]+)")[^>]*/>`))?.[1];
-	if (!f) return o = o.replace(s, ""), t.file("word/document.xml", r ? ad(o) : o), { found: !0 };
+	if (!f) return o = o.replace(s, ""), t.file("word/document.xml", r ? od(o) : o), { found: !0 };
 	let p = Buffer.from(l.replace(/\s/g, ""), "base64");
 	t.file(e.posix.join("word", f), p);
-	let m = sd(p), h = `<a:srcRect l="${m.left}" t="${m.top}" r="${m.right}" b="${m.bottom}"/>`, g = s.replace(/(<a:blip\b[^>]*\/>)(?:<a:srcRect\b[^>]*\/>)?/, `$1${h}`);
-	return o = o.replace(s, g), t.file("word/document.xml", r ? ad(o) : o), { found: !0 };
-}, hd = class {
+	let m = ud(p), h = `<a:srcRect l="${m.left}" t="${m.top}" r="${m.right}" b="${m.bottom}"/>`, g = s.replace(/(<a:blip\b[^>]*\/>)(?:<a:srcRect\b[^>]*\/>)?/, `$1${h}`);
+	return o = o.replace(s, g), t.file("word/document.xml", r ? od(o) : o), { found: !0 };
+}, vd = class {
 	async createDocument(t, n, r) {
 		if (t.extension === ".doc") return await i(t.filePath, n), {
 			templateId: t.id,
@@ -18560,12 +18585,13 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			warning: "Das ältere DOC-Format wurde sicher kopiert. Platzhalter werden in DOC-Dateien nicht automatisch ersetzt."
 		};
 		try {
-			let i = new nd.default(await s(t.filePath));
+			let i = new rd.default(await s(t.filePath));
 			if (t.extension === ".dotx") {
 				let e = i.file("[Content_Types].xml");
 				e && i.file("[Content_Types].xml", e.asText().replace("application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"));
 			}
-			let a = new td.default(i, {
+			t.documentType === "anschreiben" && cd(i);
+			let a = new nd.default(i, {
 				paragraphLoop: !0,
 				linebreaks: !0,
 				delimiters: {
@@ -18573,12 +18599,12 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 					end: "}}"
 				},
 				nullGetter: (e) => `{{${e.value}}}`
-			}), o = a.getFullText(), c = Object.keys(Pl), l = Object.fromEntries([
+			}), o = a.getFullText(), c = Object.keys(Fl), l = Object.fromEntries([
 				...Object.entries(r),
-				...Rl.map((e) => [e, r[e] ?? ""]),
-				...c.map((e) => [e, r[e] ?? r[Pl[e]] ?? ""])
+				...zl.map((e) => [e, r[e] ?? ""]),
+				...c.map((e) => [e, r[e] ?? r[Fl[e]] ?? ""])
 			]);
-			if (t.id === jl.id) for (let [e, t] of [
+			if (t.id === Ml.id) for (let [e, t] of [
 				["KENNTNISSE_TITEL", ["KENNTNISSE"]],
 				["SPRACHEN_TITEL", [
 					"SPRACHEN_ATS",
@@ -18594,19 +18620,19 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 				]],
 				["ZERTIFIKATE_TITEL", ["ZERTIFIKATE"]]
 			]) t.some((e) => l[e]?.trim()) || (l[e] = "");
-			let u = [...Rl, ...c].filter((e) => o.includes(`{{${e}}}`));
+			let u = [...zl, ...c].filter((e) => o.includes(`{{${e}}}`));
 			a.render(l);
 			let d = a.getZip();
-			if ((t.id === Cl.id || t.id === El.id || t.id === Dl.id || t.id === Ol.id || t.id === kl.id || t.id === Al.id || t.id === jl.id || t.id === wl.id) && ld(t.id, d, r), t.id === Ol.id && pd(d, r), !md(d, r.PROFILFOTO ?? "", t.id !== jl.id).found && t.id !== jl.id) {
+			if ((t.id === wl.id || t.id === Dl.id || t.id === Ol.id || t.id === kl.id || t.id === Al.id || t.id === jl.id || t.id === Ml.id || t.id === Tl.id) && fd(t.id, d, r), t.id === kl.id && gd(d, r), !_d(d, r.PROFILFOTO ?? "", t.id !== Ml.id).found && t.id !== Ml.id) {
 				let e = d.file("word/document.xml");
-				e && d.file("word/document.xml", ad(e.asText()));
+				e && d.file("word/document.xml", od(e.asText()));
 			} else u.push("PROFILFOTO");
-			if (t.id === jl.id) {
-				fd(d, r);
+			if (t.id === Ml.id) {
+				hd(d, r);
 				let e = d.file("word/document.xml");
 				if (e) {
 					let t = e.asText();
-					d.file("word/document.xml", od(t));
+					d.file("word/document.xml", ld(t));
 				}
 			}
 			return await f(n, d.generate({
@@ -18620,16 +18646,16 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 				replacedPlaceholders: u
 			};
 		} catch (e) {
-			throw e instanceof zl ? e : new zl(`Die Word-Vorlage ist beschädigt oder enthält ungültige Platzhalter. ${Bl(e).message}`, "CORRUPT");
+			throw e instanceof Bl ? e : new Bl(`Die Word-Vorlage ist beschädigt oder enthält ungültige Platzhalter. ${Vl(e).message}`, "CORRUPT");
 		}
 	}
-}, gd = (e) => e.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;"), _d = class {
+}, yd = (e) => e.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;"), bd = class {
 	constructor(e) {
 		this.paths = e;
 	}
 	async generate(t) {
 		await a(this.paths.previewCache, { recursive: !0 });
-		let n = new Date(t.modifiedAt ?? 0).getTime(), r = t.id === Sl.id ? Sl : t.id === Cl.id ? Cl : t.id === El.id ? El : t.id === Dl.id ? Dl : t.id === Ol.id ? Ol : t.id === kl.id ? kl : t.id === Al.id ? Al : t.id === jl.id ? jl : t.id === Ml.id ? Ml : t.id === wl.id ? wl : void 0;
+		let n = new Date(t.modifiedAt ?? 0).getTime(), r = t.id === Cl.id ? Cl : t.id === wl.id ? wl : t.id === Dl.id ? Dl : t.id === Ol.id ? Ol : t.id === kl.id ? kl : t.id === Al.id ? Al : t.id === jl.id ? jl : t.id === Ml.id ? Ml : t.id === Nl.id ? Nl : t.id === Tl.id ? Tl : void 0;
 		if (r && this.paths.bundledTemplatesRoot) try {
 			let i = await s(e.join(this.paths.bundledTemplatesRoot, r.previewFileName)), a = e.join(this.paths.previewCache, `${t.id}-${n}.png`);
 			return await f(a, i), {
@@ -18640,20 +18666,20 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		let i = `${t.id}-${n}.svg`, o = e.join(this.paths.previewCache, i), c = t.documentType === "anschreiben" ? "ANSCHREIBEN" : t.documentType === "deckblatt" ? "DECKBLATT" : "LEBENSLAUF", l = t.modifiedAt ? new Intl.DateTimeFormat("de-DE", {
 			dateStyle: "medium",
 			timeStyle: "short"
-		}).format(new Date(t.modifiedAt)) : "Änderungsdatum unbekannt", d = yl[t.source], p = `<svg xmlns="http://www.w3.org/2000/svg" width="420" height="594" viewBox="0 0 420 594">
+		}).format(new Date(t.modifiedAt)) : "Änderungsdatum unbekannt", d = bl[t.source], p = `<svg xmlns="http://www.w3.org/2000/svg" width="420" height="594" viewBox="0 0 420 594">
       <rect width="420" height="594" rx="8" fill="#fff"/>
       <rect x="34" y="38" width="352" height="5" rx="2.5" fill="#2b579a"/>
       <text x="34" y="76" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#2b579a">${c}</text>
       <rect x="34" y="92" width="44" height="50" rx="4" fill="#2b579a"/>
       <text x="48" y="126" font-family="Arial,sans-serif" font-size="26" font-weight="700" fill="#fff">W</text>
-      <text x="92" y="116" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#1d2927">${gd(t.name.slice(0, 23))}</text>
-      <text x="92" y="138" font-family="Arial,sans-serif" font-size="11" fill="#71807c">${gd(t.format.toUpperCase())} &#183; ${gd(d)}</text>
+      <text x="92" y="116" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#1d2927">${yd(t.name.slice(0, 23))}</text>
+      <text x="92" y="138" font-family="Arial,sans-serif" font-size="11" fill="#71807c">${yd(t.format.toUpperCase())} &#183; ${yd(d)}</text>
       <rect x="34" y="160" width="330" height="6" rx="3" fill="#e5ebe9"/>
       <rect x="34" y="174" width="310" height="6" rx="3" fill="#e5ebe9"/>
       <rect x="34" y="218" width="170" height="9" rx="4" fill="#9aaba6"/>
       ${Array.from({ length: 12 }, (e, t) => `<rect x="34" y="${246 + t * 20}" width="${t % 3 == 0 ? 330 : 300}" height="6" rx="3" fill="#e5ebe9"/>`).join("")}
-      <text x="34" y="540" font-family="Arial,sans-serif" font-size="12" fill="#71807c">Geändert: ${gd(l)}</text>
-      <text x="34" y="560" font-family="Arial,sans-serif" font-size="12" fill="#71807c">${gd(t.format.toUpperCase())} &#183; ${gd(d)}</text>
+      <text x="34" y="540" font-family="Arial,sans-serif" font-size="12" fill="#71807c">Geändert: ${yd(l)}</text>
+      <text x="34" y="560" font-family="Arial,sans-serif" font-size="12" fill="#71807c">${yd(t.format.toUpperCase())} &#183; ${yd(d)}</text>
     </svg>`;
 		try {
 			await s(o);
@@ -18667,10 +18693,10 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			previewDataUrl: `data:image/svg+xml;base64,${Buffer.from(p).toString("base64")}`
 		};
 	}
-}, vd = (t) => C("sha256").update(e.resolve(t).toLocaleLowerCase("de-DE")).digest("hex"), yd = ({ filePath: t, extension: n, documentType: r, source: i, fileSize: a, createdAt: o, modifiedAt: s, metadata: c }) => {
+}, xd = (t) => C("sha256").update(e.resolve(t).toLocaleLowerCase("de-DE")).digest("hex"), Sd = ({ filePath: t, extension: n, documentType: r, source: i, fileSize: a, createdAt: o, modifiedAt: s, metadata: c }) => {
 	let l = e.basename(t), u = e.basename(t, n).replaceAll("_", " ").replaceAll("-", " ");
 	return {
-		id: c.id?.trim() || vd(t),
+		id: c.id?.trim() || xd(t),
 		name: c.name?.trim() || u,
 		fileName: l,
 		filePath: t,
@@ -18698,29 +18724,29 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		supportsAtsMode: c.supportsAtsMode ?? !1,
 		emphasis: c.emphasis?.trim() || void 0
 	};
-}, bd = (t) => {
+}, Cd = (t) => {
 	let n = e.extname(t).toLowerCase();
-	if (!vl.has(n)) throw new zl("Dieses Dateiformat wird nicht als Word-Vorlage unterstützt.", "INVALID_FORMAT");
+	if (!yl.has(n)) throw new Bl("Dieses Dateiformat wird nicht als Word-Vorlage unterstützt.", "INVALID_FORMAT");
 	return n;
-}, xd = (t, n) => {
+}, wd = (t, n) => {
 	let r = e.resolve(t), i = e.resolve(n);
 	return i === r || i.startsWith(`${r}${e.sep}`);
-}, Sd = (e, t) => {
+}, Td = (e, t) => {
 	if (![
 		e.anschreibenTemplates,
 		e.deckblattTemplates,
 		e.lebenslaufTemplates,
 		e.anschreibenDocuments,
 		e.systemTemplateCache
-	].some((e) => xd(e, t))) throw new zl("Ungültiger Vorlagenpfad.", "INVALID_PATH");
-	bd(t);
-}, Cd = async (e, t) => {
-	Sd(e, t);
+	].some((e) => wd(e, t))) throw new Bl("Ungültiger Vorlagenpfad.", "INVALID_PATH");
+	Cd(t);
+}, Ed = async (e, t) => {
+	Td(e, t);
 	let n = await d(t);
-	if (!n.isFile()) throw new zl("Die Vorlage ist keine Datei.", "INVALID_FORMAT");
-	if (n.size > 26214400) throw new zl("Die Vorlage darf höchstens 25 MB groß sein.", "FILE_TOO_LARGE");
+	if (!n.isFile()) throw new Bl("Die Vorlage ist keine Datei.", "INVALID_FORMAT");
+	if (n.size > 26214400) throw new Bl("Die Vorlage darf höchstens 25 MB groß sein.", "FILE_TOO_LARGE");
 	return n;
-}, wd = async (e, t = 3) => {
+}, Dd = async (e, t = 3) => {
 	let n;
 	for (let r = 0; r < t; r += 1) try {
 		return await e();
@@ -18736,10 +18762,10 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		].includes(t)) break;
 		await new Promise((e) => setTimeout(e, 120 * (r + 1)));
 	}
-	throw Bl(n);
-}, Td = (t) => `${t.slice(0, -e.extname(t).length)}.template.json`, Ed = async (e) => {
+	throw Vl(n);
+}, Od = (t) => `${t.slice(0, -e.extname(t).length)}.template.json`, kd = async (e) => {
 	try {
-		let t = JSON.parse(await s(Td(e), "utf8"));
+		let t = JSON.parse(await s(Od(e), "utf8"));
 		if (!t || typeof t != "object") return {};
 		let n = t;
 		return {
@@ -18768,7 +18794,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 	} catch {
 		return {};
 	}
-}, Dd = async (t) => {
+}, Ad = async (t) => {
 	let n = [], r = [t];
 	for (; r.length;) {
 		let t = r.pop(), i = await c(t, { withFileTypes: !0 });
@@ -18778,7 +18804,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		}
 	}
 	return n;
-}, Od = (e) => [...e].sort((e, t) => e.name.localeCompare(t.name, "de", { sensitivity: "base" })), kd = class {
+}, jd = (e) => [...e].sort((e, t) => e.name.localeCompare(t.name, "de", { sensitivity: "base" })), Md = class {
 	constructor(e) {
 		this.paths = e;
 	}
@@ -18811,7 +18837,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		for (let r of this.locations()) {
 			let i = [];
 			try {
-				i = await wd(() => Dd(r.root));
+				i = await Dd(() => Ad(r.root));
 			} catch (t) {
 				n.push(t instanceof Error ? `${e.basename(r.root)}: ${t.message}` : `${e.basename(r.root)} konnte nicht gelesen werden.`);
 				continue;
@@ -18819,14 +18845,14 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			for (let a of i) {
 				let i;
 				try {
-					i = bd(a);
+					i = Cd(a);
 				} catch {
 					continue;
 				}
 				try {
-					let e = await wd(() => Cd(this.paths, a));
+					let e = await Dd(() => Ed(this.paths, a));
 					if (e.size > 26214400) continue;
-					t.push(yd({
+					t.push(Sd({
 						filePath: a,
 						extension: i,
 						documentType: r.documentType,
@@ -18834,7 +18860,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 						fileSize: e.size,
 						createdAt: e.birthtime.toISOString(),
 						modifiedAt: e.mtime.toISOString(),
-						metadata: await Ed(a)
+						metadata: await kd(a)
 					}));
 				} catch (t) {
 					n.push(t instanceof Error ? `${e.basename(a)}: ${t.message}` : `${e.basename(a)} konnte nicht gelesen werden.`);
@@ -18842,7 +18868,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			}
 		}
 		return {
-			templates: Od(t),
+			templates: jd(t),
 			warnings: n
 		};
 	}
@@ -18852,9 +18878,9 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 	async scanExistingAnschreiben() {
 		return (await this.scanAllTemplates()).templates.filter((e) => e.source === "existing-document");
 	}
-}, Ad = (e) => typeof e == "object" && e && "code" in e ? String(e.code) : "", jd = (e) => e === "word-lebenslauf-einfach" ? Al.id : e, Md = class {
+}, Nd = (e) => typeof e == "object" && e && "code" in e ? String(e.code) : "", Pd = (e) => e === "word-lebenslauf-einfach" ? jl.id : e, Fd = class {
 	constructor(e) {
-		this.paths = e, this.templates = [], this.scanner = new kd(e), this.previewService = new _d(e);
+		this.paths = e, this.templates = [], this.scanner = new Md(e), this.previewService = new bd(e);
 	}
 	async initialize() {
 		return await Promise.all([
@@ -18868,59 +18894,19 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		].map((e) => a(e, { recursive: !0 }))), await this.ensureWordMusterTemplate(), await this.ensureZeitgenoessischLebenslaufTemplate(), await this.ensureKreativLebenslaufTemplate(), await this.ensureIvyLeagueLebenslaufTemplate(), await this.ensureKompaktLebenslaufTemplate(), await this.ensureStilvollLebenslaufTemplate(), await this.ensureEinspaltigLebenslaufTemplate(), await this.ensureKlassischLebenslaufTemplate(), await this.ensureMehrspaltigLebenslaufTemplate(), await this.ensureElegantLebenslaufTemplate(), await this.ensureGepflegtLebenslaufTemplate(), await this.ensureModernLebenslaufTemplate(), this.refresh();
 	}
 	async ensureWordMusterTemplate() {
-		let t = e.join(this.paths.anschreibenTemplates, xl.fileName);
+		let t = e.join(this.paths.anschreibenTemplates, Sl.fileName);
 		try {
 			await r(t);
 		} catch {
-			let n = e.join(this.paths.anschreibenDocuments, xl.fileName);
+			let n = e.join(this.paths.anschreibenDocuments, Sl.fileName);
 			try {
 				await r(n);
 			} catch {
 				return;
 			}
-			await wd(() => i(n, t));
+			await Dd(() => i(n, t));
 		}
 		await this.writeMetadata(t, {
-			id: xl.id,
-			name: xl.name,
-			documentType: xl.documentType,
-			format: xl.format,
-			source: xl.source,
-			sortOrder: xl.sortOrder,
-			description: xl.description,
-			tags: [...xl.tags],
-			isSystemTemplate: xl.isSystemTemplate,
-			supportsPreview: xl.supportsPreview,
-			supportsPlaceholders: xl.supportsPlaceholders,
-			editableInWord: xl.editableInWord,
-			isProtected: xl.isProtected
-		});
-	}
-	async copyBundledTemplateIfMissing(n, a) {
-		try {
-			return await r(a), !0;
-		} catch (e) {
-			if (Ad(e) !== "ENOENT") throw e;
-		}
-		if (!this.paths.bundledTemplatesRoot) return !1;
-		let o = e.join(this.paths.bundledTemplatesRoot, n);
-		try {
-			await r(o);
-		} catch (e) {
-			if (Ad(e) === "ENOENT") return !1;
-			throw e;
-		}
-		return await wd(async () => {
-			try {
-				await i(o, a, t.COPYFILE_EXCL);
-			} catch (e) {
-				if (Ad(e) !== "EEXIST") throw e;
-			}
-		}), !0;
-	}
-	async ensureElegantLebenslaufTemplate() {
-		let t = e.join(this.paths.lebenslaufTemplates, Sl.fileName);
-		await this.copyBundledTemplateIfMissing(Sl.fileName, t) && (await this.copyBundledTemplateIfMissing(Sl.atsFileName, e.join(this.paths.systemTemplateCache, Sl.atsFileName)), await this.writeMetadata(t, {
 			id: Sl.id,
 			name: Sl.name,
 			documentType: Sl.documentType,
@@ -18933,16 +18919,56 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			supportsPreview: Sl.supportsPreview,
 			supportsPlaceholders: Sl.supportsPlaceholders,
 			editableInWord: Sl.editableInWord,
-			isProtected: Sl.isProtected,
-			category: Sl.category,
-			layout: Sl.layout,
-			atsFriendly: Sl.atsFriendly,
-			supportsPhoto: Sl.supportsPhoto,
-			supportsAtsMode: Sl.supportsAtsMode
+			isProtected: Sl.isProtected
+		});
+	}
+	async copyBundledTemplateIfMissing(n, a) {
+		try {
+			return await r(a), !0;
+		} catch (e) {
+			if (Nd(e) !== "ENOENT") throw e;
+		}
+		if (!this.paths.bundledTemplatesRoot) return !1;
+		let o = e.join(this.paths.bundledTemplatesRoot, n);
+		try {
+			await r(o);
+		} catch (e) {
+			if (Nd(e) === "ENOENT") return !1;
+			throw e;
+		}
+		return await Dd(async () => {
+			try {
+				await i(o, a, t.COPYFILE_EXCL);
+			} catch (e) {
+				if (Nd(e) !== "EEXIST") throw e;
+			}
+		}), !0;
+	}
+	async ensureElegantLebenslaufTemplate() {
+		let t = e.join(this.paths.lebenslaufTemplates, Cl.fileName);
+		await this.copyBundledTemplateIfMissing(Cl.fileName, t) && (await this.copyBundledTemplateIfMissing(Cl.atsFileName, e.join(this.paths.systemTemplateCache, Cl.atsFileName)), await this.writeMetadata(t, {
+			id: Cl.id,
+			name: Cl.name,
+			documentType: Cl.documentType,
+			format: Cl.format,
+			source: Cl.source,
+			sortOrder: Cl.sortOrder,
+			description: Cl.description,
+			tags: [...Cl.tags],
+			isSystemTemplate: Cl.isSystemTemplate,
+			supportsPreview: Cl.supportsPreview,
+			supportsPlaceholders: Cl.supportsPlaceholders,
+			editableInWord: Cl.editableInWord,
+			isProtected: Cl.isProtected,
+			category: Cl.category,
+			layout: Cl.layout,
+			atsFriendly: Cl.atsFriendly,
+			supportsPhoto: Cl.supportsPhoto,
+			supportsAtsMode: Cl.supportsAtsMode
 		}));
 	}
 	async ensureZeitgenoessischLebenslaufTemplate() {
-		let t = Cl, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
+		let t = wl, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
 		await this.copyBundledTemplateIfMissing(t.fileName, n) && (await this.copyBundledTemplateIfMissing(t.atsFileName, e.join(this.paths.systemTemplateCache, t.atsFileName)), await this.writeMetadata(n, {
 			id: t.id,
 			name: t.name,
@@ -18965,31 +18991,6 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		}));
 	}
 	async ensureKreativLebenslaufTemplate() {
-		let t = El, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
-		await this.copyBundledTemplateIfMissing(t.fileName, n) && (await this.copyBundledTemplateIfMissing(t.atsFileName, e.join(this.paths.systemTemplateCache, t.atsFileName)), await this.writeMetadata(n, {
-			id: t.id,
-			name: t.name,
-			documentType: t.documentType,
-			format: t.format,
-			source: t.source,
-			sortOrder: t.sortOrder,
-			description: t.description,
-			tags: [...t.tags],
-			isSystemTemplate: t.isSystemTemplate,
-			supportsPreview: t.supportsPreview,
-			supportsPlaceholders: t.supportsPlaceholders,
-			editableInWord: t.editableInWord,
-			isProtected: t.isProtected,
-			category: t.category,
-			layout: t.layout,
-			atsFriendly: t.atsFriendly,
-			supportsPhoto: t.supportsPhoto,
-			supportsBackground: t.supportsBackground,
-			supportsAtsMode: t.supportsAtsMode,
-			emphasis: t.emphasis
-		}));
-	}
-	async ensureIvyLeagueLebenslaufTemplate() {
 		let t = Dl, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
 		await this.copyBundledTemplateIfMissing(t.fileName, n) && (await this.copyBundledTemplateIfMissing(t.atsFileName, e.join(this.paths.systemTemplateCache, t.atsFileName)), await this.writeMetadata(n, {
 			id: t.id,
@@ -19014,7 +19015,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			emphasis: t.emphasis
 		}));
 	}
-	async ensureKompaktLebenslaufTemplate() {
+	async ensureIvyLeagueLebenslaufTemplate() {
 		let t = Ol, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
 		await this.copyBundledTemplateIfMissing(t.fileName, n) && (await this.copyBundledTemplateIfMissing(t.atsFileName, e.join(this.paths.systemTemplateCache, t.atsFileName)), await this.writeMetadata(n, {
 			id: t.id,
@@ -19039,17 +19040,42 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			emphasis: t.emphasis
 		}));
 	}
-	async ensureStilvollLebenslaufTemplate() {
-		await this.ensureManagedResumeTemplate(kl);
+	async ensureKompaktLebenslaufTemplate() {
+		let t = kl, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
+		await this.copyBundledTemplateIfMissing(t.fileName, n) && (await this.copyBundledTemplateIfMissing(t.atsFileName, e.join(this.paths.systemTemplateCache, t.atsFileName)), await this.writeMetadata(n, {
+			id: t.id,
+			name: t.name,
+			documentType: t.documentType,
+			format: t.format,
+			source: t.source,
+			sortOrder: t.sortOrder,
+			description: t.description,
+			tags: [...t.tags],
+			isSystemTemplate: t.isSystemTemplate,
+			supportsPreview: t.supportsPreview,
+			supportsPlaceholders: t.supportsPlaceholders,
+			editableInWord: t.editableInWord,
+			isProtected: t.isProtected,
+			category: t.category,
+			layout: t.layout,
+			atsFriendly: t.atsFriendly,
+			supportsPhoto: t.supportsPhoto,
+			supportsBackground: t.supportsBackground,
+			supportsAtsMode: t.supportsAtsMode,
+			emphasis: t.emphasis
+		}));
 	}
-	async ensureEinspaltigLebenslaufTemplate() {
+	async ensureStilvollLebenslaufTemplate() {
 		await this.ensureManagedResumeTemplate(Al);
 	}
-	async ensureKlassischLebenslaufTemplate() {
+	async ensureEinspaltigLebenslaufTemplate() {
 		await this.ensureManagedResumeTemplate(jl);
 	}
-	async ensureMehrspaltigLebenslaufTemplate() {
+	async ensureKlassischLebenslaufTemplate() {
 		await this.ensureManagedResumeTemplate(Ml);
+	}
+	async ensureMehrspaltigLebenslaufTemplate() {
+		await this.ensureManagedResumeTemplate(Nl);
 	}
 	async ensureManagedResumeTemplate(t) {
 		let n = e.join(this.paths.lebenslaufTemplates, t.fileName);
@@ -19077,7 +19103,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		}));
 	}
 	async ensureGepflegtLebenslaufTemplate() {
-		let t = wl, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
+		let t = Tl, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
 		await this.copyBundledTemplateIfMissing(t.fileName, n) && (await this.copyBundledTemplateIfMissing(t.atsFileName, e.join(this.paths.systemTemplateCache, t.atsFileName)), await this.writeMetadata(n, {
 			id: t.id,
 			name: t.name,
@@ -19100,7 +19126,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		}));
 	}
 	async ensureModernLebenslaufTemplate() {
-		let t = Tl, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
+		let t = El, n = e.join(this.paths.lebenslaufTemplates, t.fileName);
 		await this.copyBundledTemplateIfMissing(t.fileName, n) && (await this.copyBundledTemplateIfMissing(t.atsFileName, e.join(this.paths.systemTemplateCache, t.atsFileName)), await this.writeMetadata(n, {
 			id: t.id,
 			name: t.name,
@@ -19137,7 +19163,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		return structuredClone(this.templates);
 	}
 	async getById(e) {
-		let t = jd(e), n = this.templates.find((e) => e.id === t);
+		let t = Pd(e), n = this.templates.find((e) => e.id === t);
 		return n ||= (await this.refresh(), this.templates.find((e) => e.id === t)), n ? structuredClone(n) : null;
 	}
 	async listByType(e) {
@@ -19148,7 +19174,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 	}
 	async readMetadata(e) {
 		try {
-			return JSON.parse(await s(Td(e), "utf8"));
+			return JSON.parse(await s(Od(e), "utf8"));
 		} catch {
 			return {};
 		}
@@ -19158,11 +19184,11 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			...await this.readMetadata(e),
 			...t
 		};
-		await wd(() => f(Td(e), JSON.stringify(n, null, 2), "utf8"));
+		await Dd(() => f(Od(e), JSON.stringify(n, null, 2), "utf8"));
 	}
-}, Nd = class {
+}, Id = class {
 	constructor(e) {
-		this.paths = e, this.placeholderService = new hd(), this.repository = new Md(e);
+		this.paths = e, this.placeholderService = new vd(), this.repository = new Fd(e);
 	}
 	initialize() {
 		return this.repository.initialize();
@@ -19183,47 +19209,47 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		return e === "anschreiben" ? this.paths.anschreibenTemplates : e === "deckblatt" ? this.paths.deckblattTemplates : this.paths.lebenslaufTemplates;
 	}
 	async addExternalTemplate(t, n, r) {
-		let o = bd(t), s = await d(t);
-		if (!s.isFile()) throw new zl("Die ausgewählte Vorlage ist keine Datei.", "INVALID_FORMAT");
-		if (s.size > 26214400) throw new zl("Die Vorlage darf höchstens 25 MB groß sein.", "FILE_TOO_LARGE");
+		let o = Cd(t), s = await d(t);
+		if (!s.isFile()) throw new Bl("Die ausgewählte Vorlage ist keine Datei.", "INVALID_FORMAT");
+		if (s.size > 26214400) throw new Bl("Die Vorlage darf höchstens 25 MB groß sein.", "FILE_TOO_LARGE");
 		let c = this.rootForType(n);
 		await a(c, { recursive: !0 });
-		let l = r || e.basename(t, o), u = await Ul(c, l, o);
-		await wd(() => i(t, u)), await this.repository.writeMetadata(u, {
+		let l = r || e.basename(t, o), u = await Wl(c, l, o);
+		await Dd(() => i(t, u)), await this.repository.writeMetadata(u, {
 			name: l.replaceAll("_", " "),
 			documentType: n,
 			tags: [],
 			isFavorite: !1,
 			isSystemTemplate: !1,
-			sortOrder: bl,
+			sortOrder: xl,
 			supportsPreview: !0,
 			supportsPlaceholders: o !== ".doc",
 			editableInWord: !0,
 			isProtected: !1
 		}), await this.repository.refresh();
 		let f = this.repository.list().find((e) => e.filePath === u);
-		if (!f) throw new zl("Die Vorlage konnte nicht hinzugefügt werden.", "NOT_FOUND");
+		if (!f) throw new Bl("Die Vorlage konnte nicht hinzugefügt werden.", "NOT_FOUND");
 		return f;
 	}
 	async copyExistingDocumentToTemplates(e, t) {
-		Sd(this.paths, e);
+		Td(this.paths, e);
 		let n = this.repository.list().find((t) => t.filePath === e && t.source === "existing-document");
-		if (!n) throw new zl("Das Anschreiben wurde nicht in den eigenen Dokumenten gefunden.", "NOT_FOUND");
+		if (!n) throw new Bl("Das Anschreiben wurde nicht in den eigenen Dokumenten gefunden.", "NOT_FOUND");
 		return this.addExternalTemplate(n.filePath, "anschreiben", t || n.name);
 	}
 	async copyExistingTemplateById(e, t) {
 		let n = await this.requireTemplate(e);
-		if (n.source !== "existing-document") throw new zl("Nur eigene Anschreiben können zu Muster hinzugefügt werden.", "INVALID_PATH");
+		if (n.source !== "existing-document") throw new Bl("Nur eigene Anschreiben können zu Muster hinzugefügt werden.", "INVALID_PATH");
 		return this.copyExistingDocumentToTemplates(n.filePath, t);
 	}
 	async duplicateTemplate(t) {
-		let n = await this.requireTemplate(t), r = await Ul(e.dirname(n.filePath), `${e.basename(n.fileName, n.extension)}_Kopie`, n.extension);
-		return await wd(() => i(n.filePath, r)), n.source !== "existing-document" && await this.repository.writeMetadata(r, {
+		let n = await this.requireTemplate(t), r = await Wl(e.dirname(n.filePath), `${e.basename(n.fileName, n.extension)}_Kopie`, n.extension);
+		return await Dd(() => i(n.filePath, r)), n.source !== "existing-document" && await this.repository.writeMetadata(r, {
 			...await this.repository.readMetadata(n.filePath),
 			id: void 0,
 			name: `${n.name} Kopie`,
 			source: "muster-folder",
-			sortOrder: bl,
+			sortOrder: xl,
 			isSystemTemplate: !1,
 			isProtected: !1
 		}), await this.repository.refresh(), this.repository.list().find((e) => e.filePath === r) ?? null;
@@ -19235,12 +19261,12 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 			this.paths.anschreibenDocuments,
 			this.paths.lebenslaufDocuments,
 			this.paths.absagenRoot
-		].some((e) => xd(e, n))) throw new zl("Ungültiger Zielordner.", "INVALID_PATH");
-		let c = s, l, u = s.id === Sl.id ? Sl : s.id === Cl.id ? Cl : s.id === El.id ? El : s.id === Dl.id ? Dl : s.id === Ol.id ? Ol : s.id === kl.id ? kl : s.id === Al.id ? Al : s.id === jl.id ? jl : s.id === Ml.id ? Ml : s.id === wl.id ? wl : void 0;
+		].some((e) => wd(e, n))) throw new Bl("Ungültiger Zielordner.", "INVALID_PATH");
+		let c = s, l, u = s.id === Cl.id ? Cl : s.id === wl.id ? wl : s.id === Dl.id ? Dl : s.id === Ol.id ? Ol : s.id === kl.id ? kl : s.id === Al.id ? Al : s.id === jl.id ? jl : s.id === Ml.id ? Ml : s.id === Nl.id ? Nl : s.id === Tl.id ? Tl : void 0;
 		if (u && o.atsMode) {
 			let t = e.join(this.paths.systemTemplateCache, u.atsFileName);
 			try {
-				await Cd(this.paths, t), c = {
+				await Ed(this.paths, t), c = {
 					...s,
 					filePath: t
 				};
@@ -19248,8 +19274,8 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 				l = `Die ATS-Variante war nicht verfügbar. Die Standardvorlage „${u.name}“ wurde verwendet.`;
 			}
 		}
-		await Cd(this.paths, c.filePath), await a(n, { recursive: !0 });
-		let d = s.extension === ".doc" ? ".doc" : ".docx", f = await Ul(n, `${Vl(u ? `Lebenslauf_${i.VORNAME ?? ""}_${i.NACHNAME ?? ""}` : r)}_${Hl()}`, d), p = await wd(() => this.placeholderService.createDocument(c, f, i)), m = Object.entries(i).filter(([e]) => /^(ZUSAMMENFASSUNG|BESCHREIBUNG_\d+|ERFOLG_\d+_\d+|ERFOLG_HIGHLIGHT_\d+_(?:TITEL|BESCHREIBUNG)|STAERKE_\d+_BESCHREIBUNG|KENNTNIS_EINTRAEGE_\d+)$/.test(e)).reduce((e, [, t]) => e + t.trim().length, 0), h = Array.from({ length: 8 }, (e, t) => i[`POSITION_${t + 1}`]?.trim() ?? "").filter(Boolean).length, g = s.id === El.id && !o.atsMode && (m > 3200 || h > 4) ? "Der Inhalt passt möglicherweise nicht vollständig auf eine Seite. Bitte kürzen Sie einzelne Beschreibungen oder erlauben Sie eine zweite Seite." : void 0, _ = s.id === Ol.id && !o.atsMode && (m > 3700 || h > 5) ? "Der Inhalt passt nicht vollständig auf eine Seite. Bitte kürzen Sie einzelne Beschreibungen oder erlauben Sie eine zweite Seite." : void 0, v = s.id === Ol.id && (i.ZUSAMMENFASSUNG?.trim().length ?? 0) > 600 ? "Die Zusammenfassung überschreitet die empfohlenen 600 Zeichen." : void 0, y = (e) => e.toLocaleLowerCase("de-DE").replace(/[^\p{L}\p{N}]+/gu, " ").trim(), b = new Set(Object.entries(i).filter(([e, t]) => /^ERFOLG_\d+_\d+$/.test(e) && !!t.trim()).map(([, e]) => y(e))), x = s.id === Ol.id && Object.entries(i).filter(([e, t]) => /^ERFOLG_HIGHLIGHT_\d+_BESCHREIBUNG$/.test(e) && !!t.trim()).some(([, e]) => b.has(y(e))) ? "Ein hervorgehobener Erfolg wird bereits in der Berufserfahrung verwendet." : void 0, S = [
+		await Ed(this.paths, c.filePath), await a(n, { recursive: !0 });
+		let d = s.extension === ".doc" ? ".doc" : ".docx", f = await Wl(n, `${Hl(u ? `Lebenslauf_${i.VORNAME ?? ""}_${i.NACHNAME ?? ""}` : r)}_${Ul()}`, d), p = await Dd(() => this.placeholderService.createDocument(c, f, i)), m = Object.entries(i).filter(([e]) => /^(ZUSAMMENFASSUNG|BESCHREIBUNG_\d+|ERFOLG_\d+_\d+|ERFOLG_HIGHLIGHT_\d+_(?:TITEL|BESCHREIBUNG)|STAERKE_\d+_BESCHREIBUNG|KENNTNIS_EINTRAEGE_\d+)$/.test(e)).reduce((e, [, t]) => e + t.trim().length, 0), h = Array.from({ length: 8 }, (e, t) => i[`POSITION_${t + 1}`]?.trim() ?? "").filter(Boolean).length, g = s.id === Dl.id && !o.atsMode && (m > 3200 || h > 4) ? "Der Inhalt passt möglicherweise nicht vollständig auf eine Seite. Bitte kürzen Sie einzelne Beschreibungen oder erlauben Sie eine zweite Seite." : void 0, _ = s.id === kl.id && !o.atsMode && (m > 3700 || h > 5) ? "Der Inhalt passt nicht vollständig auf eine Seite. Bitte kürzen Sie einzelne Beschreibungen oder erlauben Sie eine zweite Seite." : void 0, v = s.id === kl.id && (i.ZUSAMMENFASSUNG?.trim().length ?? 0) > 600 ? "Die Zusammenfassung überschreitet die empfohlenen 600 Zeichen." : void 0, y = (e) => e.toLocaleLowerCase("de-DE").replace(/[^\p{L}\p{N}]+/gu, " ").trim(), b = new Set(Object.entries(i).filter(([e, t]) => /^ERFOLG_\d+_\d+$/.test(e) && !!t.trim()).map(([, e]) => y(e))), x = s.id === kl.id && Object.entries(i).filter(([e, t]) => /^ERFOLG_HIGHLIGHT_\d+_BESCHREIBUNG$/.test(e) && !!t.trim()).some(([, e]) => b.has(y(e))) ? "Ein hervorgehobener Erfolg wird bereits in der Berufserfahrung verwendet." : void 0, S = [
 			l,
 			g,
 			_,
@@ -19267,29 +19293,29 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 	}
 	async deleteCustomTemplate(e) {
 		let t = await this.requireTemplate(e);
-		if (t.isProtected) throw new zl("Diese Word-Vorlage ist geschützt und kann nicht gelöscht werden.", "PROTECTED_TEMPLATE");
-		if (t.isSystemTemplate) throw new zl("Systemvorlagen können nicht gelöscht werden.", "SYSTEM_TEMPLATE");
-		if (t.source !== "muster-folder") throw new zl("Eigene Dokumente werden an dieser Stelle nicht gelöscht.", "INVALID_PATH");
-		return await u(t.filePath), await u(Td(t.filePath), { force: !0 }), this.repository.refresh();
+		if (t.isProtected) throw new Bl("Diese Word-Vorlage ist geschützt und kann nicht gelöscht werden.", "PROTECTED_TEMPLATE");
+		if (t.isSystemTemplate) throw new Bl("Systemvorlagen können nicht gelöscht werden.", "SYSTEM_TEMPLATE");
+		if (t.source !== "muster-folder") throw new Bl("Eigene Dokumente werden an dieser Stelle nicht gelöscht.", "INVALID_PATH");
+		return await u(t.filePath), await u(Od(t.filePath), { force: !0 }), this.repository.refresh();
 	}
 	async generateTemplatePreview(e) {
 		return (await this.requireTemplate(e)).previewDataUrl ?? null;
 	}
 	async requireTemplate(e) {
 		let t = await this.repository.getById(e);
-		if (!t) throw new zl("Vorlage wurde nicht gefunden.", "NOT_FOUND");
+		if (!t) throw new Bl("Vorlage wurde nicht gefunden.", "NOT_FOUND");
 		return t;
 	}
-}, Pd = null, $, Fd, Id = /* @__PURE__ */ new Set(), Ld = "de.bewerbungsmanager.desktop", Rd = p(import.meta.url), zd = e.dirname(Rd), Bd = !!process.env.VITE_DEV_SERVER_URL, Vd = Ns(void 0, e.join(zd, Bd ? "../public/templates" : "../dist/templates")), Hd = e.join(Vd.dataRoot, "Electron"), Ud = e.join(Vd.dataRoot, "ElectronSession"), Wd = e.join(Vd.dataRoot, "Logs"), Gd = e.join(Vd.dataRoot, "CrashDumps");
+}, Ld = null, $, Rd, zd = /* @__PURE__ */ new Set(), Bd = "de.bewerbungsmanager.desktop", Vd = p(import.meta.url), Hd = e.dirname(Vd), Ud = !!process.env.VITE_DEV_SERVER_URL, Wd = Ns(void 0, e.join(Hd, Ud ? "../public/templates" : "../dist/templates")), Gd = e.join(Wd.dataRoot, "Electron"), Kd = e.join(Wd.dataRoot, "ElectronSession"), qd = e.join(Wd.dataRoot, "Logs"), Jd = e.join(Wd.dataRoot, "CrashDumps");
 for (let e of [
-	Hd,
-	Ud,
-	Wd,
-	Gd
+	Gd,
+	Kd,
+	qd,
+	Jd
 ]) n(e, { recursive: !0 });
-_.setPath("userData", Hd), _.setPath("sessionData", Ud), _.setPath("logs", Wd), _.setPath("crashDumps", Gd), process.platform === "win32" && _.setAppUserModelId(Ld);
-var Kd = async () => {
-	Pd = new h({
+_.setPath("userData", Gd), _.setPath("sessionData", Kd), _.setPath("logs", qd), _.setPath("crashDumps", Jd), process.platform === "win32" && _.setAppUserModelId(Bd);
+var Yd = async () => {
+	Ld = new h({
 		width: 1480,
 		height: 940,
 		minWidth: 1060,
@@ -19298,16 +19324,16 @@ var Kd = async () => {
 		backgroundColor: "#f3f1ec",
 		titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "default",
 		webPreferences: {
-			preload: e.join(zd, "preload.mjs"),
+			preload: e.join(Hd, "preload.mjs"),
 			contextIsolation: !0,
 			nodeIntegration: !1,
 			sandbox: !0,
 			webSecurity: !0
 		}
-	}), Pd.webContents.setWindowOpenHandler(({ url: e }) => (/^https?:\/\//i.test(e) && x.openExternal(e), { action: "deny" })), Pd.webContents.on("will-navigate", (t, n) => {
-		(Bd ? n.startsWith(process.env.VITE_DEV_SERVER_URL) : n.startsWith(m(e.join(zd, "../dist/index.html")).toString())) || t.preventDefault();
-	}), Pd.once("ready-to-show", () => Pd?.show()), Bd ? await Pd.loadURL(process.env.VITE_DEV_SERVER_URL) : await Pd.loadFile(e.join(zd, "../dist/index.html"));
-}, qd = () => {
+	}), Ld.webContents.setWindowOpenHandler(({ url: e }) => (/^https?:\/\//i.test(e) && x.openExternal(e), { action: "deny" })), Ld.webContents.on("will-navigate", (t, n) => {
+		(Ud ? n.startsWith(process.env.VITE_DEV_SERVER_URL) : n.startsWith(m(e.join(Hd, "../dist/index.html")).toString())) || t.preventDefault();
+	}), Ld.once("ready-to-show", () => Ld?.show()), Ud ? await Ld.loadURL(process.env.VITE_DEV_SERVER_URL) : await Ld.loadFile(e.join(Hd, "../dist/index.html"));
+}, Xd = () => {
 	y.handle("workspace:get", () => $.getWorkspace()), y.handle("application-draft:get", () => $.getApplicationDraft()), y.handle("application-draft:save", (e, t) => $.saveApplicationDraft(ws.parse(t))), y.handle("application-draft:clear", () => $.clearApplicationDraft()), y.handle("applications:create", (e, t) => $.createApplication(Cs.parse(t))), y.handle("applications:save", (e, t) => $.saveApplication(Ss.parse(t))), y.handle("applications:remove", (e, t) => $.removeApplication(String(t))), y.handle("applications:duplicate", (e, t) => $.duplicateApplication(String(t))), y.handle("applications:change-status", (e, t, n, r) => {
 		let i = cs.find((e) => e === n), a = ls.find((e) => e === r);
 		if (!i) throw Error("Ungültiger Bewerbungsstatus.");
@@ -19315,10 +19341,10 @@ var Kd = async () => {
 	}), y.handle("applications:open-folder", async (e, t) => {
 		let n = await x.openPath($.getApplicationPath(String(t)));
 		if (n) throw Error(n);
-	}), y.handle("profiles:save", (e, t) => $.saveProfile(Ts.parse(t))), y.handle("templates:scan", () => Fd.scanAllTemplates()), y.handle("templates:add", async (e, t) => {
+	}), y.handle("profiles:save", (e, t) => $.saveProfile(Ts.parse(t))), y.handle("templates:scan", () => Rd.scanAllTemplates()), y.handle("templates:add", async (e, t) => {
 		let n = t ?? {};
 		if (n.documentType !== "anschreiben" && n.documentType !== "deckblatt" && n.documentType !== "lebenslauf") throw Error("Ungültiger Dokumenttyp.");
-		let r = await v.showOpenDialog(Pd, {
+		let r = await v.showOpenDialog(Ld, {
 			title: "Word-Vorlage hinzufügen",
 			properties: ["openFile"],
 			filters: [{
@@ -19330,33 +19356,33 @@ var Kd = async () => {
 				]
 			}]
 		}), i = r.filePaths[0];
-		return r.canceled || !i ? null : Fd.addExternalTemplate(i, n.documentType, typeof n.requestedName == "string" ? n.requestedName : void 0);
+		return r.canceled || !i ? null : Rd.addExternalTemplate(i, n.documentType, typeof n.requestedName == "string" ? n.requestedName : void 0);
 	}), y.handle("templates:use", async (e, t) => {
 		let n = t ?? {};
 		if (!n.templateId || !n.applicationId) throw Error("Vorlage und Bewerbung sind erforderlich.");
-		let r = await Fd.getTemplateById(n.templateId);
+		let r = await Rd.getTemplateById(n.templateId);
 		if (!r) throw Error("Vorlage wurde nicht gefunden.");
 		let i = $.getTemplateDocumentContext(n.applicationId);
 		if (r.supportsPhoto && i.data.PROFILFOTO) {
 			let e = b.createFromDataURL(i.data.PROFILFOTO);
 			i.data.PROFILFOTO = e.isEmpty() ? "" : `data:image/png;base64,${e.toPNG().toString("base64")}`;
 		}
-		let a = await Fd.createDocumentFromTemplate(r.id, i.targetDirectories[r.documentType], i.requestedBaseName, i.data, { atsMode: n.atsMode === !0 }), o = await x.openPath(a.filePath);
+		let a = await Rd.createDocumentFromTemplate(r.id, i.targetDirectories[r.documentType], i.requestedBaseName, i.data, { atsMode: n.atsMode === !0 }), o = await x.openPath(a.filePath);
 		if (o) throw Error(o);
 		return a;
-	}), y.handle("templates:duplicate", (e, t) => Fd.duplicateTemplate(String(t))), y.handle("templates:copy-to-muster", (e, t) => Fd.copyExistingTemplateById(String(t))), y.handle("templates:toggle-favorite", (e, t) => Fd.toggleTemplateFavorite(String(t))), y.handle("templates:remove", (e, t) => Fd.deleteCustomTemplate(String(t))), y.handle("templates:open", async (e, t) => {
-		let n = await Fd.getTemplateById(String(t));
+	}), y.handle("templates:duplicate", (e, t) => Rd.duplicateTemplate(String(t))), y.handle("templates:copy-to-muster", (e, t) => Rd.copyExistingTemplateById(String(t))), y.handle("templates:toggle-favorite", (e, t) => Rd.toggleTemplateFavorite(String(t))), y.handle("templates:remove", (e, t) => Rd.deleteCustomTemplate(String(t))), y.handle("templates:open", async (e, t) => {
+		let n = await Rd.getTemplateById(String(t));
 		if (!n) throw Error("Vorlage wurde nicht gefunden.");
 		let r = await x.openPath(n.filePath);
 		if (r) throw Error(r);
 	}), y.handle("templates:open-folder", async (e, t) => {
-		let n = await Fd.getTemplateById(String(t));
+		let n = await Rd.getTemplateById(String(t));
 		if (!n) throw Error("Vorlage wurde nicht gefunden.");
 		x.showItemInFolder(n.filePath);
 	}), y.handle("media:pick-profile-image", async (e, t) => {
 		let n = t === "photo" || t === "signature" ? t : null;
 		if (!n) throw Error("Ungültiger Bildtyp.");
-		let r = await v.showOpenDialog(Pd, {
+		let r = await v.showOpenDialog(Ld, {
 			title: n === "photo" ? "Bewerbungsfoto auswählen" : "Unterschrift auswählen",
 			properties: ["openFile"],
 			filters: [{
@@ -19380,7 +19406,7 @@ var Kd = async () => {
 	}), y.handle("settings:save", (e, t) => $.saveSettings(Os.parse(t))), y.handle("events:save", (e, t) => $.saveEvent(Es.parse(t))), y.handle("attachments:add", async (e, t, n) => {
 		let r = fs.find((e) => e === n);
 		if (!r) throw Error("Ungültige Dokumentkategorie.");
-		let i = await v.showOpenDialog(Pd, {
+		let i = await v.showOpenDialog(Ld, {
 			defaultPath: $.files.archiveRootForCategory(r),
 			title: `${r} hinzufügen`,
 			properties: ["openFile"],
@@ -19407,7 +19433,7 @@ var Kd = async () => {
 		if (!i) throw Error("Ungültiges Exportziel.");
 		let a = String(t), o = r === void 0 ? void 0 : Ss.parse(r);
 		if (o && o.id !== a) throw Error("Die Exportdaten gehören nicht zur ausgewählten Bewerbung.");
-		let c = await v.showSaveDialog(Pd, {
+		let c = await v.showSaveDialog(Ld, {
 			title: "PDF exportieren",
 			defaultPath: $.getExportDefaultName(a, i),
 			filters: [{
@@ -19437,7 +19463,7 @@ var Kd = async () => {
 					bottom: 0,
 					left: 0
 				}
-			}), n = i === "mappe" ? await _l(t, await Promise.all($.getPackageAttachmentPaths(a).map(async (e) => ({
+			}), n = i === "mappe" ? await vl(t, await Promise.all($.getPackageAttachmentPaths(a).map(async (e) => ({
 				fileName: e.fileName,
 				bytes: await s(e.path)
 			})))) : t;
@@ -19446,7 +19472,7 @@ var Kd = async () => {
 			l.destroy();
 		}
 	}), y.handle("export:backup", async () => {
-		let e = await v.showSaveDialog(Pd, {
+		let e = await v.showSaveDialog(Ld, {
 			title: "JSON-Sicherung exportieren",
 			defaultPath: `BewerbungsManager_Backup_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.json`,
 			filters: [{
@@ -19456,7 +19482,7 @@ var Kd = async () => {
 		});
 		return e.canceled || !e.filePath ? null : (await $.writeBackup(e.filePath), e.filePath);
 	}), y.handle("export:import-backup", async () => {
-		let e = await v.showOpenDialog(Pd, {
+		let e = await v.showOpenDialog(Ld, {
 			title: "JSON-Sicherung wiederherstellen",
 			properties: ["openFile"],
 			filters: [{
@@ -19466,7 +19492,7 @@ var Kd = async () => {
 		});
 		return e.canceled || !e.filePaths[0] ? null : $.importBackup(e.filePaths[0]);
 	}), y.handle("export:settings", async () => {
-		let e = await v.showSaveDialog(Pd, {
+		let e = await v.showSaveDialog(Ld, {
 			title: "Einstellungen exportieren",
 			defaultPath: "BewerbungsManager_Einstellungen.json",
 			filters: [{
@@ -19476,7 +19502,7 @@ var Kd = async () => {
 		});
 		return e.canceled || !e.filePath ? null : (await $.writeSettings(e.filePath), e.filePath);
 	}), y.handle("export:import-settings", async () => {
-		let e = await v.showOpenDialog(Pd, {
+		let e = await v.showOpenDialog(Ld, {
 			title: "Einstellungen importieren",
 			properties: ["openFile"],
 			filters: [{
@@ -19486,13 +19512,13 @@ var Kd = async () => {
 		});
 		return e.canceled || !e.filePaths[0] ? null : $.importSettings(e.filePaths[0]);
 	}), y.handle("migration:import-legacy", async () => {
-		let e = await v.showOpenDialog(Pd, {
+		let e = await v.showOpenDialog(Ld, {
 			title: "Bisherigen data-Ordner auswählen",
 			properties: ["openDirectory"]
 		});
 		if (e.canceled || !e.filePaths[0]) return null;
 		let t = await $.previewLegacyMigration(e.filePaths[0]), n = (t.totalBytes / 1024 / 1024).toFixed(1);
-		return (await v.showMessageBox(Pd, {
+		return (await v.showMessageBox(Ld, {
 			type: "warning",
 			title: "Datenmigration bestätigen",
 			message: "Bestehende Bewerbungsdaten in den neuen Hauptordner kopieren?",
@@ -19513,7 +19539,7 @@ var Kd = async () => {
 		if (!["http:", "https:"].includes(n.protocol)) throw Error("Nur HTTP- und HTTPS-Links sind erlaubt.");
 		await x.openExternal(n.toString());
 	}), y.handle("system:data-path", () => $.dataPath);
-}, Jd = () => {
+}, Zd = () => {
 	let e = $.getWorkspace();
 	if (!e.settings.notificationsEnabled || !g.isSupported()) return;
 	let t = Date.now();
@@ -19522,15 +19548,15 @@ var Kd = async () => {
 			let r = n - e * 6e4;
 			return r <= t && r > t - 65e3;
 		}), i = `${e.id}:${Math.floor(t / 6e4)}`;
-		r && !Id.has(i) && (Id.add(i), new g({
+		r && !zd.has(i) && (zd.add(i), new g({
 			title: "BewerbungsManager",
 			body: e.title
 		}).show());
 	});
 };
 _.whenReady().then(async () => {
-	$ = new hl(Vd), await $.initialize(), Fd = new Nd(Vd), await Fd.initialize(), qd(), await Kd(), Jd(), setInterval(Jd, 6e4).unref(), _.on("activate", () => {
-		h.getAllWindows().length === 0 && Kd();
+	$ = new gl(Wd), await $.initialize(), Rd = new Id(Wd), await Rd.initialize(), Xd(), await Yd(), Zd(), setInterval(Zd, 6e4).unref(), _.on("activate", () => {
+		h.getAllWindows().length === 0 && Yd();
 	});
 }), _.on("window-all-closed", () => {
 	process.platform !== "darwin" && _.quit();

@@ -419,6 +419,16 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
   const name = renderProfile
     ? `${renderProfile.firstName} ${renderProfile.lastName}`
     : "Vorname Nachname";
+  const senderContactDetails = renderProfile
+    ? [
+        renderProfile.street,
+        `${renderProfile.postalCode} ${renderProfile.city}`.trim(),
+        renderProfile.email,
+        renderProfile.phone,
+      ]
+        .filter(Boolean)
+        .join(" · ")
+    : "Adresse · E-Mail · Telefon";
   const paginatedProfile = renderProfile
     ? {
         ...renderProfile,
@@ -1259,12 +1269,14 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                 backgroundId={design.settings.backgroundId}
                 atsMode={isAtsMode}
               />
-              <i className="paper-rule" />
               <div className="letter-preview">
                 <p className="sender-line">
-                  {name} · {profile?.email || "E-Mail"} ·{" "}
-                  {profile?.phone || "Telefon"}
+                  <span className="sender-name">{name}</span>
+                  <span className="sender-contact">
+                    {senderContactDetails}
+                  </span>
                 </p>
+                <i className="paper-rule" />
                 <address>
                   {application.company.name}
                   <br />
@@ -1290,29 +1302,29 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                     ? `Sehr geehrte${application.contact.salutation === "Herr" ? "r" : ""} ${application.contact.salutation} ${application.contact.lastName},`
                     : "Sehr geehrte Damen und Herren,"}
                 </p>
-                <p>{docs.coverIntroduction}</p>
-                <p>{docs.coverMotivation || "Motivation ergänzen …"}</p>
-                <p>
+                <p className="letter-body">{docs.coverIntroduction}</p>
+                <p className="letter-body">
+                  {docs.coverMotivation || "Motivation ergänzen …"}
+                </p>
+                <p className="letter-body">
                   {docs.coverQualification ||
                     profile?.summary ||
                     "Fachliche Eignung ergänzen …"}
                 </p>
-                <p>{docs.coverCompanyFit || "Unternehmensbezug ergänzen …"}</p>
-                <p>{docs.coverClosing}</p>
+                <p className="letter-body">
+                  {docs.coverCompanyFit || "Unternehmensbezug ergänzen …"}
+                </p>
+                <p className="letter-body">{docs.coverClosing}</p>
                 <p className="letter-signature">
-                  Mit freundlichen Grüßen
-                  <br />
+                  <span>Mit freundlichen Grüßen</span>
                   {signatureSource ? (
-                    <>
-                      <img
-                        className="signature-image"
-                        src={signatureSource}
-                        alt={`Unterschrift von ${name}`}
-                      />
-                      <br />
-                    </>
+                    <img
+                      className="signature-image"
+                      src={signatureSource}
+                      alt={`Unterschrift von ${name}`}
+                    />
                   ) : null}
-                  <strong>{name}</strong>
+                  <span className="signature-name">{name}</span>
                 </p>
               </div>
             </div>

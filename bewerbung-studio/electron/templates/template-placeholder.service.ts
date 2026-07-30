@@ -49,6 +49,70 @@ const removeEmptyParagraphs = (documentXml: string) =>
     },
   );
 
+const justifiedCoverLetterPlaceholderKeys = new Set([
+  "EINLEITUNG",
+  "HAUPTTEXT",
+  "SCHLUSSTEXT",
+  "ANSCHREIBEN_METNI",
+  "KAPANIS",
+]);
+
+const applyCoverLetterJustification = (zip: PizZip) => {
+  const documentPart = zip.file("word/document.xml");
+  if (!documentPart) return;
+
+  const documentXml = documentPart.asText().replace(
+    /<w:p\b[\s\S]*?<\/w:p>/g,
+    (paragraph) => {
+      const paragraphText = Array.from(
+        paragraph.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g),
+        (match) => decodeXmlText(match[1]),
+      ).join("");
+      const placeholderKeys = Array.from(
+        paragraphText.matchAll(/\{\{([A-Z0-9_]+)\}\}/g),
+        (match) => match[1],
+      );
+      if (
+        !placeholderKeys.some((key) =>
+          justifiedCoverLetterPlaceholderKeys.has(key),
+        )
+      ) {
+        return paragraph;
+      }
+
+      const justification = '<w:jc w:val="both"/>';
+      if (/<w:pPr\b[^>]*>[\s\S]*?<\/w:pPr>/.test(paragraph)) {
+        return paragraph.replace(
+          /<w:pPr\b([^>]*)>([\s\S]*?)<\/w:pPr>/,
+          (_properties, attributes: string, content: string) => {
+            const updatedContent = /<w:jc\b[^>]*(?:\/>|>[\s\S]*?<\/w:jc>)/.test(
+              content,
+            )
+              ? content.replace(
+                  /<w:jc\b[^>]*(?:\/>|>[\s\S]*?<\/w:jc>)/,
+                  justification,
+                )
+              : `${content}${justification}`;
+            return `<w:pPr${attributes}>${updatedContent}</w:pPr>`;
+          },
+        );
+      }
+      if (/<w:pPr\b[^>]*\/>/.test(paragraph)) {
+        return paragraph.replace(
+          /<w:pPr\b([^>]*)\/>/,
+          `<w:pPr$1>${justification}</w:pPr>`,
+        );
+      }
+
+      return paragraph.replace(
+        /^(<w:p\b[^>]*>)/,
+        `$1<w:pPr>${justification}</w:pPr>`,
+      );
+    },
+  );
+  zip.file("word/document.xml", documentXml);
+};
+
 const cleanKlassischDocumentXml = (documentXml: string) => {
   const tableRanges: Array<{ start: number; end: number }> = [];
   const stack: number[] = [];
@@ -510,6 +574,9 @@ export class TemplatePlaceholderService {
               ),
           );
         }
+      }
+      if (template.documentType === "anschreiben") {
+        applyCoverLetterJustification(zip);
       }
       const document = new Docxtemplater(zip, {
         paragraphLoop: true,

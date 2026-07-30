@@ -287,6 +287,7 @@ describe("Musterverwaltung", () => {
     expect(documentXml).toContain("Mein individueller Anschreibentext.");
     expect(documentXml).toContain("{{UNBEKANNT}}");
     expect(documentXml).toContain("<w:b/>");
+    expect(documentXml.match(/<w:jc w:val="both"\/>/g)).toHaveLength(2);
     expect(await readFile(templatePath)).toEqual(original);
   });
 
