@@ -48,6 +48,7 @@ export function ApplicationsView({
   const removeApplication = useAppStore((state) => state.removeApplication);
   const duplicateApplication = useAppStore((state) => state.duplicateApplication);
   const openFolder = useAppStore((state) => state.openFolder);
+  const saving = useAppStore((state) => state.loading);
   const [filter, setFilter] = useState<Filter>(initialFilter);
   const [query, setQuery] = useState("");
 
@@ -79,19 +80,39 @@ export function ApplicationsView({
     });
   }, [filter, query, workspace.applications]);
 
-  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const formData = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    return new FormData(event.currentTarget);
+  };
+
+  const submitStatusAndDesign = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
+    const data = formData(event);
     if (!selected) return;
-    const data = new FormData(event.currentTarget);
     const status = String(data.get("status")) as ApplicationStatus;
     const rejectionReason = String(data.get("rejectionReason") || "") as
       | RejectionReason
       | "";
-    const updated: Application = {
+    await saveApplication({
       ...selected,
       templateId: String(data.get("templateId")),
       accentColor: String(data.get("accentColor")),
       secondaryColor: String(data.get("secondaryColor")),
+      rejectionReason: rejectionReason || undefined,
+    });
+    if (status !== selected.status) {
+      await changeStatus(selected.id, status, rejectionReason || undefined);
+    }
+  };
+
+  const submitCompanyAndPosition = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
+    const data = formData(event);
+    if (!selected) return;
+    await saveApplication({
+      ...selected,
       company: {
         ...selected.company,
         name: String(data.get("company")),
@@ -100,6 +121,21 @@ export function ApplicationsView({
         city: String(data.get("city")),
         website: String(data.get("website")),
       },
+      job: {
+        ...selected.job,
+        title: String(data.get("role")),
+        url: String(data.get("jobUrl")),
+        source: String(data.get("source")),
+        salaryExpectation: String(data.get("salaryExpectation")),
+      },
+    });
+  };
+
+  const submitContact = async (event: React.FormEvent<HTMLFormElement>) => {
+    const data = formData(event);
+    if (!selected) return;
+    await saveApplication({
+      ...selected,
       contact: {
         ...selected.contact,
         firstName: String(data.get("contactFirstName")),
@@ -107,14 +143,14 @@ export function ApplicationsView({
         email: String(data.get("contactEmail")),
         phone: String(data.get("contactPhone")),
       },
-      job: {
-        ...selected.job,
-        title: String(data.get("role")),
-        url: String(data.get("jobUrl")),
-        source: String(data.get("source")),
-        fullText: String(data.get("fullText")),
-        salaryExpectation: String(data.get("salaryExpectation")),
-      },
+    });
+  };
+
+  const submitDates = async (event: React.FormEvent<HTMLFormElement>) => {
+    const data = formData(event);
+    if (!selected) return;
+    await saveApplication({
+      ...selected,
       sentAt: fromDateInput(String(data.get("sentAt"))),
       deadlineAt: fromDateInput(String(data.get("deadlineAt"))),
       interviewAt: fromDateTimeInput(String(data.get("interviewAt"))),
@@ -125,16 +161,20 @@ export function ApplicationsView({
       contractEndAt: fromDateInput(String(data.get("contractEndAt"))),
       fixedTermEndAt: fromDateInput(String(data.get("fixedTermEndAt"))),
       probationEndAt: fromDateInput(String(data.get("probationEndAt"))),
+    });
+  };
+
+  const submitContent = async (event: React.FormEvent<HTMLFormElement>) => {
+    const data = formData(event);
+    if (!selected) return;
+    await saveApplication({
+      ...selected,
+      job: {
+        ...selected.job,
+        fullText: String(data.get("fullText")),
+      },
       notes: String(data.get("notes")),
-    };
-    await saveApplication(updated);
-    if (status !== selected.status) {
-      await changeStatus(
-        selected.id,
-        status,
-        rejectionReason || undefined,
-      );
-    }
+    });
   };
 
   return (
@@ -233,8 +273,12 @@ export function ApplicationsView({
               </button>
             )}
           </div>
-          <form className="detail-form" onSubmit={(event) => void submit(event)}>
-            <FormSection title="Status & Gestaltung">
+          <div className="detail-form">
+            <FormSection
+              title="Status & Gestaltung"
+              onSubmit={submitStatusAndDesign}
+              saving={saving}
+            >
               <label className="field">
                 <span>Status</span>
                 <select name="status" defaultValue={selected.status}>
@@ -269,7 +313,11 @@ export function ApplicationsView({
                 <input name="secondaryColor" type="color" defaultValue={selected.secondaryColor} />
               </label>
             </FormSection>
-            <FormSection title="Unternehmen & Position">
+            <FormSection
+              title="Unternehmen & Position"
+              onSubmit={submitCompanyAndPosition}
+              saving={saving}
+            >
               <label className="field"><span>Unternehmen</span><input name="company" defaultValue={selected.company.name} required /></label>
               <label className="field"><span>Position</span><input name="role" defaultValue={selected.job.title} required /></label>
               <label className="field"><span>Straße</span><input name="street" defaultValue={selected.company.street} /></label>
@@ -282,13 +330,21 @@ export function ApplicationsView({
               <label className="field"><span>Quelle</span><input name="source" defaultValue={selected.job.source} /></label>
               <label className="field"><span>Gehaltsvorstellung</span><input name="salaryExpectation" defaultValue={selected.job.salaryExpectation} /></label>
             </FormSection>
-            <FormSection title="Ansprechpartner">
+            <FormSection
+              title="Ansprechpartner"
+              onSubmit={submitContact}
+              saving={saving}
+            >
               <label className="field"><span>Vorname</span><input name="contactFirstName" defaultValue={selected.contact.firstName} /></label>
               <label className="field"><span>Nachname</span><input name="contactLastName" defaultValue={selected.contact.lastName} /></label>
               <label className="field"><span>E-Mail</span><input name="contactEmail" type="email" defaultValue={selected.contact.email} /></label>
               <label className="field"><span>Telefon</span><input name="contactPhone" defaultValue={selected.contact.phone} /></label>
             </FormSection>
-            <FormSection title="Termine">
+            <FormSection
+              title="Termine"
+              onSubmit={submitDates}
+              saving={saving}
+            >
               <label className="field"><span>Gesendet</span><input name="sentAt" type="date" defaultValue={toDateInput(selected.sentAt)} /></label>
               <label className="field"><span>Bewerbungsfrist</span><input name="deadlineAt" type="date" defaultValue={toDateInput(selected.deadlineAt)} /></label>
               <label className="field"><span>Vorstellungsgespräch</span><input name="interviewAt" type="datetime-local" defaultValue={toDateTimeInput(selected.interviewAt)} /></label>
@@ -298,15 +354,18 @@ export function ApplicationsView({
               <label className="field"><span>Befristungsende</span><input name="fixedTermEndAt" type="date" defaultValue={toDateInput(selected.fixedTermEndAt)} /></label>
               <label className="field"><span>Probezeitende</span><input name="probationEndAt" type="date" defaultValue={toDateInput(selected.probationEndAt)} /></label>
             </FormSection>
-            <FormSection title="Inhalt">
+            <FormSection
+              title="Inhalt"
+              onSubmit={submitContent}
+              saving={saving}
+            >
               <label className="field full"><span>Vollständige Stellenanzeige</span><textarea name="fullText" rows={8} defaultValue={selected.job.fullText} /></label>
               <label className="field full"><span>Persönliche Notizen</span><textarea name="notes" rows={4} defaultValue={selected.notes} /></label>
             </FormSection>
-            <div className="save-bar">
+            <div className="save-bar detail-timestamp">
               <span>Zuletzt geändert: {formatDate(selected.updatedAt, true)}</span>
-              <button className="button primary" type="submit"><Save size={17} /> Änderungen speichern</button>
             </div>
-          </form>
+          </div>
           <section className="history-section">
             <h3>Statusverlauf</h3>
             <div>
@@ -331,15 +390,26 @@ export function ApplicationsView({
 function FormSection({
   title,
   children,
+  onSubmit,
+  saving,
 }: {
   title: string;
   children: React.ReactNode;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
+  saving: boolean;
 }) {
   return (
-    <fieldset className="form-section">
-      <legend>{title}</legend>
-      <div className="form-grid">{children}</div>
-    </fieldset>
+    <form onSubmit={(event) => void onSubmit(event)}>
+      <fieldset className="form-section" disabled={saving}>
+        <legend>{title}</legend>
+        <div className="form-grid">{children}</div>
+        <div className="section-save-bar">
+          <button className="button primary" type="submit">
+            <Save size={16} /> Bereich speichern
+          </button>
+        </div>
+      </fieldset>
+    </form>
   );
 }
 
