@@ -98,6 +98,18 @@ const copyDirectoryWithoutOverwrite = async (
   }
 };
 
+const legacyApplicationDocumentDirectories = new Set([
+  "Anschreiben",
+  "Lebenslauf",
+  "Zeugnisse",
+  "Zertifikate",
+]);
+
+const isApplicationDataFile = (relativePath: string) => {
+  const [, applicationSubdirectory] = relativePath.split(path.sep);
+  return !legacyApplicationDocumentDirectories.has(applicationSubdirectory);
+};
+
 export class LegacyMigrationService {
   private readonly files: FileManagementService;
 
@@ -143,6 +155,7 @@ export class LegacyMigrationService {
         directory === "Bewerbungen"
           ? this.paths.applicationsData
           : path.join(this.paths.dataRoot, directory),
+        directory === "Bewerbungen" ? isApplicationDataFile : undefined,
       );
     }
     await copyDirectoryWithoutOverwrite(

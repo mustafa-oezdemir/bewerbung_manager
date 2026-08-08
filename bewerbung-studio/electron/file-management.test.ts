@@ -1,4 +1,4 @@
-import { access, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -83,8 +83,11 @@ describe("FileManagementService", () => {
       folderName,
       status: "Beworben",
     } as Application;
-    await service.ensureApplicationDirectories(application);
     const active = service.documentDirectories(application);
+    await Promise.all([
+      mkdir(active.anschreiben, { recursive: true }),
+      mkdir(active.lebenslauf, { recursive: true }),
+    ]);
     await writeFile(path.join(active.anschreiben, "Anschreiben.docx"), "cover");
     await writeFile(path.join(active.lebenslauf, "Lebenslauf.docx"), "resume");
 

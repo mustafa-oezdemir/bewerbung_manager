@@ -1,5 +1,6 @@
 import {
   access,
+  mkdir,
   mkdtemp,
   readFile,
   readdir,
@@ -137,7 +138,7 @@ describe("DataStore backups", () => {
     expect(snapshotHtml).toContain("background-dots");
   });
 
-  it("creates company-date folders and keeps repeated applications unique", async () => {
+  it("creates only company-date Anschreiben folders for drafts", async () => {
     const first = await store.createApplication(applicationInput("Siemens"));
     const firstApplication = first.applications[0];
     expect(firstApplication.folderName).toMatch(
@@ -157,13 +158,77 @@ describe("DataStore backups", () => {
       ),
     ).resolves.toBeUndefined();
     await expect(
+      readdir(
+        path.join(
+          store.files.paths.anschreibenDocuments,
+          firstApplication.folderName,
+        ),
+      ),
+    ).resolves.toEqual([]);
+    await expect(
       access(
         path.join(
           store.files.paths.lebenslaufDocuments,
           firstApplication.folderName,
         ),
       ),
+    ).rejects.toThrow();
+    await expect(
+      access(
+        path.join(
+          store.files.paths.applicationsData,
+          firstApplication.folderName,
+        ),
+      ),
     ).resolves.toBeUndefined();
+    await expect(
+      readFile(
+        path.join(
+          store.files.paths.applicationsData,
+          firstApplication.folderName,
+          "bewerbung.json",
+        ),
+        "utf8",
+      ),
+    ).resolves.toContain('"status": "Entwurf"');
+
+    await store.changeStatus(firstApplication.id, "Bewerbungsbereit");
+    await expect(
+      access(
+        path.join(
+          store.files.paths.lebenslaufDocuments,
+          firstApplication.folderName,
+        ),
+      ),
+    ).rejects.toThrow();
+  });
+
+  it("does not rewrite user-authored application documents", async () => {
+    const first = await store.createApplication(applicationInput("Erste GmbH"));
+    const firstApplication = first.applications[0];
+    const coverLetterPath = path.join(
+      store.files.documentDirectories(firstApplication).anschreiben,
+      "Erste_GmbH.md",
+    );
+    await writeFile(coverLetterPath, "Manuell bearbeitet", "utf8");
+
+    const second = await store.createApplication(applicationInput("Zweite AG"));
+    const secondApplication = second.applications[0];
+    const secondCoverLetterPath = path.join(
+      store.files.documentDirectories(secondApplication).anschreiben,
+      "Zweite_AG.md",
+    );
+    await writeFile(secondCoverLetterPath, "Auch manuell bearbeitet", "utf8");
+    secondApplication.documents.coverIntroduction =
+      "Nur dieses Anschreiben wurde geändert.";
+    await store.saveApplication(secondApplication);
+
+    await expect(readFile(coverLetterPath, "utf8")).resolves.toBe(
+      "Manuell bearbeitet",
+    );
+    await expect(readFile(secondCoverLetterPath, "utf8")).resolves.toBe(
+      "Auch manuell bearbeitet",
+    );
   });
 
   it("links central archive documents without copying or deleting them", async () => {
@@ -195,10 +260,14 @@ describe("DataStore backups", () => {
 
   it("keeps the record and archives company documents when status becomes Absage", async () => {
     const created = await store.createApplication(
-      applicationInput("Absage GmbH"),
+      {
+        ...applicationInput("Absage GmbH"),
+        sentAt: new Date().toISOString(),
+      },
     );
     const application = created.applications[0];
     const active = store.files.documentDirectories(application);
+    await mkdir(active.lebenslauf, { recursive: true });
     await writeFile(path.join(active.lebenslauf, "Lebenslauf.docx"), "resume");
 
     const rejected = await store.changeStatus(application.id, "Absage");

@@ -16,7 +16,9 @@ import {
 
 export const applicationStatuses = [
   "Entwurf",
+  "Selbst erstellt",
   "Bewerbungsbereit",
+  "Gesendet",
   "Beworben",
   "Eingangsbestätigung",
   "In Prüfung",

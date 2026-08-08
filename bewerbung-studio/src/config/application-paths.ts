@@ -44,7 +44,7 @@ export const resolveApplicationPaths = (
     deckblattTemplates: path.join(musterRoot, "Deckblatt"),
     lebenslaufTemplates: path.join(musterRoot, "Lebenslauf"),
     anschreibenDocuments: path.join(root, "Anschreiben"),
-    lebenslaufDocuments: path.join(root, "Lebenslauf"),
+    lebenslaufDocuments: path.join(root, "Lebenlauf"),
     zeugnisseArchive: path.join(root, "Zeugnisse"),
     zertifikateArchive: path.join(root, "Zertifikate"),
     absagenRoot: path.join(root, "Absagen"),

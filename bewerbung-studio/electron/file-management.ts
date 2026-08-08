@@ -131,7 +131,7 @@ export class FileManagementService {
       ]);
       if (occupied.some(Boolean)) continue;
       try {
-        await mkdir(this.applicationDataPath(folderName));
+        await mkdir(path.join(this.paths.anschreibenDocuments, folderName));
         return folderName;
       } catch (error) {
         const code =
@@ -144,17 +144,10 @@ export class FileManagementService {
     throw new Error("Für die Bewerbung konnte kein eindeutiger Ordner erstellt werden.");
   }
 
-  async ensureApplicationDirectories(application: Application) {
+  async ensureApplicationDataDirectories(application: Application) {
     const dataRoot = this.applicationDataPath(application.folderName);
-    const documents = this.documentDirectories(application);
-    await Promise.all([
-      mkdir(path.join(dataRoot, "Stellenanzeige"), { recursive: true }),
-      mkdir(documents.anschreiben, { recursive: true }),
-      mkdir(documents.deckblatt, { recursive: true }),
-      mkdir(documents.lebenslauf, { recursive: true }),
-      mkdir(path.join(dataRoot, "Export"), { recursive: true }),
-    ]);
-    return { dataRoot, documents };
+    await mkdir(path.join(dataRoot, "Stellenanzeige"), { recursive: true });
+    return { dataRoot };
   }
 
   archiveRootForCategory(category: "Zeugnisse" | "Zertifikate") {

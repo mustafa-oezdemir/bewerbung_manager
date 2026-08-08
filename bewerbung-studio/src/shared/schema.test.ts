@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   appSettingsSchema,
+  applicationStatuses,
   applicationDraftSchema,
   applicationInputSchema,
   attachmentSchema,
@@ -9,6 +10,11 @@ import {
 } from "./schema";
 
 describe("BewerbungsManager schemas", () => {
+  it("offers self-created and sent application statuses", () => {
+    expect(applicationStatuses).toContain("Selbst erstellt");
+    expect(applicationStatuses).toContain("Gesendet");
+  });
+
   it("accepts a complete minimal application input", () => {
     const result = applicationInputSchema.safeParse({
       company: {

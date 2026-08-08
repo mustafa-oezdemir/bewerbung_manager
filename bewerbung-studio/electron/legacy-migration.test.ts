@@ -94,6 +94,16 @@ describe("legacy migration", () => {
     await expect(readFile(migratedDocument, "utf8")).resolves.toBe(
       "legacy-cover",
     );
+    await expect(
+      access(
+        path.join(
+          targetStore.dataPath,
+          "Bewerbungen",
+          application.folderName,
+          "Anschreiben",
+        ),
+      ),
+    ).rejects.toThrow();
     await expect(readFile(legacyDocument, "utf8")).resolves.toBe(
       "legacy-cover",
     );

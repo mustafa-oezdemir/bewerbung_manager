@@ -41,7 +41,7 @@ import {
 } from "../src/shared/documentDesign";
 import { ensureKnowledgeSection } from "../src/features/knowledge/knowledge.service";
 import { formatKnowledgeSectionAsText } from "../src/features/knowledge/knowledge.utils";
-import { buildCoverLetterMarkdown, buildDocumentHtml } from "./documents";
+import { buildDocumentHtml } from "./documents";
 import {
   FileManagementService,
   sanitizeFileName,
@@ -259,7 +259,9 @@ export class DataStore {
     }
   }
 
-  private async persist() {
+  private async persist(applicationsToPersist: readonly Application[] = []) {
+    // Application documents are snapshots. Unrelated workspace saves must not
+    // rewrite older application folders or their modification timestamps.
     this.workspace.updatedAt = nowIso();
     const validated = workspaceSchema.parse(this.workspace);
     await this.atomicWrite(
@@ -267,8 +269,8 @@ export class DataStore {
       JSON.stringify(validated, null, 2),
     );
     await Promise.all(
-      validated.applications.map((application) =>
-        this.persistApplicationFiles(application),
+      applicationsToPersist.map((application) =>
+        this.persistApplicationFiles(applicationSchema.parse(application)),
       ),
     );
     await this.createAutomaticBackup();
@@ -313,18 +315,15 @@ export class DataStore {
     return this.applicationPath(application);
   }
 
-  private async ensureApplicationDirectories(application: Application) {
-    return this.files.ensureApplicationDirectories(application);
+  private async ensureApplicationDataDirectories(application: Application) {
+    return this.files.ensureApplicationDataDirectories(application);
   }
 
   private async persistApplicationFiles(application: Application) {
-    const { dataRoot, documents } =
-      await this.ensureApplicationDirectories(application);
-    const profile = this.workspace.profiles.find(
-      (item) =>
-        item.id === application.profileId ||
-        (!application.profileId && item.isDefault),
-    );
+    const documents = this.files.documentDirectories(application);
+    await mkdir(documents.anschreiben, { recursive: true });
+    const { dataRoot } =
+      await this.ensureApplicationDataDirectories(application);
     await Promise.all([
       this.atomicWrite(
         path.join(dataRoot, "bewerbung.json"),
@@ -337,17 +336,6 @@ export class DataStore {
       this.atomicWrite(
         path.join(dataRoot, "Stellenanzeige", "stellenanzeige.txt"),
         application.job.fullText,
-      ),
-      this.atomicWrite(
-        path.join(
-          documents.anschreiben,
-          `${sanitizeFileName(application.company.name)}.md`,
-        ),
-        buildCoverLetterMarkdown(application, profile),
-      ),
-      this.atomicWrite(
-        path.join(dataRoot, "Export", "bewerbungsmappe.html"),
-        buildDocumentHtml(application, profile, "mappe"),
       ),
     ]);
   }
@@ -466,7 +454,7 @@ export class DataStore {
       true,
     );
     const followUp =
-      application.status === "Beworben" &&
+      (application.status === "Beworben" || application.status === "Gesendet") &&
       application.sentAt &&
       this.workspace.settings.followUpDays !== null
         ? addDaysAtNine(application.sentAt, this.workspace.settings.followUpDays)
@@ -534,7 +522,7 @@ export class DataStore {
     };
     this.workspace.applications.unshift(applicationSchema.parse(application));
     this.syncEvents(application);
-    await this.persist();
+    await this.persist([application]);
     return this.getWorkspace();
   }
 
@@ -547,7 +535,7 @@ export class DataStore {
     application.updatedAt = nowIso();
     this.workspace.applications[index] = application;
     this.syncEvents(application);
-    await this.persist();
+    await this.persist([application]);
     return this.getWorkspace();
   }
 
@@ -573,7 +561,7 @@ export class DataStore {
       if (status === "Zurückgezogen") application.withdrawnAt = now;
       if (status === "Archiviert") application.archivedAt = now;
       this.syncEvents(application);
-      await this.persist();
+      await this.persist([application]);
     }
     return this.getWorkspace();
   }
@@ -615,7 +603,7 @@ export class DataStore {
     };
     this.workspace.applications.unshift(duplicate);
     this.syncEvents(duplicate);
-    await this.persist();
+    await this.persist([duplicate]);
     return this.getWorkspace();
   }
 
@@ -680,7 +668,7 @@ export class DataStore {
     };
     this.workspace.attachments.push(attachment);
     application.attachmentIds.push(attachment.id);
-    await this.persist();
+    await this.persist([application]);
     return this.getWorkspace();
   }
 
@@ -773,7 +761,7 @@ export class DataStore {
     application.attachmentIds = application.attachmentIds.filter(
       (attachmentId) => attachmentId !== id,
     );
-    await this.persist();
+    await this.persist([application]);
     return this.getWorkspace();
   }
 
@@ -1189,7 +1177,7 @@ export class DataStore {
     const previous = this.workspace;
     try {
       this.workspace = await this.migration.migrate(sourcePath);
-      await this.persist();
+      await this.persist(this.workspace.applications);
       await this.atomicWrite(
         path.join(
           this.dataPath,
@@ -1248,7 +1236,7 @@ export class DataStore {
           availableIds.has(id),
         );
       });
-      await this.persist();
+      await this.persist(this.workspace.applications);
       return this.getWorkspace();
     } catch (error) {
       this.workspace = previous;
