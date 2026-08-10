@@ -64,7 +64,15 @@ export function DashboardView({
         !event.completed &&
         new Date(event.startAt) < now,
     )
+    .sort(
+      (left, right) =>
+        new Date(right.startAt).getTime() - new Date(left.startAt).getTime(),
+    )
     .slice(0, 4);
+  const notifications = [
+    ...due.map((event) => ({ event, overdue: true })),
+    ...upcoming.map((event) => ({ event, overdue: false })),
+  ].slice(0, 4);
   const recent = [...applications]
     .sort(
       (left, right) =>
@@ -132,6 +140,56 @@ export function DashboardView({
             </div>
           </article>
         ))}
+      </section>
+
+      <section className="surface notification-panel" aria-labelledby="notification-title">
+        <header className="section-header">
+          <div className="notification-heading">
+            <span className="notification-heading-emoji" aria-hidden="true">🔔</span>
+            <div>
+              <p className="eyebrow">Auf dem Laufenden</p>
+              <h3 id="notification-title">Benachrichtigungen</h3>
+            </div>
+          </div>
+          <button className="text-button" onClick={onOpenCalendar}>
+            Zum Kalender <ArrowUpRight size={15} />
+          </button>
+        </header>
+
+        {notifications.length ? (
+          <div className="notification-list">
+            {notifications.map(({ event, overdue }) => (
+              <button
+                className={`notification-item ${overdue ? "overdue" : "upcoming"}`}
+                key={event.id}
+                onClick={() => openApplication(event.applicationId)}
+              >
+                <span className="notification-emoji" aria-hidden="true">
+                  {notificationEmoji(event.type, overdue)}
+                </span>
+                <span className="notification-copy">
+                  <strong>{event.title}</strong>
+                  <small>
+                    {overdue ? "Überfällig" : relativeEventDate(event.startAt, now)}
+                    {" · "}
+                    {formatDate(event.startAt, !event.allDay)}
+                  </small>
+                </span>
+                <span className="notification-status">
+                  {overdue ? "Offen" : "Geplant"}
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="notification-empty">
+            <span aria-hidden="true">✅</span>
+            <div>
+              <strong>Alles erledigt</strong>
+              <p>Aktuell gibt es keine offenen Erinnerungen oder anstehenden Termine.</p>
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="dashboard-columns">
@@ -255,4 +313,28 @@ function EmptyState({ text }: { text: string }) {
       <p>{text}</p>
     </div>
   );
+}
+
+function notificationEmoji(type: string, overdue: boolean) {
+  if (overdue) return "⏰";
+  if (type.includes("interview") || type === "assessment") return "🤝";
+  if (type.includes("deadline") || type.includes("end")) return "⚠️";
+  if (type.includes("follow-up")) return "✉️";
+  if (type === "contract-start") return "🎉";
+  return "📅";
+}
+
+function relativeEventDate(value: string, now: Date) {
+  const eventDate = new Date(value);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const target = new Date(
+    eventDate.getFullYear(),
+    eventDate.getMonth(),
+    eventDate.getDate(),
+  );
+  const days = Math.round((target.getTime() - today.getTime()) / 86_400_000);
+
+  if (days === 0) return "Heute";
+  if (days === 1) return "Morgen";
+  return `In ${days} Tagen`;
 }
