@@ -97,7 +97,7 @@ export function CalendarView({
                 >
                   <strong>{day.getDate()}</strong>
                   <div>
-                    {dayEvents.slice(0, 3).map((event) => (
+                    {dayEvents.map((event) => (
                       <button
                         key={event.id}
                         className={`calendar-event ${event.type}`}
@@ -107,7 +107,6 @@ export function CalendarView({
                         {event.title}
                       </button>
                     ))}
-                    {dayEvents.length > 3 && <small>+{dayEvents.length - 3} weitere</small>}
                   </div>
                 </article>
               );

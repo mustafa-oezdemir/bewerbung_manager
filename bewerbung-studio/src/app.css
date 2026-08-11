@@ -1703,7 +1703,8 @@ kbd {
 
 .calendar {
   padding: 0;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .weekday-row,
@@ -5119,18 +5120,14 @@ kbd {
     padding: 5px;
   }
 
-  .calendar-event {
-    max-width: 100%;
-    font-size: 0;
+  .weekday-row,
+  .month-grid {
+    min-width: 760px;
   }
 
-  .calendar-event::before {
-    display: block;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: currentColor;
-    content: "";
+  .calendar-event {
+    max-width: 100%;
+    font-size: 0.55rem;
   }
 
   .save-bar {
