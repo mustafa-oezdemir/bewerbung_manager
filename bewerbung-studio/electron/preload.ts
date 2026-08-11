@@ -26,6 +26,8 @@ const api: BewerbungsManagerApi = {
     scan: () => ipcRenderer.invoke("templates:scan"),
     add: (input) => ipcRenderer.invoke("templates:add", input),
     use: (input) => ipcRenderer.invoke("templates:use", input),
+    syncAnschreiben: (applicationId) =>
+      ipcRenderer.invoke("templates:sync-anschreiben", applicationId),
     duplicate: (templateId) =>
       ipcRenderer.invoke("templates:duplicate", templateId),
     copyToMuster: (templateId) =>

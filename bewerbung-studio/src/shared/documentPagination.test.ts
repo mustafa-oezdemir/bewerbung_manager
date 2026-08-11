@@ -341,6 +341,7 @@ describe("A4 document pagination", () => {
       coverMotivation: "B".repeat(900),
       coverQualification: "C".repeat(900),
       coverCompanyFit: "D".repeat(900),
+      coverExtraParagraph: "",
       coverClosing: "E".repeat(900),
       resumeProfile: "",
       deckblattStatement: "",

@@ -342,6 +342,42 @@ export class TemplateService {
       : result;
   }
 
+  async synchronizeDocumentFromTemplate(
+    templateId: string,
+    targetDirectory: string,
+    requestedBaseName: string,
+    data: Record<string, string>,
+  ): Promise<CreatedDocumentResult> {
+    const template = await this.requireTemplate(templateId);
+    const allowedDocumentRoots = [
+      this.paths.applicationsData,
+      this.paths.anschreibenDocuments,
+      this.paths.lebenslaufDocuments,
+      this.paths.absagenRoot,
+    ];
+    if (
+      !allowedDocumentRoots.some((root) =>
+        isPathInside(root, targetDirectory),
+      )
+    ) {
+      throw new TemplateError("Ungültiger Zielordner.", "INVALID_PATH");
+    }
+    await validateTemplateFile(this.paths, template.filePath);
+    await mkdir(targetDirectory, { recursive: true });
+    const outputExtension = template.extension === ".doc" ? ".doc" : ".docx";
+    const targetPath = path.join(
+      targetDirectory,
+      `${sanitizeTemplateFileName(requestedBaseName)}${outputExtension}`,
+    );
+    return withOneDriveRetry(() =>
+      this.placeholderService.createDocument(
+        template,
+        targetPath,
+        data,
+      ),
+    );
+  }
+
   async toggleTemplateFavorite(templateId: string) {
     const template = await this.requireTemplate(templateId);
     await this.repository.writeMetadata(template.filePath, {

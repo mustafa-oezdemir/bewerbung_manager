@@ -313,6 +313,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
   const application = useAppStore(selectCurrentApplication);
   const profiles = useAppStore((state) => state.workspace.profiles);
   const saveApplication = useAppStore((state) => state.saveApplication);
+  const syncCoverLetter = useAppStore((state) => state.syncCoverLetter);
   const saveProfile = useAppStore((state) => state.saveProfile);
   const exportPdf = useAppStore((state) => state.exportPdf);
   const openFolder = useAppStore((state) => state.openFolder);
@@ -321,6 +322,10 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
   const [resumeSectionPreview, setResumeSectionPreview] = useState<{
     templateId: string;
     profile: ApplicantProfile;
+  } | null>(null);
+  const [documentPreview, setDocumentPreview] = useState<{
+    applicationId: string;
+    documents: DocumentDraft;
   } | null>(null);
   const handleResumeSectionPreview = useCallback(
     (templateId: string, previewProfile: ApplicantProfile | null) => {
@@ -383,6 +388,16 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
       settings: application.designSettings,
     });
   }, [application, design.applicationId]);
+  useEffect(() => {
+    if (!application) {
+      setDocumentPreview(null);
+      return;
+    }
+    setDocumentPreview({
+      applicationId: application.id,
+      documents: application.documents,
+    });
+  }, [application]);
 
   if (!application) {
     return (
@@ -406,7 +421,10 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
     resumeSectionPreview.profile.id === profile?.id
       ? resumeSectionPreview.profile
       : profile;
-  const docs = application.documents;
+  const docs =
+    documentPreview?.applicationId === application.id
+      ? documentPreview.documents
+      : application.documents;
   const sections = renderProfile?.resumeSections ?? {
     profile: true,
     experience: true,
@@ -429,6 +447,19 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
         .filter(Boolean)
         .join(" · ")
     : "Adresse · E-Mail · Telefon";
+  const recipientName = [
+    application.contact.firstName,
+    application.contact.lastName,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const recipientContactLine = recipientName
+    ? application.contact.salutation === "Herr"
+      ? `Herrn ${recipientName}`
+      : application.contact.salutation === "Frau"
+        ? `Frau ${recipientName}`
+        : recipientName
+    : "";
   const paginatedProfile = renderProfile
     ? {
         ...renderProfile,
@@ -586,6 +617,10 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
           "coverCompanyFit",
           docs.coverCompanyFit,
         ),
+        coverExtraParagraph: value(
+          "coverExtraParagraph",
+          docs.coverExtraParagraph,
+        ),
         coverClosing: value("coverClosing", docs.coverClosing),
         resumeProfile: value("resumeProfile", docs.resumeProfile),
         deckblattStatement: value(
@@ -596,9 +631,31 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
     };
   };
 
+  const previewDocumentInput = (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
+    const target = event.target;
+    if (
+      !(target instanceof HTMLInputElement) &&
+      !(target instanceof HTMLTextAreaElement)
+    ) {
+      return;
+    }
+    const name = target.name as keyof DocumentDraft;
+    if (!name || !(name in docs)) return;
+    setDocumentPreview({
+      applicationId: application.id,
+      documents: { ...docs, [name]: target.value },
+    });
+  };
+
   const save = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await saveApplication(applicationSnapshot(event.currentTarget));
+    const snapshot = applicationSnapshot(event.currentTarget);
+    await saveApplication(snapshot);
+    if (tab === "anschreiben") {
+      await syncCoverLetter(snapshot.id);
+    }
   };
 
   const exportCurrentPdf = async (
@@ -662,7 +719,11 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
               Lebenslauf
             </button>
           </div>
-          <form ref={formRef} onSubmit={(event) => void save(event)}>
+          <form
+            key={application.id}
+            ref={formRef}
+            onInput={previewDocumentInput}
+            onSubmit={(event) => void save(event)}>
             {tab === "deckblatt" && (
               <label className="field">
                 <span>Kurzprofil auf dem Deckblatt</span>
@@ -713,6 +774,15 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                   />
                 </label>
                 <label className="field">
+                  <span>Zusätzlicher Absatz (optional)</span>
+                  <textarea
+                    name="coverExtraParagraph"
+                    rows={4}
+                    defaultValue={docs.coverExtraParagraph}
+                    placeholder="Optionaler zusätzlicher Absatz – leer lassen, wenn er nicht benötigt wird."
+                  />
+                </label>
+                <label className="field">
                   <span>Schluss</span>
                   <textarea
                     name="coverClosing"
@@ -745,6 +815,11 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                       : "Der aktuelle Text liegt im gut lesbaren Ein-Seiten-Bereich."}
                   </small>
                 </section>
+                <p className="word-sync-note">
+                  Beim Speichern wird die Word-Datei aus der persönlichen
+                  Anschreiben-Vorlage im Bewerbungsordner erstellt oder
+                  aktualisiert.
+                </p>
               </>
             )}
             {tab === "lebenslauf" && (
@@ -1230,7 +1305,10 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
               </p>
             </div>
             <button className="button primary full-button" type="submit">
-              <Save size={17} /> Texte speichern
+              <Save size={17} />{" "}
+              {tab === "anschreiben"
+                ? "Texte speichern & Word aktualisieren"
+                : "Texte speichern"}
             </button>
           </form>
         </aside>
@@ -1272,6 +1350,9 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
               <div className="letter-preview">
                 <p className="sender-line">
                   <span className="sender-name">{name}</span>
+                  <span className="sender-title">
+                    {profile?.title || application.job.title}
+                  </span>
                   <span className="sender-contact">
                     {senderContactDetails}
                   </span>
@@ -1280,15 +1361,18 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                 <address>
                   {application.company.name}
                   <br />
-                  {[application.contact.firstName, application.contact.lastName]
-                    .filter(Boolean)
-                    .join(" ")}
-                  <br />
+                  {recipientContactLine ? (
+                    <>
+                      {recipientContactLine}
+                      <br />
+                    </>
+                  ) : null}
                   {application.company.street}
                   <br />
                   {application.company.postalCode} {application.company.city}
                 </address>
                 <p className="paper-date">
+                  {profile?.city ? `${profile.city}, ` : ""}
                   {new Intl.DateTimeFormat("de-DE", {
                     dateStyle: "long",
                   }).format(new Date())}
@@ -1314,6 +1398,9 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                 <p className="letter-body">
                   {docs.coverCompanyFit || "Unternehmensbezug ergänzen …"}
                 </p>
+                {docs.coverExtraParagraph ? (
+                  <p className="letter-body">{docs.coverExtraParagraph}</p>
+                ) : null}
                 <p className="letter-body">{docs.coverClosing}</p>
                 <p className="letter-signature">
                   <span>Mit freundlichen Grüßen</span>

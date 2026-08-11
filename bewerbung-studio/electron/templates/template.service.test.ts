@@ -1,6 +1,7 @@
 import {
   mkdir,
   mkdtemp,
+  readdir,
   readFile,
   rm,
   stat,
@@ -175,7 +176,7 @@ describe("Musterverwaltung", () => {
 
     expect(wordMuster).toMatchObject({
       id: "word-muster-anschreiben",
-      name: "Word Muster",
+      name: "Anschreiben Mustafa Özdemir",
       fileName: "Anschreiben_Muster.docx",
       format: "docx",
       source: "uploaded-word-template",
@@ -899,6 +900,86 @@ describe("Musterverwaltung", () => {
     expect(documentXml).toContain("<w:b/>");
     expect(await readFile(templatePath)).not.toEqual(
       await readFile(created.filePath),
+    );
+  });
+
+  it("synchronizes one stable DOCX instead of creating timestamped copies", async () => {
+    const templatePath = path.join(
+      paths.anschreibenTemplates,
+      "Synchronisiert.docx",
+    );
+    await createDocx(
+      templatePath,
+      `<w:p><w:r><w:t>{{FIRMA_NAME}}</w:t></w:r></w:p>
+       <w:p><w:r><w:t>{{EINLEITUNG}}</w:t></w:r></w:p>`,
+    );
+    const result = await service.scanAllTemplates();
+    const template = result.templates.find(
+      (item) => item.fileName === "Synchronisiert.docx",
+    )!;
+    const targetDirectory = path.join(
+      paths.anschreibenDocuments,
+      "Bosch_2026-08-11",
+      "Softwareentwickler_PHP",
+    );
+
+    const first = await service.synchronizeDocumentFromTemplate(
+      template.id,
+      targetDirectory,
+      "Anschreiben_Mustafa_Özdemir",
+      { FIRMA_NAME: "Bosch", EINLEITUNG: "Kurze Einleitung" },
+    );
+    const second = await service.synchronizeDocumentFromTemplate(
+      template.id,
+      targetDirectory,
+      "Anschreiben_Mustafa_Özdemir",
+      {
+        FIRMA_NAME: "Robert Bosch GmbH",
+        EINLEITUNG: "Langer Anschreibentext ".repeat(120),
+      },
+    );
+    const outputZip = new PizZip(await readFile(second.filePath));
+
+    expect(second.filePath).toBe(first.filePath);
+    expect(second.fileName).toBe("Anschreiben_Mustafa_Oezdemir.docx");
+    expect(await readdir(targetDirectory)).toEqual([
+      "Anschreiben_Mustafa_Oezdemir.docx",
+    ]);
+    expect(outputZip.file("word/document.xml")!.asText()).toContain(
+      "Robert Bosch GmbH",
+    );
+  });
+
+  it("adds an optional extra paragraph before the closing in older templates", async () => {
+    const templatePath = path.join(
+      paths.anschreibenTemplates,
+      "Zusatzabsatz.docx",
+    );
+    await createDocx(
+      templatePath,
+      `<w:p><w:r><w:t>{{SCHLUSSTEXT}}</w:t></w:r></w:p>`,
+    );
+    const result = await service.scanAllTemplates();
+    const template = result.templates.find(
+      (item) => item.fileName === "Zusatzabsatz.docx",
+    )!;
+    const created = await service.synchronizeDocumentFromTemplate(
+      template.id,
+      path.join(paths.anschreibenDocuments, "Beispiel", "Entwicklung"),
+      "Anschreiben",
+      {
+        ZUSATZABSATZ: "Optionaler Zusatzabsatz.",
+        SCHLUSSTEXT: "Abschließender Absatz.",
+      },
+    );
+    const documentXml = new PizZip(await readFile(created.filePath))
+      .file("word/document.xml")!
+      .asText();
+
+    expect(documentXml).toContain("Optionaler Zusatzabsatz.");
+    expect(documentXml).toContain("Abschließender Absatz.");
+    expect(documentXml.indexOf("Optionaler Zusatzabsatz.")).toBeLessThan(
+      documentXml.indexOf("Abschließender Absatz."),
     );
   });
 

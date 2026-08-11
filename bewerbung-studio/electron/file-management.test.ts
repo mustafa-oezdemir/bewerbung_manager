@@ -46,15 +46,30 @@ describe("FileManagementService", () => {
     expect(sanitizeFileName('  <>:"/\\|?*  ')).toBe("Bewerbung");
   });
 
-  it("uses a local ISO date and adds deterministic collision suffixes", async () => {
+  it("groups applications by company/date and adds position collision suffixes", async () => {
     const date = new Date(2026, 6, 30, 12, 0, 0);
     expect(formatLocalDate(date)).toBe("2026-07-30");
     await expect(
-      service.allocateApplicationFolderName("Siemens", date),
-    ).resolves.toBe("Siemens_2026-07-30");
+      service.allocateApplicationFolderName(
+        "Siemens",
+        "Softwareentwickler",
+        date,
+      ),
+    ).resolves.toBe(
+      path.join("Siemens_2026-07-30", "Softwareentwickler"),
+    );
     await expect(
-      service.allocateApplicationFolderName("Siemens", date),
-    ).resolves.toBe("Siemens_2026-07-30_2");
+      service.allocateApplicationFolderName("Siemens", "IT Support", date),
+    ).resolves.toBe(path.join("Siemens_2026-07-30", "IT_Support"));
+    await expect(
+      service.allocateApplicationFolderName(
+        "Siemens",
+        "Softwareentwickler",
+        date,
+      ),
+    ).resolves.toBe(
+      path.join("Siemens_2026-07-30", "Softwareentwickler_2"),
+    );
   });
 
   it("only accepts archive files from the configured category root", async () => {
@@ -77,6 +92,7 @@ describe("FileManagementService", () => {
   it("moves company documents into Absagen without deleting their contents", async () => {
     const folderName = await service.allocateApplicationFolderName(
       "Siemens",
+      "Softwareentwickler",
       new Date(2026, 6, 30),
     );
     const application = {
@@ -105,5 +121,49 @@ describe("FileManagementService", () => {
     ).resolves.toBe("resume");
     await expect(access(active.anschreiben)).rejects.toThrow();
     await expect(access(active.lebenslauf)).rejects.toThrow();
+  });
+
+  it("deletes all application folders from active and rejection locations", async () => {
+    const folderName = "Siemens_2026-07-30";
+    const targets = [
+      service.applicationDataPath(folderName),
+      path.join(service.paths.anschreibenDocuments, folderName),
+      path.join(service.paths.lebenslaufDocuments, folderName),
+      service.rejectionPath(folderName),
+    ];
+    await Promise.all(
+      targets.map(async (target) => {
+        await mkdir(target, { recursive: true });
+        await writeFile(path.join(target, "Dokument.docx"), "content");
+      }),
+    );
+
+    await service.removeApplicationArtifacts({ folderName });
+
+    await Promise.all(
+      targets.map((target) => expect(access(target)).rejects.toThrow()),
+    );
+  });
+
+  it("refuses to delete an application root", async () => {
+    await expect(
+      service.removeApplicationArtifacts({ folderName: "." }),
+    ).rejects.toThrow(/Ungültiger Bewerbungsordner/);
+    await expect(access(service.paths.applicationsData)).resolves.toBeUndefined();
+  });
+
+  it("protects nested position applications inside an older flat folder", async () => {
+    const legacyFolder = "Siemens_2026-07-30";
+    const nestedData = path.join(
+      service.applicationDataPath(legacyFolder),
+      "Softwareentwickler",
+    );
+    await mkdir(nestedData, { recursive: true });
+    await writeFile(path.join(nestedData, "bewerbung.json"), "{}");
+
+    await expect(
+      service.removeApplicationArtifacts({ folderName: legacyFolder }),
+    ).rejects.toThrow(/positionsbezogene Bewerbungen/);
+    await expect(access(nestedData)).resolves.toBeUndefined();
   });
 });

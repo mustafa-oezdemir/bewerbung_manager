@@ -1,4 +1,4 @@
-import { access, mkdir, rename } from "node:fs/promises";
+import { access, mkdir, readdir, rename, rm } from "node:fs/promises";
 import path from "node:path";
 import type { Application, ApplicationStatus } from "../src/shared/schema";
 import type { ApplicationPaths } from "../src/config/application-paths";
@@ -119,10 +119,17 @@ export class FileManagementService {
     };
   }
 
-  async allocateApplicationFolderName(companyName: string, date = new Date()) {
-    const baseName = `${sanitizeFileName(companyName)}_${formatLocalDate(date)}`;
+  async allocateApplicationFolderName(
+    companyName: string,
+    positionName: string,
+    date = new Date(),
+  ) {
+    const companyDateFolder = `${sanitizeFileName(companyName)}_${formatLocalDate(date)}`;
+    const positionFolder = sanitizeFileName(positionName);
     for (let suffix = 1; suffix < 10_000; suffix += 1) {
-      const folderName = suffix === 1 ? baseName : `${baseName}_${suffix}`;
+      const uniquePositionFolder =
+        suffix === 1 ? positionFolder : `${positionFolder}_${suffix}`;
+      const folderName = path.join(companyDateFolder, uniquePositionFolder);
       const occupied = await Promise.all([
         pathExists(this.applicationDataPath(folderName)),
         pathExists(path.join(this.paths.anschreibenDocuments, folderName)),
@@ -131,7 +138,9 @@ export class FileManagementService {
       ]);
       if (occupied.some(Boolean)) continue;
       try {
-        await mkdir(path.join(this.paths.anschreibenDocuments, folderName));
+        await mkdir(path.join(this.paths.anschreibenDocuments, folderName), {
+          recursive: true,
+        });
         return folderName;
       } catch (error) {
         const code =
@@ -142,6 +151,29 @@ export class FileManagementService {
       }
     }
     throw new Error("Für die Bewerbung konnte kein eindeutiger Ordner erstellt werden.");
+  }
+
+  private async containsNestedApplications(folderName: string) {
+    const dataRoot = this.applicationDataPath(folderName);
+    let entries;
+    try {
+      entries = await readdir(dataRoot, { withFileTypes: true });
+    } catch (error) {
+      const code =
+        typeof error === "object" && error && "code" in error
+          ? String(error.code)
+          : "";
+      if (code === "ENOENT") return false;
+      throw error;
+    }
+    const nestedApplications = await Promise.all(
+      entries
+        .filter((entry) => entry.isDirectory())
+        .map((entry) =>
+          pathExists(path.join(dataRoot, entry.name, "bewerbung.json")),
+        ),
+    );
+    return nestedApplications.some(Boolean);
   }
 
   async ensureApplicationDataDirectories(application: Application) {
@@ -189,6 +221,11 @@ export class FileManagementService {
     const wasRejected = application.status === "Absage";
     const willBeRejected = nextStatus === "Absage";
     if (wasRejected === willBeRejected) return;
+    if (await this.containsNestedApplications(application.folderName)) {
+      throw new Error(
+        "Dieser ältere Bewerbungsordner enthält weitere positionsbezogene Bewerbungen und kann nicht als Ganzes verschoben werden.",
+      );
+    }
 
     const current = this.documentDirectories(application);
     const next = this.documentDirectories({
@@ -220,5 +257,34 @@ export class FileManagementService {
       }
       throw error;
     }
+  }
+
+  async removeApplicationArtifacts(
+    application: Pick<Application, "folderName">,
+  ) {
+    const folderName = application.folderName;
+    if (await this.containsNestedApplications(folderName)) {
+      throw new Error(
+        "Dieser ältere Bewerbungsordner enthält weitere positionsbezogene Bewerbungen und kann nicht als Ganzes gelöscht werden.",
+      );
+    }
+    const roots = [
+      this.paths.applicationsData,
+      this.paths.anschreibenDocuments,
+      this.paths.lebenslaufDocuments,
+      this.paths.absagenRoot,
+    ];
+    const targets = roots.map((root) => {
+      const resolvedRoot = path.resolve(root);
+      const candidate = path.resolve(root, folderName);
+      if (candidate === resolvedRoot || !isPathInside(resolvedRoot, candidate)) {
+        throw new Error("Ungültiger Bewerbungsordner.");
+      }
+      return candidate;
+    });
+
+    await Promise.all(
+      targets.map((target) => rm(target, { recursive: true, force: true })),
+    );
   }
 }

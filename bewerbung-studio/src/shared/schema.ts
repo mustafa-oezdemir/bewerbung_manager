@@ -122,6 +122,7 @@ export const documentDraftSchema = z.object({
   coverMotivation: optionalText,
   coverQualification: optionalText,
   coverCompanyFit: optionalText,
+  coverExtraParagraph: optionalText,
   coverClosing: optionalText,
   resumeProfile: optionalText,
   deckblattStatement: optionalText,
@@ -385,6 +386,19 @@ export const workspaceSchema = z.object({
   updatedAt: z.iso.datetime(),
 });
 
+export const deletedApplicationRecordSchema = z.object({
+  deletedAt: z.iso.datetime(),
+  application: applicationSchema,
+  events: z.array(calendarEventSchema),
+  attachments: z.array(attachmentSchema),
+});
+
+export const deletedApplicationsArchiveSchema = z.object({
+  schemaVersion: z.literal(1),
+  deletedApplications: z.array(deletedApplicationRecordSchema),
+  updatedAt: z.iso.datetime(),
+});
+
 export type Company = z.infer<typeof companySchema>;
 export type ContactPerson = z.infer<typeof contactPersonSchema>;
 export type JobAdvertisement = z.infer<typeof jobAdvertisementSchema>;
@@ -398,6 +412,12 @@ export type CalendarEvent = z.infer<typeof calendarEventSchema>;
 export type Attachment = z.infer<typeof attachmentSchema>;
 export type AppSettings = z.infer<typeof appSettingsSchema>;
 export type Workspace = z.infer<typeof workspaceSchema>;
+export type DeletedApplicationRecord = z.infer<
+  typeof deletedApplicationRecordSchema
+>;
+export type DeletedApplicationsArchive = z.infer<
+  typeof deletedApplicationsArchiveSchema
+>;
 
 export const defaultSettings: AppSettings = {
   followUpDays: 14,

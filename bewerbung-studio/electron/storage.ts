@@ -18,6 +18,7 @@ import {
   applicationSchema,
   appSettingsSchema,
   attachmentSchema,
+  deletedApplicationsArchiveSchema,
   defaultSettings,
   profileSchema,
   workspaceSchema,
@@ -31,6 +32,7 @@ import {
   type AttachmentCategory,
   type CalendarEvent,
   type CalendarEventType,
+  type DeletedApplicationsArchive,
   type RejectionReason,
   type Workspace,
 } from "../src/shared/schema";
@@ -139,6 +141,12 @@ const emptyWorkspace = (): Workspace => ({
   updatedAt: nowIso(),
 });
 
+const emptyDeletedApplicationsArchive = (): DeletedApplicationsArchive => ({
+  schemaVersion: 1,
+  deletedApplications: [],
+  updatedAt: nowIso(),
+});
+
 const timestamp = () =>
   new Date().toISOString().replace(/\D/g, "").slice(0, 14);
 
@@ -170,6 +178,7 @@ export class DataStore {
   readonly migration: LegacyMigrationService;
   private readonly workspacePath: string;
   private readonly applicationDraftPath: string;
+  private readonly deletedApplicationsPath: string;
   private workspace: Workspace = emptyWorkspace();
 
   constructor(rootOrPaths: string | ApplicationPaths) {
@@ -185,6 +194,11 @@ export class DataStore {
       this.dataPath,
       "Settings",
       "new-application-draft.json",
+    );
+    this.deletedApplicationsPath = path.join(
+      this.dataPath,
+      "Silinenler",
+      "silinenler.json",
     );
   }
 
@@ -233,6 +247,63 @@ export class DataStore {
       }
     }
     return emptyWorkspace();
+  }
+
+  private async loadDeletedApplicationsArchive() {
+    let archiveFound = false;
+    for (const candidate of [
+      this.deletedApplicationsPath,
+      `${this.deletedApplicationsPath}.bak`,
+    ]) {
+      try {
+        const parsed: unknown = JSON.parse(await readFile(candidate, "utf8"));
+        archiveFound = true;
+        const result = deletedApplicationsArchiveSchema.safeParse(parsed);
+        if (result.success) return result.data;
+      } catch (error) {
+        const code =
+          typeof error === "object" && error && "code" in error
+            ? String(error.code)
+            : "";
+        if (code !== "ENOENT") archiveFound = true;
+      }
+    }
+    if (archiveFound) {
+      throw new Error(
+        "Das Archiv der gelöschten Bewerbungen konnte nicht gelesen werden.",
+      );
+    }
+    return emptyDeletedApplicationsArchive();
+  }
+
+  private async archiveDeletedApplication(application: Application) {
+    const archive = await this.loadDeletedApplicationsArchive();
+    const record = {
+      deletedAt: nowIso(),
+      application: structuredClone(application),
+      events: structuredClone(
+        this.workspace.events.filter(
+          (event) => event.applicationId === application.id,
+        ),
+      ),
+      attachments: structuredClone(
+        this.workspace.attachments.filter(
+          (attachment) => attachment.applicationId === application.id,
+        ),
+      ),
+    };
+    archive.deletedApplications = [
+      record,
+      ...archive.deletedApplications.filter(
+        (item) => item.application.id !== application.id,
+      ),
+    ];
+    archive.updatedAt = record.deletedAt;
+    const validated = deletedApplicationsArchiveSchema.parse(archive);
+    await this.atomicWrite(
+      this.deletedApplicationsPath,
+      JSON.stringify(validated, null, 2),
+    );
   }
 
   private async atomicWrite(filePath: string, content: string) {
@@ -491,6 +562,7 @@ export class DataStore {
     const now = nowIso();
     const folderName = await this.files.allocateApplicationFolderName(
       input.company.name,
+      input.job.title,
     );
     const application: Application = {
       schemaVersion: 1,
@@ -504,6 +576,7 @@ export class DataStore {
         coverMotivation: "",
         coverQualification: "",
         coverCompanyFit: "",
+        coverExtraParagraph: "",
         coverClosing:
           "Gerne überzeuge ich Sie in einem persönlichen Gespräch von meiner Motivation und Eignung. Auf Ihren Terminvorschlag freue ich mich.",
         resumeProfile: "",
@@ -567,6 +640,13 @@ export class DataStore {
   }
 
   async removeApplication(id: string) {
+    const application = this.workspace.applications.find(
+      (item) => item.id === id,
+    );
+    if (!application) throw new Error("Bewerbung wurde nicht gefunden.");
+
+    await this.archiveDeletedApplication(application);
+    await this.files.removeApplicationArtifacts(application);
     this.workspace.applications = this.workspace.applications.filter(
       (application) => application.id !== id,
     );
@@ -586,6 +666,7 @@ export class DataStore {
     const now = nowIso();
     const folderName = await this.files.allocateApplicationFolderName(
       source.company.name,
+      source.job.title,
     );
     const duplicate: Application = {
       ...structuredClone(source),
@@ -813,6 +894,13 @@ export class DataStore {
     ]
       .filter(Boolean)
       .join(" ");
+    const postalContactName = contactName
+      ? application.contact.salutation === "Herr"
+        ? `Herrn ${contactName}`
+        : application.contact.salutation === "Frau"
+          ? `Frau ${contactName}`
+          : contactName
+      : "";
     const greeting = application.contact.lastName
       ? application.contact.salutation === "Herr"
         ? `Sehr geehrter Herr ${application.contact.lastName},`
@@ -1082,7 +1170,7 @@ export class DataStore {
       FIRMA_ADRESSE: application.company.street,
       FIRMA_PLZ: application.company.postalCode,
       FIRMA_ORT: application.company.city,
-      ANSPRECHPARTNER: contactName,
+      ANSPRECHPARTNER: postalContactName,
       STELLENBEZEICHNUNG: application.job.title,
       STELLENNUMMER: "",
       BEWERBUNGSDATUM: new Intl.DateTimeFormat("de-DE").format(
@@ -1093,6 +1181,10 @@ export class DataStore {
         `Bewerbung als ${application.job.title}`,
       ANREDE: greeting,
       EINLEITUNG: application.documents.coverIntroduction,
+      MOTIVATION: application.documents.coverMotivation,
+      FACHLICHE_EIGNUNG: application.documents.coverQualification,
+      UNTERNEHMENSBEZUG: application.documents.coverCompanyFit,
+      ZUSATZABSATZ: application.documents.coverExtraParagraph,
       HAUPTTEXT: [
         application.documents.coverMotivation,
         application.documents.coverQualification,

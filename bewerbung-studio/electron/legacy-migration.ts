@@ -105,8 +105,23 @@ const legacyApplicationDocumentDirectories = new Set([
   "Zertifikate",
 ]);
 
-const isApplicationDataFile = (relativePath: string) => {
-  const [, applicationSubdirectory] = relativePath.split(path.sep);
+const isApplicationDataFile = (
+  relativePath: string,
+  applicationFolderNames: string[],
+) => {
+  const applicationFolder = [...applicationFolderNames]
+    .sort((left, right) => right.length - left.length)
+    .find(
+      (folderName) =>
+        relativePath === folderName ||
+        relativePath.startsWith(`${folderName}${path.sep}`),
+    );
+  if (!applicationFolder) return true;
+  const applicationRelativePath = path.relative(
+    applicationFolder,
+    relativePath,
+  );
+  const [applicationSubdirectory] = applicationRelativePath.split(path.sep);
   return !legacyApplicationDocumentDirectories.has(applicationSubdirectory);
 };
 
@@ -147,7 +162,7 @@ export class LegacyMigrationService {
     };
   }
 
-  private async copyLegacyData(sourcePath: string) {
+  private async copyLegacyData(sourcePath: string, workspace: Workspace) {
     const directDataDirectories = ["Bewerbungen", "Muster", "Profile", "Backups"];
     for (const directory of directDataDirectories) {
       await copyDirectoryWithoutOverwrite(
@@ -155,7 +170,15 @@ export class LegacyMigrationService {
         directory === "Bewerbungen"
           ? this.paths.applicationsData
           : path.join(this.paths.dataRoot, directory),
-        directory === "Bewerbungen" ? isApplicationDataFile : undefined,
+        directory === "Bewerbungen"
+          ? (relativePath) =>
+              isApplicationDataFile(
+                relativePath,
+                workspace.applications.map(
+                  (application) => application.folderName,
+                ),
+              )
+          : undefined,
       );
     }
     await copyDirectoryWithoutOverwrite(
@@ -238,7 +261,7 @@ export class LegacyMigrationService {
   async migrate(sourcePath: string): Promise<Workspace> {
     const source = await this.readWorkspace(sourcePath);
     await this.files.initialize();
-    await this.copyLegacyData(source.sourcePath);
+    await this.copyLegacyData(source.sourcePath, source.workspace);
     await this.migrateApplicationDocuments(source.sourcePath, source.workspace);
     const attachments = await Promise.all(
       source.workspace.attachments.map((attachment) =>

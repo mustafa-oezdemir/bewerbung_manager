@@ -252,6 +252,7 @@ export const getLetterPageStatus = (
     documents.coverMotivation,
     documents.coverQualification,
     documents.coverCompanyFit,
+    documents.coverExtraParagraph,
     documents.coverClosing,
   ].reduce((total, value) => total + value.trim().length, 0);
 

@@ -28,6 +28,7 @@ import type {
   AddTemplateInput,
   UseTemplateInput,
 } from "../src/features/templates/template.types";
+import { wordMusterTemplateConfig } from "../src/features/templates/template.constants";
 import { resolveApplicationPaths } from "../src/config/application-paths";
 import { DataStore } from "./storage";
 import { mergePdfDocuments } from "./pdf";
@@ -202,6 +203,31 @@ const registerIpc = () => {
     if (openError) throw new Error(openError);
     return result;
   });
+  ipcMain.handle(
+    "templates:sync-anschreiben",
+    async (_event, applicationId: unknown) => {
+      const id = String(applicationId);
+      const template = await templateService.getTemplateById(
+        wordMusterTemplateConfig.id,
+      );
+      if (!template) {
+        throw new Error("Die Anschreiben-Word-Vorlage wurde nicht gefunden.");
+      }
+      const context = store.getTemplateDocumentContext(id);
+      const applicantName = [
+        context.data.BEWERBER_VORNAME,
+        context.data.BEWERBER_NACHNAME,
+      ]
+        .filter(Boolean)
+        .join("_");
+      return templateService.synchronizeDocumentFromTemplate(
+        template.id,
+        context.targetDirectories.anschreiben,
+        applicantName ? `Anschreiben_${applicantName}` : "Anschreiben",
+        context.data,
+      );
+    },
+  );
   ipcMain.handle(
     "templates:duplicate",
     (_event, templateId: unknown) =>

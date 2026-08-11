@@ -33,6 +33,7 @@ type StoreState = {
   selectApplication: (id?: string) => void;
   createApplication: (input: ApplicationInput) => Promise<void>;
   saveApplication: (application: Application) => Promise<void>;
+  syncCoverLetter: (applicationId: string) => Promise<void>;
   removeApplication: (id: string) => Promise<void>;
   duplicateApplication: (id: string) => Promise<void>;
   changeStatus: (
@@ -129,11 +130,33 @@ export const useAppStore = create<StoreState>((set, get) => {
         "Änderungen wurden gespeichert.",
       );
     },
+    async syncCoverLetter(applicationId) {
+      if (!apiAvailable()) return;
+      set({ loading: true, error: undefined });
+      try {
+        const result =
+          await window.bewerbungsManager.templates.syncAnschreiben(
+            applicationId,
+          );
+        set({
+          loading: false,
+          notice: `Word-Datei wurde aktualisiert: ${result.fileName}`,
+        });
+      } catch (error) {
+        set({
+          loading: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Die Word-Datei konnte nicht aktualisiert werden.",
+        });
+      }
+    },
     async removeApplication(id) {
       if (!apiAvailable()) return;
       await perform(
         () => window.bewerbungsManager.applications.remove(id),
-        "Bewerbung wurde aus der Übersicht entfernt. Der Ordner bleibt erhalten.",
+        "Bewerbung wurde gelöscht und unter „Silinenler“ archiviert.",
       );
       set({
         selectedApplicationId: get().workspace.applications[0]?.id,

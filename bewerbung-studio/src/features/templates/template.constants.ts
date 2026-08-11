@@ -30,7 +30,7 @@ export const defaultTemplateSortOrder = 1_000;
 export const wordMusterTemplateConfig = {
   id: "word-muster-anschreiben",
   fileName: "Anschreiben_Muster.docx",
-  name: "Word Muster",
+  name: "Anschreiben Mustafa Özdemir",
   documentType: "anschreiben",
   format: "docx",
   source: "uploaded-word-template",
@@ -41,7 +41,7 @@ export const wordMusterTemplateConfig = {
   editableInWord: true,
   isProtected: true,
   description:
-    "Eigene Word-Vorlage für Anschreiben. Beim Verwenden wird immer eine neue, ausgefüllte Kopie erstellt.",
+    "Persönliche Word-Vorlage nach dem Anschreiben von Mustafa Özdemir. Beim Verwenden wird eine neue, ausgefüllte Kopie im Firmen-Datumsordner erstellt.",
   tags: ["Word", "DOCX", "Anschreiben"],
 } as const;
 
@@ -502,6 +502,10 @@ const coreTemplatePlaceholderKeys = [
   "BETREFF",
   "ANREDE",
   "EINLEITUNG",
+  "MOTIVATION",
+  "FACHLICHE_EIGNUNG",
+  "UNTERNEHMENSBEZUG",
+  "ZUSATZABSATZ",
   "HAUPTTEXT",
   "SCHLUSSTEXT",
   "GRUSSFORMEL",
@@ -521,6 +525,7 @@ export const templatePlaceholderAliases = {
   STELLE: "STELLENBEZEICHNUNG",
   REFERENZNUMMER: "STELLENNUMMER",
   ANSCHREIBEN_METNI: "HAUPTTEXT",
+  EK_PARAGRAF: "ZUSATZABSATZ",
   KAPANIS: "SCHLUSSTEXT",
 } as const satisfies Record<string, TemplatePlaceholderKey>;
 

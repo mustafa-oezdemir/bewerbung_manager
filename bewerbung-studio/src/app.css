@@ -1911,6 +1911,13 @@ kbd {
   line-height: 1.5;
 }
 
+.word-sync-note {
+  margin: -3px 0 0;
+  color: var(--muted);
+  font-size: 0.66rem;
+  line-height: 1.45;
+}
+
 .full-button {
   width: 100%;
 }
@@ -2026,14 +2033,23 @@ kbd {
 }
 
 .letter-preview .sender-name,
+.letter-preview .sender-title,
 .letter-preview .sender-contact {
   display: block;
 }
 
 .letter-preview .sender-name {
   color: #222b2a;
-  font-size: 14pt;
-  font-weight: 400;
+  font-size: 20pt;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.letter-preview .sender-title {
+  margin-top: 0.8mm;
+  color: var(--doc-accent);
+  font-size: 11pt;
+  font-weight: 700;
   line-height: 1.2;
 }
 
@@ -2057,7 +2073,9 @@ kbd {
 
 .letter-preview h3 {
   margin: 8mm 0 5mm;
+  color: var(--doc-accent);
   font-size: 12pt;
+  font-weight: 700;
 }
 
 .letter-preview > p:not(.sender-line, .paper-date, .letter-signature) {

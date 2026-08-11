@@ -51,9 +51,14 @@ const removeEmptyParagraphs = (documentXml: string) =>
 
 const justifiedCoverLetterPlaceholderKeys = new Set([
   "EINLEITUNG",
+  "MOTIVATION",
+  "FACHLICHE_EIGNUNG",
+  "UNTERNEHMENSBEZUG",
+  "ZUSATZABSATZ",
   "HAUPTTEXT",
   "SCHLUSSTEXT",
   "ANSCHREIBEN_METNI",
+  "EK_PARAGRAF",
   "KAPANIS",
 ]);
 
@@ -72,17 +77,17 @@ const applyCoverLetterJustification = (zip: PizZip) => {
         paragraphText.matchAll(/\{\{([A-Z0-9_]+)\}\}/g),
         (match) => match[1],
       );
-      if (
-        !placeholderKeys.some((key) =>
-          justifiedCoverLetterPlaceholderKeys.has(key),
-        )
-      ) {
+      const isBodyParagraph = placeholderKeys.some((key) =>
+        justifiedCoverLetterPlaceholderKeys.has(key),
+      );
+      if (!isBodyParagraph) {
         return paragraph;
       }
 
       const justification = '<w:jc w:val="both"/>';
-      if (/<w:pPr\b[^>]*>[\s\S]*?<\/w:pPr>/.test(paragraph)) {
-        return paragraph.replace(
+      let updatedParagraph = paragraph;
+      if (/<w:pPr\b[^>]*>[\s\S]*?<\/w:pPr>/.test(updatedParagraph)) {
+        updatedParagraph = updatedParagraph.replace(
           /<w:pPr\b([^>]*)>([\s\S]*?)<\/w:pPr>/,
           (_properties, attributes: string, content: string) => {
             const updatedContent = /<w:jc\b[^>]*(?:\/>|>[\s\S]*?<\/w:jc>)/.test(
@@ -96,18 +101,18 @@ const applyCoverLetterJustification = (zip: PizZip) => {
             return `<w:pPr${attributes}>${updatedContent}</w:pPr>`;
           },
         );
-      }
-      if (/<w:pPr\b[^>]*\/>/.test(paragraph)) {
-        return paragraph.replace(
+      } else if (/<w:pPr\b[^>]*\/>/.test(updatedParagraph)) {
+        updatedParagraph = updatedParagraph.replace(
           /<w:pPr\b([^>]*)\/>/,
           `<w:pPr$1>${justification}</w:pPr>`,
         );
+      } else {
+        updatedParagraph = updatedParagraph.replace(
+          /^(<w:p\b[^>]*>)/,
+          `$1<w:pPr>${justification}</w:pPr>`,
+        );
       }
-
-      return paragraph.replace(
-        /^(<w:p\b[^>]*>)/,
-        `$1<w:pPr>${justification}</w:pPr>`,
-      );
+      return updatedParagraph;
     },
   );
   zip.file("word/document.xml", documentXml);
@@ -605,6 +610,19 @@ export class TemplatePlaceholderService {
           ),
         ],
       );
+      if (
+        template.documentType === "anschreiben" &&
+        !fullText.includes("{{ZUSATZABSATZ}}") &&
+        !fullText.includes("{{EK_PARAGRAF}}") &&
+        normalizedData.ZUSATZABSATZ?.trim()
+      ) {
+        normalizedData.SCHLUSSTEXT = [
+          normalizedData.ZUSATZABSATZ,
+          normalizedData.SCHLUSSTEXT,
+        ]
+          .filter((value) => value?.trim())
+          .join("\n\n");
+      }
       if (template.id === klassischLebenslaufTemplateConfig.id) {
         for (const [titleKey, contentKeys] of [
           ["KENNTNISSE_TITEL", ["KENNTNISSE"]],
@@ -658,6 +676,7 @@ export class TemplatePlaceholderService {
       );
       if (
         !photoResult.found &&
+        template.documentType === "lebenslauf" &&
         template.id !== klassischLebenslaufTemplateConfig.id
       ) {
         const documentPart = renderedZip.file("word/document.xml");

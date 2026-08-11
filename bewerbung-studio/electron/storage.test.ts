@@ -138,16 +138,31 @@ describe("DataStore backups", () => {
     expect(snapshotHtml).toContain("background-dots");
   });
 
-  it("creates only company-date Anschreiben folders for drafts", async () => {
+  it("creates company-date roots with position subfolders for drafts", async () => {
     const first = await store.createApplication(applicationInput("Siemens"));
     const firstApplication = first.applications[0];
-    expect(firstApplication.folderName).toMatch(
+    const companyDateFolder = path.dirname(firstApplication.folderName);
+    expect(companyDateFolder).toMatch(
       /^Siemens_\d{4}-\d{2}-\d{2}$/,
     );
-    const second = await store.createApplication(applicationInput("Siemens"));
+    expect(path.basename(firstApplication.folderName)).toBe(
+      "Softwareentwickler",
+    );
+
+    const secondInput = applicationInput("Siemens");
+    secondInput.job.title = "IT Support Spezialist";
+    const second = await store.createApplication(secondInput);
     const secondApplication = second.applications[0];
-    expect(secondApplication.folderName).toBe(
-      `${firstApplication.folderName}_2`,
+    expect(path.dirname(secondApplication.folderName)).toBe(companyDateFolder);
+    expect(path.basename(secondApplication.folderName)).toBe(
+      "IT_Support_Spezialist",
+    );
+
+    const third = await store.createApplication(applicationInput("Siemens"));
+    const thirdApplication = third.applications[0];
+    expect(path.dirname(thirdApplication.folderName)).toBe(companyDateFolder);
+    expect(path.basename(thirdApplication.folderName)).toBe(
+      "Softwareentwickler_2",
     );
     await expect(
       access(
@@ -231,6 +246,44 @@ describe("DataStore backups", () => {
     );
   });
 
+  it("maps the current cover-letter fields to Word placeholders", async () => {
+    const created = await store.createApplication({
+      ...applicationInput("Beispiel GmbH"),
+      contact: {
+        salutation: "Herr",
+        firstName: "Andreas",
+        lastName: "Steck",
+        position: "",
+        email: "andreas@example.com",
+        phone: "",
+      },
+    });
+    const application = created.applications[0];
+    application.documents = {
+      ...application.documents,
+      coverMotivation: "Motivation aus dem Editor.",
+      coverQualification: "Fachliche Eignung aus dem Editor.",
+      coverCompanyFit: "Unternehmensbezug aus dem Editor.",
+    };
+    await store.saveApplication(application);
+
+    const context = store.getTemplateDocumentContext(application.id);
+
+    expect(context.targetDirectories.anschreiben).toBe(
+      path.join(
+        store.files.paths.anschreibenDocuments,
+        application.folderName,
+      ),
+    );
+    expect(context.data).toMatchObject({
+      ANSPRECHPARTNER: "Herrn Andreas Steck",
+      MOTIVATION: "Motivation aus dem Editor.",
+      FACHLICHE_EIGNUNG: "Fachliche Eignung aus dem Editor.",
+      UNTERNEHMENSBEZUG: "Unternehmensbezug aus dem Editor.",
+      ZUSATZABSATZ: "",
+    });
+  });
+
   it("links central archive documents without copying or deleting them", async () => {
     const created = await store.createApplication(
       applicationInput("Archive GmbH"),
@@ -284,6 +337,75 @@ describe("DataStore backups", () => {
         "utf8",
       ),
     ).resolves.toBe("resume");
+  });
+
+  it("deletes the application record and its generated folders", async () => {
+    const created = await store.createApplication(
+      {
+        ...applicationInput("Löschen GmbH"),
+        sentAt: new Date().toISOString(),
+      },
+    );
+    const application = created.applications[0];
+    const activeDirectories = store.files.documentDirectories(application);
+    const dataDirectory = store.files.applicationDataPath(application.folderName);
+    const rejectionDirectory = store.files.rejectionPath(application.folderName);
+    await Promise.all([
+      mkdir(activeDirectories.lebenslauf, { recursive: true }),
+      mkdir(path.join(dataDirectory, "Deckblatt"), { recursive: true }),
+      mkdir(rejectionDirectory, { recursive: true }),
+    ]);
+    await Promise.all([
+      writeFile(path.join(activeDirectories.anschreiben, "Anschreiben.docx"), "letter"),
+      writeFile(path.join(activeDirectories.lebenslauf, "Lebenslauf.docx"), "resume"),
+      writeFile(path.join(rejectionDirectory, "Absage.pdf"), "rejection"),
+    ]);
+    const certificatePath = path.join(
+      store.files.paths.zertifikateArchive,
+      "Loeschen-Zertifikat.pdf",
+    );
+    await writeFile(certificatePath, "certificate");
+    const withAttachment = await store.addAttachment(
+      application.id,
+      "Zertifikate",
+      certificatePath,
+    );
+    const attachment = withAttachment.attachments.find(
+      (item) => item.applicationId === application.id,
+    );
+
+    const workspace = await store.removeApplication(application.id);
+
+    expect(workspace.applications).toHaveLength(0);
+    const deletedArchive = JSON.parse(
+      await readFile(
+        path.join(store.dataPath, "Silinenler", "silinenler.json"),
+        "utf8",
+      ),
+    );
+    expect(deletedArchive.deletedApplications).toHaveLength(1);
+    expect(deletedArchive.deletedApplications[0]).toMatchObject({
+      application: {
+        id: application.id,
+        company: { name: "Löschen GmbH" },
+      },
+      events: expect.arrayContaining([
+        expect.objectContaining({ applicationId: application.id }),
+      ]),
+      attachments: [
+        expect.objectContaining({ id: attachment?.id }),
+      ],
+    });
+    expect(deletedArchive.deletedApplications[0].deletedAt).toBeTruthy();
+    await expect(readFile(certificatePath, "utf8")).resolves.toBe("certificate");
+    await Promise.all(
+      [
+        activeDirectories.anschreiben,
+        activeDirectories.lebenslauf,
+        dataDirectory,
+        rejectionDirectory,
+      ].map((target) => expect(access(target)).rejects.toThrow()),
+    );
   });
 
   it("persists and clears the new-application draft below data/Settings", async () => {

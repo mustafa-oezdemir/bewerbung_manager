@@ -252,12 +252,13 @@ export function ApplicationsView({
               </button>
               <button
                 className="icon-button danger"
-                title="Aus Übersicht entfernen"
+                title="Bewerbung löschen"
                 onClick={() => {
-                  if (window.confirm("Bewerbung aus der Übersicht entfernen? Der gespeicherte Ordner bleibt erhalten.")) {
+                  if (window.confirm("Bewerbung wirklich löschen? Alle zugehörigen Dateien in Anschreiben, Lebenslauf, Absagen und im Bewerbungsordner werden dauerhaft gelöscht. Die vollständigen Bewerbungsdaten werden zuvor im JSON-Archiv „Silinenler“ gespeichert. Dateien im zentralen Zeugnisse-/Zertifikate-Archiv bleiben erhalten.")) {
                     void removeApplication(selected.id);
                   }
                 }}
+                aria-label="Bewerbung und zugehörige Dateien löschen"
               >
                 <Trash2 size={17} />
               </button>
