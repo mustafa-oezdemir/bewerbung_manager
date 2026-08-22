@@ -302,6 +302,11 @@ export function NewApplicationWizard({ onClose }: Props) {
                   <small>{errors.job?.url?.message}</small>
                 </label>
                 <label className="field">
+                  <span>Website</span>
+                  <input type="url" {...register("company.website")} />
+                  <small>{errors.company?.website?.message}</small>
+                </label>
+                <label className="field">
                   <span>Absenderprofil</span>
                   <select
                     {...register("profileId", {
