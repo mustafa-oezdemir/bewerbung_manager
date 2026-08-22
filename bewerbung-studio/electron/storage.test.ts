@@ -180,6 +180,12 @@ describe("DataStore backups", () => {
         ),
       ),
     ).resolves.toEqual([]);
+    expect(store.getApplicationAnschreibenPath(firstApplication.id)).toBe(
+      path.join(
+        store.files.paths.anschreibenDocuments,
+        firstApplication.folderName,
+      ),
+    );
     await expect(
       access(
         path.join(
@@ -367,6 +373,9 @@ describe("DataStore backups", () => {
     });
     const rejectedDirectories = store.files.documentDirectories(
       rejectedApplication!,
+    );
+    expect(store.getApplicationAnschreibenPath(application.id)).toBe(
+      rejectedDirectories.anschreiben,
     );
     await expect(
       readFile(

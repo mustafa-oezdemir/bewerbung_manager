@@ -237,7 +237,11 @@ export function ApplicationsView({
               <button className="icon-button" title="Duplizieren" onClick={() => void duplicateApplication(selected.id)}>
                 <Copy size={17} />
               </button>
-              <button className="icon-button" title="Ordner öffnen" onClick={() => void openFolder(selected.id)}>
+              <button
+                className="icon-button"
+                title="Anschreiben-Ordner öffnen"
+                aria-label="Anschreiben-Ordner öffnen"
+                onClick={() => void openFolder(selected.id)}>
                 <FolderOpen size={17} />
               </button>
               <button

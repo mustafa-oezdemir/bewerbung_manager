@@ -385,10 +385,10 @@ export class DataStore {
     return this.files.applicationDataPath(application.folderName);
   }
 
-  getApplicationPath(id: string) {
+  getApplicationAnschreibenPath(id: string) {
     const application = this.workspace.applications.find((item) => item.id === id);
     if (!application) throw new Error("Bewerbung wurde nicht gefunden.");
-    return this.applicationPath(application);
+    return this.files.documentDirectories(application).anschreiben;
   }
 
   private async ensureApplicationDataDirectories(application: Application) {

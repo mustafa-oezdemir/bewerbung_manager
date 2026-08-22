@@ -138,7 +138,9 @@ const registerIpc = () => {
     },
   );
   ipcMain.handle("applications:open-folder", async (_event, id: unknown) => {
-    const error = await shell.openPath(store.getApplicationPath(String(id)));
+    const error = await shell.openPath(
+      store.getApplicationAnschreibenPath(String(id)),
+    );
     if (error) throw new Error(error);
   });
   ipcMain.handle("profiles:save", (_event, value: unknown) =>
