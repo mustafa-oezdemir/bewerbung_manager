@@ -619,6 +619,11 @@ export class DataStore {
       (item) => item.id === application.id,
     );
     if (index < 0) throw new Error("Bewerbung wurde nicht gefunden.");
+    const current = this.workspace.applications[index];
+    application.folderName = await this.files.relocateApplicationFolders(
+      current,
+      new Date(application.sentAt ?? current.createdAt),
+    );
     application.updatedAt = nowIso();
     this.workspace.applications[index] = application;
     this.syncEvents(application);

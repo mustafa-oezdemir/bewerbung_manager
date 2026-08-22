@@ -31,6 +31,7 @@ import type {
 import { wordMusterTemplateConfig } from "../src/features/templates/template.constants";
 import { resolveApplicationPaths } from "../src/config/application-paths";
 import { DataStore } from "./storage";
+import { ApplicationFolderLockedError } from "./file-management";
 import { mergePdfDocuments } from "./pdf";
 import { TemplateService } from "./templates/template.service";
 
@@ -119,9 +120,23 @@ const registerIpc = () => {
   ipcMain.handle("applications:create", (_event, value: unknown) =>
     store.createApplication(applicationInputSchema.parse(value)),
   );
-  ipcMain.handle("applications:save", (_event, value: unknown) =>
-    store.saveApplication(applicationSchema.parse(value)),
-  );
+  ipcMain.handle("applications:save", async (_event, value: unknown) => {
+    try {
+      return await store.saveApplication(applicationSchema.parse(value));
+    } catch (error) {
+      if (error instanceof ApplicationFolderLockedError && mainWindow) {
+        await dialog.showMessageBox(mainWindow, {
+          type: "warning",
+          title: "Dokument noch geöffnet",
+          message: "Der Bewerbungsordner konnte nicht umbenannt werden.",
+          detail: error.message,
+          buttons: ["OK"],
+          defaultId: 0,
+        });
+      }
+      throw error;
+    }
+  });
   ipcMain.handle("applications:remove", (_event, id: unknown) =>
     store.removeApplication(String(id)),
   );

@@ -5,8 +5,10 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { resolveApplicationPaths } from "../src/config/application-paths";
 import type { Application } from "../src/shared/schema";
 import {
+  ApplicationFolderLockedError,
   FileManagementService,
   formatLocalDate,
+  isApplicationFolderLockError,
   sanitizeFileName,
 } from "./file-management";
 
@@ -69,6 +71,58 @@ describe("FileManagementService", () => {
       ),
     ).resolves.toBe(
       path.join("Siemens_2026-07-30", "Softwareentwickler_2"),
+    );
+  });
+
+  it("moves every application artifact when the application date changes", async () => {
+    const folderName = path.join("Siemens_2026-07-30", "Softwareentwickler");
+    const application = {
+      folderName,
+      status: "Beworben",
+      company: { name: "Siemens" },
+      job: { title: "Softwareentwickler" },
+    } as Application;
+    const sourcePaths = [
+      service.applicationDataPath(folderName),
+      path.join(service.paths.anschreibenDocuments, folderName),
+      path.join(service.paths.lebenslaufDocuments, folderName),
+    ];
+    await Promise.all(
+      sourcePaths.map(async (source, index) => {
+        await mkdir(source, { recursive: true });
+        await writeFile(path.join(source, `Dokument-${index}.txt`), "content");
+      }),
+    );
+
+    const relocated = await service.relocateApplicationFolders(
+      application,
+      new Date(2026, 7, 22, 9, 0, 0),
+    );
+
+    expect(relocated).toBe(
+      path.join("Siemens_2026-08-22", "Softwareentwickler"),
+    );
+    for (const [index, source] of sourcePaths.entries()) {
+      await expect(access(source)).rejects.toThrow();
+      await expect(
+        readFile(
+          path.join(
+            source.replace(folderName, relocated),
+            `Dokument-${index}.txt`,
+          ),
+          "utf8",
+        ),
+      ).resolves.toBe("content");
+    }
+  });
+
+  it("recognizes Windows file-lock errors", () => {
+    for (const code of ["EACCES", "EBUSY", "EPERM"]) {
+      expect(isApplicationFolderLockError({ code })).toBe(true);
+    }
+    expect(isApplicationFolderLockError({ code: "ENOENT" })).toBe(false);
+    expect(new ApplicationFolderLockedError().message).toMatch(
+      /geöffneten Word-, PDF-/,
     );
   });
 

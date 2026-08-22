@@ -1,4 +1,4 @@
-import { access, mkdir, readdir, rename, rm } from "node:fs/promises";
+import { access, mkdir, readdir, rename, rm, rmdir } from "node:fs/promises";
 import path from "node:path";
 import type { Application, ApplicationStatus } from "../src/shared/schema";
 import type { ApplicationPaths } from "../src/config/application-paths";
@@ -43,6 +43,23 @@ const pathExists = async (candidate: string) => {
   } catch {
     return false;
   }
+};
+
+export const applicationFolderLockedMessage =
+  "Bitte schließen Sie alle geöffneten Word-, PDF- oder sonstigen Dateien dieser Bewerbung und speichern Sie den Bereich „Termine“ anschließend erneut.";
+
+export class ApplicationFolderLockedError extends Error {
+  readonly code = "APPLICATION_FOLDER_LOCKED";
+
+  constructor() {
+    super(applicationFolderLockedMessage);
+    this.name = "ApplicationFolderLockedError";
+  }
+}
+
+export const isApplicationFolderLockError = (error: unknown) => {
+  if (!error || typeof error !== "object" || !("code" in error)) return false;
+  return ["EACCES", "EBUSY", "EPERM"].includes(String(error.code));
 };
 
 type DocumentDirectories = {
@@ -151,6 +168,123 @@ export class FileManagementService {
       }
     }
     throw new Error("Für die Bewerbung konnte kein eindeutiger Ordner erstellt werden.");
+  }
+
+  private applicationArtifactPaths(folderName: string) {
+    const roots = [
+      this.paths.applicationsData,
+      this.paths.anschreibenDocuments,
+      this.paths.lebenslaufDocuments,
+      this.paths.absagenRoot,
+    ];
+    return roots.map((root) => {
+      const resolvedRoot = path.resolve(root);
+      const candidate = path.resolve(resolvedRoot, folderName);
+      if (candidate === resolvedRoot || !isPathInside(resolvedRoot, candidate)) {
+        throw new Error("Ungültiger Bewerbungsordner.");
+      }
+      return { root: resolvedRoot, path: candidate };
+    });
+  }
+
+  private async applicationFolderOccupied(folderName: string) {
+    const occupied = await Promise.all(
+      this.applicationArtifactPaths(folderName).map(({ path: candidate }) =>
+        pathExists(candidate),
+      ),
+    );
+    return occupied.some(Boolean);
+  }
+
+  async relocateApplicationFolders(application: Application, date: Date) {
+    const companyDateFolder = `${sanitizeFileName(application.company.name)}_${formatLocalDate(date)}`;
+    const positionFolder = sanitizeFileName(application.job.title);
+    let targetFolderName = "";
+    for (let suffix = 1; suffix < 10_000; suffix += 1) {
+      const uniquePositionFolder =
+        suffix === 1 ? positionFolder : `${positionFolder}_${suffix}`;
+      const candidate = path.join(companyDateFolder, uniquePositionFolder);
+      if (candidate === application.folderName) return application.folderName;
+      if (!(await this.applicationFolderOccupied(candidate))) {
+        targetFolderName = candidate;
+        break;
+      }
+    }
+    if (!targetFolderName) {
+      throw new Error("Für die Bewerbung konnte kein eindeutiger Ordner erstellt werden.");
+    }
+
+    const sources = this.applicationArtifactPaths(application.folderName);
+    const targets = this.applicationArtifactPaths(targetFolderName);
+    const moves = (
+      await Promise.all(
+        sources.map(async (source, index) => ({
+          source,
+          target: targets[index],
+          exists: await pathExists(source.path),
+        })),
+      )
+    ).filter((move) => move.exists);
+    const completed: typeof moves = [];
+
+    try {
+      for (const move of moves) {
+        if (await pathExists(move.target.path)) {
+          throw new Error(`Der Zielordner existiert bereits: ${move.target.path}`);
+        }
+        await mkdir(path.dirname(move.target.path), { recursive: true });
+        await rename(move.source.path, move.target.path);
+        completed.push(move);
+      }
+    } catch (error) {
+      for (const move of completed.reverse()) {
+        try {
+          await mkdir(path.dirname(move.source.path), { recursive: true });
+          await rename(move.target.path, move.source.path);
+        } catch {
+          // The original rename error remains the primary failure.
+        }
+      }
+      await this.removeEmptyArtifactParents(targets);
+      if (isApplicationFolderLockError(error)) {
+        throw new ApplicationFolderLockedError();
+      }
+      throw error;
+    }
+
+    await this.removeEmptyArtifactParents(sources);
+    return targetFolderName;
+  }
+
+  private async removeEmptyArtifactParents(
+    artifacts: Array<{ root: string; path: string }>,
+  ) {
+    const parents = new Map(
+      artifacts.map(({ root, path: artifactPath }) => [
+        path.dirname(artifactPath),
+        root,
+      ]),
+    );
+    await Promise.all(
+      [...parents].map(async ([parent, root]) => {
+        if (parent === root || !isPathInside(root, parent)) return;
+        try {
+          await rmdir(parent);
+        } catch (error) {
+          const code =
+            typeof error === "object" && error && "code" in error
+              ? String(error.code)
+              : "";
+          if (
+            !["ENOENT", "ENOTEMPTY", "EEXIST", "EACCES", "EBUSY", "EPERM"].includes(
+              code,
+            )
+          ) {
+            throw error;
+          }
+        }
+      }),
+    );
   }
 
   private async containsNestedApplications(folderName: string) {

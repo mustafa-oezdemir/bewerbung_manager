@@ -252,6 +252,38 @@ describe("DataStore backups", () => {
     );
   });
 
+  it("renames application folders when the sent date changes", async () => {
+    const created = await store.createApplication({
+      ...applicationInput("Datum GmbH"),
+      sentAt: "2026-08-11T09:00:00.000Z",
+    });
+    const application = created.applications[0];
+    const oldFolderName = application.folderName;
+    const oldAnschreiben = store.files.documentDirectories(application).anschreiben;
+    await writeFile(path.join(oldAnschreiben, "Anschreiben.docx"), "letter");
+    application.sentAt = "2026-08-22T09:00:00.000Z";
+
+    const saved = await store.saveApplication(application);
+    const updated = saved.applications.find((item) => item.id === application.id)!;
+    const newAnschreiben = store.files.documentDirectories(updated).anschreiben;
+
+    expect(path.dirname(updated.folderName)).toBe("Datum_GmbH_2026-08-22");
+    expect(updated.folderName).not.toBe(oldFolderName);
+    await expect(access(oldAnschreiben)).rejects.toThrow();
+    await expect(
+      readFile(path.join(newAnschreiben, "Anschreiben.docx"), "utf8"),
+    ).resolves.toBe("letter");
+    await expect(
+      readFile(
+        path.join(
+          store.files.applicationDataPath(updated.folderName),
+          "bewerbung.json",
+        ),
+        "utf8",
+      ),
+    ).resolves.toContain('"sentAt": "2026-08-22T09:00:00.000Z"');
+  });
+
   it("maps the current cover-letter fields to Word placeholders", async () => {
     const created = await store.createApplication({
       ...applicationInput("Beispiel GmbH"),
