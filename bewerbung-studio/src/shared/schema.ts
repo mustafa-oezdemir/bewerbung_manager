@@ -57,6 +57,7 @@ export const contractTypes = [
 export const attachmentCategories = ["Zeugnisse", "Zertifikate"] as const;
 export const calendarEventTypes = [
   "application-sent",
+  "application-rejected",
   "application-deadline",
   "interview",
   "second-interview",

@@ -1,4 +1,5 @@
 import type { ApplicantProfile, Application } from "../src/shared/schema";
+import { getApplicationDate } from "../src/shared/applicationDate";
 import {
   createResumePagePlan,
   einspaltigPaginationOptions,
@@ -691,7 +692,9 @@ export const buildDocumentHtml = (
         .map(escapeHtml)
         .join(" · ")
     : "Telefon · E-Mail · Ort";
-  const today = new Intl.DateTimeFormat("de-DE", { dateStyle: "long" }).format(new Date());
+  const applicationDate = new Intl.DateTimeFormat("de-DE", {
+    dateStyle: "long",
+  }).format(getApplicationDate(application));
   const letterStatus = getLetterPageStatus(docs);
   const cover = `
     <section class="page cover-page ${designClasses}">
@@ -713,7 +716,7 @@ export const buildDocumentHtml = (
         <div class="sender">${senderHeader(profile)}</div>
         <div class="rule"></div>
         <div class="recipient">${addressBlock(application)}</div>
-        <p class="date">${escapeHtml(profile?.city || application.company.city)}, ${today}</p>
+        <p class="date">${escapeHtml(profile?.city || application.company.city)}, ${applicationDate}</p>
         <p class="subject">${escapeHtml(docs.coverSubject || `Bewerbung als ${role}`)}</p>
         <p>${escapeHtml(salutation(application))},</p>
         <p class="letter-body">${escapeHtml(docs.coverIntroduction || `die ausgeschriebene Position als ${role} bei ${company} spricht mich besonders an, weil sie fachliche Verantwortung mit konkretem Gestaltungsspielraum verbindet.`)}</p>

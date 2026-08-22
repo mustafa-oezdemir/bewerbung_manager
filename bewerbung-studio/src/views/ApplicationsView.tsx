@@ -19,6 +19,7 @@ import {
   type RejectionReason,
 } from "../shared/schema";
 import { templates } from "../shared/templates";
+import { applicationMatchesQuery } from "../lib/applicationSearch";
 import {
   formatDate,
   fromDateInput,
@@ -53,19 +54,8 @@ export function ApplicationsView({
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
-    const queryLower = query.trim().toLocaleLowerCase("de-DE");
     return workspace.applications.filter((application) => {
-      const matchesSearch =
-        !queryLower ||
-        [
-          application.company.name,
-          application.job.title,
-          application.company.city,
-          application.status,
-        ].some((value) =>
-          value.toLocaleLowerCase("de-DE").includes(queryLower),
-        );
-      if (!matchesSearch) return false;
+      if (!applicationMatchesQuery(application, query)) return false;
       if (filter === "active")
         return !["Absage", "Zurückgezogen", "Archiviert"].includes(
           application.status,

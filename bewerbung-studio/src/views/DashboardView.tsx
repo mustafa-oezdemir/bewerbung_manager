@@ -37,6 +37,14 @@ export function DashboardView({
   const offers = applications.filter(
     (application) => application.status === "Zusage",
   );
+  const rejectedApplicationIds = new Set(
+    rejections.map((application) => application.id),
+  );
+  const actionableEvents = events.filter(
+    (event) =>
+      event.type !== "application-rejected" &&
+      (!event.applicationId || !rejectedApplicationIds.has(event.applicationId)),
+  );
   const thisMonth = applications.filter(
     (application) =>
       application.sentAt && new Date(application.sentAt) >= monthStart,
@@ -45,7 +53,7 @@ export function DashboardView({
   const successRate = resolved
     ? Math.round((offers.length / resolved) * 100)
     : 0;
-  const upcoming = events
+  const upcoming = actionableEvents
     .filter(
       (event) =>
         !event.cancelled &&
@@ -57,7 +65,7 @@ export function DashboardView({
         new Date(left.startAt).getTime() - new Date(right.startAt).getTime(),
     )
     .slice(0, 5);
-  const due = events
+  const due = actionableEvents
     .filter(
       (event) =>
         !event.cancelled &&

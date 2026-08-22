@@ -145,6 +145,17 @@ describe("Lebenslauf-Dokumente", () => {
     expect(html).toContain("content.dataset.fitScale");
   });
 
+  it("uses the entered application date in the exported cover letter", () => {
+    const datedApplication = applicationSchema.parse({
+      ...application,
+      sentAt: "2024-05-17T09:00:00.000Z",
+    });
+
+    const html = buildDocumentHtml(datedApplication, profile, "anschreiben");
+
+    expect(html).toContain("Berlin, 17. Mai 2024");
+  });
+
   it("justifies only the body paragraphs of exported cover letters", () => {
     const html = buildDocumentHtml(application, profile, "anschreiben");
 

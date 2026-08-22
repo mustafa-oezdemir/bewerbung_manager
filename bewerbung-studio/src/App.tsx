@@ -12,7 +12,6 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
-  Search,
   Settings,
   Sun,
   UserRound,
@@ -21,6 +20,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { NewApplicationWizard } from "./components/NewApplicationWizard";
+import { GlobalApplicationSearch } from "./components/GlobalApplicationSearch";
 import { ApplicationsView } from "./views/ApplicationsView";
 import { CalendarView } from "./views/CalendarView";
 import { DashboardView } from "./views/DashboardView";
@@ -92,17 +92,6 @@ export default function App() {
     const timeout = window.setTimeout(clearMessage, 4200);
     return () => window.clearTimeout(timeout);
   }, [clearMessage, error, notice]);
-
-  useEffect(() => {
-    const handleShortcut = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        setView("active");
-      }
-    };
-    window.addEventListener("keydown", handleShortcut);
-    return () => window.removeEventListener("keydown", handleShortcut);
-  }, []);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -190,7 +179,10 @@ export default function App() {
             <div><p className="eyebrow">BewerbungsManager</p><h1>{titles[view]}</h1></div>
           </div>
           <div className="topbar-actions">
-            <button className="global-search" onClick={() => setView("active")}><Search size={16} /><span>Suchen</span><kbd>Ctrl K</kbd></button>
+            <GlobalApplicationSearch
+              applications={workspace.applications}
+              onSelect={goToApplication}
+            />
             <button className="icon-button" onClick={() => setDarkOverride((value) => !value)} title="Farbschema wechseln">
               {document.documentElement.dataset.theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
             </button>

@@ -57,4 +57,41 @@ describe("CalendarView", () => {
     }
     expect(markup).not.toContain("weitere");
   });
+
+  it("shows company names and the requested colors for application milestones", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-11T10:00:00.000Z"));
+    const types = [
+      ["application-sent", "Beispiel GmbH · Bewerbung gesendet"],
+      ["follow-up-call", "Beispiel GmbH · Nachfassen"],
+      ["application-rejected", "Beispiel GmbH · Absage"],
+    ] as const;
+    const events = types.map(([type, title], index) =>
+      calendarEventSchema.parse({
+        id: `20000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
+        type,
+        title,
+        startAt: "2026-08-11T08:00:00.000Z",
+        allDay: true,
+        completed: false,
+        cancelled: false,
+        reminderMinutes: [],
+        createdAt: "2026-08-11T08:00:00.000Z",
+        updatedAt: "2026-08-11T08:00:00.000Z",
+      }),
+    );
+    mockedStore.state = {
+      workspace: { events },
+      saveEvent: vi.fn(),
+    };
+
+    const markup = renderToStaticMarkup(
+      <CalendarView onOpenApplication={vi.fn()} />,
+    );
+
+    for (const [type, title] of types) {
+      expect(markup).toContain(`calendar-event ${type}`);
+      expect(markup).toContain(title);
+    }
+  });
 });

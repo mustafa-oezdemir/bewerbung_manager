@@ -4,9 +4,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock3,
+  MessageCircleQuestion,
+  Send,
+  XCircle,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { formatDate } from "../lib/format";
+import type { CalendarEventType } from "../shared/schema";
 import { useAppStore } from "../store/useAppStore";
 
 const mondayStart = (date: Date) => {
@@ -67,6 +71,11 @@ export function CalendarView({
               year: "numeric",
             })}
           </h2>
+          <div className="calendar-legend" aria-label="Ereignisfarben">
+            <span className="application-sent">Gesendet</span>
+            <span className="follow-up-call">Nachfassen</span>
+            <span className="application-rejected">Absage</span>
+          </div>
         </div>
         <div className="calendar-controls">
           <div className="segmented">
@@ -116,9 +125,11 @@ export function CalendarView({
       ) : (
         <section className="surface agenda">
           {visible.length ? visible.map((event) => (
-            <article key={event.id} className={event.completed ? "completed" : ""}>
+            <article
+              key={event.id}
+              className={`${event.completed ? "completed" : ""} event-${event.type}`}>
               <span className="agenda-date"><strong>{new Date(event.startAt).getDate()}</strong><small>{new Date(event.startAt).toLocaleDateString("de-DE", { month: "short" })}</small></span>
-              <span className="agenda-icon">{event.type.includes("interview") ? <CalendarDays size={18} /> : <Clock3 size={18} />}</span>
+              <span className="agenda-icon">{calendarEventIcon(event.type)}</span>
               <button className="agenda-content" onClick={() => onOpenApplication(event.applicationId)}>
                 <strong>{event.title}</strong>
                 <small>{formatDate(event.startAt, !event.allDay)}</small>
@@ -136,4 +147,12 @@ export function CalendarView({
       )}
     </div>
   );
+}
+
+function calendarEventIcon(type: CalendarEventType) {
+  if (type === "application-sent") return <Send size={18} />;
+  if (type.includes("follow-up")) return <MessageCircleQuestion size={18} />;
+  if (type === "application-rejected") return <XCircle size={18} />;
+  if (type.includes("interview")) return <CalendarDays size={18} />;
+  return <Clock3 size={18} />;
 }

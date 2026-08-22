@@ -37,6 +37,7 @@ import {
   type Workspace,
 } from "../src/shared/schema";
 import { templates } from "../src/shared/templates";
+import { getApplicationDate } from "../src/shared/applicationDate";
 import {
   compactWordMarginLevelToMm,
   getDocumentFont,
@@ -115,6 +116,7 @@ const blendHexColor = (
 
 const eventReminders: Record<CalendarEventType, number[]> = {
   "application-sent": [],
+  "application-rejected": [],
   "application-deadline": [4320, 1440],
   interview: [1440, 60],
   "second-interview": [1440, 60],
@@ -205,6 +207,9 @@ export class DataStore {
   async initialize() {
     await this.files.initialize();
     this.workspace = await this.loadWorkspace();
+    this.workspace.applications.forEach((application) =>
+      this.syncEvents(application),
+    );
     await this.persist();
   }
 
@@ -473,8 +478,15 @@ export class DataStore {
     this.ensureEvent(
       application,
       "application-sent",
-      `Bewerbung gesendet · ${company}`,
+      `${company} · Bewerbung gesendet`,
       application.sentAt,
+      true,
+    );
+    this.ensureEvent(
+      application,
+      "application-rejected",
+      `${company} · Absage`,
+      application.status === "Absage" ? application.rejectionAt : undefined,
       true,
     );
     this.ensureEvent(
@@ -533,12 +545,13 @@ export class DataStore {
     this.ensureEvent(
       application,
       "follow-up-call",
-      `Bei ${company} zum Stand der Bewerbung nachfragen`,
+      `${company} · Nachfassen`,
       followUp,
     );
     if (terminalStatuses.has(application.status)) {
       const preserved = new Set<CalendarEventType>([
         "application-sent",
+        "application-rejected",
         "contract-start",
         "contract-end",
         "fixed-term-end",
@@ -563,6 +576,7 @@ export class DataStore {
     const folderName = await this.files.allocateApplicationFolderName(
       input.company.name,
       input.job.title,
+      input.sentAt ? new Date(input.sentAt) : new Date(),
     );
     const application: Application = {
       schemaVersion: 1,
@@ -1174,7 +1188,7 @@ export class DataStore {
       STELLENBEZEICHNUNG: application.job.title,
       STELLENNUMMER: "",
       BEWERBUNGSDATUM: new Intl.DateTimeFormat("de-DE").format(
-        new Date(),
+        getApplicationDate(application),
       ),
       BETREFF:
         application.documents.coverSubject ||

@@ -249,6 +249,7 @@ describe("DataStore backups", () => {
   it("maps the current cover-letter fields to Word placeholders", async () => {
     const created = await store.createApplication({
       ...applicationInput("Beispiel GmbH"),
+      sentAt: "2024-05-17T09:00:00.000Z",
       contact: {
         salutation: "Herr",
         firstName: "Andreas",
@@ -275,8 +276,12 @@ describe("DataStore backups", () => {
         application.folderName,
       ),
     );
+    expect(path.dirname(application.folderName)).toBe(
+      "Beispiel_GmbH_2024-05-17",
+    );
     expect(context.data).toMatchObject({
       ANSPRECHPARTNER: "Herrn Andreas Steck",
+      BEWERBUNGSDATUM: "17.5.2024",
       MOTIVATION: "Motivation aus dem Editor.",
       FACHLICHE_EIGNUNG: "Fachliche Eignung aus dem Editor.",
       UNTERNEHMENSBEZUG: "Unternehmensbezug aus dem Editor.",
@@ -328,6 +333,38 @@ describe("DataStore backups", () => {
       (item) => item.id === application.id,
     );
     expect(rejectedApplication?.status).toBe("Absage");
+    const rejectionEvent = rejected.events.find(
+      (event) =>
+        event.applicationId === application.id &&
+        event.type === "application-rejected",
+    );
+    expect(rejectionEvent).toMatchObject({
+      title: "Absage GmbH · Absage",
+      startAt: rejectedApplication?.rejectionAt,
+      allDay: true,
+      cancelled: false,
+    });
+
+    await writeFile(
+      path.join(store.dataPath, "Settings", "workspace.json"),
+      JSON.stringify({
+        ...rejected,
+        events: rejected.events.filter(
+          (event) => event.type !== "application-rejected",
+        ),
+      }),
+      "utf8",
+    );
+    const reloadedStore = new DataStore(root);
+    await reloadedStore.initialize();
+    expect(
+      reloadedStore
+        .getWorkspace()
+        .events.find((event) => event.type === "application-rejected"),
+    ).toMatchObject({
+      applicationId: application.id,
+      startAt: rejectedApplication?.rejectionAt,
+    });
     const rejectedDirectories = store.files.documentDirectories(
       rejectedApplication!,
     );
