@@ -118,7 +118,7 @@ export class FileManagementService {
     if (application.status === "Absage") {
       const rejectionRoot = this.rejectionPath(application.folderName);
       return {
-        anschreiben: path.join(rejectionRoot, "Anschreiben"),
+        anschreiben: rejectionRoot,
         lebenslauf: path.join(rejectionRoot, "Lebenslauf"),
         deckblatt: path.join(applicationData, "Deckblatt"),
       };
@@ -267,21 +267,29 @@ export class FileManagementService {
     );
     await Promise.all(
       [...parents].map(async ([parent, root]) => {
-        if (parent === root || !isPathInside(root, parent)) return;
-        try {
-          await rmdir(parent);
-        } catch (error) {
-          const code =
-            typeof error === "object" && error && "code" in error
-              ? String(error.code)
-              : "";
-          if (
-            !["ENOENT", "ENOTEMPTY", "EEXIST", "EACCES", "EBUSY", "EPERM"].includes(
-              code,
-            )
-          ) {
+        let current = parent;
+        while (current !== root && isPathInside(root, current)) {
+          try {
+            await rmdir(current);
+          } catch (error) {
+            const code =
+              typeof error === "object" && error && "code" in error
+                ? String(error.code)
+                : "";
+            if (code === "ENOENT") {
+              current = path.dirname(current);
+              continue;
+            }
+            if (
+              ["ENOTEMPTY", "EEXIST", "EACCES", "EBUSY", "EPERM"].includes(
+                code,
+              )
+            ) {
+              break;
+            }
             throw error;
           }
+          current = path.dirname(current);
         }
       }),
     );
@@ -366,10 +374,15 @@ export class FileManagementService {
       ...application,
       status: nextStatus,
     });
-    const moves = [
-      [current.anschreiben, next.anschreiben],
-      [current.lebenslauf, next.lebenslauf],
-    ] as const;
+    const moves = wasRejected
+      ? ([
+          [current.lebenslauf, next.lebenslauf],
+          [current.anschreiben, next.anschreiben],
+        ] as const)
+      : ([
+          [current.anschreiben, next.anschreiben],
+          [current.lebenslauf, next.lebenslauf],
+        ] as const);
     const completed: Array<readonly [string, string]> = [];
     try {
       for (const [source, target] of moves) {
@@ -391,6 +404,16 @@ export class FileManagementService {
       }
       throw error;
     }
+
+    const sourceRoots = wasRejected
+      ? [this.paths.absagenRoot, this.paths.absagenRoot]
+      : [this.paths.anschreibenDocuments, this.paths.lebenslaufDocuments];
+    await this.removeEmptyArtifactParents(
+      moves.map(([source], index) => ({
+        root: path.resolve(sourceRoots[index]),
+        path: source,
+      })),
+    );
   }
 
   async removeApplicationArtifacts(
@@ -419,6 +442,12 @@ export class FileManagementService {
 
     await Promise.all(
       targets.map((target) => rm(target, { recursive: true, force: true })),
+    );
+    await this.removeEmptyArtifactParents(
+      targets.map((target, index) => ({
+        root: path.resolve(roots[index]),
+        path: target,
+      })),
     );
   }
 }

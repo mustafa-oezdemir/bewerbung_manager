@@ -1,6 +1,6 @@
 import path from "node:path";
 import { constants, mkdirSync } from "node:fs";
-import { access, copyFile, mkdir, open, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
+import { access, copyFile, mkdir, open, readFile, readdir, rename, rm, rmdir, stat, writeFile } from "node:fs/promises";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { BrowserWindow, Notification, app, dialog, ipcMain, nativeImage, shell } from "electron";
 import { PDFDocument } from "pdf-lib";
@@ -4840,6 +4840,7 @@ var contractTypes = [
 var attachmentCategories = ["Zeugnisse", "Zertifikate"];
 var calendarEventTypes = [
 	"application-sent",
+	"application-rejected",
 	"application-deadline",
 	"interview",
 	"second-interview",
@@ -6307,6 +6308,9 @@ var getReadableTextColor = (hex) => {
 	return .2126 * red + .7152 * green + .0722 * blue > .46 ? "#26313a" : "#ffffff";
 };
 //#endregion
+//#region src/shared/applicationDate.ts
+var getApplicationDate = (application) => new Date(application.sentAt ?? application.createdAt);
+//#endregion
 //#region src/features/knowledge/knowledge.presets.ts
 var categories = (type, titles) => titles.map((title) => ({
 	title,
@@ -7079,7 +7083,7 @@ var buildDocumentHtml = (application, profile, target) => {
 		profile.city,
 		profile.linkedin
 	].filter(Boolean).map(escapeHtml).join(" · ") : "Telefon · E-Mail · Ort";
-	const today = new Intl.DateTimeFormat("de-DE", { dateStyle: "long" }).format(/* @__PURE__ */ new Date());
+	const applicationDate = new Intl.DateTimeFormat("de-DE", { dateStyle: "long" }).format(getApplicationDate(application));
 	const letterStatus = getLetterPageStatus(docs);
 	const cover = `
     <section class="page cover-page ${designClasses}">
@@ -7101,7 +7105,7 @@ var buildDocumentHtml = (application, profile, target) => {
         <div class="sender">${senderHeader(profile)}</div>
         <div class="rule"></div>
         <div class="recipient">${addressBlock(application)}</div>
-        <p class="date">${escapeHtml(profile?.city || application.company.city)}, ${today}</p>
+        <p class="date">${escapeHtml(profile?.city || application.company.city)}, ${applicationDate}</p>
         <p class="subject">${escapeHtml(docs.coverSubject || `Bewerbung als ${role}`)}</p>
         <p>${escapeHtml(salutation(application))},</p>
         <p class="letter-body">${escapeHtml(docs.coverIntroduction || `die ausgeschriebene Position als ${role} bei ${company} spricht mich besonders an, weil sie fachliche Verantwortung mit konkretem Gestaltungsspielraum verbindet.`)}</p>
@@ -8650,6 +8654,22 @@ var pathExists$1 = async (candidate) => {
 		return false;
 	}
 };
+var applicationFolderLockedMessage = "Bitte schließen Sie alle geöffneten Word-, PDF- oder sonstigen Dateien dieser Bewerbung und speichern Sie den Bereich „Termine“ anschließend erneut.";
+var ApplicationFolderLockedError = class extends Error {
+	constructor() {
+		super(applicationFolderLockedMessage);
+		this.code = "APPLICATION_FOLDER_LOCKED";
+		this.name = "ApplicationFolderLockedError";
+	}
+};
+var isApplicationFolderLockError = (error) => {
+	if (!error || typeof error !== "object" || !("code" in error)) return false;
+	return [
+		"EACCES",
+		"EBUSY",
+		"EPERM"
+	].includes(String(error.code));
+};
 var FileManagementService = class {
 	constructor(paths) {
 		this.paths = paths;
@@ -8690,7 +8710,7 @@ var FileManagementService = class {
 		if (application.status === "Absage") {
 			const rejectionRoot = this.rejectionPath(application.folderName);
 			return {
-				anschreiben: path.join(rejectionRoot, "Anschreiben"),
+				anschreiben: rejectionRoot,
 				lebenslauf: path.join(rejectionRoot, "Lebenslauf"),
 				deckblatt: path.join(applicationData, "Deckblatt")
 			};
@@ -8721,6 +8741,92 @@ var FileManagementService = class {
 			}
 		}
 		throw new Error("Für die Bewerbung konnte kein eindeutiger Ordner erstellt werden.");
+	}
+	applicationArtifactPaths(folderName) {
+		return [
+			this.paths.applicationsData,
+			this.paths.anschreibenDocuments,
+			this.paths.lebenslaufDocuments,
+			this.paths.absagenRoot
+		].map((root) => {
+			const resolvedRoot = path.resolve(root);
+			const candidate = path.resolve(resolvedRoot, folderName);
+			if (candidate === resolvedRoot || !isPathInside$1(resolvedRoot, candidate)) throw new Error("Ungültiger Bewerbungsordner.");
+			return {
+				root: resolvedRoot,
+				path: candidate
+			};
+		});
+	}
+	async applicationFolderOccupied(folderName) {
+		return (await Promise.all(this.applicationArtifactPaths(folderName).map(({ path: candidate }) => pathExists$1(candidate)))).some(Boolean);
+	}
+	async relocateApplicationFolders(application, date) {
+		const companyDateFolder = `${sanitizeFileName(application.company.name)}_${formatLocalDate(date)}`;
+		const positionFolder = sanitizeFileName(application.job.title);
+		let targetFolderName = "";
+		for (let suffix = 1; suffix < 1e4; suffix += 1) {
+			const uniquePositionFolder = suffix === 1 ? positionFolder : `${positionFolder}_${suffix}`;
+			const candidate = path.join(companyDateFolder, uniquePositionFolder);
+			if (candidate === application.folderName) return application.folderName;
+			if (!await this.applicationFolderOccupied(candidate)) {
+				targetFolderName = candidate;
+				break;
+			}
+		}
+		if (!targetFolderName) throw new Error("Für die Bewerbung konnte kein eindeutiger Ordner erstellt werden.");
+		const sources = this.applicationArtifactPaths(application.folderName);
+		const targets = this.applicationArtifactPaths(targetFolderName);
+		const moves = (await Promise.all(sources.map(async (source, index) => ({
+			source,
+			target: targets[index],
+			exists: await pathExists$1(source.path)
+		})))).filter((move) => move.exists);
+		const completed = [];
+		try {
+			for (const move of moves) {
+				if (await pathExists$1(move.target.path)) throw new Error(`Der Zielordner existiert bereits: ${move.target.path}`);
+				await mkdir(path.dirname(move.target.path), { recursive: true });
+				await rename(move.source.path, move.target.path);
+				completed.push(move);
+			}
+		} catch (error) {
+			for (const move of completed.reverse()) try {
+				await mkdir(path.dirname(move.source.path), { recursive: true });
+				await rename(move.target.path, move.source.path);
+			} catch {}
+			await this.removeEmptyArtifactParents(targets);
+			if (isApplicationFolderLockError(error)) throw new ApplicationFolderLockedError();
+			throw error;
+		}
+		await this.removeEmptyArtifactParents(sources);
+		return targetFolderName;
+	}
+	async removeEmptyArtifactParents(artifacts) {
+		const parents = new Map(artifacts.map(({ root, path: artifactPath }) => [path.dirname(artifactPath), root]));
+		await Promise.all([...parents].map(async ([parent, root]) => {
+			let current = parent;
+			while (current !== root && isPathInside$1(root, current)) {
+				try {
+					await rmdir(current);
+				} catch (error) {
+					const code = typeof error === "object" && error && "code" in error ? String(error.code) : "";
+					if (code === "ENOENT") {
+						current = path.dirname(current);
+						continue;
+					}
+					if ([
+						"ENOTEMPTY",
+						"EEXIST",
+						"EACCES",
+						"EBUSY",
+						"EPERM"
+					].includes(code)) break;
+					throw error;
+				}
+				current = path.dirname(current);
+			}
+		}));
 	}
 	async containsNestedApplications(folderName) {
 		const dataRoot = this.applicationDataPath(folderName);
@@ -8754,14 +8860,15 @@ var FileManagementService = class {
 		return absolute;
 	}
 	async transitionApplicationDocuments(application, nextStatus) {
-		if (application.status === "Absage" === (nextStatus === "Absage")) return;
+		const wasRejected = application.status === "Absage";
+		if (wasRejected === (nextStatus === "Absage")) return;
 		if (await this.containsNestedApplications(application.folderName)) throw new Error("Dieser ältere Bewerbungsordner enthält weitere positionsbezogene Bewerbungen und kann nicht als Ganzes verschoben werden.");
 		const current = this.documentDirectories(application);
 		const next = this.documentDirectories({
 			...application,
 			status: nextStatus
 		});
-		const moves = [[current.anschreiben, next.anschreiben], [current.lebenslauf, next.lebenslauf]];
+		const moves = wasRejected ? [[current.lebenslauf, next.lebenslauf], [current.anschreiben, next.anschreiben]] : [[current.anschreiben, next.anschreiben], [current.lebenslauf, next.lebenslauf]];
 		const completed = [];
 		try {
 			for (const [source, target] of moves) {
@@ -8777,16 +8884,22 @@ var FileManagementService = class {
 			} catch {}
 			throw error;
 		}
+		const sourceRoots = wasRejected ? [this.paths.absagenRoot, this.paths.absagenRoot] : [this.paths.anschreibenDocuments, this.paths.lebenslaufDocuments];
+		await this.removeEmptyArtifactParents(moves.map(([source], index) => ({
+			root: path.resolve(sourceRoots[index]),
+			path: source
+		})));
 	}
 	async removeApplicationArtifacts(application) {
 		const folderName = application.folderName;
 		if (await this.containsNestedApplications(folderName)) throw new Error("Dieser ältere Bewerbungsordner enthält weitere positionsbezogene Bewerbungen und kann nicht als Ganzes gelöscht werden.");
-		const targets = [
+		const roots = [
 			this.paths.applicationsData,
 			this.paths.anschreibenDocuments,
 			this.paths.lebenslaufDocuments,
 			this.paths.absagenRoot
-		].map((root) => {
+		];
+		const targets = roots.map((root) => {
 			const resolvedRoot = path.resolve(root);
 			const candidate = path.resolve(root, folderName);
 			if (candidate === resolvedRoot || !isPathInside$1(resolvedRoot, candidate)) throw new Error("Ungültiger Bewerbungsordner.");
@@ -8795,6 +8908,10 @@ var FileManagementService = class {
 		await Promise.all(targets.map((target) => rm(target, {
 			recursive: true,
 			force: true
+		})));
+		await this.removeEmptyArtifactParents(targets.map((target, index) => ({
+			root: path.resolve(roots[index]),
+			path: target
 		})));
 	}
 };
@@ -8974,6 +9091,7 @@ var blendHexColor = (foreground, background, backgroundWeight) => {
 };
 var eventReminders = {
 	"application-sent": [],
+	"application-rejected": [],
 	"application-deadline": [4320, 1440],
 	interview: [1440, 60],
 	"second-interview": [1440, 60],
@@ -9032,6 +9150,7 @@ var DataStore = class {
 	async initialize() {
 		await this.files.initialize();
 		this.workspace = await this.loadWorkspace();
+		this.workspace.applications.forEach((application) => this.syncEvents(application));
 		await this.persist();
 	}
 	getWorkspace() {
@@ -9136,10 +9255,10 @@ var DataStore = class {
 	applicationPath(application) {
 		return this.files.applicationDataPath(application.folderName);
 	}
-	getApplicationPath(id) {
+	getApplicationAnschreibenPath(id) {
 		const application = this.workspace.applications.find((item) => item.id === id);
 		if (!application) throw new Error("Bewerbung wurde nicht gefunden.");
-		return this.applicationPath(application);
+		return this.files.documentDirectories(application).anschreiben;
 	}
 	async ensureApplicationDataDirectories(application) {
 		return this.files.ensureApplicationDataDirectories(application);
@@ -9193,7 +9312,8 @@ var DataStore = class {
 	}
 	syncEvents(application) {
 		const company = application.company.name;
-		this.ensureEvent(application, "application-sent", `Bewerbung gesendet · ${company}`, application.sentAt, true);
+		this.ensureEvent(application, "application-sent", `${company} · Bewerbung gesendet`, application.sentAt, true);
+		this.ensureEvent(application, "application-rejected", `${company} · Absage`, application.status === "Absage" ? application.rejectionAt : void 0, true);
 		this.ensureEvent(application, "application-deadline", `Bewerbungsfrist · ${company}`, application.deadlineAt, true);
 		this.ensureEvent(application, "interview", `Vorstellungsgespräch · ${company}`, application.interviewAt);
 		this.ensureEvent(application, "second-interview", `Zweites Gespräch · ${company}`, application.secondInterviewAt);
@@ -9202,10 +9322,11 @@ var DataStore = class {
 		this.ensureEvent(application, "fixed-term-end", `Befristungsende · ${company}`, application.fixedTermEndAt, true);
 		this.ensureEvent(application, "probation-end", `Probezeitende · ${company}`, application.probationEndAt, true);
 		const followUp = (application.status === "Beworben" || application.status === "Gesendet") && application.sentAt && this.workspace.settings.followUpDays !== null ? addDaysAtNine(application.sentAt, this.workspace.settings.followUpDays) : void 0;
-		this.ensureEvent(application, "follow-up-call", `Bei ${company} zum Stand der Bewerbung nachfragen`, followUp);
+		this.ensureEvent(application, "follow-up-call", `${company} · Nachfassen`, followUp);
 		if (terminalStatuses.has(application.status)) {
 			const preserved = /* @__PURE__ */ new Set([
 				"application-sent",
+				"application-rejected",
 				"contract-start",
 				"contract-end",
 				"fixed-term-end",
@@ -9222,7 +9343,7 @@ var DataStore = class {
 	async createApplication(rawInput) {
 		const input = applicationInputSchema.parse(rawInput);
 		const now = nowIso();
-		const folderName = await this.files.allocateApplicationFolderName(input.company.name, input.job.title);
+		const folderName = await this.files.allocateApplicationFolderName(input.company.name, input.job.title, input.sentAt ? new Date(input.sentAt) : /* @__PURE__ */ new Date());
 		const application = {
 			schemaVersion: 1,
 			id: createId(),
@@ -9258,6 +9379,8 @@ var DataStore = class {
 		const application = applicationSchema.parse(rawApplication);
 		const index = this.workspace.applications.findIndex((item) => item.id === application.id);
 		if (index < 0) throw new Error("Bewerbung wurde nicht gefunden.");
+		const current = this.workspace.applications[index];
+		application.folderName = await this.files.relocateApplicationFolders(current, new Date(application.sentAt ?? current.createdAt));
 		application.updatedAt = nowIso();
 		this.workspace.applications[index] = application;
 		this.syncEvents(application);
@@ -9597,7 +9720,7 @@ var DataStore = class {
 			ANSPRECHPARTNER: postalContactName,
 			STELLENBEZEICHNUNG: application.job.title,
 			STELLENNUMMER: "",
-			BEWERBUNGSDATUM: new Intl.DateTimeFormat("de-DE").format(/* @__PURE__ */ new Date()),
+			BEWERBUNGSDATUM: new Intl.DateTimeFormat("de-DE").format(getApplicationDate(application)),
 			BETREFF: application.documents.coverSubject || `Bewerbung als ${application.job.title}`,
 			ANREDE: greeting,
 			EINLEITUNG: application.documents.coverIntroduction,
@@ -27677,7 +27800,21 @@ var registerIpc = () => {
 	ipcMain.handle("application-draft:save", (_event, value) => store.saveApplicationDraft(applicationDraftSchema.parse(value)));
 	ipcMain.handle("application-draft:clear", () => store.clearApplicationDraft());
 	ipcMain.handle("applications:create", (_event, value) => store.createApplication(applicationInputSchema.parse(value)));
-	ipcMain.handle("applications:save", (_event, value) => store.saveApplication(applicationSchema.parse(value)));
+	ipcMain.handle("applications:save", async (_event, value) => {
+		try {
+			return await store.saveApplication(applicationSchema.parse(value));
+		} catch (error) {
+			if (error instanceof ApplicationFolderLockedError && mainWindow) await dialog.showMessageBox(mainWindow, {
+				type: "warning",
+				title: "Dokument noch geöffnet",
+				message: "Der Bewerbungsordner konnte nicht umbenannt werden.",
+				detail: error.message,
+				buttons: ["OK"],
+				defaultId: 0
+			});
+			throw error;
+		}
+	});
 	ipcMain.handle("applications:remove", (_event, id) => store.removeApplication(String(id)));
 	ipcMain.handle("applications:duplicate", (_event, id) => store.duplicateApplication(String(id)));
 	ipcMain.handle("applications:change-status", (_event, id, status, reason) => {
@@ -27687,7 +27824,7 @@ var registerIpc = () => {
 		return store.changeStatus(String(id), validStatus, validReason);
 	});
 	ipcMain.handle("applications:open-folder", async (_event, id) => {
-		const error = await shell.openPath(store.getApplicationPath(String(id)));
+		const error = await shell.openPath(store.getApplicationAnschreibenPath(String(id)));
 		if (error) throw new Error(error);
 	});
 	ipcMain.handle("profiles:save", (_event, value) => store.saveProfile(profileSchema.parse(value)));

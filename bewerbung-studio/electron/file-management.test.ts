@@ -167,6 +167,9 @@ describe("FileManagementService", () => {
       ...application,
       status: "Absage",
     });
+    expect(rejected.anschreiben).toBe(
+      path.join(service.paths.absagenRoot, folderName),
+    );
     await expect(
       readFile(path.join(rejected.anschreiben, "Anschreiben.docx"), "utf8"),
     ).resolves.toBe("cover");
@@ -175,10 +178,46 @@ describe("FileManagementService", () => {
     ).resolves.toBe("resume");
     await expect(access(active.anschreiben)).rejects.toThrow();
     await expect(access(active.lebenslauf)).rejects.toThrow();
+    await expect(access(path.dirname(active.anschreiben))).rejects.toThrow();
+    await expect(access(path.dirname(active.lebenslauf))).rejects.toThrow();
+  });
+
+  it("removes empty rejection parents when an application becomes active again", async () => {
+    const folderName = path.join("Siemens_2026-07-30", "Softwareentwickler");
+    const application = {
+      folderName,
+      status: "Absage",
+    } as Application;
+    const rejected = service.documentDirectories(application);
+    await Promise.all([
+      mkdir(rejected.anschreiben, { recursive: true }),
+      mkdir(rejected.lebenslauf, { recursive: true }),
+    ]);
+    await writeFile(path.join(rejected.anschreiben, "Anschreiben.docx"), "cover");
+    await writeFile(path.join(rejected.lebenslauf, "Lebenslauf.docx"), "resume");
+
+    await service.transitionApplicationDocuments(application, "Beworben");
+
+    const active = service.documentDirectories({
+      ...application,
+      status: "Beworben",
+    });
+    await expect(
+      readFile(path.join(active.anschreiben, "Anschreiben.docx"), "utf8"),
+    ).resolves.toBe("cover");
+    await expect(
+      readFile(path.join(active.lebenslauf, "Lebenslauf.docx"), "utf8"),
+    ).resolves.toBe("resume");
+    await expect(
+      access(path.join(service.paths.absagenRoot, "Siemens_2026-07-30")),
+    ).rejects.toThrow();
   });
 
   it("deletes all application folders from active and rejection locations", async () => {
-    const folderName = "Siemens_2026-07-30";
+    const folderName = path.join(
+      "Siemens_2026-07-30",
+      "Softwareentwickler",
+    );
     const targets = [
       service.applicationDataPath(folderName),
       path.join(service.paths.anschreibenDocuments, folderName),
@@ -196,6 +235,18 @@ describe("FileManagementService", () => {
 
     await Promise.all(
       targets.map((target) => expect(access(target)).rejects.toThrow()),
+    );
+    await Promise.all(
+      [
+        service.paths.applicationsData,
+        service.paths.anschreibenDocuments,
+        service.paths.lebenslaufDocuments,
+        service.paths.absagenRoot,
+      ].map((rootPath) =>
+        expect(
+          access(path.join(rootPath, "Siemens_2026-07-30")),
+        ).rejects.toThrow(),
+      ),
     );
   });
 
