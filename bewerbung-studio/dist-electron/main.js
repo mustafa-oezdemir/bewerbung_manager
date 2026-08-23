@@ -5209,16 +5209,17 @@ var elegantLebenslaufTemplateConfig = {
 	editableInWord: true,
 	isSystemTemplate: true,
 	isProtected: true,
-	description: "Zweispaltige Word-Lebenslaufvorlage mit breiter Hauptspalte für Berufserfahrung und eleganter roter Seitenleiste für persönliche Highlights.",
+	description: "Zweispaltige Word-Lebenslaufvorlage mit breiter Hauptspalte für Berufserfahrung und eleganter dunkelblauer Seitenleiste für persönliche Highlights.",
 	tags: [
 		"Elegant",
 		"Word",
 		"DOCX",
 		"Lebenslauf",
 		"ATS",
-		"Foto"
+		"Foto",
+		"Dunkelblau"
 	],
-	cardHighlights: ["Breite Hauptspalte für Berufserfahrung", "Rote Seitenleiste für persönliche Highlights"]
+	cardHighlights: ["Breite Hauptspalte für Berufserfahrung", "Dunkelblaue Seitenleiste für persönliche Highlights"]
 };
 var zeitgenoessischLebenslaufTemplateConfig = {
 	id: "word-lebenslauf-zeitgenoessisch",
@@ -5738,7 +5739,7 @@ var resolveApplicationPaths = (rootPath = resolveBewerbungRootPath(), bundledTem
 		deckblattTemplates: path.join(musterRoot, "Deckblatt"),
 		lebenslaufTemplates: path.join(musterRoot, "Lebenslauf"),
 		anschreibenDocuments: path.join(root, "Anschreiben"),
-		lebenslaufDocuments: path.join(root, "Lebenlauf"),
+		lebenslaufDocuments: path.join(root, "Lebenslauf"),
 		zeugnisseArchive: path.join(root, "Zeugnisse"),
 		zertifikateArchive: path.join(root, "Zertifikate"),
 		absagenRoot: path.join(root, "Absagen"),
@@ -6310,6 +6311,11 @@ var getReadableTextColor = (hex) => {
 //#endregion
 //#region src/shared/applicationDate.ts
 var getApplicationDate = (application) => new Date(application.sentAt ?? application.createdAt);
+var formatApplicationDateLong = (application) => new Intl.DateTimeFormat("de-DE", {
+	day: "numeric",
+	month: "long",
+	year: "numeric"
+}).format(getApplicationDate(application));
 //#endregion
 //#region src/features/knowledge/knowledge.presets.ts
 var categories = (type, titles) => titles.map((title) => ({
@@ -7083,7 +7089,7 @@ var buildDocumentHtml = (application, profile, target) => {
 		profile.city,
 		profile.linkedin
 	].filter(Boolean).map(escapeHtml).join(" · ") : "Telefon · E-Mail · Ort";
-	const applicationDate = new Intl.DateTimeFormat("de-DE", { day: "numeric", month: "long", year: "numeric" }).format(getApplicationDate(application));
+	const applicationDate = formatApplicationDateLong(application);
 	const letterStatus = getLetterPageStatus(docs);
 	const cover = `
     <section class="page cover-page ${designClasses}">
@@ -9720,7 +9726,7 @@ var DataStore = class {
 			ANSPRECHPARTNER: postalContactName,
 			STELLENBEZEICHNUNG: application.job.title,
 			STELLENNUMMER: "",
-			BEWERBUNGSDATUM: new Intl.DateTimeFormat("de-DE", { day: "numeric", month: "long", year: "numeric" }).format(getApplicationDate(application)),
+			BEWERBUNGSDATUM: formatApplicationDateLong(application),
 			BETREFF: application.documents.coverSubject || `Bewerbung als ${application.job.title}`,
 			ANREDE: greeting,
 			EINLEITUNG: application.documents.coverIntroduction,
@@ -27681,7 +27687,9 @@ var TemplateService = class {
 		await validateTemplateFile(this.paths, sourceTemplate.filePath);
 		await mkdir(targetDirectory, { recursive: true });
 		const outputExtension = template.extension === ".doc" ? ".doc" : ".docx";
-		const targetPath = await createUniqueFilePath(targetDirectory, `${sanitizeTemplateFileName(managedResumeConfig ? `Lebenslauf_${data.VORNAME ?? ""}_${data.NACHNAME ?? ""}` : requestedBaseName)}_${templateTimestamp()}`, outputExtension);
+		const resumeFirstName = data.BEWERBER_VORNAME ?? data.VORNAME ?? "";
+		const resumeLastName = data.BEWERBER_NACHNAME ?? data.NACHNAME ?? "";
+		const targetPath = await createUniqueFilePath(targetDirectory, `${sanitizeTemplateFileName(managedResumeConfig ? `Lebenslauf_${resumeFirstName}_${resumeLastName}` : requestedBaseName)}_${templateTimestamp()}`, outputExtension);
 		const result = await withOneDriveRetry(() => this.placeholderService.createDocument(sourceTemplate, targetPath, data));
 		const singlePageContentLength = Object.entries(data).filter(([key]) => /^(ZUSAMMENFASSUNG|BESCHREIBUNG_\d+|ERFOLG_\d+_\d+|ERFOLG_HIGHLIGHT_\d+_(?:TITEL|BESCHREIBUNG)|STAERKE_\d+_BESCHREIBUNG|KENNTNIS_EINTRAEGE_\d+)$/.test(key)).reduce((length, [, value]) => length + value.trim().length, 0);
 		const filledSinglePageExperiences = Array.from({ length: 8 }, (_, index) => data[`POSITION_${index + 1}`]?.trim() ?? "").filter(Boolean).length;

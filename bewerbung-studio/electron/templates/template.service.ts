@@ -255,10 +255,13 @@ export class TemplateService {
     await mkdir(targetDirectory, { recursive: true });
     const outputExtension =
       template.extension === ".doc" ? ".doc" : ".docx";
-    const outputBaseName =
-      managedResumeConfig
-        ? `Lebenslauf_${data.VORNAME ?? ""}_${data.NACHNAME ?? ""}`
-        : requestedBaseName;
+    const resumeFirstName =
+      data.BEWERBER_VORNAME ?? data.VORNAME ?? "";
+    const resumeLastName =
+      data.BEWERBER_NACHNAME ?? data.NACHNAME ?? "";
+    const outputBaseName = managedResumeConfig
+      ? `Lebenslauf_${resumeFirstName}_${resumeLastName}`
+      : requestedBaseName;
     const targetPath = await createUniqueFilePath(
       targetDirectory,
       `${sanitizeTemplateFileName(outputBaseName)}_${templateTimestamp()}`,

@@ -21,7 +21,7 @@ describe("application paths", () => {
     const paths = resolveApplicationPaths(root);
     expect(paths.dataRoot).toBe(path.join(root, "data"));
     expect(paths.anschreibenDocuments).toBe(path.join(root, "Anschreiben"));
-    expect(paths.lebenslaufDocuments).toBe(path.join(root, "Lebenlauf"));
+    expect(paths.lebenslaufDocuments).toBe(path.join(root, "Lebenslauf"));
     expect(paths.zeugnisseArchive).toBe(path.join(root, "Zeugnisse"));
     expect(paths.zertifikateArchive).toBe(path.join(root, "Zertifikate"));
     expect(paths.absagenRoot).toBe(path.join(root, "Absagen"));

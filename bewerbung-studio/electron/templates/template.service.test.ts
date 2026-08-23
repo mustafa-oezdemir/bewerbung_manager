@@ -471,6 +471,64 @@ describe("Musterverwaltung", () => {
     ).toBe(true);
   });
 
+  it("fills Elegant with the shared Anschreiben applicant placeholders", async () => {
+    paths = resolveApplicationPaths(
+      root,
+      path.resolve("public", "templates"),
+    );
+    service = new TemplateService(paths);
+    await createDocx(
+      path.join(
+        paths.anschreibenDocuments,
+        wordMusterTemplateConfig.fileName,
+      ),
+    );
+
+    const initialized = await service.initialize();
+    const elegant = initialized.templates.find(
+      (template) => template.id === elegantLebenslaufTemplateConfig.id,
+    )!;
+    const targetDirectory = path.join(
+      paths.dataRoot,
+      "Bewerbungen",
+      "Elegant",
+      "Lebenslauf",
+    );
+    const created = await service.createDocumentFromTemplate(
+      elegant.id,
+      targetDirectory,
+      "ignored",
+      {
+        BEWERBER_NAME: "Mustafa Özdemir",
+        BEWERBER_VORNAME: "Mustafa",
+        BEWERBER_NACHNAME: "Özdemir",
+        BERUFSBEZEICHNUNG: "Softwareentwickler",
+        BEWERBER_ADRESSE: "Musterstraße 12",
+        BEWERBER_PLZ: "35037",
+        BEWERBER_ORT: "Marburg",
+        BEWERBER_EMAIL: "mustafa@example.de",
+        BEWERBER_TELEFON: "+49 170 123456",
+        BERUFSERFAHRUNG_TITEL: "BERUFSERFAHRUNG",
+        POSITION_1: "Senior Softwareentwickler",
+        UNTERNEHMEN_1: "Beispiel GmbH",
+      },
+    );
+    const outputZip = new PizZip(await readFile(created.filePath));
+    const documentXml = outputZip.file("word/document.xml")!.asText();
+
+    expect(created.fileName).toMatch(
+      /^Lebenslauf_Mustafa_Oezdemir_\d{8}_\d{6}\.docx$/,
+    );
+    expect(documentXml).toContain("Mustafa Özdemir");
+    expect(documentXml).toContain("Musterstraße 12");
+    expect(documentXml).toContain("35037");
+    expect(documentXml).toContain("Marburg");
+    expect(documentXml).toContain("mustafa@example.de");
+    expect(documentXml).toContain("+49 170 123456");
+    expect(documentXml).toContain("Senior Softwareentwickler");
+    expect(documentXml).not.toContain("{{");
+  });
+
   it("registers Kreativ and preserves its banner, background and ATS copy", async () => {
     paths = resolveApplicationPaths(
       root,

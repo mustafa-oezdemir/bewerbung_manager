@@ -12,12 +12,18 @@ import argparse
 from pathlib import Path
 from typing import Iterable
 
+from lxml import etree
 from PIL import Image, ImageDraw
 from docx import Document
 from docx.enum.section import WD_SECTION
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_ROW_HEIGHT_RULE
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK, WD_LINE_SPACING
+from docx.enum.text import (
+    WD_ALIGN_PARAGRAPH,
+    WD_BREAK,
+    WD_LINE_SPACING,
+    WD_TAB_ALIGNMENT,
+)
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Mm, Pt, RGBColor, Twips
@@ -26,15 +32,15 @@ from docx.shared import Mm, Pt, RGBColor, Twips
 # compact_reference_guide with named "Elegant A4 CV" overrides.
 PAGE_WIDTH_DXA = 11_906
 PAGE_HEIGHT_DXA = 16_838
-PAGE_MARGIN_DXA = 454  # 8 mm
-CONTENT_WIDTH_DXA = PAGE_WIDTH_DXA - (2 * PAGE_MARGIN_DXA)
-LEFT_COLUMN_DXA = 7_217
+PAGE_MARGIN_DXA = 0
+CONTENT_WIDTH_DXA = PAGE_WIDTH_DXA
+LEFT_COLUMN_DXA = 7_770
 RIGHT_COLUMN_DXA = CONTENT_WIDTH_DXA - LEFT_COLUMN_DXA
-SIDEBAR = "294966"
-ACCENT = "55A6D9"
-INK = "303A43"
-MUTED = "687681"
-LIGHT = "DDEAF3"
+SIDEBAR = "244762"
+ACCENT = "1597F2"
+INK = "3C474D"
+MUTED = "626B70"
+LIGHT = "D7E0E7"
 WHITE = "FFFFFF"
 FONT = "Arial"
 
@@ -163,8 +169,8 @@ def set_run_font(
 
 
 def set_paragraph_indents(paragraph, *, sidebar: bool = False) -> None:
-    paragraph.paragraph_format.left_indent = Twips(300 if sidebar else 260)
-    paragraph.paragraph_format.right_indent = Twips(300 if sidebar else 260)
+    paragraph.paragraph_format.left_indent = Twips(550 if sidebar else 720)
+    paragraph.paragraph_format.right_indent = Twips(550 if sidebar else 420)
 
 
 def configure_style(
@@ -212,23 +218,23 @@ def configure_styles(doc: Document) -> None:
     normal.paragraph_format.line_spacing = 1.08
 
     styles = [
-        ("CV Name", 25, INK, True, False, 0, 2, 1.0, None),
-        ("CV Title", 11, ACCENT, True, False, 0, 3, 1.0, None),
-        ("CV Fields", 8.5, MUTED, False, False, 0, 4, 1.05, None),
-        ("Section Left", 11, INK, True, False, 9, 4, 1.0, None),
-        ("Entry Role", 9.5, INK, True, False, 5, 1, 1.0, None),
-        ("Entry Company", 8.5, ACCENT, True, False, 0, 1, 1.0, None),
-        ("Entry Meta", 8, MUTED, False, False, 0, 2, 1.0, None),
-        ("Body Compact", 8.5, INK, False, False, 0, 2, 1.08, None),
-        ("Sidebar Heading", 9.5, WHITE, True, False, 10, 4, 1.0, None),
-        ("Sidebar Body", 8.4, WHITE, False, False, 0, 3, 1.12, None),
-        ("Sidebar Strong", 8.5, WHITE, True, False, 3, 0, 1.05, None),
-        ("Sidebar Muted", 7.8, LIGHT, False, False, 0, 3, 1.05, None),
-        ("Optional", 8.5, INK, False, False, 0, 2, 1.08, None),
-        ("Optional Sidebar", 8.4, WHITE, False, False, 0, 3, 1.12, None),
-        ("Optional Heading", 11, INK, True, False, 9, 4, 1.0, None),
-        ("Optional Sidebar Heading", 9.5, WHITE, True, False, 10, 4, 1.0, None),
-        ("Optional Bullet", 8.3, INK, False, False, 0, 1, 1.05, "List Bullet"),
+        ("CV Name", 22, INK, False, False, 0, 3, 1.0, None),
+        ("CV Title", 13.5, ACCENT, False, False, 0, 0, 1.02, None),
+        ("CV Fields", 9.2, MUTED, False, False, 2, 1, 1.08, None),
+        ("Section Left", 14, INK, False, False, 15, 5, 1.0, None),
+        ("Entry Role", 10.5, INK, False, False, 7, 1, 1.0, None),
+        ("Entry Company", 10, ACCENT, False, False, 0, 2, 1.0, None),
+        ("Entry Meta", 9.2, MUTED, False, False, 0, 2, 1.0, None),
+        ("Body Compact", 9.2, MUTED, False, False, 0, 2, 1.12, None),
+        ("Sidebar Heading", 13, WHITE, False, False, 18, 6, 1.0, None),
+        ("Sidebar Body", 9.2, WHITE, False, False, 0, 5, 1.15, None),
+        ("Sidebar Strong", 10.2, WHITE, False, False, 6, 1, 1.05, None),
+        ("Sidebar Muted", 9, LIGHT, False, False, 0, 5, 1.12, None),
+        ("Optional", 9.2, INK, False, False, 0, 2, 1.1, None),
+        ("Optional Sidebar", 9.2, WHITE, False, False, 0, 5, 1.15, None),
+        ("Optional Heading", 14, INK, False, False, 15, 5, 1.0, None),
+        ("Optional Sidebar Heading", 13, WHITE, False, False, 18, 6, 1.0, None),
+        ("Optional Bullet", 9, MUTED, False, False, 0, 1, 1.08, "List Bullet"),
         ("Cell Terminator", 1, WHITE, False, False, 0, 0, 1.0, None),
         ("ATS Name", 24, INK, True, False, 0, 2, 1.0, None),
         ("ATS Section", 12, SIDEBAR, True, False, 10, 4, 1.0, None),
@@ -260,12 +266,13 @@ def configure_styles(doc: Document) -> None:
     for style_name in ("List Bullet", "Optional Bullet"):
         style = doc.styles[style_name]
         style.font.name = FONT
-        style.font.size = Pt(8.3)
-        style.font.color.rgb = RGBColor.from_string(INK)
-        style.paragraph_format.left_indent = Twips(520)
+        style.font.size = Pt(9)
+        style.font.color.rgb = RGBColor.from_string(MUTED)
+        style.paragraph_format.left_indent = Twips(980)
         style.paragraph_format.first_line_indent = Twips(-240)
         style.paragraph_format.space_after = Pt(1)
-        style.paragraph_format.line_spacing = 1.05
+        style.paragraph_format.right_indent = Twips(420)
+        style.paragraph_format.line_spacing = 1.08
 
 
 def configure_page(doc: Document, *, ats: bool = False) -> None:
@@ -277,8 +284,8 @@ def configure_page(doc: Document, *, ats: bool = False) -> None:
     section.bottom_margin = margin
     section.left_margin = margin
     section.right_margin = margin
-    section.header_distance = Mm(4)
-    section.footer_distance = Mm(5)
+    section.header_distance = Mm(0)
+    section.footer_distance = Mm(0)
 
     section_pr = section._sectPr
     doc_grid = section_pr.find(qn("w:docGrid"))
@@ -286,6 +293,40 @@ def configure_page(doc: Document, *, ats: bool = False) -> None:
         doc_grid = OxmlElement("w:docGrid")
         section_pr.append(doc_grid)
     doc_grid.set(qn("w:linePitch"), "312")
+
+
+def add_sidebar_page_background(doc: Document) -> None:
+    """Paint the full-height sidebar in the header layer.
+
+    Keeping the background separate from the content table prevents Word from
+    creating a trailing blank page when the visible sidebar reaches the bottom
+    edge of A4.
+    """
+    section = doc.sections[0]
+    header = section.header
+    paragraph = header.paragraphs[0]
+    paragraph.paragraph_format.space_before = Pt(0)
+    paragraph.paragraph_format.space_after = Pt(0)
+    paragraph.paragraph_format.line_spacing = Pt(1)
+    run = paragraph.add_run()
+    pict = OxmlElement("w:pict")
+    rectangle = etree.Element("{urn:schemas-microsoft-com:vml}rect")
+    rectangle.set("id", "ElegantSidebarBackground")
+    rectangle.set(
+        "style",
+        "position:absolute;"
+        f"left:{LEFT_COLUMN_DXA / 20:.2f}pt;top:0pt;"
+        f"width:{RIGHT_COLUMN_DXA / 20:.2f}pt;"
+        f"height:{PAGE_HEIGHT_DXA / 20:.2f}pt;"
+        "z-index:-251654144;"
+        "mso-position-horizontal-relative:page;"
+        "mso-position-vertical-relative:page;"
+        "mso-wrap-style:none",
+    )
+    rectangle.set("fillcolor", f"#{SIDEBAR}")
+    rectangle.set("stroked", "f")
+    pict.append(rectangle)
+    run._r.append(pict)
 
 
 def clear_cell(cell) -> None:
@@ -324,9 +365,9 @@ def add_left_section_heading(cell, placeholder: str) -> None:
     border = OxmlElement("w:pBdr")
     bottom = OxmlElement("w:bottom")
     bottom.set(qn("w:val"), "single")
-    bottom.set(qn("w:sz"), "6")
+    bottom.set(qn("w:sz"), "4")
     bottom.set(qn("w:space"), "3")
-    bottom.set(qn("w:color"), ACCENT)
+    bottom.set(qn("w:color"), "BFC5C8")
     border.append(bottom)
     p_pr.append(border)
 
@@ -345,19 +386,31 @@ def add_sidebar_heading(cell, placeholder: str) -> None:
     bottom.set(qn("w:val"), "single")
     bottom.set(qn("w:sz"), "4")
     bottom.set(qn("w:space"), "3")
-    bottom.set(qn("w:color"), "79BCE4")
+    bottom.set(qn("w:color"), "E6EBEF")
     border.append(bottom)
     p_pr.append(border)
 
 
 def add_experience(cell, index: int) -> None:
-    add_paragraph(
+    role = add_paragraph(
         cell,
-        f"{{{{POSITION_{index}}}}}",
-        "Optional",
+        "",
+        "Entry Role",
         keep_with_next=True,
         keep_together=True,
-    ).style = "Entry Role"
+    )
+    role.paragraph_format.tab_stops.add_tab_stop(
+        Twips(LEFT_COLUMN_DXA - 1_140),
+        WD_TAB_ALIGNMENT.RIGHT,
+    )
+    role.add_run(f"{{{{POSITION_{index}}}}}")
+    role.add_run("\t")
+    date_run = role.add_run(
+        f"{{{{STARTDATUM_{index}}}}}{{{{DATUM_TRENNER_{index}}}}}"
+        f"{{{{ENDDATUM_{index}}}}}"
+    )
+    set_run_font(date_run, size=9.2, color=MUTED)
+
     company = add_paragraph(
         cell,
         "",
@@ -367,23 +420,13 @@ def add_experience(cell, index: int) -> None:
     )
     set_paragraph_indents(company)
     company.paragraph_format.tab_stops.add_tab_stop(
-        Twips(LEFT_COLUMN_DXA - 840),
+        Twips(LEFT_COLUMN_DXA - 1_140),
+        WD_TAB_ALIGNMENT.RIGHT,
     )
     company.add_run(f"{{{{UNTERNEHMEN_{index}}}}}")
     company.add_run("\t")
-    date_run = company.add_run(
-        f"{{{{STARTDATUM_{index}}}}}{{{{DATUM_TRENNER_{index}}}}}"
-        f"{{{{ENDDATUM_{index}}}}}"
-    )
-    set_run_font(date_run, size=8, color=MUTED)
-
-    add_paragraph(
-        cell,
-        f"{{{{ARBEITSORT_{index}}}}}",
-        "Optional",
-        keep_with_next=True,
-        keep_together=True,
-    ).style = "Entry Meta"
+    location_run = company.add_run(f"{{{{ARBEITSORT_{index}}}}}")
+    set_run_font(location_run, size=9.2, color=MUTED)
     add_paragraph(
         cell,
         f"{{{{BESCHREIBUNG_{index}}}}}",
@@ -403,10 +446,10 @@ def add_education(cell, index: int) -> None:
     add_paragraph(
         cell,
         f"{{{{ABSCHLUSS_{index}}}}}",
-        "Optional",
+        "Entry Role",
         keep_with_next=True,
         keep_together=True,
-    ).style = "Entry Role"
+    )
     add_paragraph(
         cell,
         f"{{{{FACHRICHTUNG_{index}}}}}",
@@ -423,29 +466,25 @@ def add_education(cell, index: int) -> None:
     )
     set_paragraph_indents(company)
     company.paragraph_format.tab_stops.add_tab_stop(
-        Twips(LEFT_COLUMN_DXA - 840),
+        Twips(LEFT_COLUMN_DXA - 1_140),
+        WD_TAB_ALIGNMENT.RIGHT,
     )
     company.add_run(f"{{{{HOCHSCHULE_{index}}}}}")
     company.add_run("\t")
-    date_run = company.add_run(
+    location_run = company.add_run(
         f"{{{{AUSBILDUNG_START_{index}}}}}"
         f"{{{{AUSBILDUNG_DATUM_TRENNER_{index}}}}}"
-        f"{{{{AUSBILDUNG_ENDE_{index}}}}}"
+        f"{{{{AUSBILDUNG_ENDE_{index}}}}} "
+        f"{{{{AUSBILDUNG_ORT_{index}}}}}"
     )
-    set_run_font(date_run, size=8, color=MUTED)
-    add_paragraph(
-        cell,
-        f"{{{{AUSBILDUNG_ORT_{index}}}}}",
-        "Optional",
-        keep_together=True,
-    ).style = "Entry Meta"
+    set_run_font(location_run, size=9.2, color=MUTED)
 
 
 def create_profile_placeholder(path: Path) -> None:
-    image = Image.new("RGB", (760, 900), "#E8F1F7")
+    image = Image.new("RGB", (760, 760), "#E8F1F7")
     draw = ImageDraw.Draw(image)
-    draw.ellipse((245, 145, 515, 415), fill="#9AB4C8")
-    draw.rounded_rectangle((155, 455, 605, 805), radius=120, fill="#9AB4C8")
+    draw.ellipse((250, 105, 510, 365), fill="#9AB4C8")
+    draw.rounded_rectangle((155, 390, 605, 710), radius=110, fill="#9AB4C8")
     image.save(path, "PNG")
 
 
@@ -453,13 +492,13 @@ def add_profile_picture(cell, placeholder_path: Path) -> None:
     paragraph = cell.add_paragraph()
     set_paragraph_indents(paragraph, sidebar=True)
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    paragraph.paragraph_format.space_before = Pt(3)
-    paragraph.paragraph_format.space_after = Pt(9)
+    paragraph.paragraph_format.space_before = Pt(0)
+    paragraph.paragraph_format.space_after = Pt(46)
     run = paragraph.add_run()
     shape = run.add_picture(
         str(placeholder_path),
-        width=Mm(38),
-        height=Mm(45),
+        width=Mm(28),
+        height=Mm(28),
     )
     shape._inline.docPr.set("descr", "PROFILFOTO")
     shape._inline.docPr.set("title", "PROFILFOTO")
@@ -481,26 +520,38 @@ def build_elegant(output_path: Path, *, force: bool) -> Path:
     doc = Document()
     configure_page(doc)
     configure_styles(doc)
+    add_sidebar_page_background(doc)
 
     table = doc.add_table(rows=1, cols=2)
     set_table_borders_none(table)
     apply_table_geometry(table, [LEFT_COLUMN_DXA, RIGHT_COLUMN_DXA])
     row = table.rows[0]
-    # Keep the sidebar visually full-height while leaving room for Word's
-    # mandatory trailing table paragraph on a one-page populated CV.
-    row.height = Mm(270)
-    row.height_rule = WD_ROW_HEIGHT_RULE.AT_LEAST
+    row.height = None
     row.cells[0].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.TOP
     row.cells[1].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.TOP
     left, right = row.cells
     set_cell_shading(left, WHITE)
     set_cell_shading(right, SIDEBAR)
+    set_cell_margins(
+        left,
+        top=1_050,
+        bottom=120,
+        start=0,
+        end=0,
+    )
+    set_cell_margins(
+        right,
+        top=720,
+        bottom=120,
+        start=0,
+        end=0,
+    )
     remove_initial_cell_paragraph(left)
     remove_initial_cell_paragraph(right)
 
     add_paragraph(
         left,
-        "{{VORNAME}} {{NACHNAME}}",
+        "{{BEWERBER_NAME}}",
         "CV Name",
         keep_with_next=True,
     )
@@ -510,14 +561,14 @@ def build_elegant(output_path: Path, *, force: bool) -> Path:
         "CV Title",
         keep_with_next=True,
     )
-    add_paragraph(
+    contact_line = add_paragraph(
         left,
-        "{{FACHGEBIETE}}",
+        "{{BEWERBER_ADRESSE}}, {{BEWERBER_PLZ}} {{BEWERBER_ORT}} | "
+        "{{BEWERBER_EMAIL}} | {{BEWERBER_TELEFON}}",
         "Optional",
-        keep_with_next=True,
-    ).style = "CV Fields"
-    add_paragraph(left, "{{KONTAKT_ZEILE_1}}", "Optional").style = "CV Fields"
-    add_paragraph(left, "{{KONTAKT_ZEILE_2}}", "Optional").style = "CV Fields"
+    )
+    contact_line.style = "CV Fields"
+    contact_line.paragraph_format.space_after = Pt(22)
 
     add_left_section_heading(left, "{{BERUFSERFAHRUNG_TITEL}}")
     for index in range(1, 6):
@@ -594,9 +645,6 @@ def build_elegant(output_path: Path, *, force: bool) -> Path:
             sidebar=True,
         ).style = "Sidebar Muted"
 
-    left.add_paragraph(" ", style="Cell Terminator")
-    right.add_paragraph(" ", style="Cell Terminator")
-
     doc.save(output_path)
     placeholder_path.unlink(missing_ok=True)
     return output_path
@@ -671,7 +719,7 @@ def build_ats(output_path: Path, *, force: bool) -> Path:
 
     add_paragraph(
         doc,
-        "{{VORNAME}} {{NACHNAME}}",
+        "{{BEWERBER_NAME}}",
         "ATS Name",
         keep_with_next=True,
     )
@@ -681,9 +729,12 @@ def build_ats(output_path: Path, *, force: bool) -> Path:
         "CV Title",
         keep_with_next=True,
     )
-    add_paragraph(doc, "{{FACHGEBIETE}}", "Optional")
-    add_paragraph(doc, "{{KONTAKT_ZEILE_1}}", "Optional")
-    add_paragraph(doc, "{{KONTAKT_ZEILE_2}}", "Optional")
+    add_paragraph(
+        doc,
+        "{{BEWERBER_ADRESSE}}, {{BEWERBER_PLZ}} {{BEWERBER_ORT}} | "
+        "{{BEWERBER_EMAIL}} | {{BEWERBER_TELEFON}}",
+        "Optional",
+    )
 
     add_paragraph(
         doc,
