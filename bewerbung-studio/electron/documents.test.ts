@@ -1726,6 +1726,12 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).toContain("tabellarisch-pdf-background");
     expect(body).toContain("tabellarisch-pdf-strengths");
     expect(body).toContain("tabellarisch-pdf-timeline");
+    expect(html).toContain(
+      '.tabellarisch-pdf-rail:before{position:absolute;top:2.5mm;bottom:-1mm',
+    );
+    expect(html).not.toContain(
+      ".tabellarisch-pdf-entry:last-child .tabellarisch-pdf-rail:before{bottom:auto;height:1mm}",
+    );
     expect(body).toContain('<img class="tabellarisch-pdf-photo"');
     expect(body.indexOf(">Zusammenfassung<")).toBeLessThan(
       body.indexOf(">Stärken<"),

@@ -347,13 +347,6 @@
   transform: translateX(-50%);
 }
 
-.tabellarisch-timeline:not([data-continues-next-page="true"])
-  .tabellarisch-timeline-entry:last-child
-  .tabellarisch-timeline-entry__rail::before {
-  bottom: auto;
-  height: 1mm;
-}
-
 .tabellarisch-timeline[data-continues-next-page="true"]
   .tabellarisch-timeline-entry:last-child
   .tabellarisch-timeline-entry__rail::before {
