@@ -4,6 +4,7 @@ import { KreativLanguagesSection } from "./KreativLanguagesSection";
 import { KreativSectionHeading } from "./KreativSectionHeading";
 import { KreativSkillsSection } from "./KreativSkillsSection";
 import { KreativStrengthsSection } from "./KreativStrengthsSection";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function KreativAdditionalSections({
   profile,
@@ -18,7 +19,7 @@ export function KreativAdditionalSections({
 
   return (
     <>
-      {sections.skills ? (
+      {sections.strengths ? (
         <KreativSkillsSection profile={profile} atsMode />
       ) : null}
       {sections.languages ? (
@@ -32,7 +33,7 @@ export function KreativAdditionalSections({
           className="kreativ-section kreativ-certifications"
           data-element-id="kreativ.certifications"
         >
-          <KreativSectionHeading title="Zertifikate" />
+          <KreativSectionHeading title={getResumeSectionTitle(profile, "certifications")} />
           <ul>
             {certifications.map((certification) => (
               <li key={certification}>{certification}</li>

@@ -7,6 +7,7 @@ import {
 } from "../resume-template-data";
 import { GepflegtSidebarPhoto } from "./GepflegtSidebarPhoto";
 import type { GepflegtSidebarProps } from "./gepflegt.types";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 const strengthIcons = [Lightbulb, Sparkles, CheckCircle2];
 
@@ -66,17 +67,17 @@ export function GepflegtSidebar({
           className="gepflegt-sidebar__section"
           data-element-id="gepflegt.summary"
         >
-          <h2 className="gepflegt-sidebar__title">Zusammenfassung</h2>
+          <h2 className="gepflegt-sidebar__title">{getResumeSectionTitle(profile, "summary")}</h2>
           <p className="gepflegt-sidebar__summary">{summary}</p>
         </section>
       ) : null}
 
-      {sections.skills && strengths.length ? (
+      {sections.strengths && strengths.length ? (
         <section
           className="gepflegt-sidebar__section"
           data-element-id="gepflegt.strengths"
         >
-          <h2 className="gepflegt-sidebar__title">Stärken</h2>
+          <h2 className="gepflegt-sidebar__title">{getResumeSectionTitle(profile, "strengths")}</h2>
           <div className="gepflegt-strengths">
             {strengths.map((strength, index) => {
               const Icon = strengthIcons[index % strengthIcons.length];
@@ -99,17 +100,17 @@ export function GepflegtSidebar({
           className="gepflegt-sidebar__section"
           data-element-id="gepflegt.languages"
         >
-          <h2 className="gepflegt-sidebar__title">Sprachen</h2>
+          <h2 className="gepflegt-sidebar__title">{getResumeSectionTitle(profile, "languages")}</h2>
           <ul className="gepflegt-languages">
             {languages.map((language) => (
               <li key={language.raw}>
                 <div>
                   <strong>{language.name}</strong>
-                  <span>{language.level}</span>
+                  {atsMode ? <span>{language.level}</span> : null}
                 </div>
                 {!atsMode ? (
-                  <span className="gepflegt-language-dots" aria-hidden="true">
-                    {Array.from({ length: 5 }, (_, index) => (
+                  <span className="gepflegt-language-dots" aria-label={`${language.name}: ${language.level}`} role="img">
+                    {Array.from({ length: 6 }, (_, index) => (
                       <i
                         className={index < language.score ? "is-filled" : ""}
                         key={index}
@@ -128,7 +129,7 @@ export function GepflegtSidebar({
           className="gepflegt-sidebar__section"
           data-element-id="gepflegt.skills"
         >
-          <h2 className="gepflegt-sidebar__title">Fähigkeiten</h2>
+          <h2 className="gepflegt-sidebar__title">{getResumeSectionTitle(profile, "knowledge")}</h2>
           <p className="gepflegt-knowledge">{knowledge.join(" · ")}</p>
         </section>
       ) : null}
@@ -138,7 +139,7 @@ export function GepflegtSidebar({
           className="gepflegt-sidebar__section"
           data-element-id="gepflegt.certifications"
         >
-          <h2 className="gepflegt-sidebar__title">Zertifikate</h2>
+          <h2 className="gepflegt-sidebar__title">{getResumeSectionTitle(profile, "certifications")}</h2>
           <ul className="gepflegt-certifications">
             {certifications.map((certification) => (
               <li key={certification}>{certification}</li>

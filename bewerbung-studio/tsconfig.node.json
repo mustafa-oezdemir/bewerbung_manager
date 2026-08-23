@@ -22,6 +22,7 @@
     "src/features/knowledge/knowledge.utils.ts",
     "src/features/knowledge/knowledge.service.ts",
     "src/features/knowledge/knowledge.presets.ts",
+    "src/features/languages/language-levels.ts",
     "src/features/resume-sections/resume-sections.ts",
     "vite.config.ts"
   ]

@@ -32,23 +32,26 @@ export function KlassischHeader({
     .join(" | ");
   const contacts = [
     {
+      kind: "phone",
       value: profile?.phone,
       href: profile?.phone
         ? `tel:${profile.phone.replace(/[^\d+]/g, "")}`
         : "",
     },
     {
+      kind: "email",
       value: profile?.email,
       href: profile?.email ? `mailto:${profile.email}` : "",
     },
     {
+      kind: "linkedin",
       value: profile?.linkedin,
       href: profile?.linkedin
         ? toTemplateExternalHref(profile.linkedin)
         : "",
     },
-    { value: location, href: "" },
-    { value: birth, href: "" },
+    { kind: "location", value: location, href: "" },
+    { kind: "birth", value: birth, href: "" },
   ].filter((item) => item.value?.trim());
 
   return (
@@ -63,7 +66,10 @@ export function KlassischHeader({
         {!compact && !atsMode && contacts.length ? (
           <address>
             {contacts.map((contact, index) => (
-              <span key={`${contact.value}-${index}`}>
+              <span
+                data-contact-kind={contact.kind}
+                key={`${contact.value}-${index}`}
+              >
                 {contact.href ? (
                   <a href={contact.href}>{contact.value}</a>
                 ) : (
@@ -82,4 +88,3 @@ export function KlassischHeader({
     </header>
   );
 }
-

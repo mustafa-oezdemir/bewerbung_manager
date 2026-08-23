@@ -428,6 +428,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
       : application.documents;
   const sections = renderProfile?.resumeSections ?? {
     profile: true,
+    strengths: true,
     experience: true,
     education: true,
     skills: true,
@@ -1343,6 +1344,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
           {tab === "anschreiben" && (
             <div
               className={`document-paper document-anschreiben letter-${letterStatus.density} layout-${template.layout} ${designClassName}`}
+              data-resume-template={template.id}
               style={paperStyle}>
               <DocumentBackgroundLayer
                 backgroundId={design.settings.backgroundId}

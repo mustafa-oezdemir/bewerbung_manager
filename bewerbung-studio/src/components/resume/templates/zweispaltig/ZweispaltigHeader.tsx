@@ -15,6 +15,14 @@ import {
 import type { ZweispaltigHeaderProps } from "./zweispaltig.types";
 
 type ZweispaltigContact = {
+  kind:
+    | "phone"
+    | "email"
+    | "linkedin"
+    | "location"
+    | "birth"
+    | "github"
+    | "portfolio";
   label: string;
   value: string | undefined;
   href: string;
@@ -39,6 +47,7 @@ export function ZweispaltigHeader({
     .join(", ");
   const contacts: ZweispaltigContact[] = [
     {
+      kind: "phone",
       label: "Telefon",
       value: profile?.phone,
       href: profile?.phone
@@ -47,12 +56,14 @@ export function ZweispaltigHeader({
       Icon: Phone,
     },
     {
+      kind: "email",
       label: "E-Mail",
       value: profile?.email,
       href: profile?.email ? `mailto:${profile.email}` : "",
       Icon: AtSign,
     },
     {
+      kind: "linkedin",
       label: "LinkedIn",
       value: profile?.linkedin,
       href: profile?.linkedin
@@ -61,18 +72,21 @@ export function ZweispaltigHeader({
       Icon: LinkIcon,
     },
     {
+      kind: "location",
       label: "Wohnort",
       value: location,
       href: "",
       Icon: MapPin,
     },
     {
+      kind: "birth",
       label: "Geboren",
       value: birth,
       href: "",
       Icon: CakeSlice,
     },
     {
+      kind: "github",
       label: "GitHub",
       value: profile?.github,
       href: profile?.github
@@ -81,6 +95,7 @@ export function ZweispaltigHeader({
       Icon: Github,
     },
     {
+      kind: "portfolio",
       label: "Portfolio",
       value: profile?.portfolio,
       href: profile?.portfolio
@@ -88,7 +103,7 @@ export function ZweispaltigHeader({
         : "",
       Icon: Globe2,
     },
-  ].filter((contact) => contact.value?.trim());
+  ].filter((contact) => contact.value?.trim()) as ZweispaltigContact[];
 
   return (
     <header
@@ -131,6 +146,7 @@ export function ZweispaltigHeader({
               return contact.href ? (
                 <a
                   aria-label={`${contact.label}: ${contact.value}`}
+                  data-contact-kind={contact.kind}
                   href={contact.href}
                   key={contact.label}
                 >
@@ -139,6 +155,7 @@ export function ZweispaltigHeader({
               ) : (
                 <span
                   aria-label={`${contact.label}: ${contact.value}`}
+                  data-contact-kind={contact.kind}
                   key={contact.label}
                 >
                   {content}

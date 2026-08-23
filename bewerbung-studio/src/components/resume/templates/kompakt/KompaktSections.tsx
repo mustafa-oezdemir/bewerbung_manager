@@ -1,4 +1,5 @@
 import type { ApplicantProfile } from "../../../../shared/schema";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 import {
   formatTemplateDateRange,
   getTemplateKnowledge,
@@ -18,11 +19,13 @@ export function KompaktHeading({
 }
 
 export function KompaktCareer({
+  kind,
   title,
   items,
   continuation = false,
 }: {
-  title: "Erfahrung" | "Ausbildung";
+  kind: "experience" | "education";
+  title: string;
   items: TemplateCareerItem[];
   continuation?: boolean;
 }) {
@@ -30,7 +33,7 @@ export function KompaktCareer({
   return (
     <section
       className="kompakt-section kompakt-career"
-      data-element-id={`kompakt.${title === "Erfahrung" ? "experience" : "education"}`}
+      data-element-id={`kompakt.${kind}`}
     >
       <KompaktHeading>
         {title}
@@ -144,16 +147,16 @@ export function KompaktRightColumn({
           className="kompakt-section"
           data-element-id="kompakt.summary"
         >
-          <KompaktHeading>Zusammenfassung</KompaktHeading>
+          <KompaktHeading>{getResumeSectionTitle(profile, "summary")}</KompaktHeading>
           <p className="kompakt-summary">{summary}</p>
         </section>
       ) : null}
-      {sections.skills && strengths.length ? (
+      {sections.strengths && strengths.length ? (
         <section
           className="kompakt-section kompakt-strengths"
           data-element-id="kompakt.strengths"
         >
-          <KompaktHeading>Stärken</KompaktHeading>
+          <KompaktHeading>{getResumeSectionTitle(profile, "strengths")}</KompaktHeading>
           {strengths.slice(0, 2).map((strength, index) => (
             <article key={strength.title}>
               <i aria-hidden="true">{index ? "⚑" : "★"}</i>
@@ -172,7 +175,7 @@ export function KompaktRightColumn({
           className="kompakt-section kompakt-strengths"
           data-element-id="kompakt.achievements"
         >
-          <KompaktHeading>Erfolge</KompaktHeading>
+          <KompaktHeading>{getResumeSectionTitle(profile, "certifications")}</KompaktHeading>
           {achievements.map((achievement, index) => (
             <article key={achievement}>
               <i aria-hidden="true">{index ? "★" : "♜"}</i>
@@ -188,7 +191,7 @@ export function KompaktRightColumn({
           className="kompakt-section"
           data-element-id="kompakt.skills"
         >
-          <KompaktHeading>Fähigkeiten</KompaktHeading>
+          <KompaktHeading>{getResumeSectionTitle(profile, "knowledge")}</KompaktHeading>
           <div className="kompakt-skills">
             {skills.map((skill) => (
               <span key={skill}>{skill}</span>
@@ -216,7 +219,7 @@ export function KompaktLanguages({
       className="kompakt-section kompakt-languages"
       data-element-id="kompakt.languages"
     >
-      <KompaktHeading>Sprachen</KompaktHeading>
+      <KompaktHeading>{getResumeSectionTitle(profile, "languages")}</KompaktHeading>
       <div>
         {languages.map((language) => (
           <article key={language.raw}>
@@ -225,9 +228,8 @@ export function KompaktLanguages({
             ) : (
               <>
                 <strong>{language.name}</strong>
-                <span>{language.level}</span>
-                <span className="kompakt-language__dots" aria-hidden="true">
-                  {Array.from({ length: 5 }, (_, index) => (
+                <span className="kompakt-language__dots" aria-label={`${language.name}: ${language.level}`} role="img">
+                  {Array.from({ length: 6 }, (_, index) => (
                     <i
                       className={index < language.score ? "filled" : ""}
                       key={index}
@@ -259,16 +261,16 @@ export function KompaktAtsExtras({
     <>
       {sections.skills && skills.length ? (
         <section className="kompakt-section">
-          <KompaktHeading>Kenntnisse</KompaktHeading>
+          <KompaktHeading>{getResumeSectionTitle(profile, "knowledge")}</KompaktHeading>
           <p>{skills.join(" · ")}</p>
         </section>
       ) : null}
       {sections.languages ? (
         <KompaktLanguages profile={profile} atsMode />
       ) : null}
-      {sections.skills && strengths.length ? (
+      {sections.strengths && strengths.length ? (
         <section className="kompakt-section">
-          <KompaktHeading>Stärken</KompaktHeading>
+          <KompaktHeading>{getResumeSectionTitle(profile, "strengths")}</KompaktHeading>
           <ul>
             {strengths.map((strength) => (
               <li key={strength.title}>
@@ -283,7 +285,7 @@ export function KompaktAtsExtras({
       ) : null}
       {sections.certifications && achievements.length ? (
         <section className="kompakt-section">
-          <KompaktHeading>Erfolge und Zertifikate</KompaktHeading>
+          <KompaktHeading>{getResumeSectionTitle(profile, "certifications")}</KompaktHeading>
           <ul>
             {achievements.map((achievement) => (
               <li key={achievement}>{achievement}</li>

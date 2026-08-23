@@ -1,4 +1,5 @@
 import { parseTemplateStrengths } from "../resume-template-data";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 import type { ElegantStrengthsProps } from "./elegant.types";
 
 export function ElegantStrengths({
@@ -15,7 +16,7 @@ export function ElegantStrengths({
         className="elegant-section elegant-ats-list"
         data-element-id="elegant.strengths"
       >
-        <h2 className="elegant-section__title">Stärken</h2>
+        <h2 className="elegant-section__title">{getResumeSectionTitle(profile, "strengths")}</h2>
         <ul>
           {strengths.map((strength) => (
             <li key={strength.title}>
@@ -33,7 +34,7 @@ export function ElegantStrengths({
       className="elegant-sidebar__section elegant-strengths"
       data-element-id="elegant.strengths"
     >
-      <h2 className="elegant-sidebar__title">Stärken</h2>
+      <h2 className="elegant-sidebar__title">{getResumeSectionTitle(profile, "strengths")}</h2>
       <div className="elegant-strengths__list">
         {strengths.map((strength, index) => (
           <article className="elegant-strength" key={strength.title}>

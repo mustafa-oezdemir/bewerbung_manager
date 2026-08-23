@@ -20,6 +20,8 @@ describe("Dokumenthintergründe", () => {
     });
     expect(programmingLanguageBackgroundTokens).toContain("Java");
     expect(programmingLanguageBackgroundTokens).toContain("C++");
-    expect(programmingLanguageBackgroundTokens).toHaveLength(13);
+    expect(programmingLanguageBackgroundTokens).toContain("Go");
+    expect(programmingLanguageBackgroundTokens).toContain("PHP");
+    expect(programmingLanguageBackgroundTokens).toHaveLength(14);
   });
 });

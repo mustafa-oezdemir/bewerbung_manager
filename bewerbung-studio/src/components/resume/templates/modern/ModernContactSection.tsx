@@ -129,7 +129,11 @@ export function ModernContactSection({
       ) : null}
       <ul className="modern-contact-list">
         {visibleItems.map((item) => (
-          <li key={item.key} className="modern-contact-item">
+          <li
+            key={item.key}
+            className="modern-contact-item"
+            data-contact-kind={item.key}
+          >
             {!atsMode ? (
               <div
                 className="modern-contact-item__icon"

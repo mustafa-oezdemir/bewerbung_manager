@@ -195,6 +195,7 @@ export const programmingLanguageBackgroundTokens = [
   "C++",
   "HTML",
   "CSS",
+  "PHP",
 ] as const;
 
 export const marginLevelToMm: Record<DesignLevel, number> = {

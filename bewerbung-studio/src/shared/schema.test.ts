@@ -106,6 +106,96 @@ describe("BewerbungsManager schemas", () => {
     expect(profile.knowledgeSection.categories).toEqual([]);
     expect(profile.resumeSectionLayout).toEqual([]);
     expect(profile.resumeSectionLayouts).toEqual({});
+    expect(profile.onlineProfiles).toEqual([]);
+    expect(profile.familyStatus).toBe("");
+    expect(profile.children).toBe("");
+    expect(profile.specialSections).toEqual([]);
+    expect(profile.strengths).toEqual([]);
+    expect(profile.resumeSections.strengths).toBe(true);
+    expect(profile.resumeSectionTitles).toMatchObject({
+      summary: "Zusammenfassung",
+      strengths: "Stärken",
+      experience: "Berufserfahrung",
+      education: "Ausbildung",
+      languages: "Sprachen",
+      certifications: "Zertifikate",
+    });
+    expect(profile.applicationPlace).toBe("");
+    expect(profile.applicationDate).toBe("");
+  });
+
+  it("keeps independent strengths and editable resume section titles", () => {
+    const profile = profileSchema.parse({
+      id: crypto.randomUUID(),
+      isDefault: true,
+      firstName: "Mina",
+      lastName: "Kaya",
+      strengths: [
+        {
+          id: crypto.randomUUID(),
+          title: "Analytisches Denken",
+          description: "Komplexe Probleme strukturiert lösen",
+        },
+      ],
+      resumeSectionTitles: {
+        summary: "Über mich",
+        strengths: "Kernkompetenzen",
+        experience: "Praxis",
+        education: "Bildungsweg",
+        languages: "Sprachprofil",
+        certifications: "Qualifikationen",
+      },
+      updatedAt: new Date().toISOString(),
+    });
+
+    expect(profile.strengths[0].title).toBe("Analytisches Denken");
+    expect(profile.resumeSectionTitles.strengths).toBe("Kernkompetenzen");
+    expect(profile.resumeSectionTitles.experience).toBe("Praxis");
+  });
+
+  it("adds detailed defaults to older experience and education entries", () => {
+    const profile = profileSchema.parse({
+      id: crypto.randomUUID(),
+      isDefault: true,
+      firstName: "Mina",
+      lastName: "Kaya",
+      experiences: [
+        {
+          id: crypto.randomUUID(),
+          from: "01/2024",
+          to: "heute",
+          role: "Entwicklerin",
+          company: "Beispiel GmbH",
+          achievements: [],
+        },
+      ],
+      education: [
+        {
+          id: crypto.randomUUID(),
+          from: "10/2018",
+          to: "09/2022",
+          degree: "Bachelor",
+          institution: "Beispiel Hochschule",
+        },
+      ],
+      updatedAt: new Date().toISOString(),
+    });
+
+    expect(profile.experiences[0]).toMatchObject({
+      isCurrent: false,
+      description: "",
+      tasks: [],
+      projects: [],
+      technologies: [],
+    });
+    expect(profile.education[0]).toMatchObject({
+      country: "",
+      type: "",
+      fieldOfStudy: "",
+      grade: "",
+      status: "",
+      description: "",
+    });
   });
 
   it("migrates existing attachments into the PDF package by default", () => {

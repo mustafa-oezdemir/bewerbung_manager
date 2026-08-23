@@ -6,6 +6,7 @@
 import type { ModernExperienceSectionProps } from "./modern.types";
 import type { ApplicantProfile } from "../../../../shared/schema";
 import { CalendarDays, MapPin } from "lucide-react";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function ModernExperienceSection({
   profile,
@@ -16,7 +17,7 @@ export function ModernExperienceSection({
 
   return (
     <section className="modern-section">
-      <h2 className="modern-section__title">Erfahrung</h2>
+      <h2 className="modern-section__title">{getResumeSectionTitle(profile, "experience")}</h2>
       <ul className="modern-experience-list">
         {profile.experiences.map(
           (exp: ApplicantProfile["experiences"][number]) => (

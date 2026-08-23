@@ -10,6 +10,7 @@ import { toKreativExternalHref } from "./kreativ.model";
 import type { KreativHeaderProps } from "./kreativ.types";
 
 type KreativContact = {
+  kind: "phone" | "email" | "linkedin" | "location" | "birth";
   label: string;
   value: string | undefined;
   href: string;
@@ -31,6 +32,7 @@ export function KreativHeader({
     .join(", ");
   const contacts: KreativContact[] = [
     {
+      kind: "phone",
       label: "Telefon",
       value: profile?.phone,
       href: profile?.phone
@@ -39,12 +41,14 @@ export function KreativHeader({
       Icon: Phone,
     },
     {
+      kind: "email",
       label: "E-Mail",
       value: profile?.email,
       href: profile?.email ? `mailto:${profile.email}` : "",
       Icon: Mail,
     },
     {
+      kind: "linkedin",
       label: "LinkedIn",
       value: profile?.linkedin,
       href: profile?.linkedin
@@ -53,18 +57,20 @@ export function KreativHeader({
       Icon: Linkedin,
     },
     {
+      kind: "location",
       label: "Wohnort",
       value: location,
       href: "",
       Icon: MapPin,
     },
     {
+      kind: "birth",
       label: "Geboren",
       value: birth,
       href: "",
       Icon: CakeSlice,
     },
-  ].filter((contact) => contact.value?.trim());
+  ].filter((contact) => contact.value?.trim()) as KreativContact[];
 
   return (
     <header
@@ -92,6 +98,7 @@ export function KreativHeader({
               return contact.href ? (
                 <a
                   aria-label={`${contact.label}: ${contact.value}`}
+                  data-contact-kind={contact.kind}
                   href={contact.href}
                   key={contact.label}
                 >
@@ -100,6 +107,7 @@ export function KreativHeader({
               ) : (
                 <span
                   aria-label={`${contact.label}: ${contact.value}`}
+                  data-contact-kind={contact.kind}
                   key={contact.label}
                 >
                   {content}

@@ -596,6 +596,9 @@ const elegantStaticPlaceholderKeys = [
   "FUEHRERSCHEIN",
   "INTERESSEN_TITEL",
   "INTERESSEN",
+  "LEBENSLAUF_ORT",
+  "LEBENSLAUF_DATUM",
+  "LEBENSLAUF_UNTERSCHRIFT",
   "ATS_MODUS",
 ] as const;
 

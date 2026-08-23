@@ -1,4 +1,5 @@
 import type { ApplicantProfile } from "../../../../shared/schema";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 import { parseIvyLeagueStrengths } from "./ivy-league.model";
 import { IvyLeagueSectionHeading } from "./IvyLeagueSectionHeading";
 
@@ -19,7 +20,7 @@ export function IvyLeagueStrengthsSection({
       className="ivy-league-section ivy-league-strengths-section"
       data-element-id="ivy-league.strengths"
     >
-      <IvyLeagueSectionHeading>Stärken</IvyLeagueSectionHeading>
+      <IvyLeagueSectionHeading>{getResumeSectionTitle(profile, "strengths")}</IvyLeagueSectionHeading>
       {atsMode ? (
         <ul className="ivy-league-strengths--ats">
           {strengths.map((strength) => (

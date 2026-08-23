@@ -8,8 +8,12 @@ import {
 import { useEffect, useState } from "react";
 import { ensureKnowledgeSection, syncLegacySkills } from "../../features/knowledge/knowledge.service";
 import { validateKnowledgeSection } from "../../features/knowledge/knowledge.validation";
-import type { ApplicantProfile } from "../../shared/schema";
+import {
+  type ApplicantProfile,
+  type ResumeSpecialSectionKind,
+} from "../../shared/schema";
 import { KnowledgeSectionEditor } from "../knowledge/KnowledgeSectionEditor";
+import { LanguageLevelEditor } from "../languages/LanguageLevelEditor";
 
 type Props = {
   profile: ApplicantProfile;
@@ -38,12 +42,37 @@ export const normalizeResumeDataDraft = (
   linkedin: normalizeProfileUrl(draft.linkedin),
   github: normalizeProfileUrl(draft.github),
   portfolio: normalizeProfileUrl(draft.portfolio),
+  resumeSectionTitles: Object.fromEntries(
+    Object.entries(draft.resumeSectionTitles).map(([key, title]) => [
+      key,
+      title.trim(),
+    ]),
+  ) as ApplicantProfile["resumeSectionTitles"],
+  strengths: draft.strengths
+    .map((strength) => ({
+      ...strength,
+      title: strength.title.trim(),
+      description: strength.description.trim(),
+    }))
+    .filter((strength) => strength.title),
   experiences: draft.experiences.map((item) => ({
     ...item,
+    tasks: item.tasks.map((value) => value.trim()).filter(Boolean),
+    projects: item.projects.map((value) => value.trim()).filter(Boolean),
+    technologies: item.technologies.map((value) => value.trim()).filter(Boolean),
     achievements: item.achievements.map((value) => value.trim()).filter(Boolean),
   })),
   languages: draft.languages.map((value) => value.trim()).filter(Boolean),
   certifications: draft.certifications.map((value) => value.trim()).filter(Boolean),
+  specialSections: draft.specialSections.map((section) => ({
+    ...section,
+    title: section.title.trim(),
+    entries: section.entries.map((entry) => ({
+      ...entry,
+      url: normalizeProfileUrl(entry.url),
+      bullets: entry.bullets.map((value) => value.trim()).filter(Boolean),
+    })),
+  })),
   skills: syncLegacySkills(draft.knowledgeSection),
   updatedAt: new Date().toISOString(),
 });
@@ -74,6 +103,14 @@ export function ResumeDataEditor({ profile, onPreview, onSave }: Props) {
           role: "",
           company: "",
           city: "",
+          isCurrent: true,
+          legalForm: "",
+          employmentType: "",
+          description: "",
+          teamSize: "",
+          tasks: [],
+          projects: [],
+          technologies: [],
           achievements: [],
         },
       ],
@@ -91,6 +128,12 @@ export function ResumeDataEditor({ profile, onPreview, onSave }: Props) {
           degree: "",
           institution: "",
           city: "",
+          country: "",
+          type: "",
+          fieldOfStudy: "",
+          grade: "",
+          status: "",
+          description: "",
         },
       ],
     }));
@@ -103,10 +146,19 @@ export function ResumeDataEditor({ profile, onPreview, onSave }: Props) {
       window.alert(issues[0].message);
       return;
     }
+    if (
+      Object.values(draft.resumeSectionTitles).some((title) => !title.trim()) ||
+      draft.specialSections.some((section) => !section.title.trim())
+    ) {
+      window.alert("Bitte jedem Lebenslauf-Abschnitt eine Überschrift geben.");
+      return;
+    }
     const normalized = normalizeResumeDataDraft(draft);
     setDraft(normalized);
     await onSave(normalized);
   };
+
+  const updateSection = () => void save();
 
   return (
     <section className="resume-data-editor">
@@ -149,7 +201,7 @@ export function ResumeDataEditor({ profile, onPreview, onSave }: Props) {
               <EditorInput label="Nationalität" value={draft.nationality} onChange={(nationality) => setDraft((current) => ({ ...current, nationality }))} />
             </div>
             <label className="field">
-              <span>Allgemeine Zusammenfassung</span>
+              <span>{draft.resumeSectionTitles.summary}</span>
               <textarea
                 rows={5}
                 value={draft.summary}
@@ -158,12 +210,129 @@ export function ResumeDataEditor({ profile, onPreview, onSave }: Props) {
                 }
               />
             </label>
+            <EditorInput
+              label="Überschrift des Kurzprofils"
+              value={draft.resumeSectionTitles.summary}
+              onChange={(summary) =>
+                setDraft((current) => ({
+                  ...current,
+                  resumeSectionTitles: {
+                    ...current.resumeSectionTitles,
+                    summary,
+                  },
+                }))
+              }
+            />
+            <SectionUpdateButton onClick={updateSection} />
+          </details>
+
+          <details className="resume-data-group" open>
+            <summary>{draft.resumeSectionTitles.strengths}</summary>
+            <EditorInput
+              label="Abschnittsüberschrift"
+              value={draft.resumeSectionTitles.strengths}
+              onChange={(strengths) =>
+                setDraft((current) => ({
+                  ...current,
+                  resumeSectionTitles: {
+                    ...current.resumeSectionTitles,
+                    strengths,
+                  },
+                }))
+              }
+            />
+            <button
+              className="button secondary small-button"
+              type="button"
+              onClick={() =>
+                setDraft((current) => ({
+                  ...current,
+                  strengths: [
+                    ...current.strengths,
+                    {
+                      id: crypto.randomUUID(),
+                      title: "Neue Stärke",
+                      description: "",
+                    },
+                  ],
+                }))
+              }
+            >
+              <Plus size={15} /> Stärke hinzufügen
+            </button>
+            <div className="resume-data-list">
+              {draft.strengths.map((strength) => (
+                <article className="resume-data-card" key={strength.id}>
+                  <div className="resume-data-card-heading">
+                    <strong>{strength.title || "Neue Stärke"}</strong>
+                    <button
+                      className="icon-button danger"
+                      type="button"
+                      aria-label="Stärke löschen"
+                      onClick={() =>
+                        setDraft((current) => ({
+                          ...current,
+                          strengths: current.strengths.filter(
+                            (item) => item.id !== strength.id,
+                          ),
+                        }))
+                      }
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                  <EditorInput
+                    label="Stärke"
+                    value={strength.title}
+                    onChange={(title) =>
+                      setDraft((current) => ({
+                        ...current,
+                        strengths: current.strengths.map((item) =>
+                          item.id === strength.id ? { ...item, title } : item,
+                        ),
+                      }))
+                    }
+                  />
+                  <label className="field">
+                    <span>Beschreibung</span>
+                    <textarea
+                      rows={3}
+                      value={strength.description}
+                      onChange={(event) =>
+                        setDraft((current) => ({
+                          ...current,
+                          strengths: current.strengths.map((item) =>
+                            item.id === strength.id
+                              ? { ...item, description: event.target.value }
+                              : item,
+                          ),
+                        }))
+                      }
+                    />
+                  </label>
+                </article>
+              ))}
+            </div>
+            <SectionUpdateButton onClick={updateSection} />
           </details>
 
           <details className="resume-data-group" open>
             <summary>
-              <span>Berufserfahrung ({draft.experiences.length})</span>
+              <span>{draft.resumeSectionTitles.experience} ({draft.experiences.length})</span>
             </summary>
+            <EditorInput
+              label="Abschnittsüberschrift"
+              value={draft.resumeSectionTitles.experience}
+              onChange={(experience) =>
+                setDraft((current) => ({
+                  ...current,
+                  resumeSectionTitles: {
+                    ...current.resumeSectionTitles,
+                    experience,
+                  },
+                }))
+              }
+            />
             <button className="button secondary small-button" type="button" onClick={addExperience}>
               <Plus size={15} /> Station hinzufügen
             </button>
@@ -212,12 +381,26 @@ export function ResumeDataEditor({ profile, onPreview, onSave }: Props) {
                 </article>
               ))}
             </div>
+            <SectionUpdateButton onClick={updateSection} />
           </details>
 
-          <details className="resume-data-group">
+          <details className="resume-data-group" open>
             <summary>
-              <span>Ausbildung ({draft.education.length})</span>
+              <span>{draft.resumeSectionTitles.education} ({draft.education.length})</span>
             </summary>
+            <EditorInput
+              label="Abschnittsüberschrift"
+              value={draft.resumeSectionTitles.education}
+              onChange={(education) =>
+                setDraft((current) => ({
+                  ...current,
+                  resumeSectionTitles: {
+                    ...current.resumeSectionTitles,
+                    education,
+                  },
+                }))
+              }
+            />
             <button className="button secondary small-button" type="button" onClick={addEducation}>
               <Plus size={15} /> Ausbildung hinzufügen
             </button>
@@ -249,29 +432,73 @@ export function ResumeDataEditor({ profile, onPreview, onSave }: Props) {
                 </article>
               ))}
             </div>
+            <SectionUpdateButton onClick={updateSection} />
           </details>
 
-          <details className="resume-data-group">
-            <summary>Kenntnisse</summary>
+          <details className="resume-data-group" open>
+            <summary>{draft.knowledgeSection.title || "Kenntnisse"}</summary>
             <KnowledgeSectionEditor
               value={draft.knowledgeSection}
               onChange={(knowledgeSection) =>
                 setDraft((current) => ({ ...current, knowledgeSection }))
               }
             />
+            <SectionUpdateButton onClick={updateSection} />
           </details>
 
-          <details className="resume-data-group">
-            <summary>Sprachen und Zertifikate</summary>
-            <label className="field">
-              <span>Sprachen – eine Zeile je Eintrag</span>
-              <textarea rows={5} value={draft.languages.join("\n")} onChange={(event) => setDraft((current) => ({ ...current, languages: event.target.value.split("\n") }))} />
-            </label>
+          <details className="resume-data-group" open>
+            <summary>{draft.resumeSectionTitles.languages}</summary>
+            <EditorInput
+              label="Abschnittsüberschrift"
+              value={draft.resumeSectionTitles.languages}
+              onChange={(languages) =>
+                setDraft((current) => ({
+                  ...current,
+                  resumeSectionTitles: {
+                    ...current.resumeSectionTitles,
+                    languages,
+                  },
+                }))
+              }
+            />
+            <LanguageLevelEditor
+              values={draft.languages}
+              onChange={(languages) =>
+                setDraft((current) => ({ ...current, languages }))
+              }
+            />
+            <SectionUpdateButton onClick={updateSection} />
+          </details>
+
+          <details className="resume-data-group" open>
+            <summary>{draft.resumeSectionTitles.certifications}</summary>
+            <EditorInput
+              label="Abschnittsüberschrift"
+              value={draft.resumeSectionTitles.certifications}
+              onChange={(certifications) =>
+                setDraft((current) => ({
+                  ...current,
+                  resumeSectionTitles: {
+                    ...current.resumeSectionTitles,
+                    certifications,
+                  },
+                }))
+              }
+            />
             <label className="field">
               <span>Zertifikate – eine Zeile je Eintrag</span>
               <textarea rows={5} value={draft.certifications.join("\n")} onChange={(event) => setDraft((current) => ({ ...current, certifications: event.target.value.split("\n") }))} />
             </label>
+            <SectionUpdateButton onClick={updateSection} />
           </details>
+
+          <ResumeSpecialSectionsEditor
+            value={draft.specialSections}
+            onChange={(specialSections) =>
+              setDraft((current) => ({ ...current, specialSections }))
+            }
+            onUpdate={updateSection}
+          />
 
           <div className="resume-data-actions">
             <button className="button secondary" type="button" onClick={reset}>
@@ -301,5 +528,276 @@ function EditorInput({
       <span>{label}</span>
       <input value={value} onChange={(event) => onChange(event.target.value)} />
     </label>
+  );
+}
+
+function SectionUpdateButton({ onClick }: { onClick: () => void }) {
+  return (
+    <div className="resume-data-section-update">
+      <button className="button secondary small-button" type="button" onClick={onClick}>
+        <Save size={15} /> Abschnitt aktualisieren
+      </button>
+    </div>
+  );
+}
+
+const specialSectionLabels: Record<ResumeSpecialSectionKind, string> = {
+  projects: "Projekte",
+  internships: "Praktika",
+  trainings: "Weiterbildungen",
+  internationalExperience: "Auslandserfahrung",
+  scholarships: "Stipendien",
+  awards: "Auszeichnungen",
+  publications: "Veröffentlichungen",
+  volunteer: "Ehrenamt",
+  interests: "Interessen & Hobbys",
+  drivingLicenses: "Führerschein",
+  additional: "Zusatzangaben",
+  references: "Referenzen",
+  custom: "Eigener Abschnitt",
+};
+
+function ResumeSpecialSectionsEditor({
+  value,
+  onChange,
+  onUpdate,
+}: {
+  value: ApplicantProfile["specialSections"];
+  onChange: (value: ApplicantProfile["specialSections"]) => void;
+  onUpdate: () => void;
+}) {
+  const [newKind, setNewKind] = useState<ResumeSpecialSectionKind>("additional");
+
+  const updateSection = (
+    sectionId: string,
+    update: Partial<ApplicantProfile["specialSections"][number]>,
+  ) =>
+    onChange(
+      value.map((section) =>
+        section.id === sectionId ? { ...section, ...update } : section,
+      ),
+    );
+
+  const updateEntry = (
+    sectionId: string,
+    entryId: string,
+    update: Partial<ApplicantProfile["specialSections"][number]["entries"][number]>,
+  ) => {
+    const section = value.find((item) => item.id === sectionId);
+    if (!section) return;
+    updateSection(sectionId, {
+      entries: section.entries.map((entry) =>
+        entry.id === entryId ? { ...entry, ...update } : entry,
+      ),
+    });
+  };
+
+  return (
+    <div className="resume-special-section-groups">
+      <div className="resume-special-section-add">
+        <label className="field">
+          <span>Weiteren Profilabschnitt hinzufügen</span>
+          <select
+            value={newKind}
+            onChange={(event) =>
+              setNewKind(event.target.value as ResumeSpecialSectionKind)
+            }
+          >
+            {Object.entries(specialSectionLabels).map(([kind, label]) => (
+              <option key={kind} value={kind}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          className="button secondary small-button"
+          type="button"
+          onClick={() =>
+            onChange([
+              ...value,
+              {
+                id: crypto.randomUUID(),
+                kind: newKind,
+                title: specialSectionLabels[newKind],
+                isVisible: true,
+                entries: [],
+              },
+            ])
+          }
+        >
+          <Plus size={15} /> Abschnitt hinzufügen
+        </button>
+      </div>
+
+      {value.map((section) => (
+        <details className="resume-data-group" key={section.id} open>
+          <summary>{section.title || specialSectionLabels[section.kind]}</summary>
+          <div className="resume-data-field-grid">
+            <EditorInput
+              label="Abschnittsüberschrift"
+              value={section.title}
+              onChange={(title) => updateSection(section.id, { title })}
+            />
+            <label className="field">
+              <span>Bereichstyp</span>
+              <select
+                value={section.kind}
+                onChange={(event) =>
+                  updateSection(section.id, {
+                    kind: event.target.value as ResumeSpecialSectionKind,
+                  })
+                }
+              >
+                {Object.entries(specialSectionLabels).map(([kind, label]) => (
+                  <option key={kind} value={kind}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <label className="checkbox-field">
+            <input
+              type="checkbox"
+              checked={section.isVisible}
+              onChange={(event) =>
+                updateSection(section.id, { isVisible: event.target.checked })
+              }
+            />
+            <span>Im Lebenslauf anzeigen</span>
+          </label>
+          <div className="resume-data-list">
+            {section.entries.map((entry) => (
+              <article className="resume-data-card" key={entry.id}>
+                <div className="resume-data-card-heading">
+                  <strong>{entry.title || "Neuer Eintrag"}</strong>
+                  <button
+                    className="icon-button danger"
+                    type="button"
+                    aria-label={`${section.title} Eintrag löschen`}
+                    onClick={() =>
+                      updateSection(section.id, {
+                        entries: section.entries.filter(
+                          (item) => item.id !== entry.id,
+                        ),
+                      })
+                    }
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+                <div className="resume-data-field-grid">
+                  <EditorInput
+                    label="Titel / Bezeichnung"
+                    value={entry.title}
+                    onChange={(title) =>
+                      updateEntry(section.id, entry.id, { title })
+                    }
+                  />
+                  <EditorInput
+                    label="Rolle / Organisation / Zusatz"
+                    value={entry.subtitle}
+                    onChange={(subtitle) =>
+                      updateEntry(section.id, entry.id, { subtitle })
+                    }
+                  />
+                  <EditorInput
+                    label="Von"
+                    value={entry.from}
+                    onChange={(from) =>
+                      updateEntry(section.id, entry.id, { from })
+                    }
+                  />
+                  <EditorInput
+                    label="Bis"
+                    value={entry.to}
+                    onChange={(to) => updateEntry(section.id, entry.id, { to })}
+                  />
+                  <EditorInput
+                    label="Datum"
+                    value={entry.date}
+                    onChange={(date) =>
+                      updateEntry(section.id, entry.id, { date })
+                    }
+                  />
+                  <EditorInput
+                    label="Ort"
+                    value={entry.location}
+                    onChange={(location) =>
+                      updateEntry(section.id, entry.id, { location })
+                    }
+                  />
+                  <EditorInput
+                    label="Link / URL"
+                    value={entry.url}
+                    onChange={(url) => updateEntry(section.id, entry.id, { url })}
+                  />
+                </div>
+                <label className="field">
+                  <span>Beschreibung</span>
+                  <textarea
+                    rows={3}
+                    value={entry.description}
+                    onChange={(event) =>
+                      updateEntry(section.id, entry.id, {
+                        description: event.target.value,
+                      })
+                    }
+                  />
+                </label>
+                <label className="field">
+                  <span>Details / Erfolge – eine Zeile je Eintrag</span>
+                  <textarea
+                    rows={4}
+                    value={entry.bullets.join("\n")}
+                    onChange={(event) =>
+                      updateEntry(section.id, entry.id, {
+                        bullets: event.target.value.split("\n"),
+                      })
+                    }
+                  />
+                </label>
+              </article>
+            ))}
+          </div>
+          <div className="resume-special-section-actions">
+            <button
+              className="button secondary small-button"
+              type="button"
+              onClick={() =>
+                updateSection(section.id, {
+                  entries: [
+                    ...section.entries,
+                    {
+                      id: crypto.randomUUID(),
+                      title: "",
+                      subtitle: "",
+                      from: "",
+                      to: "",
+                      date: "",
+                      location: "",
+                      url: "",
+                      description: "",
+                      bullets: [],
+                    },
+                  ],
+                })
+              }
+            >
+              <Plus size={15} /> Eintrag hinzufügen
+            </button>
+            <button
+              className="button ghost danger"
+              type="button"
+              onClick={() => onChange(value.filter((item) => item.id !== section.id))}
+            >
+              <Trash2 size={15} /> Abschnitt löschen
+            </button>
+            <SectionUpdateButton onClick={onUpdate} />
+          </div>
+        </details>
+      ))}
+    </div>
   );
 }

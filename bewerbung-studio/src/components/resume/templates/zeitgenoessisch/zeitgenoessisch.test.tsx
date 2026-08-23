@@ -37,6 +37,14 @@ const profile = profileSchema.parse({
     "Kommunikation: Abstimmungen zwischen Fachbereichen verbessert.",
     "Prozessoptimierung",
     "Teamführung",
+    "C#",
+  ],
+  strengths: [
+    {
+      id: "62000000-0000-4000-8000-000000000001",
+      title: "Kommunikation",
+      description: "Abstimmungen zwischen Fachbereichen verbessert.",
+    },
   ],
   experiences: [
     {
@@ -176,7 +184,7 @@ describe("Zeitgenössisch page model", () => {
     ).toMatchObject({
       name: "Deutsch",
       level: "Muttersprache",
-      score: 5,
+      score: 6,
     });
     expect(parseZeitgenoessischLanguage("Englisch – B2").score).toBe(4);
   });
@@ -191,6 +199,10 @@ describe("Zeitgenössisch rendering", () => {
     expect(markup).toContain("zeitgenoessisch-photo-shape--pale");
     expect(markup).toContain("zeitgenoessisch-left-column");
     expect(markup).toContain("zeitgenoessisch-main-column");
+    expect(markup).toContain('data-element-id="zeitgenoessisch.skills"');
+    expect(markup).toContain("C#");
+    expect(markup).not.toContain("<span>Muttersprache</span>");
+    expect(markup).not.toContain("<span>B2</span>");
     expect(markup).toContain("Auf die Stelle zugeschnitten");
     expect(markup).toContain("Beispiel GmbH");
     expect(markup).toContain(

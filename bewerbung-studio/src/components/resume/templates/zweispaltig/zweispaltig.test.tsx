@@ -165,7 +165,7 @@ describe("Zweispaltig page model", () => {
       {
         name: "Deutsch",
         level: "Muttersprache",
-        score: 5,
+        score: 6,
       },
     );
   });

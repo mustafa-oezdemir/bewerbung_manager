@@ -323,23 +323,22 @@
 .modern-contact-section--inline {
   position: relative;
   z-index: 3;
-  width: calc(100% - 34mm);
+  width: min(calc(100% - 34mm), 132mm);
   margin-top: -7mm;
   margin-bottom: 8mm;
 }
 
 .modern-contact-section--inline .modern-contact-list {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 1.8mm;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 1mm 8mm;
   min-width: 0;
 }
 
 .modern-contact-section--inline .modern-contact-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: 3.2mm minmax(0, 1fr);
   align-items: center;
-  flex: 0 0 auto;
   gap: 0.8mm;
   min-width: 0;
 }
@@ -358,12 +357,19 @@
 }
 
 .modern-contact-section--inline .modern-contact-item__value {
-  max-width: 44mm;
-  overflow: hidden;
+  min-width: 0;
   color: var(--modern-muted);
   font-size: 7.4pt;
+  overflow-wrap: anywhere;
+}
+
+.modern-contact-section--inline
+  .modern-contact-item[data-contact-kind="linkedin"]
+  .modern-contact-item__value {
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  overflow-wrap: normal;
 }
 
 .modern-contact-item {

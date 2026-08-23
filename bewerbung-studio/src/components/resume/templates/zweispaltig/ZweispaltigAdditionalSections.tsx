@@ -2,6 +2,7 @@ import type { ApplicantProfile } from "../../../../shared/schema";
 import { uniqueZweispaltigValues } from "./zweispaltig.model";
 import { ZweispaltigKnowledge } from "./ZweispaltigKnowledge";
 import { ZweispaltigStrengths } from "./ZweispaltigStrengths";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function ZweispaltigAdditionalSections({
   profile,
@@ -25,7 +26,7 @@ export function ZweispaltigAdditionalSections({
           className="zweispaltig-section zweispaltig-ats-list"
           data-element-id="zweispaltig.languages"
         >
-          <h2 className="zweispaltig-section__title">Sprachen</h2>
+          <h2 className="zweispaltig-section__title">{getResumeSectionTitle(profile, "languages")}</h2>
           <ul>
             {languages.map((language) => (
               <li key={language}>{language}</li>
@@ -33,7 +34,7 @@ export function ZweispaltigAdditionalSections({
           </ul>
         </section>
       ) : null}
-      {sections.skills ? (
+      {sections.strengths ? (
         <ZweispaltigStrengths profile={profile} variant="ats" />
       ) : null}
       {sections.certifications && certifications.length ? (
@@ -41,7 +42,7 @@ export function ZweispaltigAdditionalSections({
           className="zweispaltig-section zweispaltig-ats-list"
           data-element-id="zweispaltig.certifications"
         >
-          <h2 className="zweispaltig-section__title">Weiterbildungen</h2>
+          <h2 className="zweispaltig-section__title">{getResumeSectionTitle(profile, "certifications")}</h2>
           <ul>
             {certifications.map((certification) => (
               <li key={certification}>{certification}</li>

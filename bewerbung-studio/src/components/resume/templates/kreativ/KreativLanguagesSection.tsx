@@ -4,6 +4,7 @@ import {
   uniqueKreativValues,
 } from "./kreativ.model";
 import { KreativSectionHeading } from "./KreativSectionHeading";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function KreativLanguagesSection({
   profile,
@@ -22,7 +23,7 @@ export function KreativLanguagesSection({
       className={`kreativ-section kreativ-languages ${atsMode ? "kreativ-languages--ats" : ""}`}
       data-element-id="kreativ.languages"
     >
-      <KreativSectionHeading title="Sprachen" />
+      <KreativSectionHeading title={getResumeSectionTitle(profile, "languages")} />
       <div className="kreativ-languages__list">
         {languages.map((language) => (
           <article className="kreativ-language" key={language.raw}>
@@ -31,22 +32,20 @@ export function KreativLanguagesSection({
             ) : (
               <>
                 <h3>{language.name}</h3>
-                <div>
-                  <span>{language.level}</span>
-                  <span
-                    className="kreativ-language__dots"
-                    aria-hidden="true"
-                  >
-                    {Array.from({ length: 5 }, (_, index) => (
-                      <i
-                        className={
-                          index < language.score ? "is-filled" : ""
-                        }
-                        key={index}
-                      />
-                    ))}
-                  </span>
-                </div>
+                <span
+                  className="kreativ-language__dots"
+                  aria-label={`${language.name}: ${language.level}`}
+                  role="img"
+                >
+                  {Array.from({ length: 6 }, (_, index) => (
+                    <i
+                      className={
+                        index < language.score ? "is-filled" : ""
+                      }
+                      key={index}
+                    />
+                  ))}
+                </span>
               </>
             )}
           </article>

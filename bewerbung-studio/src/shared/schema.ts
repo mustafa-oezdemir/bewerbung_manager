@@ -10,6 +10,7 @@ import {
 import { defaultKnowledgeSection } from "../features/knowledge/knowledge.constants";
 import { knowledgeSectionSchema } from "../features/knowledge/knowledge.validation";
 import {
+  defaultEditableResumeSectionTitles,
   resumeSectionTypes,
   sectionZones,
 } from "../features/resume-sections/resume-sections";
@@ -79,8 +80,71 @@ export type RejectionReason = (typeof rejectionReasons)[number];
 export type CalendarEventType = (typeof calendarEventTypes)[number];
 export type AttachmentCategory = (typeof attachmentCategories)[number];
 
+export const resumeSpecialSectionKinds = [
+  "projects",
+  "internships",
+  "trainings",
+  "internationalExperience",
+  "scholarships",
+  "awards",
+  "publications",
+  "volunteer",
+  "interests",
+  "drivingLicenses",
+  "additional",
+  "references",
+  "custom",
+] as const;
+
+export type ResumeSpecialSectionKind =
+  (typeof resumeSpecialSectionKinds)[number];
+
 const optionalText = z.string().trim().optional().default("");
 const optionalIsoDate = z.iso.datetime().optional();
+
+const onlineProfileSchema = z.object({
+  id: z.uuid(),
+  label: optionalText,
+  url: optionalText,
+});
+
+const resumeSpecialSectionEntrySchema = z.object({
+  id: z.uuid(),
+  title: optionalText,
+  subtitle: optionalText,
+  from: optionalText,
+  to: optionalText,
+  date: optionalText,
+  location: optionalText,
+  url: optionalText,
+  description: optionalText,
+  bullets: z.array(z.string()).default([]),
+});
+
+const resumeSpecialSectionSchema = z.object({
+  id: z.uuid(),
+  kind: z.enum(resumeSpecialSectionKinds),
+  title: z.string().trim().min(1),
+  isVisible: z.boolean().default(true),
+  entries: z.array(resumeSpecialSectionEntrySchema).default([]),
+});
+
+const profileStrengthSchema = z.object({
+  id: z.uuid(),
+  title: z.string().trim().min(1),
+  description: optionalText,
+});
+
+const resumeSectionTitlesSchema = z
+  .object({
+    summary: z.string().trim().min(1).default(defaultEditableResumeSectionTitles.summary),
+    strengths: z.string().trim().min(1).default(defaultEditableResumeSectionTitles.strengths),
+    experience: z.string().trim().min(1).default(defaultEditableResumeSectionTitles.experience),
+    education: z.string().trim().min(1).default(defaultEditableResumeSectionTitles.education),
+    languages: z.string().trim().min(1).default(defaultEditableResumeSectionTitles.languages),
+    certifications: z.string().trim().min(1).default(defaultEditableResumeSectionTitles.certifications),
+  })
+  .default(defaultEditableResumeSectionTitles);
 
 export const companySchema = z.object({
   name: z.string().trim().min(1, "Unternehmen ist erforderlich."),
@@ -261,12 +325,16 @@ export const profileSchema = z.object({
   linkedin: optionalText,
   github: optionalText,
   portfolio: optionalText,
+  onlineProfiles: z.array(onlineProfileSchema).default([]),
   birthDate: optionalText,
   birthPlace: optionalText,
   nationality: optionalText,
+  familyStatus: optionalText,
+  children: optionalText,
   photoPath: optionalText,
   signaturePath: optionalText,
   summary: optionalText,
+  strengths: z.array(profileStrengthSchema).default([]),
   skills: z.array(z.string()).default([]),
   knowledgeSection: knowledgeSectionSchema.default(defaultKnowledgeSection),
   experiences: z
@@ -278,6 +346,14 @@ export const profileSchema = z.object({
         role: z.string(),
         company: z.string(),
         city: optionalText,
+        isCurrent: z.boolean().default(false),
+        legalForm: optionalText,
+        employmentType: optionalText,
+        description: optionalText,
+        teamSize: optionalText,
+        tasks: z.array(z.string()).default([]),
+        projects: z.array(z.string()).default([]),
+        technologies: z.array(z.string()).default([]),
         achievements: z.array(z.string()),
       }),
     )
@@ -291,14 +367,25 @@ export const profileSchema = z.object({
         degree: z.string(),
         institution: z.string(),
         city: optionalText,
+        country: optionalText,
+        type: optionalText,
+        fieldOfStudy: optionalText,
+        grade: optionalText,
+        status: optionalText,
+        description: optionalText,
       }),
     )
     .default([]),
   languages: z.array(z.string()).default([]),
   certifications: z.array(z.string()).default([]),
+  specialSections: z.array(resumeSpecialSectionSchema).default([]),
+  applicationPlace: optionalText,
+  applicationDate: optionalText,
+  resumeSectionTitles: resumeSectionTitlesSchema,
   resumeSections: z
     .object({
       profile: z.boolean(),
+      strengths: z.boolean().default(true),
       experience: z.boolean(),
       education: z.boolean(),
       skills: z.boolean(),
@@ -307,6 +394,7 @@ export const profileSchema = z.object({
     })
     .default({
       profile: true,
+      strengths: true,
       experience: true,
       education: true,
       skills: true,

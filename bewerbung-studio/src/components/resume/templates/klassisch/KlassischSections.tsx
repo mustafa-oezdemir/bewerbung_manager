@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { ApplicantProfile } from "../../../../shared/schema";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 import {
   formatTemplateDateRange,
   getTemplateKnowledge,
@@ -27,7 +28,7 @@ export function KlassischStrengths({
       className={`klassisch-section klassisch-strengths ${atsMode ? "klassisch-strengths--ats" : ""}`}
       data-element-id="klassisch.strengths"
     >
-      <KlassischHeading>Stärken</KlassischHeading>
+      <KlassischHeading>{getResumeSectionTitle(profile, "strengths")}</KlassischHeading>
       <div>
         {strengths.map((strength) => (
           <article key={`${strength.title}-${strength.description}`}>
@@ -41,16 +42,18 @@ export function KlassischStrengths({
 }
 
 export function KlassischCareer({
+  kind,
   title,
   items,
   continuation = false,
 }: {
-  title: "Erfahrung" | "Ausbildung";
+  kind: "experience" | "education";
+  title: string;
   items: TemplateCareerItem[];
   continuation?: boolean;
 }) {
   if (!items.length) return null;
-  const isEducation = title === "Ausbildung";
+  const isEducation = kind === "education";
   return (
     <section
       className={`klassisch-section klassisch-career ${isEducation ? "klassisch-career--education" : ""}`}
@@ -93,7 +96,9 @@ export function KlassischKnowledge({
   profile: ApplicantProfile | undefined;
 }) {
   const promotedStrengths = new Set(
-    uniqueTemplateValues(profile?.skills ?? []).slice(0, 3),
+    profile?.strengths.length
+      ? []
+      : uniqueTemplateValues(profile?.skills ?? []).slice(0, 3),
   );
   const knowledge = getTemplateKnowledge(profile).filter(
     (item) => !promotedStrengths.has(item),
@@ -101,7 +106,7 @@ export function KlassischKnowledge({
   if (!knowledge.length) return null;
   return (
     <section className="klassisch-section" data-element-id="klassisch.skills">
-      <KlassischHeading>Kenntnisse</KlassischHeading>
+      <KlassischHeading>{getResumeSectionTitle(profile, "knowledge")}</KlassischHeading>
       <p className="klassisch-knowledge">{knowledge.join(" · ")}</p>
     </section>
   );
@@ -123,7 +128,7 @@ export function KlassischLanguages({
       className={`klassisch-section klassisch-languages ${atsMode ? "klassisch-languages--ats" : ""}`}
       data-element-id="klassisch.languages"
     >
-      <KlassischHeading>Sprachen</KlassischHeading>
+      <KlassischHeading>{getResumeSectionTitle(profile, "languages")}</KlassischHeading>
       <div>
         {languages.map((language) => (
           <p key={language.raw}>
@@ -145,7 +150,7 @@ export function KlassischCertifications({
   if (!certifications.length) return null;
   return (
     <section className="klassisch-section" data-element-id="klassisch.certifications">
-      <KlassischHeading>Zertifikate</KlassischHeading>
+      <KlassischHeading>{getResumeSectionTitle(profile, "certifications")}</KlassischHeading>
       <ul>
         {certifications.map((certification) => (
           <li key={certification}>{certification}</li>
@@ -154,4 +159,3 @@ export function KlassischCertifications({
     </section>
   );
 }
-

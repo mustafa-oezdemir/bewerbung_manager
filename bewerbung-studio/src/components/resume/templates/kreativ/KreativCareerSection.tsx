@@ -4,6 +4,7 @@ import type { KreativCareerSectionProps } from "./kreativ.types";
 import { KreativSectionHeading } from "./KreativSectionHeading";
 
 export function KreativCareerSection({
+  kind,
   title,
   items,
   continuation = false,
@@ -14,12 +15,10 @@ export function KreativCareerSection({
   return (
     <section
       className="kreativ-section kreativ-career"
-      data-element-id={`kreativ.${title === "Ausbildung" ? "education" : "experience"}`}
+      data-element-id={`kreativ.${kind}`}
     >
       <KreativSectionHeading
-        title={
-          title === "Berufserfahrung" && !atsMode ? "Erfahrung" : title
-        }
+        title={title}
         continuation={continuation}
       />
       <div className="kreativ-career__list">

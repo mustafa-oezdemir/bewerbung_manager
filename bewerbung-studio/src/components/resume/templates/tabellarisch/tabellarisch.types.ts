@@ -49,6 +49,7 @@ export interface TabellarischHeaderProps {
 
 export interface TabellarischSummaryProps {
   text: string;
+  profile?: ApplicantProfile;
 }
 
 export interface TabellarischKnowledgeProps {

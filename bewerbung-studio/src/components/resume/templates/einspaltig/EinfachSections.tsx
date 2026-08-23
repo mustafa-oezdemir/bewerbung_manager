@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { ApplicantProfile } from "../../../../shared/schema";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 import {
   formatTemplateDateRange,
   getTemplateKnowledge,
@@ -31,7 +32,7 @@ export function EinfachStrengths({
       className={`einfach-section einfach-strengths ${atsMode ? "einfach-strengths--ats" : ""}`}
       data-element-id="einspaltig.strengths"
     >
-      <EinfachHeading>Stärken</EinfachHeading>
+      <EinfachHeading>{getResumeSectionTitle(profile, "strengths")}</EinfachHeading>
       <div>
         {strengths.map((strength, index) =>
           atsMode ? (
@@ -57,11 +58,13 @@ export function EinfachStrengths({
 }
 
 export function EinfachCareer({
+  kind,
   title,
   items,
   continuation = false,
 }: {
-  title: "Erfahrung" | "Ausbildung";
+  kind: "experience" | "education";
+  title: string;
   items: TemplateCareerItem[];
   continuation?: boolean;
 }) {
@@ -69,7 +72,7 @@ export function EinfachCareer({
   return (
     <section
       className="einfach-section einfach-career"
-      data-element-id={`einspaltig.${title === "Erfahrung" ? "experience" : "education"}`}
+      data-element-id={`einspaltig.${kind}`}
     >
       <EinfachHeading>
         {title}
@@ -114,7 +117,7 @@ export function EinfachLanguages({
       className={`einfach-section einfach-languages ${atsMode ? "einfach-languages--ats" : ""}`}
       data-element-id="einspaltig.languages"
     >
-      <EinfachHeading>Sprachen</EinfachHeading>
+      <EinfachHeading>{getResumeSectionTitle(profile, "languages")}</EinfachHeading>
       <div>
         {languages.map((language) => (
           <article key={language.raw}>
@@ -123,9 +126,8 @@ export function EinfachLanguages({
             ) : (
               <>
                 <strong>{language.name}</strong>
-                <span>{language.level}</span>
-                <span aria-hidden="true">
-                  {Array.from({ length: 5 }, (_, index) => (
+                <span aria-label={`${language.name}: ${language.level}`} role="img">
+                  {Array.from({ length: 6 }, (_, index) => (
                     <i
                       className={index < language.score ? "filled" : ""}
                       key={index}
@@ -150,7 +152,7 @@ export function EinfachKnowledge({
   if (!knowledge.length) return null;
   return (
     <section className="einfach-section" data-element-id="einspaltig.skills">
-      <EinfachHeading>Kenntnisse</EinfachHeading>
+      <EinfachHeading>{getResumeSectionTitle(profile, "knowledge")}</EinfachHeading>
       <p className="einfach-knowledge">{knowledge.join(" · ")}</p>
     </section>
   );
@@ -167,7 +169,7 @@ export function EinfachCertifications({
   if (!certifications.length) return null;
   return (
     <section className="einfach-section">
-      <EinfachHeading>Zertifikate</EinfachHeading>
+      <EinfachHeading>{getResumeSectionTitle(profile, "certifications")}</EinfachHeading>
       <ul>
         {certifications.map((certification) => (
           <li key={certification}>{certification}</li>

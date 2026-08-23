@@ -10,6 +10,7 @@ import { toExternalHref } from "./tabellarisch.model";
 import type { TabellarischHeaderProps } from "./tabellarisch.types";
 
 type HeaderContact = {
+  kind: "phone" | "email" | "linkedin" | "location" | "birth";
   label: string;
   value: string;
   href: string;
@@ -32,6 +33,7 @@ export function TabellarischHeader({
     profile?.linkedin || profile?.portfolio || profile?.github || "";
   const contacts: HeaderContact[] = [
     {
+      kind: "phone",
       label: "Telefon",
       value: profile?.phone || "",
       href: profile?.phone
@@ -40,30 +42,34 @@ export function TabellarischHeader({
       Icon: Phone,
     },
     {
+      kind: "email",
       label: "E-Mail",
       value: profile?.email || "",
       href: profile?.email ? `mailto:${profile.email}` : "",
       Icon: Mail,
     },
     {
+      kind: "linkedin",
       label: "Profil",
       value: profileLink,
       href: profileLink ? toExternalHref(profileLink) : "",
       Icon: Link,
     },
     {
+      kind: "location",
       label: "Wohnort",
       value: location,
       href: "",
       Icon: MapPin,
     },
     {
+      kind: "birth",
       label: "Geboren",
       value: birth,
       href: "",
       Icon: CakeSlice,
     },
-  ].filter((contact) => contact.value.trim());
+  ].filter((contact) => contact.value.trim()) as HeaderContact[];
 
   return (
     <header
@@ -88,6 +94,7 @@ export function TabellarischHeader({
               return contact.href ? (
                 <a
                   aria-label={`${contact.label}: ${contact.value}`}
+                  data-contact-kind={contact.kind}
                   href={contact.href}
                   key={contact.label}
                 >
@@ -96,6 +103,7 @@ export function TabellarischHeader({
               ) : (
                 <span
                   aria-label={`${contact.label}: ${contact.value}`}
+                  data-contact-kind={contact.kind}
                   key={contact.label}
                 >
                   {content}

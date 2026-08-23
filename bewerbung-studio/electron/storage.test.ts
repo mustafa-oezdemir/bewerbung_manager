@@ -10,7 +10,10 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { ApplicationInput } from "../src/shared/schema";
+import {
+  profileSchema,
+  type ApplicationInput,
+} from "../src/shared/schema";
 import { defaultDocumentDesign } from "../src/shared/documentDesign";
 import { DataStore } from "./storage";
 
@@ -325,6 +328,111 @@ describe("DataStore backups", () => {
       UNTERNEHMENSBEZUG: "Unternehmensbezug aus dem Editor.",
       ZUSATZABSATZ: "",
     });
+  });
+
+  it("maps detailed profile and special-section data to resume placeholders", async () => {
+    const profile = profileSchema.parse({
+      id: crypto.randomUUID(),
+      isDefault: true,
+      firstName: "Mina",
+      lastName: "Kaya",
+      nationality: "deutsch",
+      strengths: [
+        {
+          id: crypto.randomUUID(),
+          title: "Analytisches Denken",
+          description: "Komplexe Probleme strukturieren",
+        },
+      ],
+      resumeSectionTitles: {
+        summary: "Über mich",
+        strengths: "Kernkompetenzen",
+        experience: "Praxis",
+        education: "Bildungsweg",
+        languages: "Sprachprofil",
+        certifications: "Nachweise",
+      },
+      experiences: [
+        {
+          id: crypto.randomUUID(),
+          from: "01/2024",
+          to: "heute",
+          role: "Entwicklerin",
+          company: "Beispiel GmbH",
+          city: "Berlin",
+          description: "Plattformentwicklung",
+          tasks: ["Architektur geplant"],
+          projects: ["Migration"],
+          technologies: ["TypeScript", "React"],
+          achievements: ["Ladezeit reduziert"],
+        },
+      ],
+      education: [
+        {
+          id: crypto.randomUUID(),
+          from: "10/2018",
+          to: "09/2022",
+          degree: "B.Sc. Informatik",
+          institution: "Beispiel Hochschule",
+          city: "Berlin",
+          country: "Deutschland",
+          fieldOfStudy: "Software Engineering",
+          grade: "1,7",
+        },
+      ],
+      specialSections: [
+        {
+          id: crypto.randomUUID(),
+          kind: "projects",
+          title: "Ausgewählte Projekte",
+          entries: [
+            {
+              id: crypto.randomUUID(),
+              title: "Bewerbungsplattform",
+              subtitle: "Lead Developer",
+              from: "03/2025",
+              to: "08/2026",
+              description: "Lokale Desktop-Anwendung",
+              bullets: ["Automatisierte Dokumenterstellung"],
+            },
+          ],
+        },
+      ],
+      applicationPlace: "Berlin",
+      applicationDate: "23.08.2026",
+      updatedAt: new Date().toISOString(),
+    });
+    await store.saveProfile(profile);
+    const created = await store.createApplication({
+      ...applicationInput("Profil GmbH"),
+      profileId: profile.id,
+    });
+
+    const context = store.getTemplateDocumentContext(
+      created.applications[0].id,
+    );
+
+    expect(context.data).toMatchObject({
+      BESCHREIBUNG_1: "Plattformentwicklung",
+      TECHNOLOGIEN_1: "TypeScript · React",
+      ERFOLG_1_1: "Architektur geplant",
+      ERFOLG_1_2: "Projekt: Migration",
+      ERFOLG_1_3: "Ladezeit reduziert",
+      FACHRICHTUNG_1: "Software Engineering · 1,7",
+      AUSBILDUNG_ORT_1: "Berlin, Deutschland",
+      PROJEKTE_TITEL: "Ausgewählte Projekte",
+      STAERKEN_TITEL: "KERNKOMPETENZEN",
+      STAERKE_1_TITEL: "Analytisches Denken",
+      STAERKE_1_BESCHREIBUNG: "Komplexe Probleme strukturieren",
+      BERUFSERFAHRUNG_TITEL: "PRAXIS",
+      AUSBILDUNG_TITEL: "BILDUNGSWEG",
+      LEBENSLAUF_ORT: "Berlin",
+      LEBENSLAUF_DATUM: "23.08.2026",
+    });
+    expect(context.data.PROJEKTE).toContain("Bewerbungsplattform");
+    expect(context.data.PROJEKTE).toContain(
+      "Automatisierte Dokumenterstellung",
+    );
   });
 
   it("links central archive documents without copying or deleting them", async () => {

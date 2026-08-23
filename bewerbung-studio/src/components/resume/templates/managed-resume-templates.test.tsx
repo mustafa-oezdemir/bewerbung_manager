@@ -9,14 +9,21 @@ import type { ResumePagePlan } from "../../../shared/documentPagination";
 import { profileSchema } from "../../../shared/schema";
 import { getTemplate } from "../../../shared/templates";
 import { EinspaltigResume } from "./einspaltig/EinfachResume";
+import { EinfachHeader } from "./einspaltig/EinfachHeader";
 import { einspaltigDefaults } from "./einspaltig/einfach.defaults";
+import { KlassischHeader } from "./klassisch/KlassischHeader";
 import { KlassischResume } from "./klassisch/KlassischResume";
 import { klassischDefaults } from "./klassisch/klassisch.defaults";
+import { KreativHeader } from "./kreativ/KreativHeader";
+import { MehrspaltigHeader } from "./mehrspaltig/MehrspaltigHeader";
 import { MehrspaltigResume } from "./mehrspaltig/MehrspaltigResume";
 import { KompaktResume } from "./kompakt/KompaktResume";
 import { kompaktDefaults } from "./kompakt/kompakt.defaults";
+import { ModernContactSection } from "./modern/ModernContactSection";
 import { StilvollResume } from "./stilvoll/StilvollResume";
 import { stilvollDefaults } from "./stilvoll/stilvoll.defaults";
+import { TabellarischHeader } from "./tabellarisch/TabellarischHeader";
+import { ZweispaltigHeader } from "./zweispaltig/ZweispaltigHeader";
 
 const firstExperienceId = "71000000-0000-4000-8000-000000000001";
 const secondExperienceId = "71000000-0000-4000-8000-000000000002";
@@ -111,6 +118,50 @@ const commonProps = {
   sections: profile.resumeSections,
 };
 
+describe("shared two-column contact headers", () => {
+  it("keeps a full LinkedIn URL visible and identifiable in every requested preview", () => {
+    const linkedin =
+      "https://www.linkedin.com/in/mustafa-oezdemir/";
+    const contactProfile = profileSchema.parse({
+      ...profile,
+      linkedin,
+      email: "mustafa.ozdemir1408@gmail.com",
+      phone: "+49 176 93153406",
+      postalCode: "35039",
+      city: "Marburg",
+      country: "Deutschland",
+    });
+    const headerProps = {
+      profile: contactProfile,
+      name: "Mustafa Özdemir",
+      photoSource: null,
+    };
+    const markups = [
+      renderToStaticMarkup(<KreativHeader {...headerProps} />),
+      renderToStaticMarkup(<ZweispaltigHeader {...headerProps} />),
+      renderToStaticMarkup(<EinfachHeader {...headerProps} />),
+      renderToStaticMarkup(<KlassischHeader {...headerProps} />),
+      renderToStaticMarkup(<MehrspaltigHeader {...headerProps} />),
+      renderToStaticMarkup(
+        <ModernContactSection
+          profile={contactProfile}
+          accentColor="#06B6C9"
+          atsMode={false}
+          inline
+        />,
+      ),
+      renderToStaticMarkup(
+        <TabellarischHeader {...headerProps} atsMode={false} />,
+      ),
+    ];
+
+    for (const markup of markups) {
+      expect(markup).toContain('data-contact-kind="linkedin"');
+      expect(markup).toContain(linkedin);
+    }
+  });
+});
+
 describe("Stilvoll rendering", () => {
   const renderResume = ({
     atsMode = false,
@@ -151,7 +202,7 @@ describe("Stilvoll rendering", () => {
     });
     const order = [
       "Zusammenfassung",
-      "Erfahrung",
+      "Berufserfahrung",
       "Ausbildung",
       "Kenntnisse",
       "Sprachen",
@@ -220,12 +271,12 @@ describe("Kompakt rendering", () => {
     const markup = renderResume({ atsMode: true });
     const order = [
       "Zusammenfassung",
-      "Erfahrung",
+      "Berufserfahrung",
       "Ausbildung",
       "Kenntnisse",
       "Sprachen",
       "Stärken",
-      "Erfolge und Zertifikate",
+      "Zertifikate",
     ].map((title) => markup.indexOf(title));
 
     expect(markup).toContain('data-renderer="ats"');
@@ -287,7 +338,7 @@ describe("Einspaltig rendering", () => {
     const markup = renderResume({ atsMode: true });
     const order = [
       "Zusammenfassung",
-      "Erfahrung",
+      "Berufserfahrung",
       "Ausbildung",
       "Kenntnisse",
       "Sprachen",
@@ -355,7 +406,7 @@ describe("Klassisch rendering", () => {
     const markup = renderResume({ atsMode: true });
     const order = [
       "Zusammenfassung",
-      "Erfahrung",
+      "Berufserfahrung",
       "Ausbildung",
       "Kenntnisse",
       "Sprachen",
@@ -433,7 +484,7 @@ describe("Mehrspaltig rendering", () => {
     );
 
     expect(markup.indexOf("Ausbildung")).toBeLessThan(
-      markup.indexOf("Erfahrung"),
+      markup.indexOf("Berufserfahrung"),
     );
   });
 });

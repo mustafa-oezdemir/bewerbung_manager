@@ -3,24 +3,25 @@ import type { IvyLeagueCareerItem } from "./ivy-league.types";
 import { IvyLeagueSectionHeading } from "./IvyLeagueSectionHeading";
 
 export function IvyLeagueCareerSection({
+  kind,
   title,
   items,
   continuation = false,
   atsMode = false,
 }: {
-  title: "Berufserfahrung" | "Ausbildung";
+  kind: "experience" | "education";
+  title: string;
   items: IvyLeagueCareerItem[];
   continuation?: boolean;
   atsMode?: boolean;
 }) {
   if (!items.length) return null;
-  const displayTitle =
-    title === "Berufserfahrung" && !atsMode ? "Erfahrung" : title;
+  const displayTitle = title;
 
   return (
     <section
-      className={`ivy-league-section ivy-league-career ivy-league-career--${title === "Ausbildung" ? "education" : "experience"}`}
-      data-element-id={`ivy-league.${title === "Ausbildung" ? "education" : "experience"}`}
+      className={`ivy-league-section ivy-league-career ivy-league-career--${kind}`}
+      data-element-id={`ivy-league.${kind}`}
     >
       <IvyLeagueSectionHeading continuation={continuation}>
         {displayTitle}

@@ -6,6 +6,7 @@ import {
 import type { KompaktResumeProps } from "./kompakt.types";
 import { KompaktBackground } from "./KompaktBackground";
 import { KompaktHeader } from "./KompaktHeader";
+import { ResumeSpecialSections } from "../../ResumeSpecialSections";
 import {
   KompaktAtsExtras,
   KompaktCareer,
@@ -13,6 +14,7 @@ import {
   KompaktRightColumn,
   KompaktHeading,
 } from "./KompaktSections";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 type Props = Omit<KompaktResumeProps, "accentColor" | "secondaryColor">;
 
@@ -61,23 +63,25 @@ export function KompaktPage({
         ) : null}
         {sections.profile && summary && !isContinuation ? (
           <section className="kompakt-section" data-element-id="kompakt.summary">
-            <KompaktHeading>Zusammenfassung</KompaktHeading>
+            <KompaktHeading>{getResumeSectionTitle(profile, "summary")}</KompaktHeading>
             <p>{summary}</p>
           </section>
         ) : null}
         {sections.experience ? (
           <KompaktCareer
-            title="Erfahrung"
+            kind="experience"
+            title={getResumeSectionTitle(profile, "experience")}
             items={experiences}
             continuation={isContinuation}
           />
         ) : null}
         {sections.education ? (
-          <KompaktCareer title="Ausbildung" items={education} />
+          <KompaktCareer kind="education" title={getResumeSectionTitle(profile, "education")} items={education} />
         ) : null}
         {isLastPage ? (
           <KompaktAtsExtras profile={profile} sections={sections} />
         ) : null}
+        {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="kompakt-section" headingClassName="kompakt-section__title" /> : null}
       </main>
     );
   }
@@ -96,17 +100,19 @@ export function KompaktPage({
         <main className="kompakt-left">
           {sections.experience ? (
             <KompaktCareer
-              title="Erfahrung"
+              kind="experience"
+              title={getResumeSectionTitle(profile, "experience")}
               items={experiences}
               continuation={isContinuation}
             />
           ) : null}
           {sections.education ? (
-            <KompaktCareer title="Ausbildung" items={education} />
+            <KompaktCareer kind="education" title={getResumeSectionTitle(profile, "education")} items={education} />
           ) : null}
           {isLastPage && sections.languages ? (
             <KompaktLanguages profile={profile} />
           ) : null}
+          {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="kompakt-section" headingClassName="kompakt-section__title" /> : null}
         </main>
         {!isContinuation ? (
           <KompaktRightColumn

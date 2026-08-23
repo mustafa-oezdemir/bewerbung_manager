@@ -3,6 +3,7 @@ import {
   type TemplateCareerItem,
 } from "../resume-template-data";
 import type { GepflegtMainContentProps } from "./gepflegt.types";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 function GepflegtCareerEntry({ item }: { item: TemplateCareerItem }) {
   return (
@@ -59,7 +60,7 @@ export function GepflegtMainContent({
       {experiences.length ? (
         <section className="gepflegt-section" data-element-id="gepflegt.experience">
           <h2 className="gepflegt-section__title">
-            {atsMode ? "Berufserfahrung" : "Erfahrung"}
+            {getResumeSectionTitle(profile, "experience")}
             {isContinuation ? " · Fortsetzung" : ""}
           </h2>
           <div className="gepflegt-entry-list">
@@ -72,7 +73,7 @@ export function GepflegtMainContent({
 
       {education.length ? (
         <section className="gepflegt-section" data-element-id="gepflegt.education">
-          <h2 className="gepflegt-section__title">Ausbildung</h2>
+          <h2 className="gepflegt-section__title">{getResumeSectionTitle(profile, "education")}</h2>
           <div className="gepflegt-entry-list">
             {education.map((item) => (
               <GepflegtCareerEntry item={item} key={item.id} />

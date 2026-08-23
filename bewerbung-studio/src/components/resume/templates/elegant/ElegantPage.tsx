@@ -8,6 +8,8 @@ import { ElegantCareerSection } from "./ElegantCareerSection";
 import { ElegantFooter } from "./ElegantFooter";
 import { ElegantHeader } from "./ElegantHeader";
 import { ElegantSidebar } from "./ElegantSidebar";
+import { ResumeSpecialSections } from "../../ResumeSpecialSections";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function ElegantPage({
   profile,
@@ -36,24 +38,26 @@ export function ElegantPage({
             className="elegant-section elegant-ats__summary"
             data-element-id="elegant.summary"
           >
-            <h2 className="elegant-section__title">Zusammenfassung</h2>
+            <h2 className="elegant-section__title">{getResumeSectionTitle(profile, "summary")}</h2>
             <p>{summary}</p>
           </section>
         ) : null}
 
         {sections.experience ? (
           <ElegantCareerSection
-            title="Berufserfahrung"
+            kind="experience"
+            title={getResumeSectionTitle(profile, "experience")}
             items={experiences}
             continuation={isContinuation}
           />
         ) : null}
         {sections.education ? (
-          <ElegantCareerSection title="Ausbildung" items={education} />
+          <ElegantCareerSection kind="education" title={getResumeSectionTitle(profile, "education")} items={education} />
         ) : null}
         {isLastPage ? (
           <ElegantAdditionalSections profile={profile} sections={sections} />
         ) : null}
+        {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="elegant-section" headingClassName="elegant-section__title" /> : null}
       </main>
     );
   }
@@ -64,13 +68,14 @@ export function ElegantPage({
         <ElegantHeader profile={profile} name={name} compact={isContinuation} />
         {sections.experience ? (
           <ElegantCareerSection
-            title="Berufserfahrung"
+            kind="experience"
+            title={getResumeSectionTitle(profile, "experience")}
             items={experiences}
             continuation={isContinuation}
           />
         ) : null}
         {sections.education ? (
-          <ElegantCareerSection title="Ausbildung" items={education} />
+          <ElegantCareerSection kind="education" title={getResumeSectionTitle(profile, "education")} items={education} />
         ) : null}
         {!experiences.length &&
         !education.length &&
@@ -79,6 +84,7 @@ export function ElegantPage({
             Berufserfahrung und Ausbildung im Profil ergänzen.
           </p>
         ) : null}
+        {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="elegant-section" headingClassName="elegant-section__title" /> : null}
         <ElegantFooter
           profile={profile}
           pageNumber={plan.pageNumber}

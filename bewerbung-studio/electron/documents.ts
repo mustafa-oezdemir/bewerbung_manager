@@ -27,12 +27,14 @@ import {
   type DocumentDesignSettings,
 } from "../src/shared/documentDesign";
 import { getProfileMediaSource } from "../src/shared/profileMedia";
+import { getTechnologyBrandIconMarkup } from "../src/shared/technologyBrand";
 import { getReadableTextColor, getTemplate } from "../src/shared/templates";
 import {
   knowledgeLevelLabels,
   knowledgeLevelScores,
 } from "../src/features/knowledge/knowledge.constants";
 import { ensureKnowledgeSection } from "../src/features/knowledge/knowledge.service";
+import { getLanguageLevelScore } from "../src/features/languages/language-levels";
 import type {
   KnowledgeCategory,
   KnowledgeDisplayMode,
@@ -80,7 +82,7 @@ const programmingBackgroundMarkup = (
 ) =>
   settings.backgroundId === "programming-languages-bg" && !atsMode
     ? `<div class="document-background-layer programming-languages-layer" aria-hidden="true">${programmingLanguageBackgroundTokens
-        .map((token) => `<span>${escapeHtml(token)}</span>`)
+        .map((token) => `<span class="programming-language-token"><i>${getTechnologyBrandIconMarkup(token)}</i><b>${escapeHtml(token)}</b></span>`)
         .join("")}</div>`
     : "";
 
@@ -231,8 +233,12 @@ const senderHeader = (profile?: ApplicantProfile) => {
     .filter(Boolean)
     .map(escapeHtml)
     .join(" · ");
+  const title = profile.title?.trim();
   return (
     `<span class="sender-name">${escapeHtml(fullName(profile))}</span>` +
+    (title
+      ? `<span class="sender-title">${escapeHtml(title)}</span>`
+      : "") +
     `<span class="sender-contact">${details}</span>`
   );
 };
@@ -256,18 +262,19 @@ const documentCss = (
   *{box-sizing:border-box}body{margin:0;background:#eef1f1;color:var(--ink);font-family:var(--body-font)}
   .page{width:210mm;height:297mm;min-height:297mm;max-height:297mm;margin:0 auto 8mm;overflow:hidden;background:#fff;break-after:page;page-break-after:always;position:relative;print-color-adjust:exact;-webkit-print-color-adjust:exact}
   .page:last-child{break-after:auto;page-break-after:auto}.page-content{position:relative;z-index:1;width:100%;height:100%;transform-origin:top left}.standard-page-content{padding:var(--doc-margin)}
-  .document-background-layer{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;user-select:none}.programming-languages-layer{color:color-mix(in srgb,var(--accent),#70808a 45%);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;opacity:.105}.programming-languages-layer:before,.programming-languages-layer:after{position:absolute;border:1px solid currentColor;border-radius:4mm;content:""}.programming-languages-layer:before{width:54mm;height:37mm;right:-15mm;top:-9mm}.programming-languages-layer:after{width:61mm;height:42mm;left:-20mm;bottom:-12mm}.programming-languages-layer span{position:absolute;padding:1.2mm 2.3mm;border:1px solid currentColor;border-radius:2.5mm;font-size:7.8pt;font-weight:650;letter-spacing:.025em;white-space:nowrap}.programming-languages-layer span:nth-child(1){right:9mm;top:12mm}.programming-languages-layer span:nth-child(2){right:31mm;top:23mm}.programming-languages-layer span:nth-child(3){right:7mm;top:38mm}.programming-languages-layer span:nth-child(4){right:26mm;top:52mm}.programming-languages-layer span:nth-child(5){right:8mm;top:68mm}.programming-languages-layer span:nth-child(6){left:8mm;bottom:77mm}.programming-languages-layer span:nth-child(7){left:25mm;bottom:62mm}.programming-languages-layer span:nth-child(8){left:7mm;bottom:47mm}.programming-languages-layer span:nth-child(9){left:31mm;bottom:33mm}.programming-languages-layer span:nth-child(10){left:8mm;bottom:18mm}.programming-languages-layer span:nth-child(11){left:51mm;bottom:13mm}.programming-languages-layer span:nth-child(12){right:8mm;bottom:16mm}.programming-languages-layer span:nth-child(13){right:26mm;bottom:31mm}
+  .document-background-layer{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;user-select:none}.programming-languages-layer{color:color-mix(in srgb,var(--accent),#70808a 45%);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;opacity:.105}.programming-languages-layer:before,.programming-languages-layer:after{position:absolute;border:1px solid currentColor;border-radius:4mm;content:""}.programming-languages-layer:before{width:54mm;height:37mm;right:-15mm;top:-9mm}.programming-languages-layer:after{width:61mm;height:42mm;left:-20mm;bottom:-12mm}.programming-languages-layer span{position:absolute;display:flex;align-items:center;gap:1.3mm;padding:1.2mm 2.3mm;border:1px solid currentColor;border-radius:2.5mm;font-size:7.8pt;font-weight:650;letter-spacing:.025em;white-space:nowrap}.programming-languages-layer span>i{display:grid;width:5mm;height:5mm;flex:0 0 5mm;place-items:center;font-style:normal}.programming-languages-layer span>i svg{display:block;width:100%;height:100%}.programming-languages-layer span>b{font-weight:700}.programming-languages-layer span:nth-child(1){right:9mm;top:12mm}.programming-languages-layer span:nth-child(2){right:31mm;top:23mm}.programming-languages-layer span:nth-child(3){right:7mm;top:38mm}.programming-languages-layer span:nth-child(4){right:26mm;top:52mm}.programming-languages-layer span:nth-child(5){right:8mm;top:68mm}.programming-languages-layer span:nth-child(6){left:8mm;bottom:77mm}.programming-languages-layer span:nth-child(7){left:25mm;bottom:62mm}.programming-languages-layer span:nth-child(8){left:7mm;bottom:47mm}.programming-languages-layer span:nth-child(9){left:31mm;bottom:33mm}.programming-languages-layer span:nth-child(10){left:8mm;bottom:18mm}.programming-languages-layer span:nth-child(11){left:51mm;bottom:13mm}.programming-languages-layer span:nth-child(12){right:8mm;bottom:16mm}.programming-languages-layer span:nth-child(13){right:26mm;bottom:31mm}.programming-languages-layer span:nth-child(14){right:8mm;bottom:47mm}
   .rule{height:4px;background:var(--accent);margin-bottom:22mm}
   .kicker{color:var(--accent);font-size:10pt;text-transform:uppercase;letter-spacing:.16em;font-weight:700}
   h1,h2,h3{font-family:var(--heading-font);font-weight:var(--heading-weight)}h1{font-size:29pt;line-height:1.05;margin:8mm 0 4mm}h2{font-size:14pt;color:var(--accent);margin:8mm 0 3mm}
   h3{font-size:11pt;margin:0 0 1mm}.muted{color:var(--muted)}p,li{font-size:var(--body-size);line-height:var(--body-line)}
   .cover-content{display:flex;flex-direction:column;justify-content:flex-end}.cover-content h1{font-size:36pt;max-width:145mm}
-  .contact{padding-top:8mm;border-top:1px solid var(--line)}.sender{margin-bottom:2mm;color:var(--muted);text-align:center}.sender-name,.sender-contact{display:block}.sender-name{color:var(--ink);font-size:14pt;font-weight:400;line-height:1.2}.sender-contact{margin-top:.8mm;font-size:11pt;line-height:1.25}
-  .recipient{margin-top:13mm;min-height:35mm}.date{text-align:right}.subject{font-weight:800;font-size:12pt;margin:8mm 0 5mm}
+  .contact{padding-top:8mm;border-top:1px solid var(--line)}.sender{margin-bottom:2mm;color:var(--muted);text-align:center}.sender-name,.sender-title,.sender-contact{display:block}.sender-name{color:var(--ink);font-size:20pt;font-weight:700;line-height:1.2}.sender-title{margin-top:.8mm;color:var(--accent);font-size:11pt;font-weight:700;line-height:1.2}.sender-contact{margin-top:.8mm;font-size:11pt;line-height:1.25}
+  .recipient{margin-top:12mm;min-height:36mm;font-size:11pt;line-height:1.42}.date{text-align:right}.subject{color:var(--accent);font-weight:800;font-size:12pt;margin:8mm 0 5mm}
   .signature{display:flex;flex-direction:column;align-items:flex-start;margin-top:8mm}.signature p{margin:0}.signature-image{display:block;width:auto;max-width:48mm;height:auto;max-height:14mm;margin:1mm 0 .5mm;object-fit:contain;object-position:left center}.signature-name{font-weight:400;line-height:1.2}
-  .letter-content{padding:var(--doc-margin)}.letter-content>p:not(.date,.subject){margin:0 0 calc(var(--section-gap) * .72)}.letter-body{text-align:justify;text-justify:inter-word;hyphens:auto}
-  .letter-compact .letter-content{padding:16mm 20mm}.letter-compact .rule{margin-bottom:15mm}.letter-compact .recipient{margin-top:10mm;min-height:30mm}.letter-compact p{font-size:9.6pt;line-height:1.42}.letter-compact .signature{margin-top:6mm}
-  .letter-dense .letter-content{padding:14mm 18mm}.letter-dense .rule{height:3px;margin-bottom:10mm}.letter-dense .recipient{margin-top:7mm;min-height:24mm}.letter-dense p{font-size:9pt;line-height:1.32}.letter-dense .letter-content>p:not(.date,.subject){margin-bottom:2.6mm}.letter-dense .subject{margin:5mm 0 3mm}.letter-dense .signature{margin-top:4mm}
+  .letter-content{padding:var(--doc-margin)}.letter-content>p:not(.subject){font-size:11pt;line-height:1.42}.letter-content>p:not(.date,.subject){margin:0 0 calc(var(--section-gap) * .72)}.letter-content .signature{font-size:11pt;line-height:1.42}.letter-body{text-align:justify;text-justify:inter-word;hyphens:auto;overflow-wrap:break-word}
+  .letter-page.layout-split-clean .rule{height:2px}.letter-page.layout-sidebar-left .letter-content{padding-left:calc(var(--doc-margin) + 7mm);border-left:5mm solid var(--secondary)}.letter-page.layout-sidebar-right .letter-content{padding-right:calc(var(--doc-margin) + 7mm);border-right:5mm solid var(--secondary)}.letter-page.layout-bold-grid .rule{height:7mm}.letter-page.layout-timeline .subject{padding-left:3mm;border-left:1mm solid var(--accent)}.letter-page.layout-minimal .rule{height:1px;background:var(--line)}
+  .letter-compact .letter-content{padding:16mm 20mm}.letter-compact .rule{margin-bottom:15mm}.letter-compact .recipient{margin-top:10mm;min-height:30mm}.letter-compact .letter-content>p:not(.subject){font-size:11pt;line-height:1.38}.letter-compact .signature{margin-top:6mm}
+  .letter-dense .letter-content{padding:14mm 18mm}.letter-dense .rule{height:3px;margin-bottom:10mm}.letter-dense .recipient{margin-top:7mm;min-height:24mm;font-size:11pt}.letter-dense .letter-content>p:not(.subject){font-size:11pt;line-height:1.32}.letter-dense .letter-content>p:not(.date,.subject){margin-bottom:2.6mm}.letter-dense .subject{margin:5mm 0 3mm}.letter-dense .signature{margin-top:4mm}
   .cv-page{padding:0;display:grid;grid-template:"header header" auto "main side" 1fr/64% 36%;overflow:hidden}
   .cv-header{grid-area:header;display:flex;align-items:center;justify-content:space-between;gap:9mm;padding:var(--doc-margin) var(--doc-margin) calc(var(--doc-margin) * .6)}
   .cv-header h1{margin:1mm 0 0;font-size:25pt;line-height:1;letter-spacing:.015em;text-transform:uppercase}
@@ -355,7 +362,7 @@ const elegantDocumentCss = `
   .elegant-pdf-strength h4{margin:0 0 1.2mm;color:#fff;font-size:10pt;font-weight:400;line-height:1.2}
   .elegant-pdf-strength p{margin:0;color:var(--elegant-sidebar-muted);font-size:var(--body-size);line-height:var(--body-line);overflow-wrap:anywhere}
   .elegant-pdf-languages{display:grid;gap:3mm}
-  .elegant-pdf-language{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:1.8mm;align-items:center;color:var(--elegant-sidebar-muted)}
+  .elegant-pdf-language{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1.8mm;align-items:center;color:var(--elegant-sidebar-muted)}
   .elegant-pdf-language strong{color:#fff;font-size:var(--body-size);font-weight:400}
   .elegant-pdf-language span{font-size:8pt}
   .elegant-pdf-language-dots{display:flex;gap:.8mm}
@@ -387,10 +394,11 @@ const zweispaltigDocumentCss = `
   .zweispaltig-pdf-header h1{margin:0;color:var(--accent);font-size:24pt;font-weight:750;letter-spacing:.025em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}
   .zweispaltig-pdf-header h2{margin:1.5mm 0 0;color:var(--zweispaltig-heading);font-size:10.5pt;font-weight:650;letter-spacing:.055em;line-height:1.2;text-transform:uppercase;overflow-wrap:anywhere}
   .zweispaltig-pdf-specializations{margin:1.4mm 0 0;color:color-mix(in srgb,var(--accent),#123f72 48%);font-size:8pt;font-weight:650;letter-spacing:.035em;line-height:1.25}
-  .zweispaltig-pdf-contacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.1mm 5mm;margin:3.2mm 0 0;color:var(--zweispaltig-muted);font-size:7.5pt;font-style:normal;line-height:1.2}
+  .zweispaltig-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1mm 8mm;width:100%;max-width:none;margin:3.2mm 0 0;color:var(--zweispaltig-muted);font-size:7.5pt;font-style:normal;line-height:1.2}
   .zweispaltig-pdf-contacts a,.zweispaltig-pdf-contacts span{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:1.2mm;min-width:0;color:inherit;text-decoration:none}
   .zweispaltig-pdf-contacts strong{color:var(--zweispaltig-heading)}
   .zweispaltig-pdf-contacts i{min-width:0;font-style:normal;overflow-wrap:anywhere}
+  .zweispaltig-pdf-contacts [data-contact-kind="linkedin"] i,.zweispaltig-pdf-contacts [data-contact-kind="github"] i{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}
   .zweispaltig-pdf-photo{display:block;width:23mm;height:23mm;overflow:hidden;border:.45mm solid var(--accent);border-radius:50%;background:color-mix(in srgb,var(--accent),white 90%);object-fit:cover}
   .zweispaltig-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1.5mm 4mm;padding-bottom:3.5mm}
   .zweispaltig-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--accent);font-size:7.3pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
@@ -469,7 +477,7 @@ const zeitgenoessischDocumentCss = `
   .zeit-pdf-contact i{display:grid;place-items:start center;color:var(--accent);font-style:normal}.zeit-pdf-contact i svg{width:3.8mm;height:3.8mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.5}.zeit-pdf-contact span{overflow-wrap:anywhere}
   .zeit-pdf-strengths{display:grid;gap:4.5mm}.zeit-pdf-strength{display:grid;grid-template-columns:3.5mm minmax(0,1fr);gap:1.5mm;align-items:start}
   .zeit-pdf-strength>i{width:2mm;height:2mm;margin-top:1.2mm;border-radius:50%;background:var(--accent)}.zeit-pdf-strength h4{margin:0;color:var(--zeit-heading);font-size:9.5pt;font-weight:700;line-height:1.2;overflow-wrap:anywhere}.zeit-pdf-strength p{margin:1.2mm 0 0;color:var(--zeit-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}
-  .zeit-pdf-languages{display:grid;gap:3mm}.zeit-pdf-language>div{display:grid;grid-template-columns:minmax(13mm,auto) minmax(0,1fr) auto;align-items:center;gap:1.5mm;min-width:0}.zeit-pdf-language h4{margin:0;color:var(--zeit-dark);font-size:8.8pt;font-weight:750;line-height:1.15;text-transform:uppercase;overflow-wrap:anywhere}.zeit-pdf-language>div>span:not(.zeit-pdf-dots){color:var(--zeit-muted);font-size:7.8pt;font-weight:600;line-height:1.15;overflow-wrap:anywhere}
+  .zeit-pdf-languages{display:grid;gap:3mm}.zeit-pdf-language>div{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:1.5mm;min-width:0}.zeit-pdf-language h4{margin:0;color:var(--zeit-dark);font-size:8.8pt;font-weight:750;line-height:1.15;text-transform:uppercase;overflow-wrap:anywhere}
   .zeit-pdf-dots{display:flex;gap:.7mm}.zeit-pdf-dots i{display:block;width:1.35mm;height:1.35mm;border:.25mm solid var(--zeit-muted);border-radius:50%}.zeit-pdf-dots i.filled{border-color:var(--zeit-dark);background:var(--zeit-dark)}
   .zeit-pdf-list{display:flex;flex-direction:column;gap:5mm}.zeit-pdf-entry{break-inside:avoid;page-break-inside:avoid}
   .zeit-pdf-entry-top,.zeit-pdf-entry-role{display:grid;grid-template-columns:minmax(0,1fr) minmax(25mm,35mm);gap:5mm;align-items:start}
@@ -490,7 +498,7 @@ const kreativDocumentCss = `
   .kreativ-pdf *{box-sizing:border-box}
   .kreativ-pdf-header{position:relative;z-index:3;display:grid;grid-template-columns:minmax(0,1fr) 28mm;align-items:center;gap:10mm;width:100%;height:46mm;padding:12mm var(--kreativ-margin) 6mm;color:#fff;background:var(--accent)}
   .kreativ-pdf-identity{min-width:0}.kreativ-pdf-identity h1{margin:0;color:inherit;font-size:23pt;font-weight:750;letter-spacing:.015em;line-height:1;overflow-wrap:anywhere}.kreativ-pdf-identity h2{margin:1.5mm 0 0;color:inherit;font-size:11.5pt;font-weight:650;line-height:1.15;overflow-wrap:anywhere}
-  .kreativ-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 8mm;max-width:118mm;margin:2.2mm 0 0;font-size:7.8pt;font-style:normal;line-height:1.15}.kreativ-pdf-contacts a,.kreativ-pdf-contacts>span{display:grid;grid-template-columns:3.2mm minmax(0,1fr);align-items:center;gap:1.1mm;min-width:0;color:inherit;text-decoration:none}.kreativ-pdf-contacts svg{width:3mm;height:3mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.4}.kreativ-pdf-contacts i{min-width:0;font-style:normal;overflow-wrap:anywhere}
+  .kreativ-pdf-contacts{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:1mm 8mm;width:100%;max-width:132mm;margin:2.2mm 0 0;font-size:7.8pt;font-style:normal;line-height:1.15}.kreativ-pdf-contacts a,.kreativ-pdf-contacts>span{display:grid;grid-template-columns:3.2mm minmax(0,1fr);align-items:center;gap:1.1mm;min-width:0;color:inherit;text-decoration:none}.kreativ-pdf-contacts svg{width:3mm;height:3mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.4}.kreativ-pdf-contacts i{min-width:0;font-style:normal;overflow-wrap:anywhere}.kreativ-pdf-contacts [data-contact-kind="linkedin"] i{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}
   .kreativ-pdf-photo{display:block;width:28mm;height:28mm;overflow:hidden;border-radius:1.8mm;background:rgba(255,255,255,.18);object-fit:cover}
   .kreativ-pdf-header.no-photo{grid-template-columns:minmax(0,1fr)}
   .kreativ-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1.5mm 4mm;height:auto;min-height:24mm;padding:12mm var(--kreativ-margin) 4mm;color:var(--kreativ-dark);background:#fff;border-bottom:.4mm solid var(--kreativ-divider)}
@@ -506,7 +514,7 @@ const kreativDocumentCss = `
   .kreativ-pdf-entry-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm;color:var(--kreativ-muted);font-size:7.8pt;line-height:1.2}.kreativ-pdf-entry-meta span+span:before{margin-right:1.5mm;color:var(--accent);content:"·"}
   .kreativ-pdf-entry ul,.kreativ-pdf-right ul,.kreativ-pdf-ats ul{margin:0;padding-left:4.5mm}.kreativ-pdf-entry li,.kreativ-pdf-right li,.kreativ-pdf-ats li{margin:.5mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.kreativ-pdf-entry li::marker,.kreativ-pdf-right li::marker,.kreativ-pdf-ats li::marker{color:var(--accent)}
   .kreativ-pdf-strengths{display:grid}.kreativ-pdf-strength{display:grid;grid-template-columns:7mm minmax(0,1fr);align-items:start;gap:2.5mm;min-width:0;margin-bottom:3mm;padding-bottom:3mm;border-bottom:.25mm dashed var(--kreativ-light)}.kreativ-pdf-strength:last-child{margin:0;padding:0;border:0}.kreativ-pdf-strength svg{width:5.5mm;height:5.5mm;color:var(--accent);fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.2}.kreativ-pdf-strength i{display:grid;place-items:center;width:5.5mm;height:5.5mm;color:var(--accent);font-size:9pt;font-style:normal}.kreativ-pdf-strength h4,.kreativ-pdf-strength span{margin:0;color:var(--kreativ-dark);font-size:9.4pt;font-weight:750;line-height:1.2;overflow-wrap:anywhere}.kreativ-pdf-strength p{margin:1.5mm 0 0;color:var(--kreativ-text);font-size:var(--body-size);line-height:var(--body-line);hyphens:auto;overflow-wrap:break-word}
-  .kreativ-pdf-languages{display:grid;gap:3mm}.kreativ-pdf-language h4{margin:0;color:var(--kreativ-dark);font-size:8.8pt;font-weight:750;line-height:1.15}.kreativ-pdf-language>div{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2mm;margin-top:1mm;color:var(--kreativ-muted);font-size:7.6pt}.kreativ-pdf-dots{display:flex;gap:1mm}.kreativ-pdf-dots i{display:block;width:3.5mm;height:3.5mm;border-radius:50%;background:var(--kreativ-inactive)}.kreativ-pdf-dots i.filled{background:var(--accent)}
+  .kreativ-pdf-languages{display:grid;gap:3mm}.kreativ-pdf-language{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2mm}.kreativ-pdf-language h4{margin:0;color:var(--kreativ-dark);font-size:8.8pt;font-weight:750;line-height:1.15}.kreativ-pdf-language>div{display:flex;align-items:center}.kreativ-pdf-dots{display:flex;gap:1mm}.kreativ-pdf-dots i{display:block;width:3.5mm;height:3.5mm;border-radius:50%;background:var(--kreativ-inactive)}.kreativ-pdf-dots i.filled{background:var(--accent)}
   .kreativ-pdf-skills{display:flex;flex-wrap:wrap;gap:2.5mm 4mm}.kreativ-pdf-skill{max-width:100%;padding:0 1.5mm 1.2mm;border-bottom:.3mm solid var(--kreativ-divider);color:var(--kreativ-text);font-size:8.4pt;font-weight:700;overflow-wrap:anywhere}
   .kreativ-pdf-footer{position:absolute;right:var(--kreativ-margin);bottom:6mm;left:var(--kreativ-margin);z-index:3;display:flex;justify-content:space-between;gap:6mm;color:var(--kreativ-muted);font-size:7.2pt}.kreativ-pdf-footer a{color:var(--kreativ-dark);text-decoration:none}.kreativ-pdf-footer span:last-child{margin-left:auto}
   .kreativ-pdf-ats{--kreativ-dark:#173b33;--kreativ-text:#303d3a;--kreativ-muted:#687277;--kreativ-divider:#b8c4c0;width:100%;height:100%;padding:var(--doc-margin);overflow:hidden;color:var(--kreativ-text);background:#fff}
@@ -524,7 +532,7 @@ const ivyLeagueDocumentCss = `
   .ivy-pdf-strengths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3.5mm 8mm}.ivy-pdf-strength{display:grid;grid-template-columns:5.5mm minmax(0,1fr);gap:1.5mm;min-width:0;break-inside:avoid}.ivy-pdf-strength i{color:var(--ivy-accent);font-size:13pt;font-style:normal;line-height:1}.ivy-pdf-strength h3{margin:0 0 .8mm;color:var(--ivy-heading);font-size:9.5pt;font-weight:600;line-height:1.15;overflow-wrap:anywhere}.ivy-pdf-strength p{margin:0;font-size:var(--body-size);line-height:var(--body-line)}
   .ivy-pdf-list{display:flex;flex-direction:column;gap:4.5mm}.ivy-pdf-entry{min-width:0;break-inside:avoid;page-break-inside:avoid}.ivy-pdf-entry-top,.ivy-pdf-entry-role{display:grid;grid-template-columns:minmax(0,1fr) minmax(32mm,auto);gap:8mm;align-items:baseline}.ivy-pdf-entry h3,.ivy-pdf-entry h4{margin:0;overflow-wrap:anywhere}.ivy-pdf-entry-top h3{color:var(--ivy-accent);font-size:10.5pt;font-weight:500;line-height:1.15}.ivy-pdf-entry-top span,.ivy-pdf-entry-role span{color:var(--ivy-text);font-size:var(--body-size);line-height:1.2;text-align:right;overflow-wrap:anywhere}.ivy-pdf-entry-role{margin-top:.7mm}.ivy-pdf-entry-role h4{color:var(--ivy-heading);font-size:9.7pt;font-weight:500;line-height:1.18}.ivy-pdf-entry-role span{white-space:nowrap}
   .ivy-pdf-entry ul,.ivy-pdf-certifications ul,.ivy-pdf-ats ul{margin:1.3mm 0 0;padding-left:4.5mm}.ivy-pdf-entry li,.ivy-pdf-certifications li,.ivy-pdf-ats li{margin:.35mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word}.ivy-pdf-entry li::marker,.ivy-pdf-certifications li::marker{color:var(--ivy-heading)}.ivy-pdf-education .ivy-pdf-list{gap:3.2mm}.ivy-pdf-knowledge{margin:0;overflow-wrap:anywhere}
-  .ivy-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 20mm}.ivy-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2mm;align-items:center;min-width:0}.ivy-pdf-language strong{color:var(--ivy-heading);font-weight:600}.ivy-pdf-language>span:not(.ivy-pdf-dots){overflow-wrap:anywhere}.ivy-pdf-dots{display:flex;gap:1mm}.ivy-pdf-dots i{display:block;width:2.1mm;height:2.1mm;border-radius:50%;background:var(--ivy-inactive)}.ivy-pdf-dots i.filled{background:var(--ivy-heading)}
+  .ivy-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 20mm}.ivy-pdf-language{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2mm;align-items:center;min-width:0}.ivy-pdf-language strong{color:var(--ivy-heading);font-weight:600}.ivy-pdf-dots{display:flex;gap:1mm}.ivy-pdf-dots i{display:block;width:2.1mm;height:2.1mm;border-radius:50%;background:var(--ivy-inactive)}.ivy-pdf-dots i.filled{background:var(--ivy-heading)}
   .ivy-pdf-footer{position:absolute;right:var(--ivy-margin);bottom:6mm;left:var(--ivy-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--ivy-muted);font-size:7.1pt}.ivy-pdf-footer a{color:var(--ivy-muted);text-decoration:none}.ivy-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}
   .ivy-pdf-ats{--ivy-heading:#173b63;--ivy-accent:#173b63;--ivy-text:#303b42;--ivy-divider:#aeb8bf;padding:max(11mm,calc(var(--doc-margin) - 1mm)) var(--doc-margin) 13mm;background:#fff;font-family:Arial,sans-serif}.ivy-pdf-ats .ivy-pdf-header{padding-bottom:3.5mm;border-bottom:.3mm solid var(--ivy-divider)}.ivy-pdf-ats .ivy-pdf-header h1{font-family:Arial,sans-serif;font-size:19pt}.ivy-pdf-ats .ivy-pdf-header h2{color:var(--ivy-heading);font-size:10pt}.ivy-pdf-ats .ivy-pdf-title,.ivy-pdf-ats .knowledge-section>h3{font-family:Arial,sans-serif;font-size:11pt;text-align:left}.ivy-pdf-ats .knowledge-category h4,.ivy-pdf-ats .knowledge-subcategory h5{color:var(--ivy-heading)}
   .ivy-pdf[data-density="compact"]{--section-gap:max(4.5mm,calc(var(--doc-section-gap) - 1mm))}.ivy-pdf[data-density="compact"] .ivy-pdf-list{gap:3.6mm}.ivy-pdf[data-density="dense"]{--section-gap:max(3.8mm,calc(var(--doc-section-gap) - 2mm))}.ivy-pdf[data-density="dense"] .ivy-pdf-list{gap:3mm}.ivy-pdf[data-density="dense"] .ivy-pdf-title{margin-bottom:2mm;font-size:12.5pt}
@@ -536,7 +544,7 @@ const extendedResumeDocumentCss = `
   .managed-pdf *{box-sizing:border-box}.managed-pdf a{color:inherit;text-decoration:none}.managed-pdf-content{position:relative;z-index:2;height:100%}.managed-pdf-background{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none}.managed-pdf-section{min-width:0;margin:0 0 var(--managed-section-gap);break-inside:avoid}.managed-pdf-title{margin:0 0 3mm;color:var(--managed-muted);font-size:9pt;font-weight:500;line-height:1;text-transform:uppercase;break-after:avoid}.managed-pdf-list{display:flex;flex-direction:column;gap:var(--managed-entry-gap)}.managed-pdf-entry{break-inside:avoid}.managed-pdf-entry h3,.managed-pdf-entry h4{margin:0;overflow-wrap:anywhere}.managed-pdf-entry ul,.managed-pdf-ats ul{margin:1mm 0 0;padding-left:4mm}.managed-pdf-entry li,.managed-pdf-ats li{margin:.25mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.managed-pdf-footer{position:absolute;right:var(--managed-margin);bottom:6mm;left:var(--managed-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--managed-muted);font-size:7pt}.managed-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}
   .stilvoll-pdf{--managed-primary:var(--accent);--managed-dark:var(--secondary);--managed-text:#465156;--managed-muted:#6d777c;--managed-divider:#aeb8b5;--managed-pattern:#dce2df;--managed-margin:max(15mm,var(--doc-margin));--managed-section-gap:var(--section-gap);--managed-entry-gap:5mm}.stilvoll-pdf .managed-pdf-background{color:var(--managed-pattern);opacity:.62}.stilvoll-pdf .managed-pdf-background path{fill:none;stroke:currentColor;stroke-width:.45}.stilvoll-pdf-header{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) 28mm;gap:10mm;min-height:36mm;padding:14mm var(--managed-margin) 0}.stilvoll-pdf-header.no-photo{grid-template-columns:1fr}.stilvoll-pdf-header h1{margin:0;color:var(--managed-dark);font-size:23pt;font-weight:400;line-height:1;letter-spacing:.015em;text-transform:uppercase;overflow-wrap:anywhere}.stilvoll-pdf-header h2{margin:2mm 0 2.5mm;color:var(--managed-primary);font-size:12pt;font-weight:400;line-height:1.2}.stilvoll-pdf-contacts{display:flex;flex-wrap:wrap;gap:1mm 3.5mm;margin:0;color:var(--managed-text);font-size:7.8pt;font-style:normal}.stilvoll-pdf-contacts span{display:inline-flex;gap:1mm}.stilvoll-pdf-contacts i{color:var(--managed-muted);font-style:normal}.stilvoll-pdf-photo{width:26mm;height:26mm;overflow:hidden;border-radius:1.5mm;object-fit:cover}.stilvoll-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:24mm;padding-top:11mm;padding-bottom:3mm;border-bottom:.3mm solid var(--managed-divider)}.stilvoll-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-primary);font-size:7pt;text-transform:uppercase}.stilvoll-pdf-header.compact h1{font-size:15pt}.stilvoll-pdf-header.compact h2{margin:0;font-size:8.5pt}.stilvoll-pdf-columns{display:grid;grid-template-columns:54mm minmax(0,115mm);gap:11mm;padding:10mm var(--managed-margin) 16mm}.stilvoll-pdf-columns.continuation{display:block;padding-top:6mm}.stilvoll-pdf .managed-pdf-title{padding-bottom:1mm;border-bottom:.3mm solid var(--managed-divider)}.stilvoll-pdf-strength{display:grid;grid-template-columns:9mm minmax(0,1fr);gap:3mm;margin-bottom:5mm}.stilvoll-pdf-strength i{display:grid;place-items:center;width:8mm;height:8mm;border-radius:50%;color:var(--managed-primary);background:#f1f3f2;font-style:normal}.stilvoll-pdf-strength h3{margin:0 0 1mm;color:var(--managed-dark);font-size:9.5pt;font-weight:500}.stilvoll-pdf-strength p{margin:0}.stilvoll-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) 11mm;gap:2mm;align-items:center;margin-bottom:3mm}.managed-pdf-dots{display:flex;gap:.6mm}.managed-pdf-dots i{display:block;width:1.5mm;height:1.5mm;border-radius:50%;background:#dde2e0}.managed-pdf-dots i.filled{background:var(--managed-dark)}.stilvoll-pdf-entry h3{color:var(--managed-dark);font-size:11pt;font-weight:400}.stilvoll-pdf-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm}.stilvoll-pdf-meta strong{margin-right:auto;color:var(--managed-primary);font-size:9.8pt;font-weight:400}.stilvoll-pdf-meta span{color:var(--managed-muted);font-size:7.8pt}
   .kompakt-pdf{isolation:isolate;--managed-primary:var(--accent);--managed-accent:var(--secondary);--managed-text:#3f494f;--managed-muted:#6d757a;--managed-divider:#aeb6ba;--managed-pattern:#ffd7bc;--managed-margin:max(13mm,calc(var(--doc-margin) - 1mm));--managed-section-gap:max(3.5mm,calc(var(--section-gap) - 1mm));--managed-entry-gap:4mm}.kompakt-pdf .managed-pdf-background{z-index:-1;color:var(--managed-pattern);opacity:.72}.kompakt-pdf .managed-pdf-background path,.kompakt-pdf .managed-pdf-background circle{fill:none;stroke:currentColor;stroke-width:.7}.kompakt-pdf-header{position:relative;z-index:2;min-height:22mm;padding:13mm var(--managed-margin) 0}.kompakt-pdf-header h1{max-width:112mm;margin:0;color:var(--managed-primary);font-size:20pt;font-weight:450;line-height:1}.kompakt-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 4mm;padding-top:10mm;border-bottom:.25mm solid var(--managed-divider)}.kompakt-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-accent);font-size:7pt;text-transform:uppercase}.kompakt-pdf-header.compact h1{font-size:14pt}.kompakt-pdf-header h2{margin:0;color:var(--managed-muted);font-size:8.5pt}.kompakt-pdf-columns{display:grid;grid-template-columns:108mm 66mm;gap:10mm;padding:9mm var(--managed-margin) 15mm}.kompakt-pdf-columns.continuation{display:block;padding-top:6mm}.kompakt-pdf-entry h3{color:var(--managed-primary);font-size:10.5pt;font-weight:550}.kompakt-pdf-meta{display:flex;flex-wrap:wrap;gap:.7mm 4mm;margin:.7mm 0 1mm;color:var(--managed-muted);font-size:7.4pt}.kompakt-pdf-meta strong{color:var(--managed-accent);font-size:8.4pt}.kompakt-pdf-contacts{display:grid;gap:3.5mm;margin:0;font-style:normal}.kompakt-pdf-contact{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;align-items:center;color:var(--managed-primary);font-size:8.8pt}.kompakt-pdf-contact i{color:var(--managed-accent);font-size:11pt;font-style:normal}.kompakt-pdf-strength{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;margin-bottom:4mm}.kompakt-pdf-strength i{color:var(--managed-accent);font-size:11pt;font-style:normal}.kompakt-pdf-strength h3{margin:0 0 1mm;color:var(--managed-primary);font-size:9pt}.kompakt-pdf-strength p{margin:0}.kompakt-pdf-skills{display:flex;flex-wrap:wrap;gap:2mm 3mm}.kompakt-pdf-skill{padding:0 1.5mm 1mm;border-bottom:.3mm solid var(--managed-divider);color:var(--managed-primary);font-size:7.8pt;font-weight:700}.kompakt-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 8mm}.kompakt-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:1.5mm;align-items:center}.kompakt-pdf-language strong{color:var(--managed-primary)}.kompakt-pdf-language .managed-pdf-dots i{width:2.2mm;height:2.2mm}.kompakt-pdf-language .managed-pdf-dots i.filled{background:var(--managed-accent)}
-  .einfach-pdf{isolation:isolate;--managed-primary:var(--accent);--managed-accent:var(--secondary);--managed-text:#3e484e;--managed-muted:#68747a;--managed-divider:var(--accent);--managed-pattern:#eaf5fd;--managed-margin:max(15mm,var(--doc-margin));--managed-section-gap:calc(var(--section-gap) + 1.5mm);--managed-entry-gap:4.5mm;font-size:calc(var(--body-size) + 1.2pt);line-height:clamp(1.1,calc(var(--body-line) - .25),1.18)}.einfach-pdf p,.einfach-pdf li{font-size:inherit;line-height:inherit}.einfach-pdf .managed-pdf-background{z-index:-1;color:var(--managed-pattern);opacity:.78}.einfach-pdf .managed-pdf-background path{fill:none;stroke:currentColor;stroke-width:4.2}.einfach-pdf-inner{position:relative;z-index:2;height:100%;padding:max(14mm,calc(var(--managed-margin) - 1mm)) var(--managed-margin) 16mm}.einfach-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 36mm;gap:8mm;min-height:35mm;margin-bottom:5.5mm}.einfach-pdf-header.no-photo{grid-template-columns:1fr}.einfach-pdf-header h1{margin:0;color:var(--managed-primary);font-size:24pt;font-weight:750;line-height:1;text-transform:uppercase}.einfach-pdf-header h2{margin:2mm 0;color:var(--managed-accent);font-size:11.5pt;line-height:1.2}.einfach-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1mm 8mm;max-width:118mm;margin:0;font-size:8.2pt;font-style:normal;line-height:1.18}.einfach-pdf-contact{display:grid;grid-template-columns:4mm minmax(0,1fr);gap:1mm;min-width:0}.einfach-pdf-contact i{color:var(--managed-accent);font-style:normal;font-weight:700}.einfach-pdf-contact a,.einfach-pdf-contact span{min-width:0;overflow-wrap:anywhere}.einfach-pdf-photo{width:34mm;height:34mm;border-radius:50%;object-fit:cover}.einfach-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:auto;margin-bottom:6mm;padding-bottom:3mm;border-bottom:.5mm solid var(--managed-primary)}.einfach-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-accent);font-size:7pt;text-transform:uppercase}.einfach-pdf-header.compact h1{font-size:16pt}.einfach-pdf-header.compact h2{margin:0;font-size:9pt}.einfach-pdf .managed-pdf-section>p{margin:0;hyphens:auto;overflow-wrap:break-word}.einfach-pdf .managed-pdf-title{margin-bottom:3.5mm;padding-bottom:1mm;border-bottom:.65mm solid var(--managed-primary);color:var(--managed-primary);font-size:13.5pt;font-weight:750}.einfach-pdf-strengths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4mm 15mm}.einfach-pdf-strength{display:grid;grid-template-columns:7mm minmax(0,1fr);gap:2mm}.einfach-pdf-strength i{color:var(--managed-accent);font-size:14pt;font-style:normal}.einfach-pdf-strength h3{margin:0 0 1.5mm;color:var(--managed-primary);font-size:9.5pt}.einfach-pdf-strength p{margin:0}.einfach-pdf-entry{padding-bottom:3mm;border-bottom:.25mm dashed #d4d9dc}.einfach-pdf-entry:last-child{padding-bottom:0;border-bottom:0}.einfach-pdf-entry h3{color:var(--managed-primary);font-size:11.5pt;font-weight:500;line-height:1.15}.einfach-pdf-entry h4{margin-top:1mm;color:var(--managed-accent);font-size:10pt;line-height:1.15}.einfach-pdf-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm;color:var(--managed-muted);font-size:8.1pt}.einfach-pdf-meta span:first-child:before{margin-right:1.5mm;color:var(--managed-accent);content:"▦"}.einfach-pdf-meta span+span:before{margin-right:1.5mm;color:var(--managed-accent);content:"⌖"}.einfach-pdf-entry li{margin:.3mm 0}.einfach-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 15mm}.einfach-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:3mm;align-items:center}.einfach-pdf-language strong{color:var(--managed-primary);font-size:9.5pt}.einfach-pdf-language .managed-pdf-dots{gap:1mm}.einfach-pdf-language .managed-pdf-dots i{width:2.8mm;height:2.8mm}.einfach-pdf-language .managed-pdf-dots i.filled{background:var(--managed-accent)}
+  .einfach-pdf{isolation:isolate;--managed-primary:var(--accent);--managed-accent:var(--secondary);--managed-text:#3e484e;--managed-muted:#68747a;--managed-divider:var(--accent);--managed-pattern:#eaf5fd;--managed-margin:max(15mm,var(--doc-margin));--managed-section-gap:calc(var(--section-gap) + 1.5mm);--managed-entry-gap:4.5mm;font-size:calc(var(--body-size) + 1.2pt);line-height:clamp(1.1,calc(var(--body-line) - .25),1.18)}.einfach-pdf p,.einfach-pdf li{font-size:inherit;line-height:inherit}.einfach-pdf .managed-pdf-background{z-index:-1;color:var(--managed-pattern);opacity:.78}.einfach-pdf .managed-pdf-background path{fill:none;stroke:currentColor;stroke-width:4.2}.einfach-pdf-inner{position:relative;z-index:2;height:100%;padding:max(14mm,calc(var(--managed-margin) - 1mm)) var(--managed-margin) 16mm}.einfach-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 36mm;gap:8mm;min-height:35mm;margin-bottom:5.5mm}.einfach-pdf-header.no-photo{grid-template-columns:1fr}.einfach-pdf-header h1{margin:0;color:var(--managed-primary);font-size:24pt;font-weight:750;line-height:1;text-transform:uppercase}.einfach-pdf-header h2{margin:2mm 0;color:var(--managed-accent);font-size:11.5pt;line-height:1.2}.einfach-pdf-contacts{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:1mm 8mm;width:100%;max-width:132mm;margin:0;font-size:8.2pt;font-style:normal;line-height:1.18}.einfach-pdf-contact{display:grid;grid-template-columns:4mm minmax(0,1fr);gap:1mm;min-width:0}.einfach-pdf-contact i{color:var(--managed-accent);font-style:normal;font-weight:700}.einfach-pdf-contact a,.einfach-pdf-contact span{min-width:0;overflow-wrap:anywhere}.einfach-pdf-contact[data-contact-kind="linkedin"] a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}.einfach-pdf-photo{width:34mm;height:34mm;border-radius:50%;object-fit:cover}.einfach-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:auto;margin-bottom:6mm;padding-bottom:3mm;border-bottom:.5mm solid var(--managed-primary)}.einfach-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-accent);font-size:7pt;text-transform:uppercase}.einfach-pdf-header.compact h1{font-size:16pt}.einfach-pdf-header.compact h2{margin:0;font-size:9pt}.einfach-pdf .managed-pdf-section>p{margin:0;hyphens:auto;overflow-wrap:break-word}.einfach-pdf .managed-pdf-title{margin-bottom:3.5mm;padding-bottom:1mm;border-bottom:.65mm solid var(--managed-primary);color:var(--managed-primary);font-size:13.5pt;font-weight:750}.einfach-pdf-strengths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4mm 15mm}.einfach-pdf-strength{display:grid;grid-template-columns:7mm minmax(0,1fr);gap:2mm}.einfach-pdf-strength i{color:var(--managed-accent);font-size:14pt;font-style:normal}.einfach-pdf-strength h3{margin:0 0 1.5mm;color:var(--managed-primary);font-size:9.5pt}.einfach-pdf-strength p{margin:0}.einfach-pdf-entry{padding-bottom:3mm;border-bottom:.25mm dashed #d4d9dc}.einfach-pdf-entry:last-child{padding-bottom:0;border-bottom:0}.einfach-pdf-entry h3{color:var(--managed-primary);font-size:11.5pt;font-weight:500;line-height:1.15}.einfach-pdf-entry h4{margin-top:1mm;color:var(--managed-accent);font-size:10pt;line-height:1.15}.einfach-pdf-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm;color:var(--managed-muted);font-size:8.1pt}.einfach-pdf-meta span:first-child:before{margin-right:1.5mm;color:var(--managed-accent);content:"▦"}.einfach-pdf-meta span+span:before{margin-right:1.5mm;color:var(--managed-accent);content:"⌖"}.einfach-pdf-entry li{margin:.3mm 0}.einfach-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 15mm}.einfach-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:3mm;align-items:center}.einfach-pdf-language strong{color:var(--managed-primary);font-size:9.5pt}.einfach-pdf-language .managed-pdf-dots{gap:1mm}.einfach-pdf-language .managed-pdf-dots i{width:2.8mm;height:2.8mm}.einfach-pdf-language .managed-pdf-dots i.filled{background:var(--managed-accent)}
   .managed-pdf[data-density="compact"]{--managed-entry-gap:max(3.2mm,calc(var(--managed-entry-gap) - 1mm));--managed-section-gap:max(4mm,calc(var(--managed-section-gap) - 1mm))}.managed-pdf[data-density="dense"]{--managed-entry-gap:3mm;--managed-section-gap:4mm}.kompakt-pdf[data-density="dense"]{--managed-entry-gap:2.5mm;--managed-section-gap:3.5mm;font-size:max(7.5pt,calc(var(--body-size) - .5pt));line-height:max(1.18,calc(var(--body-line) - .07))}.einfach-pdf[data-density="compact"]{--managed-section-gap:max(5mm,var(--section-gap));--managed-entry-gap:3.8mm}.einfach-pdf[data-density="dense"]{--managed-section-gap:max(4.5mm,calc(var(--section-gap) - .5mm));--managed-entry-gap:3mm}
   .managed-pdf-ats{--managed-primary:#173b63;--managed-dark:#173b63;--managed-accent:#173b63;--managed-text:#303b42;--managed-muted:#626e75;--managed-divider:#aeb8bf;padding:14mm var(--managed-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.managed-pdf-ats .managed-pdf-header{display:block;min-height:auto;margin:0;padding:0 0 4mm;border-bottom:.3mm solid var(--managed-divider)}.managed-pdf-ats .managed-pdf-header h1{max-width:none;font-size:19pt}.managed-pdf-ats .managed-pdf-header h2{margin-top:1mm;color:var(--managed-primary);font-size:10pt}.managed-pdf-ats .managed-pdf-section{margin-top:var(--managed-section-gap);margin-bottom:0}.managed-pdf-ats .managed-pdf-title{margin-bottom:2mm;padding-bottom:1mm;border-bottom:.3mm solid var(--managed-divider);color:var(--managed-primary);font-size:10.5pt;font-weight:700}.managed-pdf-ats .managed-pdf-list{gap:var(--managed-entry-gap)}
   @media print{.no-print-background .managed-pdf-background{display:none!important}}
@@ -545,7 +553,7 @@ const extendedResumeDocumentCss = `
 const klassischDocumentCss = `
   .klassisch-pdf{isolation:isolate;--klassisch-primary:var(--accent);--klassisch-accent:var(--secondary);--klassisch-heading:#5a6267;--klassisch-text:#3f484d;--klassisch-muted:#68747a;--klassisch-soft:#cdeff3;--klassisch-border:#d5dbde;--klassisch-margin:max(15mm,var(--doc-margin));--klassisch-section-gap:var(--section-gap);--klassisch-entry-gap:4.2mm;position:relative;width:100%;height:100%;overflow:hidden;color:var(--klassisch-text);background:#fff;font-family:var(--body-font);font-size:var(--body-size);line-height:var(--body-line)}
   .klassisch-pdf *{box-sizing:border-box}.klassisch-pdf a{color:inherit;text-decoration:none}.klassisch-pdf-background{position:absolute;inset:0;z-index:-1;width:100%;height:100%;pointer-events:none}.klassisch-pdf-background .fill{fill:var(--klassisch-soft)}.klassisch-pdf-background .line{fill:none;stroke:rgba(255,255,255,.92);stroke-width:.28;vector-effect:non-scaling-stroke}.klassisch-pdf-content{position:relative;z-index:2;height:100%;padding:14mm var(--klassisch-margin) 17mm}
-  .klassisch-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 34mm;gap:8mm;align-items:start;min-height:33mm;margin-bottom:7mm}.klassisch-pdf-header.no-photo{grid-template-columns:1fr}.klassisch-pdf-header h1{max-width:138mm;margin:0;color:var(--klassisch-primary);font-size:26pt;font-weight:750;letter-spacing:-.01em;line-height:1;overflow-wrap:anywhere}.klassisch-pdf-header h2{margin:2mm 0 1.5mm;color:var(--klassisch-text);font-size:12.2pt;font-weight:400;line-height:1.12;overflow-wrap:anywhere}.klassisch-pdf-contacts{display:flex;flex-wrap:wrap;gap:.5mm 3.2mm;max-width:146mm;margin:0;color:var(--klassisch-text);font-size:8pt;font-style:normal;line-height:1.25}.klassisch-pdf-contacts span{min-width:0;overflow-wrap:anywhere}.klassisch-pdf-contacts span+span:before{margin-right:3.2mm;color:var(--klassisch-muted);content:"·"}.klassisch-pdf-photo{justify-self:end;width:32mm;height:32mm;border-radius:50%;object-fit:cover;background:#edf1f3}
+  .klassisch-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 34mm;gap:8mm;align-items:start;min-height:33mm;margin-bottom:7mm}.klassisch-pdf-header.no-photo{grid-template-columns:1fr}.klassisch-pdf-header h1{max-width:138mm;margin:0;color:var(--klassisch-primary);font-size:26pt;font-weight:750;letter-spacing:-.01em;line-height:1;overflow-wrap:anywhere}.klassisch-pdf-header h2{margin:2mm 0 1.5mm;color:var(--klassisch-text);font-size:12.2pt;font-weight:400;line-height:1.12;overflow-wrap:anywhere}.klassisch-pdf-contacts{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:.8mm 8mm;width:100%;max-width:132mm;margin:0;color:var(--klassisch-text);font-size:8pt;font-style:normal;line-height:1.25}.klassisch-pdf-contacts span{min-width:0;overflow-wrap:anywhere}.klassisch-pdf-contacts [data-contact-kind="linkedin"]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}.klassisch-pdf-photo{justify-self:end;width:32mm;height:32mm;border-radius:50%;object-fit:cover;background:#edf1f3}
   .klassisch-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:auto;margin-bottom:6mm;padding-bottom:2.5mm;border-bottom:.3mm solid var(--klassisch-border)}.klassisch-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--klassisch-accent);font-size:7pt;font-weight:700;letter-spacing:.09em;text-transform:uppercase}.klassisch-pdf-header.compact h1{font-size:15.5pt}.klassisch-pdf-header.compact h2{margin:0;font-size:8.8pt}
   .klassisch-pdf-section{min-width:0;margin:0 0 var(--klassisch-section-gap);break-inside:avoid;page-break-inside:avoid}.klassisch-pdf-title{margin:0 0 3mm;color:var(--klassisch-heading);font-size:10.4pt;font-weight:750;letter-spacing:.01em;line-height:1;text-transform:uppercase;break-after:avoid}.klassisch-pdf-section>p{margin:0;hyphens:auto;overflow-wrap:break-word}
   .klassisch-pdf-strengths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4mm 9mm}.klassisch-pdf-strength h3{margin:0 0 1.2mm;color:var(--klassisch-accent);font-size:9.8pt;font-weight:750;line-height:1.1;overflow-wrap:anywhere}.klassisch-pdf-strength p{margin:0;hyphens:auto}
@@ -561,7 +569,7 @@ const mehrspaltigDocumentCss = `${klassischDocumentCss.replaceAll(
   "mehrspaltig",
 )}
   .mehrspaltig-pdf{--mehrspaltig-primary:#003c96;--mehrspaltig-accent:#57adf4;--mehrspaltig-heading:#003c96;--mehrspaltig-border:#d7dee3;--mehrspaltig-margin:max(15mm,var(--doc-margin));font-size:calc(var(--body-size) + .1pt);line-height:min(1.22,var(--body-line))}.mehrspaltig-pdf-background .fill,.mehrspaltig-pdf-background .line{display:none}.mehrspaltig-pdf-background .ribbon{fill:none;stroke-width:2.3;stroke-linecap:round}.mehrspaltig-pdf-background .red{stroke:#f26b67}.mehrspaltig-pdf-background .orange{stroke:#f7a24c}.mehrspaltig-pdf-background .yellow{stroke:#f3cf54}.mehrspaltig-pdf-background .green{stroke:#73bf80}.mehrspaltig-pdf-background .blue{stroke:#59afe9}.mehrspaltig-pdf-background .purple{stroke:#a686cc}
-  .mehrspaltig-pdf-content{padding:14mm var(--mehrspaltig-margin) 16mm}.mehrspaltig-pdf-header{position:relative;grid-template-columns:minmax(0,1fr) 30mm;gap:7mm;min-height:31mm;margin-bottom:5mm;padding-right:28mm}.mehrspaltig-pdf-header h1,.mehrspaltig-pdf-title,.mehrspaltig-pdf-entry h3,.mehrspaltig-pdf-strength h3{font-family:Georgia,"Times New Roman",serif}.mehrspaltig-pdf-header h1{max-width:none;color:var(--mehrspaltig-primary);font-size:25pt;font-weight:700;letter-spacing:.012em;line-height:.96;text-transform:uppercase}.mehrspaltig-pdf-header h2{margin:2.2mm 0 2mm;color:var(--mehrspaltig-accent);font-family:Georgia,"Times New Roman",serif;font-size:11.4pt;font-weight:700}.mehrspaltig-pdf-contacts{gap:1mm 4mm;max-width:none;font-size:7.7pt;line-height:1.15}.mehrspaltig-pdf-contacts span+span:before{margin-right:0;content:""}.mehrspaltig-pdf-photo{width:30mm;height:30mm}.mehrspaltig-pdf-header.compact{margin-bottom:5mm;border-color:var(--mehrspaltig-primary)}
+  .mehrspaltig-pdf-content{padding:14mm var(--mehrspaltig-margin) 16mm}.mehrspaltig-pdf-header{position:relative;grid-template-columns:minmax(0,1fr) 30mm;gap:7mm;min-height:31mm;margin-bottom:5mm}.mehrspaltig-pdf-header h1,.mehrspaltig-pdf-title,.mehrspaltig-pdf-entry h3,.mehrspaltig-pdf-strength h3{font-family:Georgia,"Times New Roman",serif}.mehrspaltig-pdf-header h1{max-width:none;color:var(--mehrspaltig-primary);font-size:25pt;font-weight:700;letter-spacing:.012em;line-height:.96;text-transform:uppercase}.mehrspaltig-pdf-header h2{margin:2.2mm 0 2mm;color:var(--mehrspaltig-accent);font-family:Georgia,"Times New Roman",serif;font-size:11.4pt;font-weight:700}.mehrspaltig-pdf-contacts{gap:1mm 8mm;width:100%;max-width:132mm;font-size:7.7pt;line-height:1.15}.mehrspaltig-pdf-photo{width:30mm;height:30mm}.mehrspaltig-pdf-header.compact{margin-bottom:5mm;border-color:var(--mehrspaltig-primary)}
   .mehrspaltig-pdf-columns{display:grid;grid-template-columns:40mm minmax(0,1fr) 40mm;gap:9mm;align-items:start}.mehrspaltig-pdf-columns.continuation{display:block}.mehrspaltig-pdf-column{min-width:0}.mehrspaltig-pdf-section{margin:0 0 5.4mm}.mehrspaltig-pdf-title{margin:0 0 2.4mm;padding-bottom:1.2mm;border-bottom:.45mm solid var(--mehrspaltig-primary);color:var(--mehrspaltig-primary);font-size:10.6pt;font-weight:700}.mehrspaltig-pdf-section>p{margin:0}.mehrspaltig-pdf-skills{display:flex;flex-direction:column;gap:1.5mm}.mehrspaltig-pdf-skills strong{padding-bottom:1.1mm;border-bottom:.25mm solid var(--mehrspaltig-border);color:var(--mehrspaltig-primary);font-size:8.1pt}
   .mehrspaltig-pdf-strengths{display:flex;flex-direction:column;gap:4.2mm}.mehrspaltig-pdf-strength{display:grid;grid-template-columns:8mm minmax(0,1fr);column-gap:2mm}.mehrspaltig-pdf-strength i{grid-row:span 2;display:grid;place-items:center;width:7.5mm;height:7.5mm;border-radius:50%;color:var(--mehrspaltig-accent);background:#f0f2f3;font-size:12pt;font-style:normal}.mehrspaltig-pdf-strength h3{margin:0 0 .8mm;color:var(--mehrspaltig-primary);font-size:9.4pt;font-weight:700}.mehrspaltig-pdf-strength p{margin:0}
   .mehrspaltig-pdf-list{gap:4mm}.mehrspaltig-pdf-entry-head{display:block}.mehrspaltig-pdf-entry h3{color:var(--mehrspaltig-primary);font-size:12.2pt;font-weight:400;line-height:1.06}.mehrspaltig-pdf-entry h4{margin-top:.9mm;color:var(--mehrspaltig-accent);font-size:9.5pt;font-weight:700}.mehrspaltig-pdf-entry-meta{display:flex;flex-direction:row;flex-wrap:wrap;gap:1mm 4mm;margin:1.2mm 0;color:var(--mehrspaltig-muted);font-size:7.2pt;text-align:left}.mehrspaltig-pdf-entry ul{margin:0;padding-left:3.5mm}.mehrspaltig-pdf-entry li::marker{color:var(--mehrspaltig-primary)}.mehrspaltig-pdf-education .mehrspaltig-pdf-entry h3{font-size:11.3pt}.mehrspaltig-pdf-education .mehrspaltig-pdf-entry h4{color:var(--mehrspaltig-text);font-weight:400}
@@ -577,7 +585,7 @@ const modernDocumentCss = `
   .modern-pdf-section{min-width:0;break-inside:auto}.modern-pdf-title{margin:0 0 3.2mm;padding-bottom:1mm;border-bottom:.35mm solid var(--modern-divider);color:var(--modern-muted);font-size:9.2pt;font-weight:500;letter-spacing:.025em;line-height:1;text-transform:uppercase;break-after:avoid}.modern-pdf-list{display:flex;flex-direction:column;gap:var(--modern-entry-gap)}
   .modern-pdf-entry{break-inside:auto}.modern-pdf-entry h3{margin:0 0 1mm;color:var(--modern-heading);font-size:11pt;font-weight:500;line-height:1.15;overflow-wrap:anywhere;break-after:avoid}.modern-pdf-entry-meta{display:flex;flex-wrap:wrap;align-items:center;gap:1mm 4mm;margin:0 0 1.5mm;color:var(--modern-muted);font-size:7.9pt;line-height:1.2;break-after:avoid}.modern-pdf-entry-meta strong{margin-right:auto;color:var(--modern-primary);font-weight:600}.modern-pdf-entry-meta span{display:flex;align-items:center;gap:1mm;white-space:nowrap}.modern-pdf-entry-meta i{color:var(--modern-muted);font-size:6.8pt;font-style:normal}.modern-pdf-entry ul,.modern-pdf-certifications,.modern-pdf-ats ul{margin:0;padding-left:4mm}.modern-pdf-entry li,.modern-pdf-certifications li,.modern-pdf-ats li{margin:.35mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word;break-inside:avoid}
   .modern-pdf-contacts{display:grid;gap:3.2mm;margin:0;font-style:normal}.modern-pdf-contact{display:grid;grid-template-columns:8.5mm minmax(0,1fr);gap:3mm;align-items:center;min-width:0}.modern-pdf-contact i{display:grid;place-items:center;width:8.5mm;height:8.5mm;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:7pt;font-style:normal;font-weight:700}.modern-pdf-contact span,.modern-pdf-contact a{min-width:0;color:var(--modern-text);font-size:8.4pt;line-height:1.2;overflow-wrap:anywhere}
-  .modern-pdf-contacts.inline{display:flex;flex-wrap:nowrap;align-items:center;gap:1.8mm;max-width:145mm;margin-top:3mm}.modern-pdf-contacts.inline .modern-pdf-contact{display:flex;flex:0 0 auto;grid-template-columns:none;gap:.8mm;min-width:0}.modern-pdf-contacts.inline .modern-pdf-contact i{display:block;width:3.2mm;height:auto;border-radius:0;color:var(--modern-muted);background:transparent;font-size:6.8pt;line-height:1.2}.modern-pdf-contacts.inline .modern-pdf-contact span,.modern-pdf-contacts.inline .modern-pdf-contact a{display:block;max-width:44mm;overflow:hidden;color:var(--modern-muted);font-size:7.4pt;text-overflow:ellipsis;white-space:nowrap}
+  .modern-pdf-contacts.inline{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:1mm 8mm;width:100%;max-width:132mm;margin-top:3mm}.modern-pdf-contacts.inline .modern-pdf-contact{display:grid;grid-template-columns:3.2mm minmax(0,1fr);gap:.8mm;min-width:0}.modern-pdf-contacts.inline .modern-pdf-contact i{display:block;width:3.2mm;height:auto;border-radius:0;color:var(--modern-muted);background:transparent;font-size:6.8pt;line-height:1.2}.modern-pdf-contacts.inline .modern-pdf-contact span,.modern-pdf-contacts.inline .modern-pdf-contact a{display:block;min-width:0;color:var(--modern-muted);font-size:7.4pt;overflow-wrap:anywhere}.modern-pdf-contacts.inline .modern-pdf-contact[data-contact-kind="linkedin"] a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}
   .modern-pdf-summary{margin:0;hyphens:auto;overflow-wrap:break-word}.modern-pdf-strengths{display:flex;flex-direction:column;gap:4mm}.modern-pdf-strength{display:grid;grid-template-columns:10mm minmax(0,1fr);gap:3mm;align-items:start}.modern-pdf-strength>i{display:grid;width:9mm;height:9mm;place-items:center;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:10pt;font-style:normal;font-weight:700}.modern-pdf-strength h3{margin:0 0 .5mm;color:var(--modern-heading);font-size:9.5pt;font-weight:600}.modern-pdf-strength p{margin:0;hyphens:auto;overflow-wrap:break-word}.modern-pdf-languages{display:flex;flex-direction:column;gap:2.5mm}.modern-pdf-language{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4mm;align-items:center}.modern-pdf-language>div{display:flex;min-width:0;justify-content:space-between;gap:2mm}.modern-pdf-language strong{color:var(--modern-heading);font-weight:600}.modern-pdf-language em{color:var(--modern-muted);font-size:7.9pt;font-style:normal}.modern-pdf-dots{display:flex;gap:1.1mm;color:var(--modern-primary);font-size:6pt;white-space:nowrap}
   .modern-pdf-knowledge{display:flex;flex-wrap:wrap;gap:2.5mm 3mm}.modern-pdf-knowledge span{padding:0 2mm 1mm;border-bottom:.3mm solid var(--modern-divider);color:var(--modern-text);font-size:8.2pt;line-height:1.15}.modern-pdf-achievements{display:flex;flex-direction:column;gap:4mm}.modern-pdf-achievements article{display:grid;grid-template-columns:9mm minmax(0,1fr);gap:3mm;align-items:start}.modern-pdf-achievements i{display:grid;width:9mm;height:9mm;place-items:center;border-radius:50%;color:var(--modern-primary);background:var(--modern-icon-bg);font-size:8pt;font-style:normal}.modern-pdf-achievements p{margin:0;line-height:1.25}
   .modern-pdf-footer{position:absolute;right:var(--modern-margin);bottom:6mm;left:var(--modern-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--modern-muted);font-size:7.2pt}.modern-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}
@@ -603,7 +611,7 @@ const tabellarischDocumentCss = `
   .tabellarisch-pdf *{box-sizing:border-box}.tabellarisch-pdf a{color:inherit;text-decoration:none}.tabellarisch-pdf-content{position:relative;z-index:2;height:100%;padding:max(15mm,var(--doc-margin)) var(--tab-margin) max(19mm,calc(var(--doc-margin) + 5mm))}
   .tabellarisch-pdf-background{position:absolute;top:0;right:0;z-index:0;width:100%;height:58mm;fill:none;stroke:var(--tab-line);stroke-width:1.15;opacity:.62;pointer-events:none}
   .tabellarisch-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 32mm;gap:10mm;align-items:start;min-height:30mm}.tabellarisch-pdf-header.no-photo{grid-template-columns:1fr}.tabellarisch-pdf-identity{min-width:0;padding-top:1mm}.tabellarisch-pdf-header h1{margin:0;color:var(--tab-primary);font-family:var(--heading-font);font-size:25pt;font-weight:750;letter-spacing:.015em;line-height:1;text-transform:uppercase;overflow-wrap:anywhere}.tabellarisch-pdf-header h2{margin:2.3mm 0 0;color:var(--tab-accent);font-family:var(--heading-font);font-size:13.5pt;font-weight:650;line-height:1.15;overflow-wrap:anywhere}.tabellarisch-pdf-photo{display:block;width:30mm;height:30mm;justify-self:end;border-radius:50%;background:#e8ebed;object-fit:cover}
-  .tabellarisch-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.15mm 7mm;max-width:118mm;margin:2.5mm 0 0;color:var(--tab-text);font-size:8.4pt;font-style:normal;font-weight:600;line-height:1.2}.tabellarisch-pdf-contact{display:grid;grid-template-columns:3.2mm minmax(0,1fr);gap:1.2mm;align-items:center;min-width:0}.tabellarisch-pdf-contact svg{width:3mm;height:3mm;fill:none;stroke:var(--tab-accent);stroke-linecap:round;stroke-linejoin:round;stroke-width:2.4}.tabellarisch-pdf-contact span,.tabellarisch-pdf-contact a{min-width:0;overflow-wrap:anywhere}
+  .tabellarisch-pdf-contacts{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:1.15mm 7mm;width:100%;max-width:132mm;margin:2.5mm 0 0;color:var(--tab-text);font-size:8.4pt;font-style:normal;font-weight:600;line-height:1.2}.tabellarisch-pdf-contact{display:grid;grid-template-columns:3.2mm minmax(0,1fr);gap:1.2mm;align-items:center;min-width:0}.tabellarisch-pdf-contact svg{width:3mm;height:3mm;fill:none;stroke:var(--tab-accent);stroke-linecap:round;stroke-linejoin:round;stroke-width:2.4}.tabellarisch-pdf-contact span,.tabellarisch-pdf-contact a{min-width:0;overflow-wrap:anywhere}.tabellarisch-pdf-contact[data-contact-kind="linkedin"] a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}
   .tabellarisch-pdf-section{min-width:0;margin-top:var(--tab-section-gap);break-inside:auto}.tabellarisch-pdf-title{display:flex;align-items:baseline;gap:2.5mm;margin:0 0 3.5mm;color:var(--tab-primary);font-family:var(--heading-font);font-size:15pt;font-weight:750;letter-spacing:.01em;line-height:1.05;text-transform:uppercase;break-after:avoid}.tabellarisch-pdf-title small{color:var(--tab-muted);font-size:7.5pt;font-weight:600;text-transform:none}.tabellarisch-pdf-summary{margin:0;hyphens:auto;overflow-wrap:break-word}
   .tabellarisch-pdf-strengths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5mm 12mm}.tabellarisch-pdf-strength{display:grid;grid-template-columns:8mm minmax(0,1fr);gap:2.5mm;align-items:start;break-inside:avoid}.tabellarisch-pdf-strength svg{width:6mm;height:6mm;fill:none;stroke:var(--tab-accent);stroke-linecap:round;stroke-linejoin:round;stroke-width:2.1}.tabellarisch-pdf-strength h3{margin:0 0 1.5mm;color:var(--tab-primary);font-size:10.3pt;font-weight:700;line-height:1.2}.tabellarisch-pdf-strength p{margin:0;hyphens:auto;overflow-wrap:break-word}
   .tabellarisch-pdf-timeline{display:flex;flex-direction:column}.tabellarisch-pdf-entry{display:grid;grid-template-columns:minmax(30mm,35mm) 7mm minmax(0,1fr);gap:4mm;min-width:0;padding-bottom:var(--tab-entry-gap);break-inside:avoid}.tabellarisch-pdf-entry:last-child{padding-bottom:0}.tabellarisch-pdf-meta{padding-top:.45mm}.tabellarisch-pdf-date,.tabellarisch-pdf-location{margin:0}.tabellarisch-pdf-date{color:var(--tab-primary);font-size:10pt;font-weight:750;line-height:1.15}.tabellarisch-pdf-location{margin-top:2mm;color:var(--tab-text);font-size:8.4pt;line-height:1.3}.tabellarisch-pdf-rail{position:relative;display:block;min-height:100%}.tabellarisch-pdf-rail:before{position:absolute;top:2.5mm;bottom:-1mm;left:50%;width:.35mm;background:var(--tab-line);content:"";transform:translateX(-50%)}.tabellarisch-pdf-rail:after{position:absolute;top:.6mm;left:50%;width:2.3mm;height:2.3mm;border-radius:50%;background:var(--tab-primary);content:"";transform:translateX(-50%)}.tabellarisch-pdf-timeline:not(.continues) .tabellarisch-pdf-entry:last-child .tabellarisch-pdf-rail:before{bottom:auto;height:1mm}.tabellarisch-pdf-entry-content{min-width:0}.tabellarisch-pdf-entry h3{margin:0;color:var(--tab-primary);font-family:var(--heading-font);font-size:12pt;font-weight:500;line-height:1.15;overflow-wrap:anywhere}.tabellarisch-pdf-organization{margin:1mm 0 1.5mm;color:var(--tab-accent);font-size:10.2pt;font-weight:700;line-height:1.2;overflow-wrap:anywhere}.tabellarisch-pdf-entry ul,.tabellarisch-pdf-list ul,.tabellarisch-pdf-ats ul{margin:0;padding-left:4.5mm}.tabellarisch-pdf-entry li,.tabellarisch-pdf-list li,.tabellarisch-pdf-ats li{margin:.45mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word}.tabellarisch-pdf-entry li::marker{color:var(--tab-muted)}
@@ -666,6 +674,7 @@ export const buildDocumentHtml = (
   const docs = application.documents;
   const sections = profile?.resumeSections ?? {
     profile: true,
+    strengths: true,
     experience: true,
     education: true,
     skills: true,
@@ -694,6 +703,7 @@ export const buildDocumentHtml = (
     : "Telefon · E-Mail · Ort";
   const applicationDate = formatApplicationDateLong(application);
   const letterStatus = getLetterPageStatus(docs);
+  const letterTemplateClass = `layout-${template.layout}`;
   const cover = `
     <section class="page cover-page ${designClasses}">
       ${backgroundLayer}
@@ -708,7 +718,7 @@ export const buildDocumentHtml = (
       </div>
     </section>`;
   const letter = `
-    <section class="page letter-page letter-${letterStatus.density} ${designClasses}">
+    <section class="page letter-page letter-${letterStatus.density} ${letterTemplateClass} ${designClasses}" data-resume-template="${escapeHtml(template.id)}">
       ${backgroundLayer}
       <div class="page-content letter-content">
         <div class="sender">${senderHeader(profile)}</div>
@@ -959,18 +969,7 @@ export const buildDocumentHtml = (
     (raw) => {
       const [namePart, ...levelParts] = raw.split(/\s+[–—-]\s+/);
       const level = levelParts.join(" – ").trim();
-      const normalized = level.toLocaleLowerCase("de-DE");
-      const score = /muttersprache|native|c2/.test(normalized)
-        ? 5
-        : /verhandlung|fließ|fliess|c1/.test(normalized)
-          ? 4
-          : /b2|fortgeschritten|advanced|erweitert|versiert/.test(normalized)
-            ? 3
-            : /b1|a2|grundkennt/.test(normalized)
-              ? 2
-              : /a1|anfänger|anfaenger/.test(normalized)
-                ? 1
-                : 3;
+      const score = getLanguageLevelScore(level);
       return { raw, name: namePart.trim() || raw, level, score };
     },
   );
@@ -979,7 +978,7 @@ export const buildDocumentHtml = (
       ? `<section><h3>Sprachen</h3><div class="elegant-pdf-languages">${elegantLanguages
           .map(
             (language) =>
-              `<article class="elegant-pdf-language"><strong>${escapeHtml(language.name)}</strong><span>${escapeHtml(language.level)}</span><span class="elegant-pdf-language-dots" aria-hidden="true">${Array.from({ length: 5 }, (_, index) => `<i class="${index < language.score ? "filled" : ""}"></i>`).join("")}</span></article>`,
+              `<article class="elegant-pdf-language"><strong>${escapeHtml(language.name)}</strong><span class="elegant-pdf-language-dots" aria-label="${escapeHtml(`${language.name}: ${language.level}`)}">${Array.from({ length: 6 }, (_, index) => `<i class="${index < language.score ? "filled" : ""}"></i>`).join("")}</span></article>`,
           )
           .join("")}</div></section>`
       : "";
@@ -1084,6 +1083,7 @@ export const buildDocumentHtml = (
       .join(", ");
     const contacts = [
       {
+        kind: "phone",
         label: "Telefon",
         value: profile.phone,
         href: profile.phone
@@ -1091,27 +1091,31 @@ export const buildDocumentHtml = (
           : "",
       },
       {
+        kind: "email",
         label: "E-Mail",
         value: profile.email,
         href: profile.email ? `mailto:${profile.email}` : "",
       },
-      { label: "Wohnort", value: location, href: "" },
       {
+        kind: "linkedin",
         label: "LinkedIn",
         value: profile.linkedin,
         href: externalHref(profile.linkedin),
       },
+      { kind: "location", label: "Wohnort", value: location, href: "" },
+      { kind: "birth", label: "Geboren", value: birth, href: "" },
       {
+        kind: "github",
         label: "GitHub",
         value: profile.github,
         href: externalHref(profile.github),
       },
       {
+        kind: "portfolio",
         label: "Portfolio",
         value: profile.portfolio,
         href: externalHref(profile.portfolio),
       },
-      { label: "Geboren", value: birth, href: "" },
     ].filter((contact) => contact.value?.trim());
 
     if (!contacts.length) return "";
@@ -1119,8 +1123,8 @@ export const buildDocumentHtml = (
       .map((contact) => {
         const content = `<strong>${escapeHtml(contact.label)}</strong><i>${escapeHtml(contact.value)}</i>`;
         return contact.href
-          ? `<a href="${escapeHtml(contact.href)}">${content}</a>`
-          : `<span>${content}</span>`;
+          ? `<a data-contact-kind="${contact.kind}" href="${escapeHtml(contact.href)}">${content}</a>`
+          : `<span data-contact-kind="${contact.kind}">${content}</span>`;
       })
       .join("")}</address>`;
   };
@@ -1242,17 +1246,13 @@ export const buildDocumentHtml = (
       .join("");
     const isContinuation = plan.pageNumber > 1;
     const isLastPage = plan.pageNumber === resumePlan.length;
-    const careerMarkup = `
-      ${
-        experienceItems
-          ? `<section class="zweispaltig-pdf-section"><h3>Berufserfahrung${isContinuation ? " · Fortsetzung" : ""}</h3><div class="zweispaltig-pdf-list">${experienceItems}</div></section>`
-          : ""
-      }
-      ${
-        educationItems
-          ? `<section class="zweispaltig-pdf-section"><h3>Ausbildung</h3><div class="zweispaltig-pdf-list">${educationItems}</div></section>`
-          : ""
-      }`;
+    const experienceMarkup = experienceItems
+      ? `<section class="zweispaltig-pdf-section"><h3>Berufserfahrung${isContinuation ? " · Fortsetzung" : ""}</h3><div class="zweispaltig-pdf-list">${experienceItems}</div></section>`
+      : "";
+    const educationMarkup = educationItems
+      ? `<section class="zweispaltig-pdf-section"><h3>Ausbildung</h3><div class="zweispaltig-pdf-list">${educationItems}</div></section>`
+      : "";
+    const careerMarkup = `${experienceMarkup}${educationMarkup}`;
 
     if (atsMode) {
       const atsSummary =
@@ -1275,13 +1275,44 @@ export const buildDocumentHtml = (
       sections.profile && !isContinuation
         ? `<section class="zweispaltig-pdf-section"><h3>Zusammenfassung</h3><p class="zweispaltig-pdf-summary">${escapeHtml(docs.resumeProfile || profile?.summary || "Kurzprofil im Dokumenteditor ergänzen.")}</p></section>`
         : "";
+    const hasCustomLayout = hasSavedTemplateSectionLayout(
+      profile,
+      "zweispaltig",
+    );
+    const savedLayout = getProfileResumeSectionLayout(
+      profile,
+      "zweispaltig",
+    );
+    const renderVisualSection = (
+      type: (typeof savedLayout)[number]["type"],
+    ) => {
+      if (type === "summary") return summaryMarkup;
+      if (type === "experience") return experienceMarkup;
+      if (type === "education") return educationMarkup;
+      if (type === "strengths") {
+        return sections.strengths ? zweispaltigVisualStrengthSection : "";
+      }
+      if (type === "knowledge") return skillSection;
+      if (type === "languages") return languageSection;
+      if (type === "certifications") return certificationSection;
+      return "";
+    };
+    const mainMarkup = hasCustomLayout
+      ? savedLayout
+          .filter(({ zone }) => zone === "main" || zone === "full")
+          .map(({ type }) => renderVisualSection(type))
+          .join("")
+      : `${summaryMarkup}${careerMarkup}`;
+    const sidebarContent = hasCustomLayout
+      ? savedLayout
+          .filter(({ zone }) => zone === "sidebar")
+          .map(({ type }) => renderVisualSection(type))
+          .join("")
+      : `${zweispaltigVisualStrengthSection}${skillSection}${languageSection}${certificationSection}`;
     const sidebarMarkup = isContinuation
       ? ""
       : `<aside class="zweispaltig-pdf-sidebar">
-          ${zweispaltigVisualStrengthSection}
-          ${skillSection}
-          ${languageSection}
-          ${certificationSection}
+          ${sidebarContent}
         </aside>`;
     const footerLink = zweispaltigPortfolio
       ? `<a href="${escapeHtml(externalHref(zweispaltigPortfolio))}">${escapeHtml(zweispaltigPortfolio)}</a>`
@@ -1293,8 +1324,7 @@ export const buildDocumentHtml = (
           ${renderZweispaltigHeader(isContinuation, !isContinuation)}
           <div class="zweispaltig-pdf-columns${isContinuation ? " continuation" : ""}">
             <main class="zweispaltig-pdf-main">
-              ${summaryMarkup}
-              ${careerMarkup}
+              ${mainMarkup}
               ${
                 !experienceItems &&
                 !educationItems &&
@@ -1348,6 +1378,7 @@ export const buildDocumentHtml = (
 
   const zeitContacts = [
     {
+      kind: "phone",
       label: "Telefon",
       icon: "phone" as const,
       value: profile?.phone,
@@ -1356,6 +1387,7 @@ export const buildDocumentHtml = (
         : "",
     },
     {
+      kind: "email",
       label: "E-Mail",
       icon: "email" as const,
       value: profile?.email,
@@ -1370,6 +1402,7 @@ export const buildDocumentHtml = (
       href: externalHref(profile?.portfolio),
     },
     {
+      kind: "linkedin",
       label: "LinkedIn",
       icon: "link" as const,
       value: profile?.linkedin
@@ -1378,6 +1411,7 @@ export const buildDocumentHtml = (
       href: externalHref(profile?.linkedin),
     },
     {
+      kind: "location",
       label: "Wohnort",
       icon: "location" as const,
       value: [profile?.postalCode, profile?.city, profile?.country]
@@ -1454,17 +1488,6 @@ export const buildDocumentHtml = (
       </header>`;
   };
 
-  const zeitLanguageScore = (level: string) => {
-    const normalized = level.toLocaleLowerCase("de-DE");
-    if (/muttersprache|native|c2/.test(normalized)) return 5;
-    if (/verhandlung|fließ|fliess|c1|b2|versiert/.test(normalized)) {
-      return 4;
-    }
-    if (/b1|gut/.test(normalized)) return 3;
-    if (/a2|grundkennt/.test(normalized)) return 2;
-    if (/a1|anfänger|anfaenger/.test(normalized)) return 1;
-    return 4;
-  };
   const zeitLanguages = uniqueValues(profile?.languages ?? []).map(
     (raw) => {
       const [languageName, ...levelParts] = raw.split(/\s+[–—-]\s+/);
@@ -1473,7 +1496,7 @@ export const buildDocumentHtml = (
         raw,
         name: languageName.trim() || raw,
         level,
-        score: zeitLanguageScore(level),
+        score: getLanguageLevelScore(level),
       };
     },
   );
@@ -1481,8 +1504,8 @@ export const buildDocumentHtml = (
     ? `<section>${zeitHeading("Sprachen", "languages")}<div class="zeit-pdf-languages">${zeitLanguages
         .map(
           (language) =>
-            `<article class="zeit-pdf-language"><div><h4>${escapeHtml(language.name)}</h4><span>${escapeHtml(language.level)}</span><span class="zeit-pdf-dots">${Array.from(
-              { length: 5 },
+            `<article class="zeit-pdf-language"><div><h4>${escapeHtml(language.name)}</h4><span class="zeit-pdf-dots" aria-label="${escapeHtml(`${language.name}: ${language.level}`)}">${Array.from(
+              { length: 6 },
               (_, index) =>
                 `<i class="${index < language.score ? "filled" : ""}"></i>`,
             ).join("")}</span></div></article>`,
@@ -1624,7 +1647,7 @@ export const buildDocumentHtml = (
             ${educationMarkup}
             ${
               isLastPage
-                ? `${skillSection}${sections.languages ? zeitAtsLanguages : ""}${sections.skills ? zeitAtsStrengths : ""}${sections.certifications ? zeitAtsCertifications : ""}`
+                ? `${skillSection}${sections.languages ? zeitAtsLanguages : ""}${sections.strengths ? zeitAtsStrengths : ""}${sections.certifications ? zeitAtsCertifications : ""}`
                 : ""
             }
             <span class="page-number">${plan.pageNumber} / ${resumePlan.length}</span>
@@ -1638,9 +1661,10 @@ export const buildDocumentHtml = (
         : "";
     const leftMarkup = isContinuation
       ? ""
-      : `<aside class="zeit-pdf-left">
+        : `<aside class="zeit-pdf-left">
           ${renderZeitContacts(false)}
-          ${sections.skills ? zeitVisualStrengths : ""}
+          ${sections.strengths ? zeitVisualStrengths : ""}
+          ${skillSection}
           ${sections.languages ? zeitVisualLanguages : ""}
           ${sections.certifications ? zeitVisualCertifications : ""}
         </aside>`;
@@ -1692,6 +1716,7 @@ export const buildDocumentHtml = (
   };
   const kreativContacts = [
     {
+      kind: "phone",
       label: "Telefon",
       icon: kreativIconMarkup("phone"),
       value: profile?.phone,
@@ -1700,18 +1725,21 @@ export const buildDocumentHtml = (
         : "",
     },
     {
+      kind: "email",
       label: "E-Mail",
       icon: kreativIconMarkup("mail"),
       value: profile?.email,
       href: profile?.email ? `mailto:${profile.email}` : "",
     },
     {
+      kind: "linkedin",
       label: "LinkedIn",
       icon: kreativIconMarkup("linkedin"),
       value: profile?.linkedin,
       href: externalHref(profile?.linkedin),
     },
     {
+      kind: "location",
       label: "Wohnort",
       icon: kreativIconMarkup("location"),
       value: [profile?.postalCode, profile?.city, profile?.country]
@@ -1720,6 +1748,7 @@ export const buildDocumentHtml = (
       href: "",
     },
     {
+      kind: "birth",
       label: "Geboren",
       icon: kreativIconMarkup("birth"),
       value: [profile?.birthDate, profile?.birthPlace]
@@ -1734,8 +1763,8 @@ export const buildDocumentHtml = (
       .map((contact) => {
         const content = `${contact.icon}<i>${escapeHtml(contact.value)}</i>`;
         return contact.href
-          ? `<a aria-label="${escapeHtml(contact.label)}" href="${escapeHtml(contact.href)}">${content}</a>`
-          : `<span aria-label="${escapeHtml(contact.label)}">${content}</span>`;
+          ? `<a aria-label="${escapeHtml(contact.label)}" data-contact-kind="${contact.kind}" href="${escapeHtml(contact.href)}">${content}</a>`
+          : `<span aria-label="${escapeHtml(contact.label)}" data-contact-kind="${contact.kind}">${content}</span>`;
       })
       .join("")}</address>`;
   };
@@ -1760,15 +1789,6 @@ export const buildDocumentHtml = (
       </header>`;
   };
 
-  const kreativLanguageScore = (level: string) => {
-    const normalized = level.toLocaleLowerCase("de-DE");
-    if (/muttersprache|native|c2/.test(normalized)) return 5;
-    if (/verhandlung|fließ|fliess|c1/.test(normalized)) return 4;
-    if (/b2|fortgeschritten|versiert/.test(normalized)) return 3;
-    if (/b1|a2|grundkennt/.test(normalized)) return 2;
-    if (/a1|anfänger|anfaenger/.test(normalized)) return 1;
-    return 3;
-  };
   const kreativLanguages = uniqueValues(profile?.languages ?? []).map(
     (raw) => {
       const [languageName, ...levelParts] = raw.split(/\s+[–—-]\s+/);
@@ -1777,7 +1797,7 @@ export const buildDocumentHtml = (
         raw,
         name: languageName.trim() || raw,
         level,
-        score: kreativLanguageScore(level),
+        score: getLanguageLevelScore(level),
       };
     },
   );
@@ -1785,8 +1805,8 @@ export const buildDocumentHtml = (
     ? `<section><h3>Sprachen</h3><div class="kreativ-pdf-languages">${kreativLanguages
         .map(
           (language) =>
-            `<article class="kreativ-pdf-language"><h4>${escapeHtml(language.name)}</h4><div><span>${escapeHtml(language.level)}</span><span class="kreativ-pdf-dots">${Array.from(
-              { length: 5 },
+            `<article class="kreativ-pdf-language"><h4>${escapeHtml(language.name)}</h4><div><span class="kreativ-pdf-dots" aria-label="${escapeHtml(`${language.name}: ${language.level}`)}">${Array.from(
+              { length: 6 },
               (_, index) =>
                 `<i class="${index < language.score ? "filled" : ""}"></i>`,
             ).join("")}</span></div></article>`,
@@ -2104,8 +2124,8 @@ export const buildDocumentHtml = (
     ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Sprachen</h3><div class="ivy-pdf-languages">${kreativLanguages
         .map(
           (language) =>
-            `<article class="ivy-pdf-language"><strong>${escapeHtml(language.name)}</strong><span>${escapeHtml(language.level)}</span><span class="ivy-pdf-dots">${Array.from(
-              { length: 5 },
+            `<article class="ivy-pdf-language"><strong>${escapeHtml(language.name)}</strong><span class="ivy-pdf-dots" aria-label="${escapeHtml(`${language.name}: ${language.level}`)}">${Array.from(
+              { length: 6 },
               (_, index) =>
                 `<i class="${index < language.score ? "filled" : ""}"></i>`,
             ).join("")}</span></article>`,
@@ -2273,6 +2293,7 @@ export const buildDocumentHtml = (
     });
   const managedContactValues = [
     {
+      kind: "phone",
       icon: "☎",
       value: profile?.phone || "",
       href: profile?.phone
@@ -2280,16 +2301,19 @@ export const buildDocumentHtml = (
         : "",
     },
     {
+      kind: "email",
       icon: "@",
       value: profile?.email || "",
       href: profile?.email ? `mailto:${profile.email}` : "",
     },
     {
+      kind: "linkedin",
       icon: "↗",
       value: profile?.linkedin ? externalHref(profile.linkedin) : "",
       href: profile?.linkedin ? externalHref(profile.linkedin) : "",
     },
     {
+      kind: "website",
       icon: "⌖",
       value:
         profile?.portfolio || profile?.github
@@ -2301,11 +2325,13 @@ export const buildDocumentHtml = (
           : "",
     },
     {
+      kind: "location",
       icon: "◆",
       value: [profile?.city, profile?.country].filter(Boolean).join(", "),
       href: "",
     },
     {
+      kind: "birth",
       icon: "☆",
       value:
         profile?.birthDate || profile?.birthPlace
@@ -2331,7 +2357,7 @@ export const buildDocumentHtml = (
     }${!hideSinglePageNumber || resumePlan.length > 1 ? `<span>Seite ${plan.pageNumber} / ${resumePlan.length}</span>` : ""}</footer>`;
   const managedDots = (score: number) =>
     `<span class="managed-pdf-dots">${Array.from(
-      { length: 5 },
+      { length: 6 },
       (_, index) => `<i class="${index < score ? "filled" : ""}"></i>`,
     ).join("")}</span>`;
   const renderManagedCareerEntry = (
@@ -2467,7 +2493,7 @@ export const buildDocumentHtml = (
         const content = contact.href
           ? `<a href="${escapeHtml(contact.href)}">${escapeHtml(contact.value)}</a>`
           : `<span>${escapeHtml(contact.value)}</span>`;
-        return `<span class="${contactClass}"><i aria-hidden="true">${contact.icon}</i>${content}</span>`;
+        return `<span class="${contactClass}" data-contact-kind="${contact.kind}"><i aria-hidden="true">${contact.icon}</i>${content}</span>`;
       })
       .join("");
     const photoClass =
@@ -2506,7 +2532,7 @@ export const buildDocumentHtml = (
       ? `<div class="${variant}-pdf-languages">${kreativLanguages
           .map(
             (language) =>
-              `<article class="${variant}-pdf-language"><strong>${escapeHtml(language.name)}</strong><span>${escapeHtml(language.level)}</span>${managedDots(language.score)}</article>`,
+              `<article class="${variant}-pdf-language"><strong>${escapeHtml(language.name)}</strong>${managedDots(language.score)}</article>`,
           )
           .join("")}</div>`
       : "";
@@ -2634,7 +2660,7 @@ export const buildDocumentHtml = (
   const klassischContacts = managedContactValues
     .map((contact) => {
       const value = escapeHtml(contact.value);
-      return `<span>${contact.href ? `<a href="${escapeHtml(contact.href)}">${value}</a>` : value}</span>`;
+      return `<span data-contact-kind="${contact.kind}">${contact.href ? `<a href="${escapeHtml(contact.href)}">${value}</a>` : value}</span>`;
     })
     .join("");
   const klassischStrengths = managedStrengths.length
@@ -2750,6 +2776,7 @@ export const buildDocumentHtml = (
     .join(" | ");
   const modernContactItems = [
     {
+      kind: "phone",
       icon: "T",
       value: profile?.phone || "",
       href: profile?.phone
@@ -2757,26 +2784,31 @@ export const buildDocumentHtml = (
         : "",
     },
     {
+      kind: "email",
       icon: "@",
       value: profile?.email || "",
       href: profile?.email ? `mailto:${profile.email}` : "",
     },
     {
+      kind: "linkedin",
       icon: "in",
       value: profile?.linkedin || "",
       href: externalHref(profile?.linkedin),
     },
     {
+      kind: "website",
       icon: "W",
       value: profile?.portfolio || profile?.github || "",
       href: externalHref(profile?.portfolio || profile?.github),
     },
     {
+      kind: "location",
       icon: "O",
       value: [profile?.city, profile?.country].filter(Boolean).join(", "),
       href: "",
     },
     {
+      kind: "birth",
       icon: "G",
       value:
         profile?.birthDate || profile?.birthPlace
@@ -2789,7 +2821,11 @@ export const buildDocumentHtml = (
     if (!modernContactItems.length) return "";
     const items = inline
       ? modernContactItems
-          .filter((item) => ["T", "@", "in", "O"].includes(item.icon))
+          .filter((item) =>
+            ["phone", "email", "linkedin", "location"].includes(
+              item.kind,
+            ),
+          )
           .slice(0, 4)
       : modernContactItems;
     return `<address class="modern-pdf-contacts${inline ? " inline" : ""}">${items
@@ -2798,7 +2834,7 @@ export const buildDocumentHtml = (
         const content = item.href
           ? `<a href="${escapeHtml(item.href)}">${value}</a>`
           : `<span>${value}</span>`;
-        return `<span class="modern-pdf-contact">${ats ? "" : `<i aria-hidden="true">${item.icon}</i>`}${content}</span>`;
+        return `<span class="modern-pdf-contact" data-contact-kind="${item.kind}">${ats ? "" : `<i aria-hidden="true">${item.icon}</i>`}${content}</span>`;
       })
       .join("")}</address>`;
   };
@@ -2865,7 +2901,7 @@ export const buildDocumentHtml = (
     ? `<div class="modern-pdf-languages">${kreativLanguages
         .map(
           (language) =>
-            `<article class="modern-pdf-language"><div><strong>${escapeHtml(language.name)}</strong><em>${escapeHtml(language.level)}</em></div><span class="modern-pdf-dots" aria-hidden="true">${Array.from({ length: 5 }, (_, index) => (index < language.score ? "●" : "○")).join("")}</span></article>`,
+            `<article class="modern-pdf-language"><div><strong>${escapeHtml(language.name)}</strong></div><span class="modern-pdf-dots" aria-label="${escapeHtml(`${language.name}: ${language.level}`)}">${Array.from({ length: 6 }, (_, index) => (index < language.score ? "●" : "○")).join("")}</span></article>`,
         )
         .join("")}</div>`
     : "";
@@ -3005,6 +3041,7 @@ export const buildDocumentHtml = (
   };
   const tabellarischContacts = [
     {
+      kind: "phone",
       label: "Telefon",
       icon: kreativIconMarkup("phone"),
       value: profile?.phone || "",
@@ -3013,12 +3050,14 @@ export const buildDocumentHtml = (
         : "",
     },
     {
+      kind: "email",
       label: "E-Mail",
       icon: kreativIconMarkup("mail"),
       value: profile?.email || "",
       href: profile?.email ? `mailto:${profile.email}` : "",
     },
     {
+      kind: "linkedin",
       label: "Profil",
       icon: tabellarischExtraIcon("profile"),
       value:
@@ -3028,12 +3067,14 @@ export const buildDocumentHtml = (
       ),
     },
     {
+      kind: "location",
       label: "Wohnort",
       icon: kreativIconMarkup("location"),
       value: [profile?.city, profile?.country].filter(Boolean).join(", "),
       href: "",
     },
     {
+      kind: "birth",
       label: "Geboren",
       icon: kreativIconMarkup("birth"),
       value: [profile?.birthDate, profile?.birthPlace]
@@ -3048,7 +3089,7 @@ export const buildDocumentHtml = (
         const value = contact.href
           ? `<a href="${escapeHtml(contact.href)}">${escapeHtml(contact.value)}</a>`
           : `<span>${escapeHtml(contact.value)}</span>`;
-        return `<span class="tabellarisch-pdf-contact">${ats ? `<strong>${escapeHtml(contact.label)}:</strong>` : contact.icon}${value}</span>`;
+        return `<span class="tabellarisch-pdf-contact" data-contact-kind="${contact.kind}">${ats ? `<strong>${escapeHtml(contact.label)}:</strong>` : contact.icon}${value}</span>`;
       })
       .join("")}</address>`;
   const tabellarischBackground = `<svg class="tabellarisch-pdf-background" viewBox="0 0 1000 260" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><defs><pattern id="tabellarisch-pdf-cubes" width="144" height="84" patternUnits="userSpaceOnUse"><path d="M72 0 144 42 72 84 0 42 72 0v84M0 42l72 42 72-42"/></pattern><linearGradient id="tabellarisch-pdf-fade" x1="0" x2="1"><stop offset="0" stop-color="white" stop-opacity="0"/><stop offset=".25" stop-color="white" stop-opacity=".45"/><stop offset=".48" stop-color="white" stop-opacity="1"/></linearGradient><mask id="tabellarisch-pdf-mask"><rect width="1000" height="260" fill="url(#tabellarisch-pdf-fade)"/></mask></defs><rect x="210" y="-44" width="850" height="310" fill="url(#tabellarisch-pdf-cubes)" mask="url(#tabellarisch-pdf-mask)"/></svg>`;
@@ -3286,15 +3327,6 @@ export const buildDocumentHtml = (
           ]),
       )
     : [];
-  const gepflegtLanguageScore = (level: string) => {
-    const normalized = level.toLocaleLowerCase("de-DE");
-    if (/muttersprache|native|c2/.test(normalized)) return 5;
-    if (/verhandlung|fließ|fliess|c1/.test(normalized)) return 4;
-    if (/b2|fortgeschritten|versiert/.test(normalized)) return 3;
-    if (/b1|a2|grundkennt/.test(normalized)) return 2;
-    if (/a1|anfänger|anfaenger/.test(normalized)) return 1;
-    return 3;
-  };
   const gepflegtLanguages = uniqueValues(profile?.languages ?? []).map(
     (raw) => {
       const [languageName, ...levelParts] = raw.split(
@@ -3305,7 +3337,7 @@ export const buildDocumentHtml = (
         raw,
         name: languageName.trim() || raw,
         level,
-        score: gepflegtLanguageScore(level),
+        score: getLanguageLevelScore(level),
       };
     },
   );
@@ -3339,8 +3371,8 @@ export const buildDocumentHtml = (
     return `<section><h3>Sprachen</h3><div class="gepflegt-pdf-languages">${gepflegtLanguages
       .map(
         (language) =>
-          `<div class="gepflegt-pdf-language"><div><strong>${escapeHtml(language.name)}</strong><em>${escapeHtml(language.level)}</em></div><span class="gepflegt-pdf-dots">${Array.from(
-            { length: 5 },
+          `<div class="gepflegt-pdf-language"><div><strong>${escapeHtml(language.name)}</strong></div><span class="gepflegt-pdf-dots" aria-label="${escapeHtml(`${language.name}: ${language.level}`)}">${Array.from(
+            { length: 6 },
             (_, index) =>
               `<i class="${index < language.score ? "filled" : ""}"></i>`,
           ).join("")}</span></div>`,

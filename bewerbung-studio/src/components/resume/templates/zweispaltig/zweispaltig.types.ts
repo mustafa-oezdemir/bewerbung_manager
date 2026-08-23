@@ -46,7 +46,8 @@ export type ZweispaltigHeaderProps = {
 };
 
 export type ZweispaltigCareerSectionProps = {
-  title: "Berufserfahrung" | "Ausbildung";
+  kind: "experience" | "education";
+  title: string;
   items: ZweispaltigCareerItem[];
   continuation?: boolean;
 };

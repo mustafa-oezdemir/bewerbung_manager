@@ -118,10 +118,10 @@ describe("Modern rendering", () => {
     expect(markup).toContain("modern-resume-left-column");
     expect(markup).toContain("modern-resume-right-column");
     expect(markup).toContain("Stellenspezifisches Kurzprofil");
-    expect(markup).toContain("Fähigkeiten");
+    expect(markup).toContain("Kenntnisse &amp; Zusatzangaben");
     expect(markup).toContain("Bauhaus AG");
     expect(markup.indexOf("Stellenspezifisches Kurzprofil")).toBeLessThan(
-      markup.indexOf("Erfahrung"),
+      markup.indexOf("Berufserfahrung"),
     );
   });
 
@@ -155,7 +155,7 @@ describe("Modern rendering", () => {
     const sidebarStart = markup.indexOf('class="modern-resume-right-column"');
 
     expect(markup.indexOf("Ausbildung", mainStart)).toBeLessThan(
-      markup.indexOf("Erfahrung", mainStart),
+      markup.indexOf("Berufserfahrung", mainStart),
     );
     expect(markup.indexOf("Zusammenfassung", sidebarStart)).toBeGreaterThan(
       sidebarStart,
@@ -167,7 +167,7 @@ describe("Modern rendering", () => {
     const order = [
       "Persönliche Daten",
       "Zusammenfassung",
-      "Erfahrung",
+      "Berufserfahrung",
       "Ausbildung",
       "Kenntnisse",
       "Sprachen",

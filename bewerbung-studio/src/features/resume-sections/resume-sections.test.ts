@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  getResumeSectionTitle,
   getTemplateSectionCapabilities,
   moveResumeSection,
   resolveResumeSectionLayout,
 } from "./resume-sections";
+import { profileSchema } from "../../shared/schema";
 
 describe("resume section capabilities", () => {
   it("keeps single-column templates in their natural flow", () => {
@@ -39,5 +41,33 @@ describe("resume section capabilities", () => {
       "left-sidebar",
       "right-sidebar",
     ]);
+  });
+
+  it("resolves editable and knowledge-backed profile titles", () => {
+    const profile = profileSchema.parse({
+      id: crypto.randomUUID(),
+      isDefault: true,
+      firstName: "Mina",
+      lastName: "Kaya",
+      knowledgeSection: {
+        title: "Technische Kompetenzen",
+        categories: [],
+        isVisible: true,
+      },
+      resumeSectionTitles: {
+        summary: "Über mich",
+        strengths: "Meine Stärken",
+        experience: "Praxis",
+        education: "Bildungsweg",
+        languages: "Sprachen",
+        certifications: "Nachweise",
+      },
+      updatedAt: new Date().toISOString(),
+    });
+
+    expect(getResumeSectionTitle(profile, "strengths")).toBe("Meine Stärken");
+    expect(getResumeSectionTitle(profile, "knowledge")).toBe(
+      "Technische Kompetenzen",
+    );
   });
 });

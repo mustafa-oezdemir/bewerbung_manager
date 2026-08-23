@@ -2,9 +2,11 @@ import {
   ArrowDown,
   ArrowUp,
   BriefcaseBusiness,
+  CalendarDays,
   GraduationCap,
   GripVertical,
   ImagePlus,
+  Layers3,
   PenLine,
   Plus,
   Save,
@@ -14,7 +16,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { KnowledgeSectionEditor } from "../components/knowledge/KnowledgeSectionEditor";
+import { LanguageLevelEditor } from "../components/languages/LanguageLevelEditor";
 import { defaultKnowledgeSection } from "../features/knowledge/knowledge.constants";
+import {
+  defaultEditableResumeSectionTitles,
+  type EditableResumeSectionTitle,
+} from "../features/resume-sections/resume-sections";
 import {
   cloneKnowledgeCategory,
   ensureKnowledgeSection,
@@ -23,11 +30,15 @@ import {
 import { validateKnowledgeSection } from "../features/knowledge/knowledge.validation";
 import type { ProfileMediaKind } from "../shared/ipc";
 import { getProfileMediaSource } from "../shared/profileMedia";
-import type { ApplicantProfile } from "../shared/schema";
+import {
+  type ApplicantProfile,
+  type ResumeSpecialSectionKind,
+} from "../shared/schema";
 import { useAppStore } from "../store/useAppStore";
 
 const defaultSections: ApplicantProfile["resumeSections"] = {
   profile: true,
+  strengths: true,
   experience: true,
   education: true,
   skills: true,
@@ -50,18 +61,26 @@ const newProfile = (): ApplicantProfile => ({
   linkedin: "",
   github: "",
   portfolio: "",
+  onlineProfiles: [],
   birthDate: "",
   birthPlace: "",
   nationality: "",
+  familyStatus: "",
+  children: "",
   photoPath: "",
   signaturePath: "",
   summary: "",
+  strengths: [],
   skills: [],
   knowledgeSection: structuredClone(defaultKnowledgeSection),
   experiences: [],
   education: [],
   languages: [],
   certifications: [],
+  specialSections: [],
+  applicationPlace: "",
+  applicationDate: "",
+  resumeSectionTitles: { ...defaultEditableResumeSectionTitles },
   resumeSections: defaultSections,
   resumeSectionLayout: [],
   resumeSectionLayouts: {},
@@ -72,6 +91,27 @@ type DragItem = {
   type: "experience" | "education";
   id: string;
 };
+
+type ProfileKey = keyof ApplicantProfile;
+
+const specialSectionOptions: Array<{
+  kind: ResumeSpecialSectionKind;
+  label: string;
+}> = [
+  { kind: "projects", label: "Projekte" },
+  { kind: "internships", label: "Praktika" },
+  { kind: "trainings", label: "Weiterbildungen" },
+  { kind: "internationalExperience", label: "Auslandserfahrung" },
+  { kind: "scholarships", label: "Stipendien" },
+  { kind: "awards", label: "Auszeichnungen" },
+  { kind: "publications", label: "Veröffentlichungen" },
+  { kind: "volunteer", label: "Ehrenamt" },
+  { kind: "interests", label: "Interessen & Hobbys" },
+  { kind: "drivingLicenses", label: "Führerschein" },
+  { kind: "additional", label: "Zusatzangaben" },
+  { kind: "references", label: "Referenzen" },
+  { kind: "custom", label: "Eigener Abschnitt" },
+];
 
 const normalizeProfileUrl = (value: string) => {
   const trimmed = value.trim();
@@ -121,6 +161,8 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
     ),
   }));
   const [dragged, setDragged] = useState<DragItem>();
+  const [savingSection, setSavingSection] = useState<string>();
+  const [savedSection, setSavedSection] = useState<string>();
   const photoSource = getProfileMediaSource(draft.photoPath);
   const signatureSource = getProfileMediaSource(draft.signaturePath);
 
@@ -133,22 +175,125 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
       ),
     });
 
-  const save = async (event: React.FormEvent) => {
-    event.preventDefault();
-    const issues = validateKnowledgeSection(draft.knowledgeSection);
+  const normalizedProfile = (profile: ApplicantProfile): ApplicantProfile => ({
+    ...profile,
+    linkedin: normalizeProfileUrl(profile.linkedin),
+    github: normalizeProfileUrl(profile.github),
+    portfolio: normalizeProfileUrl(profile.portfolio),
+    onlineProfiles: profile.onlineProfiles.map((entry) => ({
+      ...entry,
+      url: normalizeProfileUrl(entry.url),
+    })),
+    specialSections: profile.specialSections.map((section) => ({
+      ...section,
+      entries: section.entries.map((entry) => ({
+        ...entry,
+        url: normalizeProfileUrl(entry.url),
+        bullets: entry.bullets.map((item) => item.trim()).filter(Boolean),
+      })),
+    })),
+    strengths: profile.strengths.map((strength) => ({
+      ...strength,
+      title: strength.title.trim(),
+      description: strength.description.trim(),
+    })),
+    resumeSectionTitles: Object.fromEntries(
+      Object.entries(profile.resumeSectionTitles).map(([key, title]) => [
+        key,
+        title.trim(),
+      ]),
+    ) as ApplicantProfile["resumeSectionTitles"],
+    skills: syncLegacySkills(profile.knowledgeSection),
+    updatedAt: new Date().toISOString(),
+  });
+
+  const validateBeforeSave = (profile: ApplicantProfile) => {
+    if (!profile.firstName.trim() || !profile.lastName.trim()) {
+      window.alert("Bitte zuerst Vorname und Nachname eintragen.");
+      return false;
+    }
+    if (profile.specialSections.some((section) => !section.title.trim())) {
+      window.alert("Bitte jedem besonderen Bereich eine Überschrift geben.");
+      return false;
+    }
+    if (profile.strengths.some((strength) => !strength.title.trim())) {
+      window.alert("Bitte jeder Stärke eine Bezeichnung geben.");
+      return false;
+    }
+    if (
+      Object.values(profile.resumeSectionTitles).some((title) => !title.trim())
+    ) {
+      window.alert("Bitte jedem Lebenslauf-Abschnitt eine Überschrift geben.");
+      return false;
+    }
+    const issues = validateKnowledgeSection(profile.knowledgeSection);
     if (issues.length) {
       window.alert(issues[0].message);
-      return;
+      return false;
     }
-    await saveProfile({
-      ...draft,
-      linkedin: normalizeProfileUrl(draft.linkedin),
-      github: normalizeProfileUrl(draft.github),
-      portfolio: normalizeProfileUrl(draft.portfolio),
-      skills: syncLegacySkills(draft.knowledgeSection),
-      updatedAt: new Date().toISOString(),
-    });
+    return true;
+  };
+
+  const save = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!validateBeforeSave(draft)) return;
+    const next = normalizedProfile(draft);
+    await saveProfile(next);
+    setDraft(next);
     onSaved();
+  };
+
+  const saveSection = async (
+    sectionId: string,
+    keys: ProfileKey[],
+    sectionTitle?: EditableResumeSectionTitle,
+  ) => {
+    const persisted = profiles.find((profile) => profile.id === draft.id);
+    const base = persisted ? structuredClone(persisted) : structuredClone(draft);
+    const next = { ...base } as ApplicantProfile;
+    for (const key of keys) {
+      if (key === "resumeSectionTitles" && sectionTitle) {
+        next.resumeSectionTitles = {
+          ...base.resumeSectionTitles,
+          [sectionTitle]: draft.resumeSectionTitles[sectionTitle],
+        };
+      } else {
+        (next as Record<ProfileKey, ApplicantProfile[ProfileKey]>)[key] =
+          draft[key];
+      }
+    }
+    if (!validateBeforeSave(next)) return;
+    setSavingSection(sectionId);
+    try {
+      const normalized = normalizedProfile(next);
+      await saveProfile(normalized);
+      setDraft((current) => ({
+        ...current,
+        ...Object.fromEntries(
+          keys
+            .filter((key) => key !== "resumeSectionTitles")
+            .map((key) => [key, normalized[key]]),
+        ),
+        ...(keys.includes("resumeSectionTitles")
+          ? {
+              resumeSectionTitles: sectionTitle
+                ? {
+                    ...current.resumeSectionTitles,
+                    [sectionTitle]: normalized.resumeSectionTitles[sectionTitle],
+                  }
+                : normalized.resumeSectionTitles,
+            }
+          : {}),
+        updatedAt: normalized.updatedAt,
+      }));
+      setSavedSection(sectionId);
+      window.setTimeout(
+        () => setSavedSection((current) => (current === sectionId ? undefined : current)),
+        1800,
+      );
+    } finally {
+      setSavingSection(undefined);
+    }
   };
 
   const copyKnowledgeCategory = async (categoryId: string) => {
@@ -225,6 +370,14 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
           role: "",
           company: "",
           city: "",
+          isCurrent: true,
+          legalForm: "",
+          employmentType: "",
+          description: "",
+          teamSize: "",
+          tasks: [],
+          projects: [],
+          technologies: [],
           achievements: [""],
         },
       ],
@@ -242,6 +395,12 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
           degree: "",
           institution: "",
           city: "",
+          country: "",
+          type: "",
+          fieldOfStudy: "",
+          grade: "",
+          status: "",
+          description: "",
         },
       ],
     }));
@@ -320,7 +479,34 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
         </header>
 
         <form onSubmit={(event) => void save(event)}>
-          <EditorSection title="Persönliche Daten">
+          <EditorSection
+            title="Persönliche Daten"
+            description="Pflichtangaben, Kontakt sowie freiwillige persönliche Angaben."
+            onSave={() =>
+              void saveSection("personal", [
+                "firstName",
+                "lastName",
+                "title",
+                "street",
+                "postalCode",
+                "city",
+                "country",
+                "phone",
+                "email",
+                "linkedin",
+                "github",
+                "portfolio",
+                "onlineProfiles",
+                "birthDate",
+                "birthPlace",
+                "nationality",
+                "familyStatus",
+                "children",
+              ])
+            }
+            saving={savingSection === "personal"}
+            saved={savedSection === "personal"}
+          >
             <div className="form-grid">
               <TextField
                 label="Vorname *"
@@ -370,6 +556,13 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                 />
               </div>
               <TextField
+                label="Land"
+                value={draft.country}
+                onChange={(country) =>
+                  setDraft((current) => ({ ...current, country }))
+                }
+              />
+              <TextField
                 label="Telefon"
                 value={draft.phone}
                 onChange={(phone) =>
@@ -406,23 +599,272 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                   setDraft((current) => ({ ...current, portfolio }))
                 }
               />
-              <label className="field full">
-                <span>Kurzprofil</span>
-                <textarea
-                  rows={5}
-                  value={draft.summary}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      summary: event.target.value,
-                    }))
-                  }
-                />
-              </label>
+              <FlexibleDateField
+                label="Geburtsdatum (freiwillig)"
+                value={draft.birthDate}
+                mode="date"
+                onChange={(birthDate) =>
+                  setDraft((current) => ({ ...current, birthDate }))
+                }
+              />
+              <TextField
+                label="Geburtsort (freiwillig)"
+                value={draft.birthPlace}
+                onChange={(birthPlace) =>
+                  setDraft((current) => ({ ...current, birthPlace }))
+                }
+              />
+              <TextField
+                label="Staatsangehörigkeit (freiwillig)"
+                value={draft.nationality}
+                onChange={(nationality) =>
+                  setDraft((current) => ({ ...current, nationality }))
+                }
+              />
+              <TextField
+                label="Familienstand (freiwillig)"
+                value={draft.familyStatus}
+                onChange={(familyStatus) =>
+                  setDraft((current) => ({ ...current, familyStatus }))
+                }
+              />
+              <TextField
+                label="Kinder (freiwillig)"
+                value={draft.children}
+                onChange={(children) =>
+                  setDraft((current) => ({ ...current, children }))
+                }
+              />
+            </div>
+            <div className="profile-subsection-header">
+              <div>
+                <strong>Weitere Online-Profile</strong>
+                <small>Zum Beispiel XING, persönliche Website oder Fachprofil.</small>
+              </div>
+              <button
+                type="button"
+                className="button secondary small-button"
+                onClick={() =>
+                  setDraft((current) => ({
+                    ...current,
+                    onlineProfiles: [
+                      ...current.onlineProfiles,
+                      { id: crypto.randomUUID(), label: "", url: "" },
+                    ],
+                  }))
+                }
+              >
+                <Plus size={15} /> Profil hinzufügen
+              </button>
+            </div>
+            <div className="compact-entry-list">
+              {draft.onlineProfiles.map((profile) => (
+                <div className="compact-entry" key={profile.id}>
+                  <TextField
+                    label="Bezeichnung"
+                    value={profile.label}
+                    onChange={(label) =>
+                      setDraft((current) => ({
+                        ...current,
+                        onlineProfiles: current.onlineProfiles.map((item) =>
+                          item.id === profile.id ? { ...item, label } : item,
+                        ),
+                      }))
+                    }
+                  />
+                  <TextField
+                    label="Adresse / URL"
+                    value={profile.url}
+                    onChange={(url) =>
+                      setDraft((current) => ({
+                        ...current,
+                        onlineProfiles: current.onlineProfiles.map((item) =>
+                          item.id === profile.id ? { ...item, url } : item,
+                        ),
+                      }))
+                    }
+                  />
+                  <button
+                    type="button"
+                    className="icon-button danger"
+                    aria-label="Online-Profil löschen"
+                    onClick={() =>
+                      setDraft((current) => ({
+                        ...current,
+                        onlineProfiles: current.onlineProfiles.filter(
+                          (item) => item.id !== profile.id,
+                        ),
+                      }))
+                    }
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              ))}
             </div>
           </EditorSection>
 
-          <EditorSection title="Bewerbungsfoto & Unterschrift">
+          <EditorSection
+            title="Kurzprofil"
+            description="Optionaler Einstiegstext für Zielrolle, Erfahrung und besondere Stärken."
+            onSave={() =>
+              void saveSection(
+                "summary",
+                ["summary", "resumeSectionTitles"],
+                "summary",
+              )
+            }
+            saving={savingSection === "summary"}
+            saved={savedSection === "summary"}
+          >
+            <TextField
+              label="Überschrift im Lebenslauf"
+              value={draft.resumeSectionTitles.summary}
+              onChange={(summary) =>
+                setDraft((current) => ({
+                  ...current,
+                  resumeSectionTitles: {
+                    ...current.resumeSectionTitles,
+                    summary,
+                  },
+                }))
+              }
+            />
+            <label className="field full">
+              <span>Kurzprofil</span>
+              <textarea
+                rows={5}
+                value={draft.summary}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    summary: event.target.value,
+                  }))
+                }
+              />
+            </label>
+          </EditorSection>
+
+          <EditorSection
+            title="Stärken"
+            description="Stärken werden unabhängig von den Kenntnissen verwaltet."
+            action={
+              <button
+                type="button"
+                className="button secondary small-button"
+                onClick={() =>
+                  setDraft((current) => ({
+                    ...current,
+                    strengths: [
+                      ...current.strengths,
+                      {
+                        id: crypto.randomUUID(),
+                        title: "Neue Stärke",
+                        description: "",
+                      },
+                    ],
+                  }))
+                }
+              >
+                <Plus size={15} /> Stärke hinzufügen
+              </button>
+            }
+            onSave={() =>
+              void saveSection(
+                "strengths",
+                ["strengths", "resumeSectionTitles"],
+                "strengths",
+              )
+            }
+            saving={savingSection === "strengths"}
+            saved={savedSection === "strengths"}
+          >
+            <TextField
+              label="Überschrift im Lebenslauf"
+              value={draft.resumeSectionTitles.strengths}
+              onChange={(strengths) =>
+                setDraft((current) => ({
+                  ...current,
+                  resumeSectionTitles: {
+                    ...current.resumeSectionTitles,
+                    strengths,
+                  },
+                }))
+              }
+            />
+            <div className="special-entry-list">
+              {draft.strengths.map((strength, index) => (
+                <div className="special-entry-card" key={strength.id}>
+                  <div className="resume-card-fields">
+                    <TextField
+                      label="Stärke"
+                      value={strength.title}
+                      onChange={(title) =>
+                        setDraft((current) => ({
+                          ...current,
+                          strengths: current.strengths.map((item) =>
+                            item.id === strength.id ? { ...item, title } : item,
+                          ),
+                        }))
+                      }
+                    />
+                    <label className="field">
+                      <span>Beschreibung</span>
+                      <textarea
+                        rows={3}
+                        value={strength.description}
+                        onChange={(event) =>
+                          setDraft((current) => ({
+                            ...current,
+                            strengths: current.strengths.map((item) =>
+                              item.id === strength.id
+                                ? { ...item, description: event.target.value }
+                                : item,
+                            ),
+                          }))
+                        }
+                      />
+                    </label>
+                  </div>
+                  <SortActions
+                    index={index}
+                    length={draft.strengths.length}
+                    onMove={(direction) =>
+                      setDraft((current) => ({
+                        ...current,
+                        strengths: moveItem(
+                          current.strengths,
+                          strength.id,
+                          direction,
+                        ),
+                      }))
+                    }
+                    onRemove={() =>
+                      setDraft((current) => ({
+                        ...current,
+                        strengths: current.strengths.filter(
+                          (item) => item.id !== strength.id,
+                        ),
+                      }))
+                    }
+                  />
+                </div>
+              ))}
+              {!draft.strengths.length ? (
+                <EditorEmpty text="Noch keine unabhängige Stärke erfasst." />
+              ) : null}
+            </div>
+          </EditorSection>
+
+          <EditorSection
+            title="Bewerbungsfoto & Unterschrift"
+            description="Beide Angaben sind optional."
+            onSave={() =>
+              void saveSection("media", ["photoPath", "signaturePath"])
+            }
+            saving={savingSection === "media"}
+            saved={savedSection === "media"}
+          >
             <div className="profile-media-grid">
               <ProfileMediaCard
                 kind="photo"
@@ -445,6 +887,7 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
 
           <EditorSection
             title="Berufserfahrung"
+            description="Zeiträume können direkt geschrieben oder über den Kalender gewählt werden."
             action={
               <button
                 type="button"
@@ -454,7 +897,29 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                 <Plus size={15} /> Station hinzufügen
               </button>
             }
+            onSave={() =>
+              void saveSection(
+                "experience",
+                ["experiences", "resumeSectionTitles"],
+                "experience",
+              )
+            }
+            saving={savingSection === "experience"}
+            saved={savedSection === "experience"}
           >
+            <TextField
+              label="Überschrift im Lebenslauf"
+              value={draft.resumeSectionTitles.experience}
+              onChange={(experience) =>
+                setDraft((current) => ({
+                  ...current,
+                  resumeSectionTitles: {
+                    ...current.resumeSectionTitles,
+                    experience,
+                  },
+                }))
+              }
+            />
             <div className="resume-editor-list">
               {draft.experiences.map((experience, index) => (
                 <article
@@ -472,9 +937,10 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                   </div>
                   <div className="resume-card-fields">
                     <div className="split-fields">
-                      <TextField
+                      <FlexibleDateField
                         label="Von"
                         value={experience.from}
+                        mode="month"
                         onChange={(from) =>
                           setDraft((current) => ({
                             ...current,
@@ -486,14 +952,21 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                           }))
                         }
                       />
-                      <TextField
+                      <FlexibleDateField
                         label="Bis"
                         value={experience.to}
+                        mode="month"
                         onChange={(to) =>
                           setDraft((current) => ({
                             ...current,
                             experiences: current.experiences.map((item) =>
-                              item.id === experience.id ? { ...item, to } : item,
+                              item.id === experience.id
+                                ? {
+                                    ...item,
+                                    to,
+                                    isCurrent: to.trim().toLowerCase() === "heute",
+                                  }
+                                : item,
                             ),
                           }))
                         }
@@ -541,6 +1014,135 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                         }))
                       }
                     />
+                    <div className="form-grid">
+                      <TextField
+                        label="Rechtsform / Unternehmenszusatz"
+                        value={experience.legalForm}
+                        onChange={(legalForm) =>
+                          setDraft((current) => ({
+                            ...current,
+                            experiences: current.experiences.map((item) =>
+                              item.id === experience.id
+                                ? { ...item, legalForm }
+                                : item,
+                            ),
+                          }))
+                        }
+                      />
+                      <TextField
+                        label="Beschäftigungsart"
+                        value={experience.employmentType}
+                        onChange={(employmentType) =>
+                          setDraft((current) => ({
+                            ...current,
+                            experiences: current.experiences.map((item) =>
+                              item.id === experience.id
+                                ? { ...item, employmentType }
+                                : item,
+                            ),
+                          }))
+                        }
+                      />
+                      <TextField
+                        label="Teamgröße / Verantwortung"
+                        value={experience.teamSize}
+                        onChange={(teamSize) =>
+                          setDraft((current) => ({
+                            ...current,
+                            experiences: current.experiences.map((item) =>
+                              item.id === experience.id
+                                ? { ...item, teamSize }
+                                : item,
+                            ),
+                          }))
+                        }
+                      />
+                      <label className="checkbox-field field-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={experience.isCurrent}
+                          onChange={(event) =>
+                            setDraft((current) => ({
+                              ...current,
+                              experiences: current.experiences.map((item) =>
+                                item.id === experience.id
+                                  ? {
+                                      ...item,
+                                      isCurrent: event.target.checked,
+                                      to: event.target.checked
+                                        ? "heute"
+                                        : item.to.trim().toLowerCase() === "heute"
+                                          ? ""
+                                          : item.to,
+                                    }
+                                  : item,
+                              ),
+                            }))
+                          }
+                        />
+                        <span>Aktuelle Position (bis heute)</span>
+                      </label>
+                    </div>
+                    <label className="field">
+                      <span>Kurzbeschreibung</span>
+                      <textarea
+                        rows={3}
+                        value={experience.description}
+                        onChange={(event) =>
+                          setDraft((current) => ({
+                            ...current,
+                            experiences: current.experiences.map((item) =>
+                              item.id === experience.id
+                                ? { ...item, description: event.target.value }
+                                : item,
+                            ),
+                          }))
+                        }
+                      />
+                    </label>
+                    <div className="form-grid">
+                      <ListField
+                        label="Aufgaben"
+                        values={experience.tasks}
+                        onChange={(tasks) =>
+                          setDraft((current) => ({
+                            ...current,
+                            experiences: current.experiences.map((item) =>
+                              item.id === experience.id ? { ...item, tasks } : item,
+                            ),
+                          }))
+                        }
+                      />
+                      <ListField
+                        label="Projekte"
+                        values={experience.projects}
+                        onChange={(projects) =>
+                          setDraft((current) => ({
+                            ...current,
+                            experiences: current.experiences.map((item) =>
+                              item.id === experience.id
+                                ? { ...item, projects }
+                                : item,
+                            ),
+                          }))
+                        }
+                      />
+                      <ListField
+                        label="Technologien / Methoden"
+                        values={experience.technologies}
+                        full
+                        onChange={(technologies) =>
+                          setDraft((current) => ({
+                            ...current,
+                            experiences: current.experiences.map((item) =>
+                              item.id === experience.id
+                                ? { ...item, technologies }
+                                : item,
+                            ),
+                          }))
+                        }
+                      />
+                    </div>
                     <label className="field">
                       <span>Erfolge – eine Zeile je Punkt</span>
                       <textarea
@@ -594,6 +1196,7 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
 
           <EditorSection
             title="Ausbildung"
+            description="Studium, Schule, Ausbildung oder laufender Abschluss."
             action={
               <button
                 type="button"
@@ -603,7 +1206,29 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                 <Plus size={15} /> Ausbildung hinzufügen
               </button>
             }
+            onSave={() =>
+              void saveSection(
+                "education",
+                ["education", "resumeSectionTitles"],
+                "education",
+              )
+            }
+            saving={savingSection === "education"}
+            saved={savedSection === "education"}
           >
+            <TextField
+              label="Überschrift im Lebenslauf"
+              value={draft.resumeSectionTitles.education}
+              onChange={(education) =>
+                setDraft((current) => ({
+                  ...current,
+                  resumeSectionTitles: {
+                    ...current.resumeSectionTitles,
+                    education,
+                  },
+                }))
+              }
+            />
             <div className="resume-editor-list">
               {draft.education.map((education, index) => (
                 <article
@@ -621,9 +1246,10 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                   </div>
                   <div className="resume-card-fields">
                     <div className="split-fields">
-                      <TextField
+                      <FlexibleDateField
                         label="Von"
                         value={education.from}
+                        mode="month"
                         onChange={(from) =>
                           setDraft((current) => ({
                             ...current,
@@ -633,9 +1259,10 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                           }))
                         }
                       />
-                      <TextField
+                      <FlexibleDateField
                         label="Bis"
                         value={education.to}
+                        mode="month"
                         onChange={(to) =>
                           setDraft((current) => ({
                             ...current,
@@ -688,6 +1315,87 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                         }))
                       }
                     />
+                    <div className="form-grid">
+                      <TextField
+                        label="Art (z. B. Studium, Ausbildung)"
+                        value={education.type}
+                        onChange={(type) =>
+                          setDraft((current) => ({
+                            ...current,
+                            education: current.education.map((item) =>
+                              item.id === education.id ? { ...item, type } : item,
+                            ),
+                          }))
+                        }
+                      />
+                      <TextField
+                        label="Fachrichtung"
+                        value={education.fieldOfStudy}
+                        onChange={(fieldOfStudy) =>
+                          setDraft((current) => ({
+                            ...current,
+                            education: current.education.map((item) =>
+                              item.id === education.id
+                                ? { ...item, fieldOfStudy }
+                                : item,
+                            ),
+                          }))
+                        }
+                      />
+                      <TextField
+                        label="Note"
+                        value={education.grade}
+                        onChange={(grade) =>
+                          setDraft((current) => ({
+                            ...current,
+                            education: current.education.map((item) =>
+                              item.id === education.id ? { ...item, grade } : item,
+                            ),
+                          }))
+                        }
+                      />
+                      <TextField
+                        label="Status (z. B. laufend)"
+                        value={education.status}
+                        onChange={(status) =>
+                          setDraft((current) => ({
+                            ...current,
+                            education: current.education.map((item) =>
+                              item.id === education.id ? { ...item, status } : item,
+                            ),
+                          }))
+                        }
+                      />
+                      <TextField
+                        label="Land"
+                        value={education.country}
+                        onChange={(country) =>
+                          setDraft((current) => ({
+                            ...current,
+                            education: current.education.map((item) =>
+                              item.id === education.id ? { ...item, country } : item,
+                            ),
+                          }))
+                        }
+                      />
+                    </div>
+                    <label className="field">
+                      <span>Schwerpunkte / Beschreibung</span>
+                      <textarea
+                        rows={3}
+                        value={education.description}
+                        onChange={(event) =>
+                          setDraft((current) => ({
+                            ...current,
+                            education: current.education.map((item) =>
+                              item.id === education.id
+                                ? { ...item, description: event.target.value }
+                                : item,
+                            ),
+                          }))
+                        }
+                      />
+                    </label>
                   </div>
                   <SortActions
                     index={index}
@@ -719,7 +1427,15 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
             </div>
           </EditorSection>
 
-          <EditorSection title="Kenntnisse & Zusatzangaben">
+          <EditorSection
+            title="Kenntnisse"
+            description="Kenntnisse werden unabhängig von Stärken, Sprachen und Zertifikaten verwaltet."
+            onSave={() =>
+              void saveSection("knowledge", ["knowledgeSection", "skills"])
+            }
+            saving={savingSection === "knowledge"}
+            saved={savedSection === "knowledge"}
+          >
             <KnowledgeSectionEditor
               value={draft.knowledgeSection}
               onChange={(knowledgeSection) =>
@@ -727,35 +1443,140 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
               }
               onCopyCategory={copyKnowledgeCategory}
             />
-            <div className="form-grid knowledge-additional-grid">
-              <ListField
-                label="Sprachen"
-                values={draft.languages}
-                onChange={(languages) =>
-                  setDraft((current) => ({ ...current, languages }))
+          </EditorSection>
+
+          <EditorSection
+            title="Sprachen"
+            description="Sprachen werden nach dem Gemeinsamen Europäischen Referenzrahmen (GER) von A1 bis C2 bewertet."
+            onSave={() =>
+              void saveSection(
+                "languages",
+                ["languages", "resumeSectionTitles"],
+                "languages",
+              )
+            }
+            saving={savingSection === "languages"}
+            saved={savedSection === "languages"}
+          >
+            <TextField
+              label="Überschrift im Lebenslauf"
+              value={draft.resumeSectionTitles.languages}
+              onChange={(languages) =>
+                setDraft((current) => ({
+                  ...current,
+                  resumeSectionTitles: {
+                    ...current.resumeSectionTitles,
+                    languages,
+                  },
+                }))
+              }
+            />
+            <LanguageLevelEditor
+              values={draft.languages}
+              onChange={(languages) =>
+                setDraft((current) => ({ ...current, languages }))
+              }
+            />
+          </EditorSection>
+
+          <EditorSection
+            title="Zertifikate"
+            description="Eigener Abschnitt mit frei änderbarer Überschrift."
+            onSave={() =>
+              void saveSection("certifications", [
+                "certifications",
+                "resumeSectionTitles",
+              ], "certifications")
+            }
+            saving={savingSection === "certifications"}
+            saved={savedSection === "certifications"}
+          >
+            <TextField
+              label="Überschrift im Lebenslauf"
+              value={draft.resumeSectionTitles.certifications}
+              onChange={(certifications) =>
+                setDraft((current) => ({
+                  ...current,
+                  resumeSectionTitles: {
+                    ...current.resumeSectionTitles,
+                    certifications,
+                  },
+                }))
+              }
+            />
+            <ListField
+              label="Zertifikate – eine Zeile je Eintrag"
+              values={draft.certifications}
+              full
+              onChange={(certifications) =>
+                setDraft((current) => ({ ...current, certifications }))
+              }
+            />
+          </EditorSection>
+
+          <EditorSection
+            title="Besondere Lebenslauf-Bereiche"
+            description="Füge nur passende Bereiche hinzu. Eigene Abschnitte decken besondere Muster ab."
+            onSave={() =>
+              void saveSection("special-sections", ["specialSections"])
+            }
+            saving={savingSection === "special-sections"}
+            saved={savedSection === "special-sections"}
+          >
+            <SpecialSectionsEditor
+              value={draft.specialSections}
+              onChange={(specialSections) =>
+                setDraft((current) => ({ ...current, specialSections }))
+              }
+            />
+          </EditorSection>
+
+          <EditorSection
+            title="Ort, Datum & Abschluss"
+            description="Für den Abschluss des Lebenslaufs; die Unterschrift wird oben verwaltet."
+            onSave={() =>
+              void saveSection("closing", ["applicationPlace", "applicationDate"])
+            }
+            saving={savingSection === "closing"}
+            saved={savedSection === "closing"}
+          >
+            <div className="form-grid">
+              <TextField
+                label="Ort"
+                value={draft.applicationPlace}
+                onChange={(applicationPlace) =>
+                  setDraft((current) => ({ ...current, applicationPlace }))
                 }
               />
-              <ListField
-                label="Zertifikate"
-                values={draft.certifications}
-                full
-                onChange={(certifications) =>
-                  setDraft((current) => ({ ...current, certifications }))
+              <FlexibleDateField
+                label="Datum"
+                value={draft.applicationDate}
+                mode="date"
+                onChange={(applicationDate) =>
+                  setDraft((current) => ({ ...current, applicationDate }))
                 }
               />
             </div>
           </EditorSection>
 
-          <EditorSection title="Sichtbare Lebenslauf-Abschnitte">
+          <EditorSection
+            title="Sichtbare Lebenslauf-Abschnitte"
+            onSave={() =>
+              void saveSection("visibility", ["resumeSections"])
+            }
+            saving={savingSection === "visibility"}
+            saved={savedSection === "visibility"}
+          >
             <div className="section-toggle-grid">
               {(
                 [
-                  ["profile", "Profil"],
-                  ["experience", "Berufserfahrung"],
-                  ["education", "Ausbildung"],
-                  ["skills", "Kenntnisse"],
-                  ["languages", "Sprachen"],
-                  ["certifications", "Zertifikate"],
+                  ["profile", draft.resumeSectionTitles.summary],
+                  ["strengths", draft.resumeSectionTitles.strengths],
+                  ["experience", draft.resumeSectionTitles.experience],
+                  ["education", draft.resumeSectionTitles.education],
+                  ["skills", draft.knowledgeSection.title],
+                  ["languages", draft.resumeSectionTitles.languages],
+                  ["certifications", draft.resumeSectionTitles.certifications],
                 ] as const
               ).map(([key, label]) => (
                 <label className="checkbox-field" key={key}>
@@ -778,19 +1599,26 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
             </div>
           </EditorSection>
 
-          <label className="checkbox-field full profile-default">
-            <input
-              type="checkbox"
-              checked={draft.isDefault}
-              onChange={(event) =>
-                setDraft((current) => ({
-                  ...current,
-                  isDefault: event.target.checked,
-                }))
-              }
-            />
-            <span>Als Standardprofil verwenden</span>
-          </label>
+          <EditorSection
+            title="Profileinstellung"
+            onSave={() => void saveSection("settings", ["isDefault"])}
+            saving={savingSection === "settings"}
+            saved={savedSection === "settings"}
+          >
+            <label className="checkbox-field full profile-default">
+              <input
+                type="checkbox"
+                checked={draft.isDefault}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    isDefault: event.target.checked,
+                  }))
+                }
+              />
+              <span>Als Standardprofil verwenden</span>
+            </label>
+          </EditorSection>
 
           <div className="save-bar sticky-save">
             <span>
@@ -809,20 +1637,44 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
 
 function EditorSection({
   title,
+  description,
   action,
+  onSave,
+  saving = false,
+  saved = false,
   children,
 }: {
   title: string;
+  description?: string;
   action?: React.ReactNode;
+  onSave?: () => void;
+  saving?: boolean;
+  saved?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <section className="profile-editor-section">
       <header>
-        <h3>{title}</h3>
+        <div>
+          <h3>{title}</h3>
+          {description ? <p>{description}</p> : null}
+        </div>
         {action}
       </header>
       {children}
+      {onSave ? (
+        <footer className="profile-section-save">
+          {saved ? <span>Gespeichert</span> : <span />}
+          <button
+            type="button"
+            className="button secondary small-button"
+            disabled={saving}
+            onClick={onSave}
+          >
+            <Save size={15} /> {saving ? "Wird aktualisiert …" : "Abschnitt aktualisieren"}
+          </button>
+        </footer>
+      ) : null}
     </section>
   );
 }
@@ -882,6 +1734,346 @@ function ListField({
         }
       />
     </label>
+  );
+}
+
+function FlexibleDateField({
+  label,
+  value,
+  mode,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  mode: "date" | "month";
+  onChange: (value: string) => void;
+}) {
+  const pickerValue = (() => {
+    if (mode === "month") {
+      const match = value.match(/^(\d{2})[./-](\d{4})$/);
+      return match ? `${match[2]}-${match[1]}` : "";
+    }
+    const match = value.match(/^(\d{2})[./-](\d{2})[./-](\d{4})$/);
+    return match ? `${match[3]}-${match[2]}-${match[1]}` : "";
+  })();
+
+  const pick = (selected: string) => {
+    if (!selected) return;
+    const parts = selected.split("-");
+    onChange(
+      mode === "month"
+        ? `${parts[1]}/${parts[0]}`
+        : `${parts[2]}.${parts[1]}.${parts[0]}`,
+    );
+  };
+
+  return (
+    <label className="field flexible-date-field">
+      <span>{label}</span>
+      <div>
+        <input
+          type="text"
+          value={value}
+          placeholder={mode === "month" ? "MM/JJJJ oder heute" : "TT.MM.JJJJ"}
+          onChange={(event) => onChange(event.target.value)}
+        />
+        <span className="date-picker-control" title="Datum auswählen">
+          <CalendarDays size={15} />
+          <input
+            type={mode}
+            value={pickerValue}
+            aria-label={`${label} auswählen`}
+            onChange={(event) => pick(event.target.value)}
+          />
+        </span>
+      </div>
+    </label>
+  );
+}
+
+function SpecialSectionsEditor({
+  value,
+  onChange,
+}: {
+  value: ApplicantProfile["specialSections"];
+  onChange: (value: ApplicantProfile["specialSections"]) => void;
+}) {
+  const [newKind, setNewKind] = useState<ResumeSpecialSectionKind>("projects");
+
+  const updateSection = (
+    sectionId: string,
+    update: Partial<ApplicantProfile["specialSections"][number]>,
+  ) =>
+    onChange(
+      value.map((section) =>
+        section.id === sectionId ? { ...section, ...update } : section,
+      ),
+    );
+
+  const addSection = () => {
+    const label =
+      specialSectionOptions.find((option) => option.kind === newKind)?.label ??
+      "Eigener Abschnitt";
+    onChange([
+      ...value,
+      {
+        id: crypto.randomUUID(),
+        kind: newKind,
+        title: label,
+        isVisible: true,
+        entries: [],
+      },
+    ]);
+  };
+
+  const addEntry = (sectionId: string) => {
+    const section = value.find((item) => item.id === sectionId);
+    if (!section) return;
+    updateSection(sectionId, {
+      entries: [
+        ...section.entries,
+        {
+          id: crypto.randomUUID(),
+          title: "",
+          subtitle: "",
+          from: "",
+          to: "",
+          date: "",
+          location: "",
+          url: "",
+          description: "",
+          bullets: [],
+        },
+      ],
+    });
+  };
+
+  const updateEntry = (
+    sectionId: string,
+    entryId: string,
+    update: Partial<ApplicantProfile["specialSections"][number]["entries"][number]>,
+  ) => {
+    const section = value.find((item) => item.id === sectionId);
+    if (!section) return;
+    updateSection(sectionId, {
+      entries: section.entries.map((entry) =>
+        entry.id === entryId ? { ...entry, ...update } : entry,
+      ),
+    });
+  };
+
+  return (
+    <div className="special-sections-editor">
+      <div className="special-section-add">
+        <label className="field">
+          <span>Bereich auswählen</span>
+          <select
+            value={newKind}
+            onChange={(event) =>
+              setNewKind(event.target.value as ResumeSpecialSectionKind)
+            }
+          >
+            {specialSectionOptions.map((option) => (
+              <option key={option.kind} value={option.kind}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          type="button"
+          className="button secondary small-button"
+          onClick={addSection}
+        >
+          <Plus size={15} /> Bereich hinzufügen
+        </button>
+      </div>
+
+      {value.map((section, sectionIndex) => (
+        <article className="special-section-card" key={section.id}>
+          <header>
+            <span className="large-icon compact-icon">
+              <Layers3 size={18} />
+            </span>
+            <div className="special-section-heading-fields">
+              <TextField
+                label="Überschrift im Lebenslauf"
+                value={section.title}
+                onChange={(title) => updateSection(section.id, { title })}
+              />
+              <label className="field">
+                <span>Bereichstyp</span>
+                <select
+                  value={section.kind}
+                  onChange={(event) =>
+                    updateSection(section.id, {
+                      kind: event.target.value as ResumeSpecialSectionKind,
+                    })
+                  }
+                >
+                  {specialSectionOptions.map((option) => (
+                    <option key={option.kind} value={option.kind}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="special-section-actions">
+              <label className="checkbox-field">
+                <input
+                  type="checkbox"
+                  checked={section.isVisible}
+                  onChange={(event) =>
+                    updateSection(section.id, { isVisible: event.target.checked })
+                  }
+                />
+                <span>Anzeigen</span>
+              </label>
+              <button
+                type="button"
+                className="icon-button"
+                disabled={sectionIndex === 0}
+                aria-label="Bereich nach oben verschieben"
+                onClick={() => onChange(moveItem(value, section.id, -1))}
+              >
+                <ArrowUp size={15} />
+              </button>
+              <button
+                type="button"
+                className="icon-button"
+                disabled={sectionIndex === value.length - 1}
+                aria-label="Bereich nach unten verschieben"
+                onClick={() => onChange(moveItem(value, section.id, 1))}
+              >
+                <ArrowDown size={15} />
+              </button>
+              <button
+                type="button"
+                className="icon-button danger"
+                aria-label="Bereich löschen"
+                onClick={() =>
+                  onChange(value.filter((item) => item.id !== section.id))
+                }
+              >
+                <Trash2 size={15} />
+              </button>
+            </div>
+          </header>
+
+          <div className="special-entry-list">
+            {section.entries.map((entry, entryIndex) => (
+              <div className="special-entry-card" key={entry.id}>
+                <div className="resume-card-fields">
+                  <div className="form-grid">
+                    <TextField
+                      label="Titel / Bezeichnung"
+                      value={entry.title}
+                      onChange={(title) =>
+                        updateEntry(section.id, entry.id, { title })
+                      }
+                    />
+                    <TextField
+                      label="Rolle / Organisation / Zusatz"
+                      value={entry.subtitle}
+                      onChange={(subtitle) =>
+                        updateEntry(section.id, entry.id, { subtitle })
+                      }
+                    />
+                    <FlexibleDateField
+                      label="Von"
+                      value={entry.from}
+                      mode="month"
+                      onChange={(from) =>
+                        updateEntry(section.id, entry.id, { from })
+                      }
+                    />
+                    <FlexibleDateField
+                      label="Bis"
+                      value={entry.to}
+                      mode="month"
+                      onChange={(to) => updateEntry(section.id, entry.id, { to })}
+                    />
+                    <FlexibleDateField
+                      label="Einzeldatum"
+                      value={entry.date}
+                      mode="date"
+                      onChange={(date) =>
+                        updateEntry(section.id, entry.id, { date })
+                      }
+                    />
+                    <TextField
+                      label="Ort"
+                      value={entry.location}
+                      onChange={(location) =>
+                        updateEntry(section.id, entry.id, { location })
+                      }
+                    />
+                    <TextField
+                      label="Link / URL"
+                      value={entry.url}
+                      full
+                      onChange={(url) =>
+                        updateEntry(section.id, entry.id, { url })
+                      }
+                    />
+                  </div>
+                  <label className="field">
+                    <span>Beschreibung</span>
+                    <textarea
+                      rows={3}
+                      value={entry.description}
+                      onChange={(event) =>
+                        updateEntry(section.id, entry.id, {
+                          description: event.target.value,
+                        })
+                      }
+                    />
+                  </label>
+                  <ListField
+                    label="Details / Erfolge"
+                    values={entry.bullets}
+                    full
+                    onChange={(bullets) =>
+                      updateEntry(section.id, entry.id, { bullets })
+                    }
+                  />
+                </div>
+                <SortActions
+                  index={entryIndex}
+                  length={section.entries.length}
+                  onMove={(direction) =>
+                    updateSection(section.id, {
+                      entries: moveItem(section.entries, entry.id, direction),
+                    })
+                  }
+                  onRemove={() =>
+                    updateSection(section.id, {
+                      entries: section.entries.filter(
+                        (item) => item.id !== entry.id,
+                      ),
+                    })
+                  }
+                />
+              </div>
+            ))}
+            {!section.entries.length ? (
+              <EditorEmpty text="Noch kein Eintrag in diesem Bereich." />
+            ) : null}
+          </div>
+          <button
+            type="button"
+            className="button secondary small-button align-start"
+            onClick={() => addEntry(section.id)}
+          >
+            <Plus size={15} /> Eintrag hinzufügen
+          </button>
+        </article>
+      ))}
+      {!value.length ? (
+        <EditorEmpty text="Noch kein besonderer Lebenslauf-Bereich angelegt." />
+      ) : null}
+    </div>
   );
 }
 

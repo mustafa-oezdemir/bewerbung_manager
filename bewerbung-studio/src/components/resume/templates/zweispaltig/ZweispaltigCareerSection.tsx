@@ -3,6 +3,7 @@ import { formatZweispaltigDateRange } from "./zweispaltig.model";
 import type { ZweispaltigCareerSectionProps } from "./zweispaltig.types";
 
 export function ZweispaltigCareerSection({
+  kind,
   title,
   items,
   continuation = false,
@@ -12,7 +13,7 @@ export function ZweispaltigCareerSection({
   return (
     <section
       className="zweispaltig-section zweispaltig-career"
-      data-element-id={`zweispaltig.${title === "Ausbildung" ? "education" : "experience"}`}
+      data-element-id={`zweispaltig.${kind}`}
     >
       <h2 className="zweispaltig-section__title">
         {title}

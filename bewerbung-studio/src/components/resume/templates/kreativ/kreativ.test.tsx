@@ -159,11 +159,11 @@ describe("Kreativ page model", () => {
       "Jira",
       "Asana",
     ]);
-    expect(parseKreativLanguage("Deutsch – Muttersprache").score).toBe(5);
+    expect(parseKreativLanguage("Deutsch – Muttersprache").score).toBe(6);
     expect(parseKreativLanguage("Englisch – B2")).toMatchObject({
       name: "Englisch",
       level: "B2",
-      score: 3,
+      score: 4,
     });
   });
 });
@@ -201,10 +201,10 @@ describe("Kreativ rendering", () => {
     expect(markup).toContain("IT-Prozess- und Projektmanagerin");
   });
 
-  it("renders Fähigkeiten through the shared knowledge model", () => {
+  it("renders the profile-defined knowledge title through the shared knowledge model", () => {
     const markup = renderResume();
 
-    expect(markup).toContain("Fähigkeiten");
+    expect(markup).toContain("Kenntnisse &amp; Zusatzangaben");
     expect(markup).toContain("Projektmanagement");
     expect(markup).toContain("Künstliche Intelligenz");
     expect(markup).toContain("kreativ-skill");

@@ -6,6 +6,7 @@ import { parseTemplateLanguage } from "../resume-template-data";
 import type { ElegantSidebarProps } from "./elegant.types";
 import { ElegantKnowledge } from "./ElegantKnowledge";
 import { ElegantStrengths } from "./ElegantStrengths";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function ElegantSidebar({
   profile,
@@ -71,12 +72,12 @@ export function ElegantSidebar({
               className="elegant-sidebar__section"
               data-element-id="elegant.summary"
             >
-              <h2 className="elegant-sidebar__title">Zusammenfassung</h2>
+              <h2 className="elegant-sidebar__title">{getResumeSectionTitle(profile, "summary")}</h2>
               <p className="elegant-sidebar__summary">{summary}</p>
             </section>
           ) : null}
 
-          {sections.skills ? (
+          {sections.strengths ? (
             <ElegantStrengths profile={profile} variant="sidebar" />
           ) : null}
 
@@ -89,14 +90,13 @@ export function ElegantSidebar({
               className="elegant-sidebar__section"
               data-element-id="elegant.languages"
             >
-              <h2 className="elegant-sidebar__title">Sprachen</h2>
+              <h2 className="elegant-sidebar__title">{getResumeSectionTitle(profile, "languages")}</h2>
               <div className="elegant-languages">
                 {languages.map((language) => (
                   <article className="elegant-language" key={language.raw}>
                     <strong>{language.name}</strong>
-                    <span>{language.level}</span>
-                    <span className="elegant-language__dots" aria-hidden="true">
-                      {Array.from({ length: 5 }, (_, index) => (
+                    <span className="elegant-language__dots" aria-label={`${language.name}: ${language.level}`} role="img">
+                      {Array.from({ length: 6 }, (_, index) => (
                         <i
                           className={index < language.score ? "filled" : ""}
                           key={index}
@@ -114,7 +114,7 @@ export function ElegantSidebar({
               className="elegant-sidebar__section"
               data-element-id="elegant.certifications"
             >
-              <h2 className="elegant-sidebar__title">Zertifikate</h2>
+              <h2 className="elegant-sidebar__title">{getResumeSectionTitle(profile, "certifications")}</h2>
               <ul className="elegant-sidebar__list">
                 {certifications.map((certification) => (
                   <li key={certification}>{certification}</li>

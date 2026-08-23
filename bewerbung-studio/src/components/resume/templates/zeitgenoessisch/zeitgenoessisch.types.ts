@@ -55,7 +55,8 @@ export type ZeitgenoessischHeaderProps = {
 };
 
 export type ZeitgenoessischCareerSectionProps = {
-  title: "Berufserfahrung" | "Ausbildung";
+  kind: "experience" | "education";
+  title: string;
   items: ZeitgenoessischCareerItem[];
   continuation?: boolean;
   atsMode?: boolean;

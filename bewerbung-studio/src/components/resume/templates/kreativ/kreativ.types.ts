@@ -45,7 +45,8 @@ export type KreativHeaderProps = {
 };
 
 export type KreativCareerSectionProps = {
-  title: "Berufserfahrung" | "Ausbildung";
+  kind: "experience" | "education";
+  title: string;
   items: KreativCareerItem[];
   continuation?: boolean;
   atsMode?: boolean;

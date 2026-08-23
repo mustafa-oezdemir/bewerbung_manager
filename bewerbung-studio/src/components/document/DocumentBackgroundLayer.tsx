@@ -2,6 +2,7 @@ import {
   programmingLanguageBackgroundTokens,
   type DocumentBackgroundId,
 } from "../../shared/documentDesign";
+import { getTechnologyBrandIconMarkup } from "../../shared/technologyBrand";
 
 export function DocumentBackgroundLayer({
   backgroundId,
@@ -17,7 +18,14 @@ export function DocumentBackgroundLayer({
       aria-hidden="true"
     >
       {programmingLanguageBackgroundTokens.map((token) => (
-        <span key={token}>{token}</span>
+        <span className="programming-language-token" key={token}>
+          <i
+            dangerouslySetInnerHTML={{
+              __html: getTechnologyBrandIconMarkup(token),
+            }}
+          />
+          <b>{token}</b>
+        </span>
       ))}
     </div>
   );

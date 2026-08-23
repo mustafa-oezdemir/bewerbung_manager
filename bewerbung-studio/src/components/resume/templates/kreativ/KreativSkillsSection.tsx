@@ -6,6 +6,7 @@ import {
 import type { ApplicantProfile } from "../../../../shared/schema";
 import { uniqueKreativValues } from "./kreativ.model";
 import { KreativSectionHeading } from "./KreativSectionHeading";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function KreativSkillsSection({
   profile,
@@ -37,9 +38,7 @@ export function KreativSkillsSection({
       className={`kreativ-section kreativ-skills-section ${atsMode ? "kreativ-skills-section--ats" : ""}`}
       data-element-id="kreativ.skills"
     >
-      <KreativSectionHeading
-        title={atsMode ? "Kenntnisse" : "Fähigkeiten"}
-      />
+      <KreativSectionHeading title={getResumeSectionTitle(profile, "knowledge")} />
       <div className="kreativ-skills">
         {categories.flatMap((category) => [
           ...visibleKnowledgeItems(category.items).map((item) => (

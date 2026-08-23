@@ -10,10 +10,10 @@ import { useEffect, useMemo, useState } from "react";
 import {
   getTemplateSectionCapabilities,
   getProfileResumeSectionLayout,
+  getResumeSectionTitle,
   isResumeSectionVisible,
   moveResumeSection,
   resolveResumeSectionLayout,
-  resumeSectionLabels,
   type ResumeSectionPlacement,
   type ResumeSectionType,
   type SectionZone,
@@ -57,7 +57,9 @@ const updateVisibility = (
   const key =
     type === "summary"
       ? "profile"
-      : type === "strengths" || type === "knowledge"
+      : type === "strengths"
+        ? "strengths"
+        : type === "knowledge"
         ? "skills"
         : type;
   if (!(key in profile.resumeSections)) return profile;
@@ -133,6 +135,10 @@ export function ResumeSectionsPanel({
   };
 
   const apply = async () => {
+    if (draftProfile.specialSections.some((section) => !section.title.trim())) {
+      window.alert("Bitte jedem Lebenslauf-Abschnitt eine Überschrift geben.");
+      return;
+    }
     await onSave({
       ...previewProfile,
       updatedAt: new Date().toISOString(),
@@ -177,6 +183,10 @@ export function ResumeSectionsPanel({
                   const allowedZones =
                     capabilities.allowedZonesBySection[placement.type] ?? ["main"];
                   const isVisible = isResumeSectionVisible(draftProfile, placement.type);
+                  const sectionTitle = getResumeSectionTitle(
+                    draftProfile,
+                    placement.type,
+                  );
                   return (
                     <article
                       className="resume-section-card"
@@ -194,11 +204,11 @@ export function ResumeSectionsPanel({
                       <GripVertical aria-hidden="true" size={16} />
                       <span
                         className="resume-section-card-title"
-                        title={resumeSectionLabels[placement.type]}>
-                        {resumeSectionLabels[placement.type]}
+                        title={sectionTitle}>
+                        {sectionTitle}
                       </span>
                       <button
-                        aria-label={`${resumeSectionLabels[placement.type]} ${isVisible ? "ausblenden" : "anzeigen"}`}
+                        aria-label={`${sectionTitle} ${isVisible ? "ausblenden" : "anzeigen"}`}
                         className="icon-button"
                         type="button"
                         onClick={() =>
@@ -209,7 +219,7 @@ export function ResumeSectionsPanel({
                         {isVisible ? <Eye size={15} /> : <EyeOff size={15} />}
                       </button>
                       <button
-                        aria-label={`${resumeSectionLabels[placement.type]} nach oben`}
+                        aria-label={`${sectionTitle} nach oben`}
                         className="icon-button"
                         disabled={index === 0}
                         type="button"
@@ -217,7 +227,7 @@ export function ResumeSectionsPanel({
                         <ArrowUp size={15} />
                       </button>
                       <button
-                        aria-label={`${resumeSectionLabels[placement.type]} nach unten`}
+                        aria-label={`${sectionTitle} nach unten`}
                         className="icon-button"
                         disabled={index === zoneItems.length - 1}
                         type="button"
@@ -226,7 +236,7 @@ export function ResumeSectionsPanel({
                       </button>
                       {allowedZones.length > 1 ? (
                         <select
-                          aria-label={`${resumeSectionLabels[placement.type]} Position`}
+                          aria-label={`${sectionTitle} Position`}
                           value={placement.zone}
                           onChange={(event) =>
                             updatePlacement(
@@ -250,6 +260,83 @@ export function ResumeSectionsPanel({
           );
         })}
       </div>
+      {draftProfile.specialSections.length ? (
+        <div className="resume-special-sections-panel">
+          <span>Weitere Profilabschnitte</span>
+          <small>
+            Jeder im Profil angelegte Abschnitt bleibt eigenständig und kann
+            hier umbenannt oder ein- und ausgeblendet werden.
+          </small>
+          <div className="resume-section-list">
+            {draftProfile.specialSections.map((section, index) => (
+              <article className="resume-section-card resume-special-section-card" key={section.id}>
+                <GripVertical aria-hidden="true" size={16} />
+                <input
+                  aria-label={`${section.title} Überschrift`}
+                  value={section.title}
+                  onChange={(event) =>
+                    setDraftProfile((current) => ({
+                      ...current,
+                      specialSections: current.specialSections.map((item) =>
+                        item.id === section.id
+                          ? { ...item, title: event.target.value }
+                          : item,
+                      ),
+                    }))
+                  }
+                />
+                <button
+                  aria-label={`${section.title} ${section.isVisible ? "ausblenden" : "anzeigen"}`}
+                  className="icon-button"
+                  type="button"
+                  onClick={() =>
+                    setDraftProfile((current) => ({
+                      ...current,
+                      specialSections: current.specialSections.map((item) =>
+                        item.id === section.id
+                          ? { ...item, isVisible: !item.isVisible }
+                          : item,
+                      ),
+                    }))
+                  }
+                >
+                  {section.isVisible ? <Eye size={15} /> : <EyeOff size={15} />}
+                </button>
+                <button
+                  aria-label={`${section.title} nach oben`}
+                  className="icon-button"
+                  disabled={index === 0}
+                  type="button"
+                  onClick={() =>
+                    setDraftProfile((current) => {
+                      const next = [...current.specialSections];
+                      [next[index - 1], next[index]] = [next[index], next[index - 1]];
+                      return { ...current, specialSections: next };
+                    })
+                  }
+                >
+                  <ArrowUp size={15} />
+                </button>
+                <button
+                  aria-label={`${section.title} nach unten`}
+                  className="icon-button"
+                  disabled={index === draftProfile.specialSections.length - 1}
+                  type="button"
+                  onClick={() =>
+                    setDraftProfile((current) => {
+                      const next = [...current.specialSections];
+                      [next[index], next[index + 1]] = [next[index + 1], next[index]];
+                      return { ...current, specialSections: next };
+                    })
+                  }
+                >
+                  <ArrowDown size={15} />
+                </button>
+              </article>
+            ))}
+          </div>
+        </div>
+      ) : null}
       <div className="resume-section-actions">
         <button className="button secondary" type="button" onClick={restoreDefaults}>
           <RotateCcw size={15} /> Standardreihenfolge wiederherstellen

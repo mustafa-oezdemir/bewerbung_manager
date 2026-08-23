@@ -17,6 +17,8 @@ import {
   resolveTabellarischSummary,
 } from "./tabellarisch.model";
 import type { TabellarischPageProps } from "./tabellarisch.types";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
+import { ResumeSpecialSections } from "../../ResumeSpecialSections";
 
 export function TabellarischPage({
   profile,
@@ -60,10 +62,10 @@ export function TabellarischPage({
         )}
 
         {sections.profile && !isContinuation ? (
-          <TabellarischSummary text={summary} />
+          <TabellarischSummary text={summary} profile={profile} />
         ) : null}
 
-        {sections.skills && !isContinuation ? (
+        {sections.strengths && !isContinuation ? (
           <TabellarischStrengths profile={profile} atsMode={atsMode} />
         ) : null}
 
@@ -73,7 +75,7 @@ export function TabellarischPage({
             data-element-id="tabellarisch.experience"
           >
             <h2 className="tabellarisch-section__title">
-              Berufserfahrung
+              {getResumeSectionTitle(profile, "experience")}
               {isContinuation ? <small>Fortsetzung</small> : null}
             </h2>
             <TabellarischTimeline
@@ -89,7 +91,7 @@ export function TabellarischPage({
             className="tabellarisch-section"
             data-element-id="tabellarisch.education"
           >
-            <h2 className="tabellarisch-section__title">Ausbildung</h2>
+            <h2 className="tabellarisch-section__title">{getResumeSectionTitle(profile, "education")}</h2>
             <TabellarischTimeline
               items={education}
               atsMode={atsMode}
@@ -105,6 +107,7 @@ export function TabellarischPage({
             atsMode={atsMode}
           />
         ) : null}
+        {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="tabellarisch-section" headingClassName="tabellarisch-section__title" /> : null}
       </main>
 
       <TabellarischFooter

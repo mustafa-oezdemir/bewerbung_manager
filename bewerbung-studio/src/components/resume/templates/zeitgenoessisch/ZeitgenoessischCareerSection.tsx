@@ -3,13 +3,14 @@ import type { ZeitgenoessischCareerSectionProps } from "./zeitgenoessisch.types"
 import { ZeitgenoessischSectionHeading } from "./ZeitgenoessischSectionHeading";
 
 export function ZeitgenoessischCareerSection({
+  kind,
   title,
   items,
   continuation = false,
   atsMode = false,
 }: ZeitgenoessischCareerSectionProps) {
   if (!items.length) return null;
-  const isEducation = title === "Ausbildung";
+  const isEducation = kind === "education";
 
   return (
     <section
@@ -17,7 +18,7 @@ export function ZeitgenoessischCareerSection({
       data-element-id={`zeitgenoessisch.${isEducation ? "education" : "experience"}`}
     >
       <ZeitgenoessischSectionHeading
-        title={atsMode || isEducation ? title : "Erfahrung"}
+        title={title}
         icon={isEducation ? "education" : "experience"}
         continuation={continuation}
       />

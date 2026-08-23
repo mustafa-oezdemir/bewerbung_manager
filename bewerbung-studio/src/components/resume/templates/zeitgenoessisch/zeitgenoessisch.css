@@ -421,7 +421,7 @@
 
 .zeitgenoessisch-language > div {
   display: grid;
-  grid-template-columns: minmax(13mm, auto) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 1.5mm;
   min-width: 0;

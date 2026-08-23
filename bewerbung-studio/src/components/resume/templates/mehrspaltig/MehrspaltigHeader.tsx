@@ -32,23 +32,43 @@ export function MehrspaltigHeader({
     .join(" | ");
   const contacts = [
     {
+      kind: "phone",
+      icon: "☎",
       value: profile?.phone,
       href: profile?.phone
         ? `tel:${profile.phone.replace(/[^\d+]/g, "")}`
         : "",
     },
     {
+      kind: "email",
+      icon: "@",
       value: profile?.email,
       href: profile?.email ? `mailto:${profile.email}` : "",
     },
     {
-      value: profile?.portfolio || profile?.linkedin || profile?.github,
-      href: profile?.portfolio || profile?.linkedin || profile?.github
-        ? toTemplateExternalHref(profile.portfolio || profile.linkedin || profile.github || "")
+      kind: "linkedin",
+      icon: "in",
+      value: profile?.linkedin,
+      href: profile?.linkedin
+        ? toTemplateExternalHref(profile.linkedin)
         : "",
     },
-    { value: location, href: "" },
-    { value: birth, href: "" },
+    { kind: "location", icon: "⌖", value: location, href: "" },
+    { kind: "birth", icon: "☆", value: birth, href: "" },
+    {
+      kind: "portfolio",
+      icon: "↗",
+      value: profile?.portfolio,
+      href: profile?.portfolio
+        ? toTemplateExternalHref(profile.portfolio)
+        : "",
+    },
+    {
+      kind: "github",
+      icon: "⌂",
+      value: profile?.github,
+      href: profile?.github ? toTemplateExternalHref(profile.github) : "",
+    },
   ].filter((item) => item.value?.trim());
 
   return (
@@ -63,8 +83,12 @@ export function MehrspaltigHeader({
         {!compact && !atsMode && contacts.length ? (
           <address>
             {contacts.map((contact, index) => (
-              <span className="mehrspaltig-header__contact" key={`${contact.value}-${index}`}>
-                <i aria-hidden="true">{["☎", "@", "⌂", "⌖", "☆"][index]}</i>
+              <span
+                className="mehrspaltig-header__contact"
+                data-contact-kind={contact.kind}
+                key={`${contact.value}-${index}`}
+              >
+                <i aria-hidden="true">{contact.icon}</i>
                 {contact.href ? (
                   <a href={contact.href}>{contact.value}</a>
                 ) : (
@@ -83,4 +107,3 @@ export function MehrspaltigHeader({
     </header>
   );
 }
-

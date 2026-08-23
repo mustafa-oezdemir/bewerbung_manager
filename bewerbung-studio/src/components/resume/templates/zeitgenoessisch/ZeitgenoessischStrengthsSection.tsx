@@ -1,6 +1,7 @@
 import type { ApplicantProfile } from "../../../../shared/schema";
 import { parseTemplateStrengths } from "../resume-template-data";
 import { ZeitgenoessischSectionHeading } from "./ZeitgenoessischSectionHeading";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function ZeitgenoessischStrengthsSection({
   profile,
@@ -17,7 +18,7 @@ export function ZeitgenoessischStrengthsSection({
       className={`zeitgenoessisch-section zeitgenoessisch-strengths ${atsMode ? "zeitgenoessisch-strengths--ats" : ""}`}
       data-element-id="zeitgenoessisch.strengths"
     >
-      <ZeitgenoessischSectionHeading title="Stärken" icon="strengths" />
+      <ZeitgenoessischSectionHeading title={getResumeSectionTitle(profile, "strengths")} icon="strengths" />
       <div className="zeitgenoessisch-strengths__list">
         {strengths.map((strength) => (
           <article

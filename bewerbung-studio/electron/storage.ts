@@ -43,6 +43,8 @@ import {
   getDocumentFont,
 } from "../src/shared/documentDesign";
 import { ensureKnowledgeSection } from "../src/features/knowledge/knowledge.service";
+import { getLanguageLevelScore } from "../src/features/languages/language-levels";
+import { getResumeSectionTitle } from "../src/features/resume-sections/resume-sections";
 import { formatKnowledgeSectionAsText } from "../src/features/knowledge/knowledge.utils";
 import { buildDocumentHtml } from "./documents";
 import {
@@ -66,24 +68,8 @@ const templateContactLine = (
 ) => (value?.trim() ? `${label}: ${value.trim()}` : "");
 
 const languagePoints = (level: string) => {
-  const normalized = level.toLocaleLowerCase("de-DE");
-  const score =
-    /muttersprache|c2|native/.test(normalized)
-      ? 5
-      : /c1|verhandlungssicher|versiert|fließend/.test(normalized)
-        ? 4
-        : /b2|gute kenntnisse/.test(normalized)
-          ? 4
-          : /b1|grundkenntnisse/.test(normalized)
-            ? 3
-            : /a2/.test(normalized)
-              ? 2
-              : /a1/.test(normalized)
-                ? 1
-                : level
-                  ? 3
-                  : 0;
-  return `${"●".repeat(score)}${"○".repeat(5 - score)}`;
+  const score = level ? getLanguageLevelScore(level) : 0;
+  return `${"●".repeat(score)}${"○".repeat(6 - score)}`;
 };
 
 const wordFontName = (fontId: Application["designSettings"]["fontId"]) =>
@@ -172,6 +158,48 @@ const splitLanguage = (value: string) => {
     name: name ?? "",
     level: levelParts.join(" – "),
   };
+};
+
+const formatSpecialSectionEntry = (
+  entry: ApplicantProfile["specialSections"][number]["entries"][number],
+) => {
+  const period = entry.date || joinTemplateValues([entry.from, entry.to], " – ");
+  const heading = joinTemplateValues(
+    [entry.title, entry.subtitle, entry.location],
+    " | ",
+  );
+  return [
+    joinTemplateValues([period, heading], " | "),
+    entry.description,
+    ...entry.bullets.map((item) => `• ${item}`),
+    entry.url,
+  ]
+    .filter(Boolean)
+    .join("\n");
+};
+
+const specialSectionContent = (
+  profile: ApplicantProfile | undefined,
+  kinds: ApplicantProfile["specialSections"][number]["kind"][],
+) =>
+  (profile?.specialSections ?? [])
+    .filter((section) => section.isVisible && kinds.includes(section.kind))
+    .flatMap((section) => section.entries.map(formatSpecialSectionEntry))
+    .filter(Boolean)
+    .join("\n\n");
+
+const specialSectionTitle = (
+  profile: ApplicantProfile | undefined,
+  kinds: ApplicantProfile["specialSections"][number]["kind"][],
+  fallback: string,
+) => {
+  const sections = (profile?.specialSections ?? []).filter(
+    (section) =>
+      section.isVisible &&
+      kinds.includes(section.kind) &&
+      section.entries.some((entry) => formatSpecialSectionEntry(entry)),
+  );
+  return sections[0]?.title || (sections.length ? fallback : "");
 };
 
 export class DataStore {
@@ -935,6 +963,45 @@ export class DataStore {
       knowledgeSection,
       false,
     );
+    const strengthItems = profile?.strengths.length
+      ? profile.strengths
+      : (profile?.skills ?? []).map((value) => {
+          const [title, ...description] = value.split(/\s+(?:–|—|:)\s+/);
+          return {
+            id: "",
+            title: title.trim(),
+            description: description.join(" – ").trim(),
+          };
+        });
+    const extraOnlineProfiles = (profile?.onlineProfiles ?? [])
+      .filter((entry) => entry.url)
+      .map((entry) => joinTemplateValues([entry.label, entry.url], ": "));
+    const projectsText = specialSectionContent(profile, ["projects"]);
+    const trainingsText = specialSectionContent(profile, ["trainings"]);
+    const publicationsText = specialSectionContent(profile, ["publications"]);
+    const volunteerText = specialSectionContent(profile, ["volunteer"]);
+    const drivingLicensesText = specialSectionContent(profile, [
+      "drivingLicenses",
+    ]);
+    const interestsText = specialSectionContent(profile, ["interests"]);
+    const additionalText = [
+      specialSectionContent(profile, [
+        "internships",
+        "internationalExperience",
+        "scholarships",
+        "awards",
+        "additional",
+        "references",
+        "custom",
+      ]),
+      profile?.nationality
+        ? `Staatsangehörigkeit: ${profile.nationality}`
+        : "",
+      profile?.familyStatus ? `Familienstand: ${profile.familyStatus}` : "",
+      profile?.children ? `Kinder: ${profile.children}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
     const elegantData: Record<string, string> = {
       VORNAME: profile?.firstName ?? "",
       NACHNAME: profile?.lastName ?? "",
@@ -945,7 +1012,8 @@ export class DataStore {
       FACHGEBIETE: (profile?.skills ?? []).slice(0, 3).join(" | "),
       TELEFON: profile?.phone ?? "",
       EMAIL: profile?.email ?? "",
-      WEBSITE: profile?.portfolio || profile?.github || "",
+      WEBSITE:
+        profile?.portfolio || profile?.github || extraOnlineProfiles[0] || "",
       GITHUB: profile?.github ?? "",
       LINKEDIN: profile?.linkedin ?? "",
       ORT: profile?.city ?? "",
@@ -964,6 +1032,7 @@ export class DataStore {
       KONTAKT_ZEILE_2: joinTemplateValues([
         profile?.portfolio || profile?.github,
         profile?.linkedin,
+        ...extraOnlineProfiles,
       ]),
       KONTAKT_ZEILE_3: joinTemplateValues([
         profile?.city,
@@ -976,6 +1045,7 @@ export class DataStore {
         profile?.portfolio ||
         profile?.github ||
         profile?.linkedin ||
+        extraOnlineProfiles.length ||
         profile?.city
           ? "KONTAKTE"
           : "",
@@ -985,6 +1055,7 @@ export class DataStore {
         profile?.portfolio ||
         profile?.github ||
         profile?.linkedin ||
+        extraOnlineProfiles.length ||
         profile?.city ||
         profile?.birthDate ||
         profile?.birthPlace
@@ -1014,55 +1085,91 @@ export class DataStore {
               profile?.birthDate && profile?.birthPlace ? " in " : ""
             }${profile?.birthPlace ?? ""}`
           : "",
-      HEADER_KONTAKT_6: profile?.portfolio || profile?.github || "",
+      HEADER_KONTAKT_6:
+        profile?.portfolio || profile?.github || extraOnlineProfiles[0] || "",
       PROFILFOTO: profile?.photoPath ?? "",
       ZUSAMMENFASSUNG_TITEL:
         application.documents.resumeProfile || profile?.summary
-          ? "ZUSAMMENFASSUNG"
+          ? getResumeSectionTitle(profile, "summary").toLocaleUpperCase("de-DE")
           : "",
       ZUSAMMENFASSUNG:
         application.documents.resumeProfile || profile?.summary || "",
-      STAERKEN_TITEL: profile?.skills.length ? "STÄRKEN" : "",
-      STAERKEN_ATS: (profile?.skills ?? []).slice(0, 3).join("\n"),
+      STAERKEN_TITEL:
+        profile && (profile.strengths.length || profile.skills.length)
+          ? getResumeSectionTitle(profile, "strengths").toLocaleUpperCase("de-DE")
+          : "",
+      STAERKEN_ATS: strengthItems
+        .slice(0, 3)
+        .map((strength) =>
+          joinTemplateValues([strength.title, strength.description], " – "),
+        )
+        .join("\n"),
       ERFOLGE_TITEL: "",
       ERFOLGE_ATS: "",
       ERFOLG_HIGHLIGHT_1_TITEL: "",
       ERFOLG_HIGHLIGHT_1_BESCHREIBUNG: "",
       ERFOLG_HIGHLIGHT_2_TITEL: "",
       ERFOLG_HIGHLIGHT_2_BESCHREIBUNG: "",
-      KENNTNISSE_TITEL: knowledgeText ? "FÄHIGKEITEN" : "",
+      KENNTNISSE_TITEL: knowledgeText
+        ? getResumeSectionTitle(profile, "knowledge").toLocaleUpperCase("de-DE")
+        : "",
       KENNTNISSE: knowledgeText,
-      SPRACHEN_TITEL: profile?.languages.length ? "SPRACHEN" : "",
+      SPRACHEN_TITEL: profile?.languages.length
+        ? getResumeSectionTitle(profile, "languages").toLocaleUpperCase("de-DE")
+        : "",
       SPRACHEN_ATS: (profile?.languages ?? []).join("\n"),
       BERUFSERFAHRUNG_TITEL: profile?.experiences.length
-        ? "BERUFSERFAHRUNG"
+        ? getResumeSectionTitle(profile, "experience").toLocaleUpperCase("de-DE")
         : "",
       ERFAHRUNG_TITEL: profile?.experiences.length
-        ? "ERFAHRUNG"
+        ? getResumeSectionTitle(profile, "experience").toLocaleUpperCase("de-DE")
         : "",
       AUSBILDUNG_TITEL: profile?.education.length
-        ? "AUSBILDUNG"
+        ? getResumeSectionTitle(profile, "education").toLocaleUpperCase("de-DE")
         : "",
-      PROJEKTE_TITEL: "",
-      PROJEKTE: "",
-      WEITERBILDUNGEN_TITEL: "",
-      WEITERBILDUNGEN: "",
+      PROJEKTE_TITEL: specialSectionTitle(profile, ["projects"], "PROJEKTE"),
+      PROJEKTE: projectsText,
+      WEITERBILDUNGEN_TITEL: specialSectionTitle(
+        profile,
+        ["trainings"],
+        "WEITERBILDUNGEN",
+      ),
+      WEITERBILDUNGEN: trainingsText,
       ZERTIFIKATE_TITEL: profile?.certifications.length
-        ? "ZERTIFIKATE"
+        ? getResumeSectionTitle(profile, "certifications").toLocaleUpperCase("de-DE")
         : "",
       ZERTIFIKATE: (profile?.certifications ?? []).join("\n"),
-      VEROEFFENTLICHUNGEN_TITEL: "",
-      VEROEFFENTLICHUNGEN: "",
-      EHRENAMT_TITEL: "",
-      EHRENAMT: "",
+      VEROEFFENTLICHUNGEN_TITEL: specialSectionTitle(
+        profile,
+        ["publications"],
+        "VERÖFFENTLICHUNGEN",
+      ),
+      VEROEFFENTLICHUNGEN: publicationsText,
+      EHRENAMT_TITEL: specialSectionTitle(
+        profile,
+        ["volunteer"],
+        "EHRENAMT",
+      ),
+      EHRENAMT: volunteerText,
       SOFTWARE_TITEL: "",
       SOFTWARE: "",
-      ZUSATZANGABEN_TITEL: "",
-      ZUSATZANGABEN: "",
-      FUEHRERSCHEIN_TITEL: "",
-      FUEHRERSCHEIN: "",
-      INTERESSEN_TITEL: "",
-      INTERESSEN: "",
+      ZUSATZANGABEN_TITEL: additionalText ? "ZUSATZANGABEN" : "",
+      ZUSATZANGABEN: additionalText,
+      FUEHRERSCHEIN_TITEL: specialSectionTitle(
+        profile,
+        ["drivingLicenses"],
+        "FÜHRERSCHEIN",
+      ),
+      FUEHRERSCHEIN: drivingLicensesText,
+      INTERESSEN_TITEL: specialSectionTitle(
+        profile,
+        ["interests"],
+        "INTERESSEN",
+      ),
+      INTERESSEN: interestsText,
+      LEBENSLAUF_ORT: profile?.applicationPlace || profile?.city || "",
+      LEBENSLAUF_DATUM: profile?.applicationDate ?? "",
+      LEBENSLAUF_UNTERSCHRIFT: profile?.signaturePath ?? "",
       DESIGN_PRIMARY: application.accentColor,
       DESIGN_ACCENT: application.secondaryColor,
       DESIGN_SOFT_ACCENT: blendHexColor(
@@ -1102,31 +1209,57 @@ export class DataStore {
       const number = index + 1;
       const experience = profile?.experiences[index];
       elegantData[`POSITION_${number}`] = experience?.role ?? "";
-      elegantData[`UNTERNEHMEN_${number}`] =
-        experience?.company ?? "";
+      elegantData[`UNTERNEHMEN_${number}`] = joinTemplateValues(
+        [experience?.company, experience?.legalForm],
+        " ",
+      );
       elegantData[`STARTDATUM_${number}`] = experience?.from ?? "";
       elegantData[`DATUM_TRENNER_${number}`] =
         experience?.from && experience.to ? " – " : "";
       elegantData[`ENDDATUM_${number}`] = experience?.to ?? "";
       elegantData[`ARBEITSORT_${number}`] = experience?.city ?? "";
-      elegantData[`BESCHREIBUNG_${number}`] = "";
+      elegantData[`BESCHREIBUNG_${number}`] = joinTemplateValues(
+        [
+          experience?.employmentType,
+          experience?.teamSize ? `Team/Verantwortung: ${experience.teamSize}` : "",
+          experience?.description,
+        ],
+        "\n",
+      );
       elegantData[`METADATA_TRENNER_${number}`] =
         (experience?.from || experience?.to) && experience?.city
           ? "·"
           : "";
-      elegantData[`TECHNOLOGIEN_${number}`] = "";
+      elegantData[`TECHNOLOGIEN_${number}`] =
+        experience?.technologies.join(" · ") ?? "";
       elegantData[`ERFAHRUNG_TRENNER_${number}`] =
         experience && index < lastExperienceIndex ? "\u200B" : "";
+      const experienceDetails = experience
+        ? [
+            ...experience.tasks,
+            ...experience.projects.map((item) => `Projekt: ${item}`),
+            ...experience.achievements,
+          ].filter(Boolean)
+        : [];
       for (let achievementIndex = 0; achievementIndex < 5; achievementIndex += 1) {
         elegantData[`ERFOLG_${number}_${achievementIndex + 1}`] =
-          experience?.achievements[achievementIndex] ?? "";
+          experienceDetails[achievementIndex] ?? "";
       }
     }
     for (let index = 0; index < 3; index += 1) {
       const number = index + 1;
       const education = profile?.education[index];
-      elegantData[`ABSCHLUSS_${number}`] = education?.degree ?? "";
-      elegantData[`FACHRICHTUNG_${number}`] = "";
+      elegantData[`ABSCHLUSS_${number}`] =
+        education?.degree || education?.type || "";
+      elegantData[`FACHRICHTUNG_${number}`] = joinTemplateValues(
+        [
+          education?.fieldOfStudy,
+          education?.grade,
+          education?.status,
+          education?.description,
+        ],
+        " · ",
+      );
       elegantData[`HOCHSCHULE_${number}`] =
         education?.institution ?? "";
       elegantData[`AUSBILDUNG_START_${number}`] =
@@ -1134,19 +1267,23 @@ export class DataStore {
       elegantData[`AUSBILDUNG_DATUM_TRENNER_${number}`] =
         education?.from && education.to ? " – " : "";
       elegantData[`AUSBILDUNG_ENDE_${number}`] = education?.to ?? "";
-      elegantData[`AUSBILDUNG_ORT_${number}`] = education?.city ?? "";
+      elegantData[`AUSBILDUNG_ORT_${number}`] = joinTemplateValues(
+        [education?.city, education?.country],
+        ", ",
+      );
       elegantData[`AUSBILDUNG_METADATA_TRENNER_${number}`] =
         (education?.from || education?.to) && education?.city
           ? "·"
           : "";
 
-      const strength = profile?.skills[index] ?? "";
-      elegantData[`STAERKE_${number}_TITEL`] = strength;
-      elegantData[`STAERKE_${number}_BESCHREIBUNG`] = "";
+      const strength = strengthItems[index];
+      elegantData[`STAERKE_${number}_TITEL`] = strength?.title ?? "";
+      elegantData[`STAERKE_${number}_BESCHREIBUNG`] =
+        strength?.description ?? "";
 
       const language = splitLanguage(profile?.languages[index] ?? "");
       elegantData[`SPRACHE_${number}`] = language.name;
-      elegantData[`SPRACHNIVEAU_${number}`] = language.level;
+      elegantData[`SPRACHNIVEAU_${number}`] = "";
       elegantData[`SPRACHE_${number}_PUNKTE`] = languagePoints(
         language.level,
       );

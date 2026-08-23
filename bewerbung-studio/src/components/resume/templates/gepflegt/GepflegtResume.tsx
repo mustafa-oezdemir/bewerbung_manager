@@ -1,4 +1,6 @@
 import type { CSSProperties } from "react";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
+import { ResumeSpecialSections } from "../../ResumeSpecialSections";
 import { resolveTemplateSummary } from "../resume-template-data";
 import { GepflegtFooter } from "./GepflegtFooter";
 import { GepflegtHeader } from "./GepflegtHeader";
@@ -114,7 +116,7 @@ export function GepflegtResume({
           />
           {atsMode && !isContinuation && summary ? (
             <section className="gepflegt-section gepflegt-ats-summary">
-              <h2 className="gepflegt-section__title">Zusammenfassung</h2>
+              <h2 className="gepflegt-section__title">{getResumeSectionTitle(profile, "summary")}</h2>
               <p>{summary}</p>
             </section>
           ) : null}
@@ -136,6 +138,7 @@ export function GepflegtResume({
               totalPages={totalPages}
             />
           ) : null}
+          {plan.pageNumber === totalPages ? <ResumeSpecialSections profile={profile} sectionClassName="gepflegt-section" headingClassName="gepflegt-section__title" /> : null}
           <GepflegtFooter
             profile={profile}
             pageNumber={plan.pageNumber}

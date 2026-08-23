@@ -1,5 +1,6 @@
 import type { ApplicantProfile } from "../../../../shared/schema";
 import { TabellarischKnowledge } from "./TabellarischKnowledge";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function TabellarischAdditionalSections({
   profile,
@@ -32,9 +33,7 @@ export function TabellarischAdditionalSections({
           className="tabellarisch-section tabellarisch-list-section"
           data-element-id="tabellarisch.certifications"
         >
-          <h2 className="tabellarisch-section__title">
-            Zertifikate und Weiterbildungen
-          </h2>
+          <h2 className="tabellarisch-section__title">{getResumeSectionTitle(profile, "certifications")}</h2>
           <ul>
             {certifications.map((certification) => (
               <li key={certification}>{certification}</li>
@@ -48,7 +47,7 @@ export function TabellarischAdditionalSections({
           className="tabellarisch-section tabellarisch-list-section"
           data-element-id="tabellarisch.languages"
         >
-          <h2 className="tabellarisch-section__title">Sprachen</h2>
+          <h2 className="tabellarisch-section__title">{getResumeSectionTitle(profile, "languages")}</h2>
           <ul className="tabellarisch-list-section__inline">
             {languages.map((language) => (
               <li key={language}>{language}</li>

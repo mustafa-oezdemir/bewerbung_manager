@@ -4,6 +4,7 @@ import {
   visibleKnowledgeItems,
 } from "../../../../features/knowledge/knowledge.utils";
 import type { TabellarischKnowledgeProps } from "./tabellarisch.types";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function TabellarischKnowledge({
   profile,
@@ -34,7 +35,7 @@ export function TabellarischKnowledge({
       data-element-id="tabellarisch.skills"
     >
       <h2 className="tabellarisch-section__title">
-        {atsMode ? "Kenntnisse" : knowledge.title || "Kompetenzen"}
+        {getResumeSectionTitle(profile, "knowledge")}
       </h2>
       <div className="tabellarisch-knowledge__grid">
         {categories.map((category) => {

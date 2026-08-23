@@ -6,6 +6,7 @@
 import type { ModernEducationSectionProps } from "./modern.types";
 import type { ApplicantProfile } from "../../../../shared/schema";
 import { CalendarDays, MapPin } from "lucide-react";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function ModernEducationSection({
   profile,
@@ -16,7 +17,7 @@ export function ModernEducationSection({
 
   return (
     <section className="modern-section">
-      <h2 className="modern-section__title">Ausbildung</h2>
+      <h2 className="modern-section__title">{getResumeSectionTitle(profile, "education")}</h2>
       <ul className="modern-education-list">
         {profile.education.map((edu: ApplicantProfile["education"][number]) => (
           <li key={edu.id} className="modern-education-entry">

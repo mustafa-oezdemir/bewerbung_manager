@@ -2,6 +2,7 @@ import type { ApplicantProfile } from "../../../../shared/schema";
 import { uniqueElegantValues } from "./elegant.model";
 import { ElegantKnowledge } from "./ElegantKnowledge";
 import { ElegantStrengths } from "./ElegantStrengths";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function ElegantAdditionalSections({
   profile,
@@ -24,7 +25,7 @@ export function ElegantAdditionalSections({
           className="elegant-section elegant-ats-list"
           data-element-id="elegant.languages"
         >
-          <h2 className="elegant-section__title">Sprachen</h2>
+          <h2 className="elegant-section__title">{getResumeSectionTitle(profile, "languages")}</h2>
           <ul>
             {languages.map((language) => (
               <li key={language}>{language}</li>
@@ -33,7 +34,7 @@ export function ElegantAdditionalSections({
         </section>
       ) : null}
 
-      {sections.skills ? (
+      {sections.strengths ? (
         <ElegantStrengths profile={profile} variant="ats" />
       ) : null}
 
@@ -42,9 +43,7 @@ export function ElegantAdditionalSections({
           className="elegant-section elegant-ats-list"
           data-element-id="elegant.certifications"
         >
-          <h2 className="elegant-section__title">
-            Zertifikate und Weiterbildungen
-          </h2>
+          <h2 className="elegant-section__title">{getResumeSectionTitle(profile, "certifications")}</h2>
           <ul>
             {certifications.map((certification) => (
               <li key={certification}>{certification}</li>

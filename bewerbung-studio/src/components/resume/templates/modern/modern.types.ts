@@ -37,6 +37,7 @@ export interface ModernRightColumnProps {
   profile?: ApplicantProfile;
   accentColor: string;
   atsMode: boolean;
+  showStrengths: boolean;
 }
 
 export interface ModernContactSectionProps {

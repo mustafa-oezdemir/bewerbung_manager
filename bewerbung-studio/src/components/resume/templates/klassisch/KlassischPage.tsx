@@ -5,6 +5,7 @@ import {
 } from "../resume-template-data";
 import { KlassischBackground } from "./KlassischBackground";
 import { KlassischHeader } from "./KlassischHeader";
+import { ResumeSpecialSections } from "../../ResumeSpecialSections";
 import {
   KlassischCareer,
   KlassischCertifications,
@@ -16,6 +17,7 @@ import {
 import type { KlassischResumeProps } from "./klassisch.types";
 import {
   getProfileResumeSectionLayout,
+  getResumeSectionTitle,
   hasSavedTemplateSectionLayout,
   type ResumeSectionType,
 } from "../../../../features/resume-sections/resume-sections";
@@ -46,14 +48,14 @@ export function KlassischPage({
     if (type === "summary") {
       return sections.profile && summary && !isContinuation ? (
         <section key={type} className="klassisch-section" data-element-id="klassisch.summary">
-          <KlassischHeading>Zusammenfassung</KlassischHeading>
+          <KlassischHeading>{getResumeSectionTitle(profile, "summary")}</KlassischHeading>
           <p className="klassisch-summary">{summary}</p>
         </section>
       ) : null;
     }
-    if (type === "strengths") return !isContinuation && sections.skills ? <KlassischStrengths key={type} profile={profile} atsMode={mode === "ats"} /> : null;
-    if (type === "experience") return sections.experience ? <KlassischCareer key={type} title="Erfahrung" items={experiences} continuation={isContinuation} /> : null;
-    if (type === "education") return sections.education ? <KlassischCareer key={type} title="Ausbildung" items={education} /> : null;
+    if (type === "strengths") return !isContinuation && sections.strengths ? <KlassischStrengths key={type} profile={profile} atsMode={mode === "ats"} /> : null;
+    if (type === "experience") return sections.experience ? <KlassischCareer key={type} kind="experience" title={getResumeSectionTitle(profile, "experience")} items={experiences} continuation={isContinuation} /> : null;
+    if (type === "education") return sections.education ? <KlassischCareer key={type} kind="education" title={getResumeSectionTitle(profile, "education")} items={education} /> : null;
     if (type === "knowledge") return isLastPage && sections.skills ? <KlassischKnowledge key={type} profile={profile} /> : null;
     if (type === "languages") return isLastPage && sections.languages ? <KlassischLanguages key={type} profile={profile} atsMode={mode === "ats"} /> : null;
     if (type === "certifications") return isLastPage && sections.certifications ? <KlassischCertifications key={type} profile={profile} /> : null;
@@ -92,6 +94,7 @@ export function KlassischPage({
           </section>
         ) : null}
         {atsOrder.map((type) => renderSection(type, "ats"))}
+        {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="klassisch-section" headingClassName="klassisch-section__title" /> : null}
       </main>
     );
   }
@@ -108,6 +111,7 @@ export function KlassischPage({
           compact={isContinuation}
         />
         {visualBody}
+        {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="klassisch-section" headingClassName="klassisch-section__title" /> : null}
       </div>
       <footer className="klassisch-footer" data-element-id="klassisch.footer">
         {portfolio ? (

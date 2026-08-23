@@ -10,11 +10,13 @@ import {
 } from "../resume-template-data";
 import { ModernStrengthsSection } from "./ModernStrengthsSection";
 import { ModernLanguagesSection } from "./ModernLanguagesSection";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function ModernRightColumn({
   profile,
   accentColor,
   atsMode,
+  showStrengths,
 }: ModernRightColumnProps) {
   const knowledge = getTemplateKnowledge(profile);
   const achievements = uniqueTemplateValues(profile?.certifications ?? []);
@@ -24,7 +26,7 @@ export function ModernRightColumn({
       className="modern-resume-right-column"
       data-ats-mode={atsMode}
     >
-      <ModernStrengthsSection profile={profile} />
+      {showStrengths ? <ModernStrengthsSection profile={profile} /> : null}
       <ModernLanguagesSection
         profile={profile}
         accentColor={accentColor}
@@ -32,7 +34,7 @@ export function ModernRightColumn({
       />
       {knowledge.length ? (
         <section className="modern-section modern-knowledge">
-          <h2 className="modern-section__title">Fähigkeiten</h2>
+          <h2 className="modern-section__title">{getResumeSectionTitle(profile, "knowledge")}</h2>
           <div className="modern-knowledge__list">
             {knowledge.map((item) => (
               <span className="modern-knowledge__item" key={item}>
@@ -44,7 +46,7 @@ export function ModernRightColumn({
       ) : null}
       {achievements.length ? (
         <section className="modern-section modern-achievements">
-          <h2 className="modern-section__title">Erfolge</h2>
+          <h2 className="modern-section__title">{getResumeSectionTitle(profile, "certifications")}</h2>
           <div className="modern-achievements__list">
             {achievements.map((item) => (
               <div className="modern-achievements__item" key={item}>

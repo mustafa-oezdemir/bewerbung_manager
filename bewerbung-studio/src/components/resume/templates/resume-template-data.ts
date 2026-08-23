@@ -5,6 +5,10 @@ import {
 } from "../../../features/knowledge/knowledge.utils";
 import type { ResumePagePlan } from "../../../shared/documentPagination";
 import type { ApplicantProfile } from "../../../shared/schema";
+import {
+  getLanguageLevelScore,
+  parseLanguageEntry,
+} from "../../../features/languages/language-levels";
 
 export type TemplateCareerItem = {
   id: string;
@@ -101,8 +105,16 @@ export const uniqueTemplateValues = (values: string[]) =>
 export const parseTemplateStrengths = (
   profile: ApplicantProfile | undefined,
   maximum = 4,
-): TemplateStrength[] =>
-  uniqueTemplateValues(profile?.skills ?? [])
+): TemplateStrength[] => {
+  const explicitStrengths = (profile?.strengths ?? [])
+    .map((strength) => ({
+      title: strength.title.trim(),
+      description: strength.description.trim(),
+    }))
+    .filter((strength) => strength.title);
+  if (explicitStrengths.length) return explicitStrengths.slice(0, maximum);
+
+  return uniqueTemplateValues(profile?.skills ?? [])
     .slice(0, maximum)
     .map((value) => {
       const [title, ...description] = value.split(/\s+(?:–|—|:)\s+/);
@@ -111,27 +123,15 @@ export const parseTemplateStrengths = (
         description: description.join(" – ").trim(),
       };
     });
-
-const languageScore = (level: string) => {
-  const normalized = level.toLocaleLowerCase("de-DE");
-  if (/muttersprache|native|c2/.test(normalized)) return 5;
-  if (/verhandlung|fließ|fliess|c1/.test(normalized)) return 4;
-  if (/b2|fortgeschritten|advanced|erweitert|versiert/.test(normalized))
-    return 3;
-  if (/b1|a2|grundkennt/.test(normalized)) return 2;
-  if (/a1|anfänger|anfaenger/.test(normalized)) return 1;
-  return 3;
 };
 
 export const parseTemplateLanguage = (raw: string): TemplateLanguage => {
-  const normalized = raw.trim();
-  const [name, ...levelParts] = normalized.split(/\s+[–—-]\s+/);
-  const level = levelParts.join(" – ").trim();
+  const { raw: normalized, name, level } = parseLanguageEntry(raw);
   return {
     raw: normalized,
-    name: name.trim() || normalized,
+    name,
     level,
-    score: languageScore(level),
+    score: getLanguageLevelScore(level),
   };
 };
 

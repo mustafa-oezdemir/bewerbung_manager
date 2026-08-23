@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import type { ApplicantProfile } from "../../../../shared/schema";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 import {
   formatTemplateDateRange,
   getTemplateKnowledge,
@@ -27,7 +28,7 @@ export function MehrspaltigStrengths({
       className={`mehrspaltig-section mehrspaltig-strengths ${atsMode ? "mehrspaltig-strengths--ats" : ""}`}
       data-element-id="mehrspaltig.strengths"
     >
-      <MehrspaltigHeading>Stärken</MehrspaltigHeading>
+      <MehrspaltigHeading>{getResumeSectionTitle(profile, "strengths")}</MehrspaltigHeading>
       <div>
         {strengths.map((strength, index) => (
           <article key={`${strength.title}-${strength.description}`}>
@@ -42,16 +43,18 @@ export function MehrspaltigStrengths({
 }
 
 export function MehrspaltigCareer({
+  kind,
   title,
   items,
   continuation = false,
 }: {
-  title: "Erfahrung" | "Ausbildung";
+  kind: "experience" | "education";
+  title: string;
   items: TemplateCareerItem[];
   continuation?: boolean;
 }) {
   if (!items.length) return null;
-  const isEducation = title === "Ausbildung";
+  const isEducation = kind === "education";
   return (
     <section
       className={`mehrspaltig-section mehrspaltig-career ${isEducation ? "mehrspaltig-career--education" : ""}`}
@@ -91,7 +94,9 @@ export function MehrspaltigKnowledge({
   profile: ApplicantProfile | undefined;
 }) {
   const promotedStrengths = new Set(
-    uniqueTemplateValues(profile?.skills ?? []).slice(0, 3),
+    profile?.strengths.length
+      ? []
+      : uniqueTemplateValues(profile?.skills ?? []).slice(0, 3),
   );
   const knowledge = getTemplateKnowledge(profile).filter(
     (item) => !promotedStrengths.has(item),
@@ -99,7 +104,7 @@ export function MehrspaltigKnowledge({
   if (!knowledge.length) return null;
   return (
     <section className="mehrspaltig-section" data-element-id="mehrspaltig.skills">
-      <MehrspaltigHeading>Fähigkeiten</MehrspaltigHeading>
+      <MehrspaltigHeading>{getResumeSectionTitle(profile, "knowledge")}</MehrspaltigHeading>
       <div className="mehrspaltig-knowledge">{knowledge.map((item) => <strong key={item}>{item}</strong>)}</div>
     </section>
   );
@@ -121,13 +126,13 @@ export function MehrspaltigLanguages({
       className={`mehrspaltig-section mehrspaltig-languages ${atsMode ? "mehrspaltig-languages--ats" : ""}`}
       data-element-id="mehrspaltig.languages"
     >
-      <MehrspaltigHeading>Sprachen</MehrspaltigHeading>
+      <MehrspaltigHeading>{getResumeSectionTitle(profile, "languages")}</MehrspaltigHeading>
       <div>
         {languages.map((language) => (
           <p key={language.raw}>
             <strong>{language.name}</strong>
-            {language.level ? <span>{language.level}</span> : null}
-            {!atsMode ? <em aria-label={`${language.score} von 5`}><i style={{ "--score": language.score } as CSSProperties} /></em> : null}
+            {atsMode && language.level ? <span>{language.level}</span> : null}
+            {!atsMode ? <em aria-label={`${language.name}: ${language.level}`} role="img"><i style={{ "--score": language.score } as CSSProperties} /></em> : null}
           </p>
         ))}
       </div>
@@ -144,7 +149,7 @@ export function MehrspaltigCertifications({
   if (!certifications.length) return null;
   return (
     <section className="mehrspaltig-section" data-element-id="mehrspaltig.certifications">
-      <MehrspaltigHeading>Zertifikate</MehrspaltigHeading>
+      <MehrspaltigHeading>{getResumeSectionTitle(profile, "certifications")}</MehrspaltigHeading>
       <ul>
         {certifications.map((certification) => (
           <li key={certification}>{certification}</li>
@@ -153,4 +158,3 @@ export function MehrspaltigCertifications({
     </section>
   );
 }
-

@@ -1,6 +1,7 @@
 import { CheckCircle2, Lightbulb, Sparkles } from "lucide-react";
 import type { ApplicantProfile } from "../../../../shared/schema";
 import { parseTemplateStrengths } from "../resume-template-data";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export interface GepflegtStrengthsSectionProps {
   profile: ApplicantProfile | undefined;
@@ -18,7 +19,7 @@ export function GepflegtStrengthsSection({
 
   return (
     <section className="gepflegt-sidebar__section">
-      <h2 className="gepflegt-sidebar__title">Stärken</h2>
+      <h2 className="gepflegt-sidebar__title">{getResumeSectionTitle(profile, "strengths")}</h2>
       <div className="gepflegt-strengths">
         {strengths.map((strength, index) => {
           const Icon = icons[index % icons.length];

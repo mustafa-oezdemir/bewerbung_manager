@@ -372,7 +372,7 @@
 
 .ivy-league-language {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 2mm;
   align-items: center;
   min-width: 0;

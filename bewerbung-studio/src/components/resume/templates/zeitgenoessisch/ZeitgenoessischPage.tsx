@@ -9,6 +9,8 @@ import { ZeitgenoessischFooter } from "./ZeitgenoessischFooter";
 import { ZeitgenoessischHeader } from "./ZeitgenoessischHeader";
 import { ZeitgenoessischLeftColumn } from "./ZeitgenoessischLeftColumn";
 import { ZeitgenoessischSectionHeading } from "./ZeitgenoessischSectionHeading";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
+import { ResumeSpecialSections } from "../../ResumeSpecialSections";
 
 export function ZeitgenoessischPage({
   profile,
@@ -41,7 +43,7 @@ export function ZeitgenoessischPage({
             data-element-id="zeitgenoessisch.summary"
           >
             <ZeitgenoessischSectionHeading
-              title="Zusammenfassung"
+              title={getResumeSectionTitle(profile, "summary")}
               icon="summary"
             />
             <p className="zeitgenoessisch-summary">{summary}</p>
@@ -49,7 +51,8 @@ export function ZeitgenoessischPage({
         ) : null}
         {sections.experience ? (
           <ZeitgenoessischCareerSection
-            title="Berufserfahrung"
+            kind="experience"
+            title={getResumeSectionTitle(profile, "experience")}
             items={experiences}
             continuation={isContinuation}
             atsMode
@@ -57,7 +60,8 @@ export function ZeitgenoessischPage({
         ) : null}
         {sections.education ? (
           <ZeitgenoessischCareerSection
-            title="Ausbildung"
+            kind="education"
+            title={getResumeSectionTitle(profile, "education")}
             items={education}
             atsMode
           />
@@ -68,6 +72,7 @@ export function ZeitgenoessischPage({
             sections={sections}
           />
         ) : null}
+        {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="zeitgenoessisch-section" headingClassName="zeitgenoessisch-section__title" /> : null}
       </main>
     );
   }
@@ -96,7 +101,7 @@ export function ZeitgenoessischPage({
               data-element-id="zeitgenoessisch.summary"
             >
               <ZeitgenoessischSectionHeading
-                title="Zusammenfassung"
+                title={getResumeSectionTitle(profile, "summary")}
                 icon="summary"
               />
               <p className="zeitgenoessisch-summary">{summary}</p>
@@ -104,14 +109,16 @@ export function ZeitgenoessischPage({
           ) : null}
           {sections.experience ? (
             <ZeitgenoessischCareerSection
-              title="Berufserfahrung"
+              kind="experience"
+              title={getResumeSectionTitle(profile, "experience")}
               items={experiences}
               continuation={isContinuation}
             />
           ) : null}
           {sections.education ? (
             <ZeitgenoessischCareerSection
-              title="Ausbildung"
+              kind="education"
+              title={getResumeSectionTitle(profile, "education")}
               items={education}
             />
           ) : null}
@@ -122,6 +129,7 @@ export function ZeitgenoessischPage({
               Berufserfahrung und Ausbildung im Profil ergänzen.
             </p>
           ) : null}
+          {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="zeitgenoessisch-section" headingClassName="zeitgenoessisch-section__title" /> : null}
         </main>
       </div>
       <ZeitgenoessischFooter

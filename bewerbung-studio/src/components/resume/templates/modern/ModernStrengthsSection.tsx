@@ -5,6 +5,7 @@
 
 import type { ModernStrengthsSectionProps } from "./modern.types";
 import { parseTemplateStrengths } from "../resume-template-data";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function ModernStrengthsSection({
   profile,
@@ -19,7 +20,7 @@ export function ModernStrengthsSection({
 
   return (
     <section className="modern-section">
-      <h2 className="modern-section__title">Stärken</h2>
+      <h2 className="modern-section__title">{getResumeSectionTitle(profile, "strengths")}</h2>
       <div className="modern-strengths-list">
         {strengthItems.map(
           (item, idx: number) => (

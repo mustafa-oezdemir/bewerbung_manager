@@ -1,6 +1,7 @@
 import { Fragment, type CSSProperties } from "react";
 import {
   getProfileResumeSectionLayout,
+  getResumeSectionTitle,
   hasSavedTemplateSectionLayout,
   type ResumeSectionType,
 } from "../../../../features/resume-sections/resume-sections";
@@ -21,6 +22,7 @@ import { ModernLeftColumn } from "./ModernLeftColumn";
 import { ModernRightColumn } from "./ModernRightColumn";
 import { ModernStrengthsSection } from "./ModernStrengthsSection";
 import { ModernSummarySection } from "./ModernSummarySection";
+import { ResumeSpecialSections } from "../../ResumeSpecialSections";
 import "./modern.css";
 
 export function ModernResume({
@@ -60,6 +62,7 @@ export function ModernResume({
           ? profile.education.filter((item) => educationIds.has(item.id))
           : [],
         skills: sections.skills ? profile.skills : [],
+        strengths: sections.strengths ? profile.strengths : [],
         languages: sections.languages ? profile.languages : [],
         certifications: sections.certifications
           ? profile.certifications
@@ -107,7 +110,7 @@ export function ModernResume({
       return sections.skills && knowledge.length ? (
         <section className={`modern-section ${variant === "visual" ? "modern-knowledge" : ""}`}>
           <h2 className="modern-section__title">
-            {variant === "ats" ? "Kenntnisse" : "Fähigkeiten"}
+            {getResumeSectionTitle(profile, "knowledge")}
           </h2>
           {variant === "ats" ? (
             <p className="modern-summary-text">{knowledge.join(" · ")}</p>
@@ -125,18 +128,18 @@ export function ModernResume({
       ) : null;
     }
     if (type === "strengths") {
-      return sections.skills && strengths.length ? <ModernStrengthsSection profile={pageProfile} /> : null;
+      return sections.strengths && strengths.length ? <ModernStrengthsSection profile={pageProfile} /> : null;
     }
     if (type === "certifications") {
       if (!sections.certifications || !certifications.length) return null;
       return variant === "ats" ? (
         <section className="modern-section">
-          <h2 className="modern-section__title">Zertifikate</h2>
+          <h2 className="modern-section__title">{getResumeSectionTitle(profile, "certifications")}</h2>
           <ul className="modern-ats-list">{certifications.map((item) => <li key={item}>{item}</li>)}</ul>
         </section>
       ) : (
         <section className="modern-section modern-achievements">
-          <h2 className="modern-section__title">Erfolge</h2>
+          <h2 className="modern-section__title">{getResumeSectionTitle(profile, "certifications")}</h2>
           <div className="modern-achievements__list">
             {certifications.map((item) => <div className="modern-achievements__item" key={item}><span aria-hidden="true">★</span><p>{item}</p></div>)}
           </div>
@@ -189,7 +192,7 @@ export function ModernResume({
             ) : null}
             {!hasCustomLayout && isLastPage && sections.skills && knowledge.length ? (
               <section className="modern-section">
-                <h2 className="modern-section__title">Kenntnisse</h2>
+                <h2 className="modern-section__title">{getResumeSectionTitle(profile, "knowledge")}</h2>
                 <p className="modern-summary-text">{knowledge.join(" · ")}</p>
               </section>
             ) : null}
@@ -200,12 +203,12 @@ export function ModernResume({
                 atsMode
               />
             ) : null}
-            {!hasCustomLayout && isLastPage && sections.skills && strengths.length ? (
+            {!hasCustomLayout && isLastPage && sections.strengths && strengths.length ? (
               <ModernStrengthsSection profile={pageProfile} />
             ) : null}
             {!hasCustomLayout && isLastPage && sections.certifications && certifications.length ? (
               <section className="modern-section">
-                <h2 className="modern-section__title">Zertifikate</h2>
+                <h2 className="modern-section__title">{getResumeSectionTitle(profile, "certifications")}</h2>
                 <ul className="modern-ats-list">
                   {certifications.map((item) => (
                     <li key={item}>{item}</li>
@@ -213,6 +216,7 @@ export function ModernResume({
                 </ul>
               </section>
             ) : null}
+            {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="modern-section" headingClassName="modern-section__title" /> : null}
           </main>
           <ModernFooter
             pageNumber={plan.pageNumber}
@@ -276,10 +280,12 @@ export function ModernResume({
                   profile={pageProfile}
                   accentColor={accentColor}
                   atsMode={false}
+                  showStrengths={sections.strengths}
                 />
               )
             ) : null}
           </div>
+          {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="modern-section" headingClassName="modern-section__title" /> : null}
         </div>
         <ModernFooter
           pageNumber={plan.pageNumber}

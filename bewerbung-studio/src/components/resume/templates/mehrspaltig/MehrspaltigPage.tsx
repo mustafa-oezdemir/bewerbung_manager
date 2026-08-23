@@ -5,6 +5,7 @@ import {
 } from "../resume-template-data";
 import { MehrspaltigBackground } from "./MehrspaltigBackground";
 import { MehrspaltigHeader } from "./MehrspaltigHeader";
+import { ResumeSpecialSections } from "../../ResumeSpecialSections";
 import {
   MehrspaltigCareer,
   MehrspaltigCertifications,
@@ -16,6 +17,7 @@ import {
 import type { MehrspaltigResumeProps } from "./mehrspaltig.types";
 import {
   getProfileResumeSectionLayout,
+  getResumeSectionTitle,
   hasSavedTemplateSectionLayout,
   type ResumeSectionType,
   type SectionZone,
@@ -53,10 +55,10 @@ export function MehrspaltigPage({
         { type: "strengths", zone: "right-sidebar" },
       ] as const;
   const renderSection = (type: ResumeSectionType, mode: "visual" | "ats") => {
-    if (type === "summary") return sections.profile && summary && !isContinuation ? <section key={type} className="mehrspaltig-section" data-element-id="mehrspaltig.summary"><MehrspaltigHeading>Zusammenfassung</MehrspaltigHeading><p className="mehrspaltig-summary">{summary}</p></section> : null;
-    if (type === "strengths") return sections.skills && !isContinuation ? <MehrspaltigStrengths key={type} profile={profile} atsMode={mode === "ats"} /> : null;
-    if (type === "experience") return sections.experience ? <MehrspaltigCareer key={type} title="Erfahrung" items={experiences} continuation={isContinuation} /> : null;
-    if (type === "education") return sections.education ? <MehrspaltigCareer key={type} title="Ausbildung" items={education} /> : null;
+    if (type === "summary") return sections.profile && summary && !isContinuation ? <section key={type} className="mehrspaltig-section" data-element-id="mehrspaltig.summary"><MehrspaltigHeading>{getResumeSectionTitle(profile, "summary")}</MehrspaltigHeading><p className="mehrspaltig-summary">{summary}</p></section> : null;
+    if (type === "strengths") return sections.strengths && !isContinuation ? <MehrspaltigStrengths key={type} profile={profile} atsMode={mode === "ats"} /> : null;
+    if (type === "experience") return sections.experience ? <MehrspaltigCareer key={type} kind="experience" title={getResumeSectionTitle(profile, "experience")} items={experiences} continuation={isContinuation} /> : null;
+    if (type === "education") return sections.education ? <MehrspaltigCareer key={type} kind="education" title={getResumeSectionTitle(profile, "education")} items={education} /> : null;
     if (type === "knowledge") return isLastPage && sections.skills ? <MehrspaltigKnowledge key={type} profile={profile} /> : null;
     if (type === "languages") return isLastPage && sections.languages ? <MehrspaltigLanguages key={type} profile={profile} atsMode={mode === "ats"} /> : null;
     if (type === "certifications") return isLastPage && sections.certifications ? <MehrspaltigCertifications key={type} profile={profile} /> : null;
@@ -102,6 +104,7 @@ export function MehrspaltigPage({
           </section>
         ) : null}
         {(hasCustomLayout ? savedLayout.map(({ type }) => type) : ["summary", "experience", "education", "knowledge", "languages", "strengths", "certifications"]).map((type) => renderSection(type as ResumeSectionType, "ats"))}
+        {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="mehrspaltig-section" headingClassName="mehrspaltig-section__title" /> : null}
       </main>
     );
   }
@@ -118,6 +121,7 @@ export function MehrspaltigPage({
           compact={isContinuation}
         />
         {visualBody}
+        {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="mehrspaltig-section" headingClassName="mehrspaltig-section__title" /> : null}
       </div>
       <footer className="mehrspaltig-footer" data-element-id="mehrspaltig.footer">
         {portfolio ? (

@@ -106,9 +106,10 @@
 
 .einfach-header address {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
   gap: 1mm 8mm;
-  max-width: 118mm;
+  width: 100%;
+  max-width: 132mm;
   margin: 0;
   color: var(--einfach-text);
   font-size: 8.2pt;
@@ -136,6 +137,15 @@
   font-weight: 600;
   text-decoration: none;
   overflow-wrap: anywhere;
+}
+
+.einfach-header address
+  [data-contact-kind="linkedin"]
+  > a {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow-wrap: normal;
 }
 
 .einfach-header figure {
@@ -330,7 +340,7 @@
 
 .einfach-languages article {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 3mm;
   align-items: center;
 }

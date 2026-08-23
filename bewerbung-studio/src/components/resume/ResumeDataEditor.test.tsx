@@ -58,7 +58,58 @@ describe("ResumeDataEditor", () => {
     expect(markup).toContain("Ausbildung hinzufügen");
     expect(markup).toContain("Berufserfahrung löschen");
     expect(markup).toContain("Profildaten speichern");
+    expect(markup).toContain("Abschnitt aktualisieren");
+    expect(markup).toContain("Gemeinsamer Europäischer Referenzrahmen");
+    expect(markup).toContain('type="range"');
+    expect(markup).toContain('aria-valuetext="C1"');
+    expect(markup).toContain("C2 – Annähernd muttersprachlich");
     expect(markup).toContain('value="Mina"');
+    expect(markup.match(/<details[^>]*open=""/g)?.length).toBeGreaterThanOrEqual(7);
+  });
+
+  it("shows strengths and every profile-defined resume section independently", () => {
+    const extended = profileSchema.parse({
+      ...profile,
+      strengths: [
+        {
+          id: "60000000-0000-4000-8000-000000000001",
+          title: "Analytisches Denken",
+          description: "Komplexe Aufgaben strukturieren",
+        },
+      ],
+      resumeSectionTitles: {
+        ...profile.resumeSectionTitles,
+        strengths: "Kernkompetenzen",
+      },
+      specialSections: [
+        {
+          id: "70000000-0000-4000-8000-000000000001",
+          kind: "additional",
+          title: "Zusatzangaben",
+          entries: [
+            {
+              id: "80000000-0000-4000-8000-000000000001",
+              title: "Reisebereitschaft",
+            },
+          ],
+        },
+        {
+          id: "70000000-0000-4000-8000-000000000002",
+          kind: "projects",
+          title: "Eigene Projekte",
+          entries: [],
+        },
+      ],
+    });
+    const markup = renderToStaticMarkup(
+      <ResumeDataEditor profile={extended} onPreview={vi.fn()} onSave={vi.fn()} />,
+    );
+
+    expect(markup).toContain("Kernkompetenzen");
+    expect(markup).toContain("Analytisches Denken");
+    expect(markup).toContain("Zusatzangaben");
+    expect(markup).toContain("Eigene Projekte");
+    expect(markup).toContain("Reisebereitschaft");
   });
 
   it("normalizes lists and profile links before persisting", () => {

@@ -259,7 +259,7 @@
 
 .stilvoll-languages article {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) 11mm;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 2mm;
   align-items: center;
   margin-bottom: 3mm;

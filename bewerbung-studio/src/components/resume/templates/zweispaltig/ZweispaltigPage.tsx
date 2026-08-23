@@ -7,12 +7,14 @@ import { ZweispaltigAdditionalSections } from "./ZweispaltigAdditionalSections";
 import { ZweispaltigCareerSection } from "./ZweispaltigCareerSection";
 import { ZweispaltigFooter } from "./ZweispaltigFooter";
 import { ZweispaltigHeader } from "./ZweispaltigHeader";
+import { ResumeSpecialSections } from "../../ResumeSpecialSections";
 import {
   ZweispaltigSidebar,
   ZweispaltigSupplementalSections,
 } from "./ZweispaltigSidebar";
 import {
   getProfileResumeSectionLayout,
+  getResumeSectionTitle,
   hasSavedTemplateSectionLayout,
   type ResumeSectionType,
 } from "../../../../features/resume-sections/resume-sections";
@@ -47,13 +49,13 @@ export function ZweispaltigPage({
     if (type === "summary") {
       return sections.profile && summary && !isContinuation ? (
         <section className="zweispaltig-section" data-element-id="zweispaltig.summary">
-          <h2 className="zweispaltig-section__title">{variant === "ats" ? "Berufliches Profil" : "Zusammenfassung"}</h2>
+          <h2 className="zweispaltig-section__title">{getResumeSectionTitle(profile, "summary")}</h2>
           <p className="zweispaltig-summary">{summary}</p>
         </section>
       ) : null;
     }
-    if (type === "experience") return sections.experience ? <ZweispaltigCareerSection title="Berufserfahrung" items={experiences} continuation={isContinuation} /> : null;
-    if (type === "education") return sections.education ? <ZweispaltigCareerSection title="Ausbildung" items={education} /> : null;
+    if (type === "experience") return sections.experience ? <ZweispaltigCareerSection kind="experience" title={getResumeSectionTitle(profile, "experience")} items={experiences} continuation={isContinuation} /> : null;
+    if (type === "education") return sections.education ? <ZweispaltigCareerSection kind="education" title={getResumeSectionTitle(profile, "education")} items={education} /> : null;
     if (!isLastPage) return null;
     return (
       <ZweispaltigSupplementalSections
@@ -78,16 +80,17 @@ export function ZweispaltigPage({
         />
         {hasCustomLayout ? atsOrder.map((type) => <div className="zweispaltig-ordered-section" key={type}>{renderOrderedSection(type, "ats")}</div>) : null}
         {!hasCustomLayout && sections.profile && summary && !isContinuation ? (
-          <section className="zweispaltig-section" data-element-id="zweispaltig.summary"><h2 className="zweispaltig-section__title">Berufliches Profil</h2><p>{summary}</p></section>
+          <section className="zweispaltig-section" data-element-id="zweispaltig.summary"><h2 className="zweispaltig-section__title">{getResumeSectionTitle(profile, "summary")}</h2><p>{summary}</p></section>
         ) : null}
-        {!hasCustomLayout && sections.experience ? <ZweispaltigCareerSection title="Berufserfahrung" items={experiences} continuation={isContinuation} /> : null}
-        {!hasCustomLayout && sections.education ? <ZweispaltigCareerSection title="Ausbildung" items={education} /> : null}
+        {!hasCustomLayout && sections.experience ? <ZweispaltigCareerSection kind="experience" title={getResumeSectionTitle(profile, "experience")} items={experiences} continuation={isContinuation} /> : null}
+        {!hasCustomLayout && sections.education ? <ZweispaltigCareerSection kind="education" title={getResumeSectionTitle(profile, "education")} items={education} /> : null}
         {!hasCustomLayout && isLastPage ? (
           <ZweispaltigAdditionalSections
             profile={profile}
             sections={sections}
           />
         ) : null}
+        {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="zweispaltig-section" headingClassName="zweispaltig-section__title" /> : null}
       </main>
     );
   }
@@ -112,6 +115,7 @@ export function ZweispaltigPage({
               Berufserfahrung und Ausbildung im Profil ergänzen.
             </p>
           ) : null}
+          {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="zweispaltig-section" headingClassName="zweispaltig-section__title" /> : null}
         </main>
         {!isContinuation ? (
           <ZweispaltigSidebar profile={profile} sections={sections} order={sidebarOrder} summary={summary} />

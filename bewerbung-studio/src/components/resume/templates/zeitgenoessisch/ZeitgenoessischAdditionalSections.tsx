@@ -4,6 +4,7 @@ import { ZeitgenoessischKnowledge } from "./ZeitgenoessischKnowledge";
 import { ZeitgenoessischLanguagesSection } from "./ZeitgenoessischLanguagesSection";
 import { ZeitgenoessischSectionHeading } from "./ZeitgenoessischSectionHeading";
 import { ZeitgenoessischStrengthsSection } from "./ZeitgenoessischStrengthsSection";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function ZeitgenoessischAdditionalSections({
   profile,
@@ -24,7 +25,7 @@ export function ZeitgenoessischAdditionalSections({
       {sections.languages ? (
         <ZeitgenoessischLanguagesSection profile={profile} atsMode />
       ) : null}
-      {sections.skills ? (
+      {sections.strengths ? (
         <ZeitgenoessischStrengthsSection profile={profile} atsMode />
       ) : null}
       {sections.certifications && certifications.length ? (
@@ -33,7 +34,7 @@ export function ZeitgenoessischAdditionalSections({
           data-element-id="zeitgenoessisch.certifications"
         >
           <ZeitgenoessischSectionHeading
-            title="Zertifikate"
+            title={getResumeSectionTitle(profile, "certifications")}
             icon="certifications"
           />
           <ul>

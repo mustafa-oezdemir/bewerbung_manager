@@ -2,6 +2,7 @@ import { formatElegantDateRange } from "./elegant.model";
 import type { ElegantCareerSectionProps } from "./elegant.types";
 
 export function ElegantCareerSection({
+  kind,
   title,
   items,
   continuation = false,
@@ -11,7 +12,7 @@ export function ElegantCareerSection({
   return (
     <section
       className="elegant-section elegant-career"
-      data-element-id={`elegant.${title === "Ausbildung" ? "education" : "experience"}`}
+      data-element-id={`elegant.${kind}`}
     >
       <h2 className="elegant-section__title">
         {title}

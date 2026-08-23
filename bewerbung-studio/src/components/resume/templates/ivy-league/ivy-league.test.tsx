@@ -160,7 +160,7 @@ describe("Ivy League page model", () => {
     expect(parseIvyLeagueLanguage("Englisch – B2")).toMatchObject({
       name: "Englisch",
       level: "B2",
-      score: 3,
+      score: 4,
     });
   });
 });

@@ -4,8 +4,10 @@ import {
 import type { ZeitgenoessischColumnsProps } from "./zeitgenoessisch.types";
 import { ZeitgenoessischContactSection } from "./ZeitgenoessischContactSection";
 import { ZeitgenoessischLanguagesSection } from "./ZeitgenoessischLanguagesSection";
+import { ZeitgenoessischKnowledge } from "./ZeitgenoessischKnowledge";
 import { ZeitgenoessischSectionHeading } from "./ZeitgenoessischSectionHeading";
 import { ZeitgenoessischStrengthsSection } from "./ZeitgenoessischStrengthsSection";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function ZeitgenoessischLeftColumn({
   profile,
@@ -18,19 +20,20 @@ export function ZeitgenoessischLeftColumn({
   return (
     <aside className="zeitgenoessisch-left-column">
       <ZeitgenoessischContactSection profile={profile} />
-      {sections.skills ? (
+      {sections.strengths ? (
         <ZeitgenoessischStrengthsSection profile={profile} />
       ) : null}
       {sections.languages ? (
         <ZeitgenoessischLanguagesSection profile={profile} />
       ) : null}
+      {sections.skills ? <ZeitgenoessischKnowledge profile={profile} /> : null}
       {sections.certifications && certifications.length ? (
         <section
           className="zeitgenoessisch-section zeitgenoessisch-certifications"
           data-element-id="zeitgenoessisch.certifications"
         >
           <ZeitgenoessischSectionHeading
-            title="Zertifikate"
+            title={getResumeSectionTitle(profile, "certifications")}
             icon="certifications"
           />
           <ul>

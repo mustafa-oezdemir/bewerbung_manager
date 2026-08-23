@@ -4,6 +4,7 @@ import {
   uniqueZeitgenoessischValues,
 } from "./zeitgenoessisch.model";
 import { ZeitgenoessischSectionHeading } from "./ZeitgenoessischSectionHeading";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function ZeitgenoessischLanguagesSection({
   profile,
@@ -22,7 +23,7 @@ export function ZeitgenoessischLanguagesSection({
       className={`zeitgenoessisch-section zeitgenoessisch-languages ${atsMode ? "zeitgenoessisch-languages--ats" : ""}`}
       data-element-id="zeitgenoessisch.languages"
     >
-      <ZeitgenoessischSectionHeading title="Sprachen" icon="languages" />
+      <ZeitgenoessischSectionHeading title={getResumeSectionTitle(profile, "languages")} icon="languages" />
       <div className="zeitgenoessisch-languages__list">
         {languages.map((language) => (
           <article
@@ -34,12 +35,12 @@ export function ZeitgenoessischLanguagesSection({
             ) : (
               <div>
                 <h3>{language.name}</h3>
-                <span>{language.level}</span>
                 <span
                   className="zeitgenoessisch-language__dots"
-                  aria-hidden="true"
+                  aria-label={`${language.name}: ${language.level}`}
+                  role="img"
                 >
-                  {Array.from({ length: 5 }, (_, index) => (
+                  {Array.from({ length: 6 }, (_, index) => (
                     <i
                       className={
                         index < language.score ? "is-filled" : ""

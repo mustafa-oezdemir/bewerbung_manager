@@ -55,6 +55,79 @@ const profile = profileSchema.parse({
 });
 
 describe("Lebenslauf-Dokumente", () => {
+  it("exports long LinkedIn contacts in two columns for every requested template", () => {
+    const linkedin =
+      "https://www.linkedin.com/in/mustafa-oezdemir/";
+    const github = "https://github.com/mustafa-oezdemir";
+    const contactProfile = profileSchema.parse({
+      ...profile,
+      linkedin,
+      github,
+      email: "mustafa.ozdemir1408@gmail.com",
+      phone: "+49 176 93153406",
+      postalCode: "35039",
+      city: "Marburg",
+      country: "Deutschland",
+    });
+    const templateIds = [
+      "kreativ",
+      "zweispaltig",
+      "einspaltig",
+      "klassisch",
+      "mehrspaltig",
+      "modern",
+      "tabellarisch",
+    ] as const;
+
+    for (const templateId of templateIds) {
+      const contactApplication = applicationSchema.parse({
+        ...application,
+        templateId,
+        designSettings: {
+          ...application.designSettings,
+          resumeOutputMode: "visual",
+        },
+      });
+      const html = buildDocumentHtml(
+        contactApplication,
+        contactProfile,
+        "lebenslauf",
+      );
+      const body = html.slice(html.indexOf("<body>"));
+
+      expect(body).toContain('data-contact-kind="linkedin"');
+      expect(body).toContain(linkedin);
+      if (templateId === "zweispaltig") {
+        expect(body).toContain('data-contact-kind="github"');
+        expect(body).toContain(github);
+      }
+    }
+
+    const cssHtml = buildDocumentHtml(
+      applicationSchema.parse({ ...application, templateId: "kreativ" }),
+      contactProfile,
+      "lebenslauf",
+    );
+    expect(cssHtml).toContain(
+      "grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr)",
+    );
+    expect(cssHtml).toContain(
+      '[data-contact-kind="linkedin"] i{overflow:hidden;text-overflow:ellipsis;white-space:nowrap',
+    );
+
+    const zweispaltigCssHtml = buildDocumentHtml(
+      applicationSchema.parse({ ...application, templateId: "zweispaltig" }),
+      contactProfile,
+      "lebenslauf",
+    );
+    expect(zweispaltigCssHtml).toContain(
+      ".zweispaltig-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1mm 8mm;width:100%;max-width:none",
+    );
+    expect(zweispaltigCssHtml).toContain(
+      '[data-contact-kind="github"] i{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}',
+    );
+  });
+
   it("uses the selected composition and both custom colors in exported HTML", () => {
     const html = buildDocumentHtml(application, profile, "lebenslauf");
 
@@ -160,7 +233,7 @@ describe("Lebenslauf-Dokumente", () => {
     const html = buildDocumentHtml(application, profile, "anschreiben");
 
     expect(html).toContain(
-      ".letter-body{text-align:justify;text-justify:inter-word;hyphens:auto}",
+      ".letter-body{text-align:justify;text-justify:inter-word;hyphens:auto;overflow-wrap:break-word}",
     );
     expect(html.match(/<p class="letter-body">/g)).toHaveLength(5);
     expect(html).toContain("<p>Sehr geehrte Damen und Herren,</p>");
@@ -171,10 +244,13 @@ describe("Lebenslauf-Dokumente", () => {
 
     expect(html).toContain('<span class="sender-name">Mina Kaya</span>');
     expect(html).toContain(
+      '<span class="sender-title">Softwareentwicklerin</span>',
+    );
+    expect(html).toContain(
       '<span class="sender-contact">Berlin · mina@example.com</span>',
     );
     expect(html).toContain(
-      ".sender-name{color:var(--ink);font-size:14pt;font-weight:400;line-height:1.2}",
+      ".sender-name{color:var(--ink);font-size:20pt;font-weight:700;line-height:1.2}",
     );
     expect(html).toContain(
       ".sender-contact{margin-top:.8mm;font-size:11pt;line-height:1.25}",
@@ -187,6 +263,37 @@ describe("Lebenslauf-Dokumente", () => {
     );
     expect(html.indexOf('<div class="rule"></div>')).toBeLessThan(
       html.indexOf('<div class="recipient">'),
+    );
+  });
+
+  it("uses the resume template style and consistent letter typography in the PDF", () => {
+    const html = buildDocumentHtml(application, profile, "anschreiben");
+    const splitCleanHtml = buildDocumentHtml(
+      applicationSchema.parse({ ...application, templateId: "zweispaltig" }),
+      profile,
+      "anschreiben",
+    );
+
+    expect(html).toContain(
+      'class="page letter-page letter-standard layout-sidebar-right',
+    );
+    expect(html).toContain('data-resume-template="modern-sidebar"');
+    expect(html).toContain(".subject{color:var(--accent)");
+    expect(html).toContain(
+      ".letter-content>p:not(.subject){font-size:11pt;line-height:1.42}",
+    );
+    expect(html).toContain(
+      ".letter-compact .letter-content>p:not(.subject){font-size:11pt;line-height:1.38}",
+    );
+    expect(html).toContain(
+      ".letter-dense .letter-content>p:not(.subject){font-size:11pt;line-height:1.32}",
+    );
+    expect(html).toContain(
+      ".letter-page.layout-sidebar-right .letter-content{padding-right:calc(var(--doc-margin) + 7mm);border-right:5mm solid var(--secondary)}",
+    );
+    expect(splitCleanHtml).toContain("layout-split-clean");
+    expect(splitCleanHtml).not.toContain(
+      ".letter-page.layout-split-clean .sender{text-align:left}",
     );
   });
 
@@ -269,6 +376,8 @@ describe("Lebenslauf-Dokumente", () => {
     expect(html).toContain("programming-languages-layer");
     expect(html).toContain(">TypeScript<");
     expect(html).toContain(">Electron<");
+    expect(html).toContain(">GO<");
+    expect(html).toContain(">php<");
     expect(html).toContain("print-background");
   });
 
@@ -453,6 +562,50 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).toContain("Stärken");
     expect(body).not.toContain('<img class="zweispaltig-pdf-photo"');
     expect(body).not.toContain("monogram");
+  });
+
+  it("keeps a sidebar summary in the right Zweispaltig PDF column", () => {
+    const zweispaltigApplication = applicationSchema.parse({
+      ...application,
+      templateId: "zweispaltig",
+      designSettings: {
+        ...application.designSettings,
+        resumeOutputMode: "visual",
+      },
+    });
+    const sidebarSummaryProfile = profileSchema.parse({
+      ...profile,
+      resumeSectionLayouts: {
+        zweispaltig: [
+          { type: "experience", zone: "main" },
+          { type: "education", zone: "main" },
+          { type: "summary", zone: "sidebar" },
+          { type: "strengths", zone: "sidebar" },
+          { type: "knowledge", zone: "sidebar" },
+          { type: "languages", zone: "sidebar" },
+          { type: "certifications", zone: "sidebar" },
+        ],
+      },
+    });
+    const html = buildDocumentHtml(
+      zweispaltigApplication,
+      sidebarSummaryProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+    const mainStart = body.indexOf('<main class="zweispaltig-pdf-main">');
+    const sidebarStart = body.indexOf(
+      '<aside class="zweispaltig-pdf-sidebar">',
+    );
+    const sidebarEnd = body.indexOf("</aside>", sidebarStart);
+    const mainMarkup = body.slice(mainStart, sidebarStart);
+    const sidebarMarkup = body.slice(sidebarStart, sidebarEnd);
+
+    expect(mainStart).toBeGreaterThan(-1);
+    expect(sidebarStart).toBeGreaterThan(mainStart);
+    expect(mainMarkup).not.toContain("Zusammenfassung");
+    expect(sidebarMarkup).toContain("Zusammenfassung");
+    expect(sidebarMarkup).toContain("Mehrjährige Erfahrung");
   });
 
   it("uses a separate linear Zweispaltig ATS renderer in logical order", () => {

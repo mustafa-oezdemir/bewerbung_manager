@@ -4,6 +4,7 @@ import {
   visibleKnowledgeItems,
 } from "../../../../features/knowledge/knowledge.utils";
 import { uniqueElegantValues } from "./elegant.model";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 import type { ElegantKnowledgeProps } from "./elegant.types";
 
 export function ElegantKnowledge({
@@ -35,9 +36,9 @@ export function ElegantKnowledge({
       data-element-id="elegant.skills"
     >
       {variant === "sidebar" ? (
-        <h2 className="elegant-sidebar__title">Fähigkeiten</h2>
+        <h2 className="elegant-sidebar__title">{getResumeSectionTitle(profile, "knowledge")}</h2>
       ) : (
-        <h2 className="elegant-section__title">Kenntnisse</h2>
+        <h2 className="elegant-section__title">{getResumeSectionTitle(profile, "knowledge")}</h2>
       )}
       <div className="elegant-knowledge__categories">
         {visibleCategories.map((category) => {

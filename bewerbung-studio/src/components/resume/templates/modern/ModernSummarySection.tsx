@@ -4,6 +4,7 @@
  */
 
 import type { ModernSummarySectionProps } from "./modern.types";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function ModernSummarySection({ profile }: ModernSummarySectionProps) {
   if (!profile?.summary) {
@@ -12,7 +13,7 @@ export function ModernSummarySection({ profile }: ModernSummarySectionProps) {
 
   return (
     <section className="modern-section">
-      <h2 className="modern-section__title">Zusammenfassung</h2>
+      <h2 className="modern-section__title">{getResumeSectionTitle(profile, "summary")}</h2>
       <p className="modern-summary-text">{profile.summary}</p>
     </section>
   );

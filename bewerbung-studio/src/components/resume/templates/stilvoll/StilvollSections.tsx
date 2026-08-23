@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { ApplicantProfile } from "../../../../shared/schema";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 import {
   formatTemplateDateRange,
   getTemplateKnowledge,
@@ -18,11 +19,13 @@ export function StilvollHeading({
 }
 
 export function StilvollCareer({
+  kind,
   title,
   items,
   continuation = false,
 }: {
-  title: "Erfahrung" | "Ausbildung";
+  kind: "experience" | "education";
+  title: string;
   items: TemplateCareerItem[];
   continuation?: boolean;
 }) {
@@ -30,7 +33,7 @@ export function StilvollCareer({
   return (
     <section
       className="stilvoll-section stilvoll-career"
-      data-element-id={`stilvoll.${title === "Erfahrung" ? "experience" : "education"}`}
+      data-element-id={`stilvoll.${kind}`}
     >
       <StilvollHeading>
         {title}
@@ -81,16 +84,16 @@ export function StilvollLeftColumn({
           className="stilvoll-section"
           data-element-id="stilvoll.summary"
         >
-          <StilvollHeading>Zusammenfassung</StilvollHeading>
+          <StilvollHeading>{getResumeSectionTitle(profile, "summary")}</StilvollHeading>
           <p className="stilvoll-summary">{summary}</p>
         </section>
       ) : null}
-      {sections.skills && strengths.length ? (
+      {sections.strengths && strengths.length ? (
         <section
           className="stilvoll-section stilvoll-strengths"
           data-element-id="stilvoll.strengths"
         >
-          <StilvollHeading>Stärken</StilvollHeading>
+          <StilvollHeading>{getResumeSectionTitle(profile, "strengths")}</StilvollHeading>
           {strengths.map((strength, index) => (
             <article key={strength.title}>
               <i aria-hidden="true">
@@ -111,13 +114,12 @@ export function StilvollLeftColumn({
           className="stilvoll-section stilvoll-languages"
           data-element-id="stilvoll.languages"
         >
-          <StilvollHeading>Sprachen</StilvollHeading>
+          <StilvollHeading>{getResumeSectionTitle(profile, "languages")}</StilvollHeading>
           {languages.map((language) => (
             <article key={language.raw}>
               <strong>{language.name}</strong>
-              <span>{language.level}</span>
-              <span aria-hidden="true">
-                {Array.from({ length: 5 }, (_, index) => (
+              <span aria-label={`${language.name}: ${language.level}`} role="img">
+                {Array.from({ length: 6 }, (_, index) => (
                   <i
                     className={index < language.score ? "filled" : ""}
                     key={index}
@@ -149,13 +151,13 @@ export function StilvollAtsExtras({
     <>
       {sections.skills && knowledge.length ? (
         <section className="stilvoll-section">
-          <StilvollHeading>Kenntnisse</StilvollHeading>
+          <StilvollHeading>{getResumeSectionTitle(profile, "knowledge")}</StilvollHeading>
           <p>{knowledge.join(" · ")}</p>
         </section>
       ) : null}
       {sections.languages && languages.length ? (
         <section className="stilvoll-section">
-          <StilvollHeading>Sprachen</StilvollHeading>
+          <StilvollHeading>{getResumeSectionTitle(profile, "languages")}</StilvollHeading>
           <ul>
             {languages.map((language) => (
               <li key={language}>{language}</li>
@@ -163,9 +165,9 @@ export function StilvollAtsExtras({
           </ul>
         </section>
       ) : null}
-      {sections.skills && strengths.length ? (
+      {sections.strengths && strengths.length ? (
         <section className="stilvoll-section">
-          <StilvollHeading>Stärken</StilvollHeading>
+          <StilvollHeading>{getResumeSectionTitle(profile, "strengths")}</StilvollHeading>
           <ul>
             {strengths.map((strength) => (
               <li key={strength.title}>
@@ -180,7 +182,7 @@ export function StilvollAtsExtras({
       ) : null}
       {sections.certifications && certifications.length ? (
         <section className="stilvoll-section">
-          <StilvollHeading>Zertifikate</StilvollHeading>
+          <StilvollHeading>{getResumeSectionTitle(profile, "certifications")}</StilvollHeading>
           <ul>
             {certifications.map((certification) => (
               <li key={certification}>{certification}</li>

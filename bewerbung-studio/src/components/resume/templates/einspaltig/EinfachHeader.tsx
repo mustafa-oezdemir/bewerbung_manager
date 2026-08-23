@@ -32,6 +32,7 @@ export function EinfachHeader({
     .join(" | ");
   const contacts = [
     {
+      kind: "phone",
       icon: "☎",
       value: profile?.phone,
       href: profile?.phone
@@ -39,11 +40,13 @@ export function EinfachHeader({
         : "",
     },
     {
+      kind: "email",
       icon: "@",
       value: profile?.email,
       href: profile?.email ? `mailto:${profile.email}` : "",
     },
     {
+      kind: "linkedin",
       icon: "↗",
       value: profile?.linkedin,
       href: profile?.linkedin
@@ -51,6 +54,7 @@ export function EinfachHeader({
         : "",
     },
     {
+      kind: "website",
       icon: "⌖",
       value: profile?.portfolio || profile?.github,
       href:
@@ -60,8 +64,8 @@ export function EinfachHeader({
             )
           : "",
     },
-    { icon: "⌾", value: location, href: "" },
-    { icon: "☆", value: birth, href: "" },
+    { kind: "location", icon: "⌾", value: location, href: "" },
+    { kind: "birth", icon: "☆", value: birth, href: "" },
   ].filter((item) => item.value?.trim());
   return (
     <header
@@ -75,7 +79,10 @@ export function EinfachHeader({
         {!compact && contacts.length ? (
           <address>
             {contacts.map((contact, index) => (
-              <span key={`${contact.value}-${index}`}>
+              <span
+                data-contact-kind={contact.kind}
+                key={`${contact.value}-${index}`}
+              >
                 <i aria-hidden="true">{contact.icon}</i>
                 {contact.href ? (
                   <a href={contact.href}>{contact.value}</a>

@@ -1,4 +1,5 @@
 import type { ApplicantProfile } from "../../../../shared/schema";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 import {
   parseIvyLeagueLanguage,
   uniqueIvyLeagueValues,
@@ -22,7 +23,7 @@ export function IvyLeagueLanguagesSection({
       className="ivy-league-section ivy-league-languages-section"
       data-element-id="ivy-league.languages"
     >
-      <IvyLeagueSectionHeading>Sprachen</IvyLeagueSectionHeading>
+      <IvyLeagueSectionHeading>{getResumeSectionTitle(profile, "languages")}</IvyLeagueSectionHeading>
       {atsMode ? (
         <ul className="ivy-league-languages--ats">
           {languages.map((language) => (
@@ -37,9 +38,8 @@ export function IvyLeagueLanguagesSection({
           {languages.map((language) => (
             <article className="ivy-league-language" key={language.raw}>
               <strong>{language.name}</strong>
-              <span>{language.level}</span>
-              <span className="ivy-league-language__dots" aria-hidden="true">
-                {Array.from({ length: 5 }, (_, index) => (
+              <span className="ivy-league-language__dots" aria-label={`${language.name}: ${language.level}`} role="img">
+                {Array.from({ length: 6 }, (_, index) => (
                   <i
                     className={
                       index < language.score

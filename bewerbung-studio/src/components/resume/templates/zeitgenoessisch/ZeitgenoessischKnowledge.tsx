@@ -6,6 +6,7 @@ import {
 import type { ApplicantProfile } from "../../../../shared/schema";
 import { uniqueZeitgenoessischValues } from "./zeitgenoessisch.model";
 import { ZeitgenoessischSectionHeading } from "./ZeitgenoessischSectionHeading";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 export function ZeitgenoessischKnowledge({
   profile,
@@ -35,7 +36,7 @@ export function ZeitgenoessischKnowledge({
       className="zeitgenoessisch-section zeitgenoessisch-knowledge"
       data-element-id="zeitgenoessisch.skills"
     >
-      <ZeitgenoessischSectionHeading title="Kenntnisse" icon="knowledge" />
+      <ZeitgenoessischSectionHeading title={getResumeSectionTitle(profile, "knowledge")} icon="knowledge" />
       <div className="zeitgenoessisch-knowledge__categories">
         {categories.map((category) => (
           <article key={category.id}>

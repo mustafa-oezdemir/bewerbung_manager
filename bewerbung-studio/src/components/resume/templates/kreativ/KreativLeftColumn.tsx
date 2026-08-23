@@ -4,20 +4,25 @@ import { KreativCareerSection } from "./KreativCareerSection";
 export function KreativLeftColumn({
   experiences,
   education,
+  experienceTitle,
+  educationTitle,
   continuation = false,
 }: {
   experiences: KreativCareerItem[];
   education: KreativCareerItem[];
+  experienceTitle: string;
+  educationTitle: string;
   continuation?: boolean;
 }) {
   return (
     <main className="kreativ-left-column">
       <KreativCareerSection
-        title="Berufserfahrung"
+        kind="experience"
+        title={experienceTitle}
         items={experiences}
         continuation={continuation}
       />
-      <KreativCareerSection title="Ausbildung" items={education} />
+      <KreativCareerSection kind="education" title={educationTitle} items={education} />
     </main>
   );
 }

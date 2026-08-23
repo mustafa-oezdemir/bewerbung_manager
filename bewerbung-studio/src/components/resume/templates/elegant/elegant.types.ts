@@ -36,6 +36,7 @@ export type ElegantHeaderProps = {
 };
 
 export type ElegantCareerSectionProps = {
+  kind: "experience" | "education";
   title: string;
   items: ElegantCareerItem[];
   continuation?: boolean;

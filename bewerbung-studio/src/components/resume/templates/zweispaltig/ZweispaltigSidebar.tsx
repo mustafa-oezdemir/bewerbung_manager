@@ -45,13 +45,13 @@ export function ZweispaltigSupplementalSections({
     if (type === "summary") {
       return sections.profile && summary ? (
         <section className="zweispaltig-section" data-element-id="zweispaltig.summary">
-          <h2 className="zweispaltig-section__title">Zusammenfassung</h2>
+          <h2 className="zweispaltig-section__title">{getResumeSectionTitle(profile, "summary")}</h2>
           <p className="zweispaltig-summary">{summary}</p>
         </section>
       ) : null;
     }
     if (type === "strengths") {
-      return sections.skills ? <ZweispaltigStrengths profile={profile} variant={variant} /> : null;
+      return sections.strengths ? <ZweispaltigStrengths profile={profile} variant={variant} /> : null;
     }
     if (type === "knowledge") {
       return sections.skills ? <ZweispaltigKnowledge profile={profile} variant={variant} /> : null;
@@ -60,16 +60,16 @@ export function ZweispaltigSupplementalSections({
       if (!sections.languages || !languages.length) return null;
       return (
         <section className="zweispaltig-section" data-element-id="zweispaltig.languages">
-          <h2 className="zweispaltig-section__title">Sprachen</h2>
+          <h2 className="zweispaltig-section__title">{getResumeSectionTitle(profile, "languages")}</h2>
           {variant === "ats" ? (
             <ul>{languages.map((language) => <li key={language.raw}>{language.raw}</li>)}</ul>
           ) : (
             <div className="zweispaltig-languages__list">
               {languages.map((language) => (
                 <article className="zweispaltig-language" key={language.raw}>
-                  <div><h3>{language.name}</h3>{language.level ? <p>{language.level}</p> : null}</div>
-                  <span className="zweispaltig-language__dots" aria-hidden="true">
-                    {Array.from({ length: 5 }, (_, index) => <i className={index < language.score ? "is-filled" : ""} key={index} />)}
+                  <div><h3>{language.name}</h3></div>
+                  <span className="zweispaltig-language__dots" aria-label={`${language.name}: ${language.level}`} role="img">
+                    {Array.from({ length: 6 }, (_, index) => <i className={index < language.score ? "is-filled" : ""} key={index} />)}
                   </span>
                 </article>
               ))}
@@ -82,7 +82,7 @@ export function ZweispaltigSupplementalSections({
       if (!sections.certifications || !certifications.length) return null;
       return (
         <section className="zweispaltig-section" data-element-id="zweispaltig.certifications">
-          <h2 className="zweispaltig-section__title">Weiterbildungen</h2>
+          <h2 className="zweispaltig-section__title">{getResumeSectionTitle(profile, "certifications")}</h2>
           <ul className="zweispaltig-sidebar__list zweispaltig-sidebar__list--accent">
             {certifications.map((certification) => <li key={certification}>{certification}</li>)}
           </ul>
@@ -95,4 +95,7 @@ export function ZweispaltigSupplementalSections({
   return <>{order.map((type) => <Fragment key={type}>{renderSection(type)}</Fragment>)}</>;
 }
 import { Fragment } from "react";
-import type { ResumeSectionType } from "../../../../features/resume-sections/resume-sections";
+import {
+  getResumeSectionTitle,
+  type ResumeSectionType,
+} from "../../../../features/resume-sections/resume-sections";

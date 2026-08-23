@@ -4,6 +4,7 @@ import {
   visibleKnowledgeItems,
 } from "../../../../features/knowledge/knowledge.utils";
 import { uniqueZweispaltigValues } from "./zweispaltig.model";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 import type { ZweispaltigKnowledgeProps } from "./zweispaltig.types";
 
 export function ZweispaltigKnowledge({
@@ -35,7 +36,7 @@ export function ZweispaltigKnowledge({
       data-element-id="zweispaltig.skills"
     >
       <h2 className="zweispaltig-section__title">
-        {variant === "ats" ? "Kenntnisse" : knowledge.title || "Kenntnisse"}
+        {getResumeSectionTitle(profile, "knowledge")}
       </h2>
       <div className="zweispaltig-knowledge__categories">
         {categories.map((category) => (

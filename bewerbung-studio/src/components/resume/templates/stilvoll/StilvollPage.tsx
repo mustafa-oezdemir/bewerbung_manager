@@ -6,12 +6,14 @@ import {
 import type { StilvollResumeProps } from "./stilvoll.types";
 import { StilvollBackground } from "./StilvollBackground";
 import { StilvollHeader } from "./StilvollHeader";
+import { ResumeSpecialSections } from "../../ResumeSpecialSections";
 import {
   StilvollAtsExtras,
   StilvollCareer,
   StilvollHeading,
   StilvollLeftColumn,
 } from "./StilvollSections";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 type Props = Omit<StilvollResumeProps, "accentColor" | "secondaryColor">;
 
@@ -62,23 +64,25 @@ export function StilvollPage({
         ) : null}
         {sections.profile && summary && !isContinuation ? (
           <section className="stilvoll-section" data-element-id="stilvoll.summary">
-            <StilvollHeading>Zusammenfassung</StilvollHeading>
+            <StilvollHeading>{getResumeSectionTitle(profile, "summary")}</StilvollHeading>
             <p>{summary}</p>
           </section>
         ) : null}
         {sections.experience ? (
           <StilvollCareer
-            title="Erfahrung"
+            kind="experience"
+            title={getResumeSectionTitle(profile, "experience")}
             items={experiences}
             continuation={isContinuation}
           />
         ) : null}
         {sections.education ? (
-          <StilvollCareer title="Ausbildung" items={education} />
+          <StilvollCareer kind="education" title={getResumeSectionTitle(profile, "education")} items={education} />
         ) : null}
         {isLastPage ? (
           <StilvollAtsExtras profile={profile} sections={sections} />
         ) : null}
+        {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="stilvoll-section" headingClassName="stilvoll-section__title" /> : null}
       </main>
     );
   }
@@ -104,14 +108,16 @@ export function StilvollPage({
         <main className="stilvoll-main">
           {sections.experience ? (
             <StilvollCareer
-              title="Erfahrung"
+              kind="experience"
+              title={getResumeSectionTitle(profile, "experience")}
               items={experiences}
               continuation={isContinuation}
             />
           ) : null}
           {sections.education ? (
-            <StilvollCareer title="Ausbildung" items={education} />
+            <StilvollCareer kind="education" title={getResumeSectionTitle(profile, "education")} items={education} />
           ) : null}
+          {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="stilvoll-section" headingClassName="stilvoll-section__title" /> : null}
         </main>
       </div>
       <footer className="stilvoll-footer" data-element-id="stilvoll.footer">

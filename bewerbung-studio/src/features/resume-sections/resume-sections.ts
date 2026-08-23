@@ -60,6 +60,35 @@ export const resumeSectionLabels: Record<ResumeSectionType, string> = {
   references: "Referenzen",
 };
 
+export const defaultEditableResumeSectionTitles = {
+  summary: "Zusammenfassung",
+  strengths: "Stärken",
+  experience: "Berufserfahrung",
+  education: "Ausbildung",
+  languages: "Sprachen",
+  certifications: "Zertifikate",
+} as const;
+
+export type EditableResumeSectionTitle =
+  keyof typeof defaultEditableResumeSectionTitles;
+
+export const getResumeSectionTitle = (
+  profile: ApplicantProfile | undefined,
+  type: ResumeSectionType,
+) => {
+  if (type === "knowledge") {
+    return profile?.knowledgeSection.title.trim() || resumeSectionLabels.knowledge;
+  }
+  if (type in defaultEditableResumeSectionTitles) {
+    const editableType = type as EditableResumeSectionTitle;
+    return (
+      profile?.resumeSectionTitles?.[editableType]?.trim() ||
+      defaultEditableResumeSectionTitles[editableType]
+    );
+  }
+  return resumeSectionLabels[type];
+};
+
 const naturalOrder: readonly ResumeSectionType[] = [
   "summary",
   "strengths",
@@ -261,7 +290,8 @@ export const isResumeSectionVisible = (
   const visible = profile?.resumeSections;
   if (!visible) return true;
   if (type === "summary") return visible.profile;
-  if (type === "strengths" || type === "knowledge") return visible.skills;
+  if (type === "strengths") return visible.strengths;
+  if (type === "knowledge") return visible.skills;
   if (type === "experience") return visible.experience;
   if (type === "education") return visible.education;
   if (type === "languages") return visible.languages;

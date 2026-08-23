@@ -12,8 +12,10 @@ import { IvyLeagueKnowledgeSection } from "./IvyLeagueKnowledgeSection";
 import { IvyLeagueLanguagesSection } from "./IvyLeagueLanguagesSection";
 import { IvyLeagueSectionHeading } from "./IvyLeagueSectionHeading";
 import { IvyLeagueStrengthsSection } from "./IvyLeagueStrengthsSection";
+import { ResumeSpecialSections } from "../../ResumeSpecialSections";
 import {
   getProfileResumeSectionLayout,
+  getResumeSectionTitle,
   hasSavedTemplateSectionLayout,
 } from "../../../../features/resume-sections/resume-sections";
 
@@ -45,7 +47,7 @@ export function IvyLeaguePage({
         className="ivy-league-section ivy-league-certifications"
         data-element-id="ivy-league.certifications"
       >
-        <IvyLeagueSectionHeading>Zertifikate</IvyLeagueSectionHeading>
+        <IvyLeagueSectionHeading>{getResumeSectionTitle(profile, "certifications")}</IvyLeagueSectionHeading>
         <ul>
           {certifications.map((certification) => (
             <li key={certification}>{certification}</li>
@@ -64,24 +66,24 @@ export function IvyLeaguePage({
       if (type === "summary") {
         return sections.profile && summary && !isContinuation ? (
           <section className="ivy-league-section" data-element-id="ivy-league.summary" key={type}>
-            <IvyLeagueSectionHeading>Zusammenfassung</IvyLeagueSectionHeading>
+            <IvyLeagueSectionHeading>{getResumeSectionTitle(profile, "summary")}</IvyLeagueSectionHeading>
             <p className="ivy-league-summary">{summary}</p>
           </section>
         ) : null;
       }
       if (type === "strengths") {
-        return sections.skills && !isContinuation ? (
+        return sections.strengths && !isContinuation ? (
           <IvyLeagueStrengthsSection key={type} profile={profile} atsMode={mode === "ats"} />
         ) : null;
       }
       if (type === "experience") {
         return sections.experience ? (
-          <IvyLeagueCareerSection key={type} title="Berufserfahrung" items={experiences} continuation={isContinuation} atsMode={mode === "ats"} />
+          <IvyLeagueCareerSection key={type} kind="experience" title={getResumeSectionTitle(profile, "experience")} items={experiences} continuation={isContinuation} atsMode={mode === "ats"} />
         ) : null;
       }
       if (type === "education") {
         return sections.education ? (
-          <IvyLeagueCareerSection key={type} title="Ausbildung" items={education} atsMode={mode === "ats"} />
+          <IvyLeagueCareerSection key={type} kind="education" title={getResumeSectionTitle(profile, "education")} items={education} atsMode={mode === "ats"} />
         ) : null;
       }
       if (type === "knowledge") {
@@ -107,6 +109,7 @@ export function IvyLeaguePage({
           atsMode
         />
         {renderOrderedSections("ats")}
+        {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="ivy-league-section" headingClassName="ivy-league-section__title" /> : null}
       </main>
     );
   }
@@ -121,6 +124,7 @@ export function IvyLeaguePage({
           compact={isContinuation}
         />
         {renderOrderedSections("visual")}
+        {isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="ivy-league-section" headingClassName="ivy-league-section__title" /> : null}
         {!experiences.length &&
         !education.length &&
         plan.pageNumber === 1 ? (

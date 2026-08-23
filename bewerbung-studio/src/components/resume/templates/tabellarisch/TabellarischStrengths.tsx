@@ -1,7 +1,7 @@
 import { Flag, Trophy, type LucideIcon } from "lucide-react";
-import { ensureKnowledgeSection } from "../../../../features/knowledge/knowledge.service";
-import { visibleKnowledgeItems } from "../../../../features/knowledge/knowledge.utils";
 import type { ApplicantProfile } from "../../../../shared/schema";
+import { parseTemplateStrengths } from "../resume-template-data";
+import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 
 const strengthIcons: LucideIcon[] = [Flag, Trophy];
 
@@ -12,23 +12,7 @@ export function TabellarischStrengths({
   profile: ApplicantProfile | undefined;
   atsMode: boolean;
 }) {
-  const knowledge = ensureKnowledgeSection(
-    profile?.knowledgeSection,
-    profile?.skills ?? [],
-  );
-  const strengths = knowledge.categories
-    .filter((category) => category.isVisible)
-    .sort((left, right) => left.sortOrder - right.sortOrder)
-    .flatMap((category) => [
-      ...visibleKnowledgeItems(category.items),
-      ...category.subcategories
-        .filter((subcategory) => subcategory.isVisible)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .flatMap((subcategory) =>
-          visibleKnowledgeItems(subcategory.items),
-        ),
-    ])
-    .slice(0, 2);
+  const strengths = parseTemplateStrengths(profile, 2);
 
   if (!strengths.length) return null;
 
@@ -37,13 +21,13 @@ export function TabellarischStrengths({
       className={`tabellarisch-section tabellarisch-strengths-section ${atsMode ? "tabellarisch-strengths-section--ats" : ""}`}
       data-element-id="tabellarisch.strengths"
     >
-      <h2 className="tabellarisch-section__title">Stärken</h2>
+      <h2 className="tabellarisch-section__title">{getResumeSectionTitle(profile, "strengths")}</h2>
       {atsMode ? (
         <ul className="tabellarisch-strengths-ats">
           {strengths.map((strength) => (
-            <li key={strength.id}>
-              <strong>{strength.name}</strong>
-              {strength.description?.trim()
+            <li key={strength.title}>
+              <strong>{strength.title}</strong>
+              {strength.description.trim()
                 ? ` - ${strength.description}`
                 : ""}
             </li>
@@ -54,11 +38,11 @@ export function TabellarischStrengths({
           {strengths.map((strength, index) => {
             const StrengthIcon = strengthIcons[index] ?? Trophy;
             return (
-              <article className="tabellarisch-strength" key={strength.id}>
+              <article className="tabellarisch-strength" key={strength.title}>
                 <StrengthIcon aria-hidden="true" />
                 <div>
-                  <h3>{strength.name}</h3>
-                  {strength.description?.trim() ? (
+                  <h3>{strength.title}</h3>
+                  {strength.description.trim() ? (
                     <p>{strength.description}</p>
                   ) : null}
                 </div>

@@ -6,8 +6,10 @@ import {
 import type { EinspaltigResumeProps } from "./einfach.types";
 import { EinfachBackground } from "./EinfachBackground";
 import { EinfachHeader } from "./EinfachHeader";
+import { ResumeSpecialSections } from "../../ResumeSpecialSections";
 import {
   getProfileResumeSectionLayout,
+  getResumeSectionTitle,
   hasSavedTemplateSectionLayout,
 } from "../../../../features/resume-sections/resume-sections";
 import {
@@ -50,21 +52,21 @@ export function EinfachPage({
       if (type === "summary") {
         return sections.profile && summary && !isContinuation ? (
         <section key={type} className="einfach-section" data-element-id="einspaltig.summary">
-          <EinfachHeading>Zusammenfassung</EinfachHeading>
+          <EinfachHeading>{getResumeSectionTitle(profile, "summary")}</EinfachHeading>
           <p className="einfach-summary">{summary}</p>
         </section>
         ) : null;
       }
       if (type === "strengths") {
-        return sections.skills && !isContinuation && (!atsMode || isLastPage) ? (
+        return sections.strengths && !isContinuation && (!atsMode || isLastPage) ? (
           <EinfachStrengths key={type} profile={profile} atsMode={atsMode} />
         ) : null;
       }
       if (type === "experience") {
-        return sections.experience ? <EinfachCareer key={type} title="Erfahrung" items={experiences} continuation={isContinuation} /> : null;
+        return sections.experience ? <EinfachCareer key={type} kind="experience" title={getResumeSectionTitle(profile, "experience")} items={experiences} continuation={isContinuation} /> : null;
       }
       if (type === "education") {
-        return sections.education ? <EinfachCareer key={type} title="Ausbildung" items={education} /> : null;
+        return sections.education ? <EinfachCareer key={type} kind="education" title={getResumeSectionTitle(profile, "education")} items={education} /> : null;
       }
       if (type === "knowledge") {
         return isLastPage && sections.skills ? <EinfachKnowledge key={type} profile={profile} /> : null;
@@ -78,7 +80,7 @@ export function EinfachPage({
       return null;
     });
   };
-  const body = <>{renderOrderedSections()}</>;
+  const body = <>{renderOrderedSections()}{isLastPage ? <ResumeSpecialSections profile={profile} sectionClassName="einfach-section" headingClassName="einfach-section__title" /> : null}</>;
   if (atsMode) {
     return (
       <main className="einfach-ats" data-renderer="ats">
