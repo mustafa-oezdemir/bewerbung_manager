@@ -153,7 +153,7 @@ describe("Lebenslauf-Dokumente", () => {
 
     const html = buildDocumentHtml(datedApplication, profile, "anschreiben");
 
-    expect(html).toContain("Berlin, 17. Mai 2024");
+    expect(html).toContain("Berlin, den 17. Mai 2024");
   });
 
   it("justifies only the body paragraphs of exported cover letters", () => {

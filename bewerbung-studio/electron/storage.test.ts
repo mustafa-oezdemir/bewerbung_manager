@@ -319,7 +319,7 @@ describe("DataStore backups", () => {
     );
     expect(context.data).toMatchObject({
       ANSPRECHPARTNER: "Herrn Andreas Steck",
-      BEWERBUNGSDATUM: "17.5.2024",
+      BEWERBUNGSDATUM: "17. Mai 2024",
       MOTIVATION: "Motivation aus dem Editor.",
       FACHLICHE_EIGNUNG: "Fachliche Eignung aus dem Editor.",
       UNTERNEHMENSBEZUG: "Unternehmensbezug aus dem Editor.",

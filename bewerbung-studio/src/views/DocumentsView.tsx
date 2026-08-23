@@ -36,7 +36,7 @@ import { TabellarischResume } from "../components/resume/templates/tabellarisch"
 import { ZeitgenoessischResume } from "../components/resume/templates/zeitgenoessisch";
 import { ZweispaltigResume } from "../components/resume/templates/zweispaltig";
 import { analyzeKeywordMatch } from "../lib/keywordMatch";
-import { getApplicationDate } from "../shared/applicationDate";
+import { formatApplicationDateLong } from "../shared/applicationDate";
 import {
   createResumePagePlan,
   einspaltigPaginationOptions,
@@ -1373,10 +1373,8 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                   {application.company.postalCode} {application.company.city}
                 </address>
                 <p className="paper-date">
-                  {profile?.city ? `${profile.city}, ` : ""}
-                  {new Intl.DateTimeFormat("de-DE", {
-                    dateStyle: "long",
-                  }).format(getApplicationDate(application))}
+                  {profile?.city ? `${profile.city}, den ` : ""}
+                  {formatApplicationDateLong(application)}
                 </p>
                 <h3>
                   {docs.coverSubject ||

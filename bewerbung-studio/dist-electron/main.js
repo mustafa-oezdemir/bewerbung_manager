@@ -7083,7 +7083,7 @@ var buildDocumentHtml = (application, profile, target) => {
 		profile.city,
 		profile.linkedin
 	].filter(Boolean).map(escapeHtml).join(" · ") : "Telefon · E-Mail · Ort";
-	const applicationDate = new Intl.DateTimeFormat("de-DE", { dateStyle: "long" }).format(getApplicationDate(application));
+	const applicationDate = new Intl.DateTimeFormat("de-DE", { day: "numeric", month: "long", year: "numeric" }).format(getApplicationDate(application));
 	const letterStatus = getLetterPageStatus(docs);
 	const cover = `
     <section class="page cover-page ${designClasses}">
@@ -7105,7 +7105,7 @@ var buildDocumentHtml = (application, profile, target) => {
         <div class="sender">${senderHeader(profile)}</div>
         <div class="rule"></div>
         <div class="recipient">${addressBlock(application)}</div>
-        <p class="date">${escapeHtml(profile?.city || application.company.city)}, ${applicationDate}</p>
+        <p class="date">${escapeHtml(profile?.city || application.company.city)}, den ${applicationDate}</p>
         <p class="subject">${escapeHtml(docs.coverSubject || `Bewerbung als ${role}`)}</p>
         <p>${escapeHtml(salutation(application))},</p>
         <p class="letter-body">${escapeHtml(docs.coverIntroduction || `die ausgeschriebene Position als ${role} bei ${company} spricht mich besonders an, weil sie fachliche Verantwortung mit konkretem Gestaltungsspielraum verbindet.`)}</p>
@@ -9720,7 +9720,7 @@ var DataStore = class {
 			ANSPRECHPARTNER: postalContactName,
 			STELLENBEZEICHNUNG: application.job.title,
 			STELLENNUMMER: "",
-			BEWERBUNGSDATUM: new Intl.DateTimeFormat("de-DE").format(getApplicationDate(application)),
+			BEWERBUNGSDATUM: new Intl.DateTimeFormat("de-DE", { day: "numeric", month: "long", year: "numeric" }).format(getApplicationDate(application)),
 			BETREFF: application.documents.coverSubject || `Bewerbung als ${application.job.title}`,
 			ANREDE: greeting,
 			EINLEITUNG: application.documents.coverIntroduction,

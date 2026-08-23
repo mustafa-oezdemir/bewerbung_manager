@@ -37,7 +37,7 @@ import {
   type Workspace,
 } from "../src/shared/schema";
 import { templates } from "../src/shared/templates";
-import { getApplicationDate } from "../src/shared/applicationDate";
+import { formatApplicationDateLong } from "../src/shared/applicationDate";
 import {
   compactWordMarginLevelToMm,
   getDocumentFont,
@@ -1192,9 +1192,7 @@ export class DataStore {
       ANSPRECHPARTNER: postalContactName,
       STELLENBEZEICHNUNG: application.job.title,
       STELLENNUMMER: "",
-      BEWERBUNGSDATUM: new Intl.DateTimeFormat("de-DE").format(
-        getApplicationDate(application),
-      ),
+      BEWERBUNGSDATUM: formatApplicationDateLong(application),
       BETREFF:
         application.documents.coverSubject ||
         `Bewerbung als ${application.job.title}`,
