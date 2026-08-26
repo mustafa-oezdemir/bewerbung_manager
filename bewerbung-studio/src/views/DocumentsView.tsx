@@ -13,6 +13,7 @@ import {
 import {
   useEffect,
   useCallback,
+  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -64,8 +65,10 @@ import {
   programmingLanguageBackgroundTokens,
   type DocumentDesignSettings,
 } from "../shared/documentDesign";
+import { calculateA4PreviewScale } from "../shared/documentPreview";
 import type { ProfileMediaKind } from "../shared/ipc";
 import { getProfileMediaSource } from "../shared/profileMedia";
+import { resolveSelectedProfile } from "../shared/profileSelection";
 import type {
   ApplicantProfile,
   Application,
@@ -313,6 +316,8 @@ function ResumePreviewPage({
 export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab }) {
   const application = useAppStore(selectCurrentApplication);
   const profiles = useAppStore((state) => state.workspace.profiles);
+  const selectedProfileId = useAppStore((state) => state.selectedProfileId);
+  const selectActiveProfile = useAppStore((state) => state.selectProfile);
   const saveApplication = useAppStore((state) => state.saveApplication);
   const syncCoverLetter = useAppStore((state) => state.syncCoverLetter);
   const saveProfile = useAppStore((state) => state.saveProfile);
@@ -378,6 +383,81 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
     settings: defaultDocumentDesign,
   });
   const formRef = useRef<HTMLFormElement>(null);
+  const paperStageRef = useRef<HTMLElement>(null);
+  const letterPaperRef = useRef<HTMLDivElement>(null);
+  const [previewScale, setPreviewScale] = useState(1);
+
+  useLayoutEffect(() => {
+    const stage = paperStageRef.current;
+    if (!stage) return;
+
+    const fitPaperToStage = () => {
+      const stageStyle = window.getComputedStyle(stage);
+      const availableWidth =
+        stage.clientWidth -
+        Number.parseFloat(stageStyle.paddingLeft) -
+        Number.parseFloat(stageStyle.paddingRight) -
+        2;
+      const availableHeight =
+        stage.clientHeight -
+        Number.parseFloat(stageStyle.paddingTop) -
+        Number.parseFloat(stageStyle.paddingBottom) -
+        2;
+      const nextScale = calculateA4PreviewScale(
+        availableWidth,
+        availableHeight,
+      );
+      setPreviewScale((current) =>
+        Math.abs(current - nextScale) < 0.001 ? current : nextScale,
+      );
+    };
+
+    stage.scrollTo({ top: 0 });
+    fitPaperToStage();
+    const observer = new ResizeObserver(fitPaperToStage);
+    observer.observe(stage);
+    return () => observer.disconnect();
+  }, [application, tab]);
+
+  const fitLetterContent = useCallback(() => {
+    const paper = letterPaperRef.current;
+    const content = paper?.querySelector<HTMLElement>(".letter-preview");
+    if (!paper || !content) return;
+
+    content.style.removeProperty("transform");
+    content.style.width = "100%";
+    content.dataset.fitScale = "1.000";
+
+    const heightRatio = paper.clientHeight / Math.max(content.scrollHeight, 1);
+    const widthRatio = paper.clientWidth / Math.max(content.scrollWidth, 1);
+    const scale = Math.min(1, heightRatio, widthRatio);
+    if (scale < 0.999) {
+      content.style.transform = `scale(${scale})`;
+      content.style.width = `${100 / scale}%`;
+      content.dataset.fitScale = scale.toFixed(3);
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    if (tab !== "anschreiben") return;
+    fitLetterContent();
+    void document.fonts?.ready.then(fitLetterContent);
+    const signature =
+      letterPaperRef.current?.querySelector<HTMLImageElement>(
+        ".signature-image",
+      );
+    signature?.addEventListener("load", fitLetterContent);
+    return () => signature?.removeEventListener("load", fitLetterContent);
+  }, [
+    application,
+    design,
+    documentPreview,
+    fitLetterContent,
+    profiles,
+    resumeSectionPreview,
+    tab,
+  ]);
+
   useEffect(() => setTab(initialTab), [initialTab]);
   useEffect(() => {
     if (!application || application.id === design.applicationId) return;
@@ -411,9 +491,11 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
       </section>
     );
   }
-  const profile =
-    profiles.find((item) => item.id === application.profileId) ??
-    profiles.find((item) => item.isDefault);
+  const profile = resolveSelectedProfile(
+    profiles,
+    selectedProfileId,
+    application.profileId,
+  );
   const photoSource = getProfileMediaSource(profile?.photoPath);
   const signatureSource = getProfileMediaSource(profile?.signaturePath);
   const template = getTemplate(design.templateId);
@@ -597,6 +679,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
     };
     return {
       ...application,
+      profileId: profile?.id,
       templateId: design.templateId,
       accentColor: design.accentColor,
       secondaryColor: design.secondaryColor,
@@ -631,6 +714,16 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
         ),
       },
     };
+  };
+
+  const changeDocumentProfile = async (profileId: string) => {
+    selectActiveProfile(profileId);
+    setResumeSectionPreview(null);
+    await saveApplication({
+      ...applicationSnapshot(formRef.current),
+      profileId,
+      updatedAt: new Date().toISOString(),
+    });
   };
 
   const previewDocumentInput = (
@@ -726,6 +819,26 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
             ref={formRef}
             onInput={previewDocumentInput}
             onSubmit={(event) => void save(event)}>
+            {tab === "lebenslauf" && profiles.length ? (
+              <label className="field document-profile-selector">
+                <span>Lebenslaufprofil</span>
+                <select
+                  value={profile?.id ?? ""}
+                  onChange={(event) =>
+                    void changeDocumentProfile(event.target.value)
+                  }>
+                  {profiles.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.firstName} {item.lastName}
+                      {item.title ? ` · ${item.title}` : ""}
+                    </option>
+                  ))}
+                </select>
+                <small>
+                  Die Auswahl aktualisiert Lebenslaufdaten, Vorschau und PDF.
+                </small>
+              </label>
+            ) : null}
             {tab === "deckblatt" && (
               <label className="field">
                 <span>Kurzprofil auf dem Deckblatt</span>
@@ -813,7 +926,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                   </span>
                   <small>
                     {letterStatus.isOverRecommendedLength
-                      ? "Der Text wird für den PDF-Export automatisch verkleinert. Kürzen verbessert die Lesbarkeit."
+                      ? "Vorschau und PDF-Export werden automatisch auf eine A4-Seite eingepasst. Kürzen verbessert die Lesbarkeit."
                       : "Der aktuelle Text liegt im gut lesbaren Ein-Seiten-Bereich."}
                   </small>
                 </section>
@@ -1314,7 +1427,14 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
             </button>
           </form>
         </aside>
-        <main className="paper-stage">
+        <main
+          className="paper-stage"
+          ref={paperStageRef}
+          style={
+            {
+              "--document-preview-scale": previewScale,
+            } as CSSProperties
+          }>
           {tab === "deckblatt" && (
             <div
               className={`document-paper document-deckblatt layout-${template.layout} ${designClassName}`}
@@ -1345,6 +1465,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
             <div
               className={`document-paper document-anschreiben letter-${letterStatus.density} layout-${template.layout} ${designClassName}`}
               data-resume-template={template.id}
+              ref={letterPaperRef}
               style={paperStyle}>
               <DocumentBackgroundLayer
                 backgroundId={design.settings.backgroundId}

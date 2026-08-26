@@ -30,6 +30,7 @@ import { ProfileView } from "./views/ProfileView";
 import { SettingsView } from "./views/SettingsView";
 import { TemplatesView } from "./views/TemplatesView";
 import { useAppStore } from "./store/useAppStore";
+import { resolveSelectedProfile } from "./shared/profileSelection";
 
 type View =
   | "home"
@@ -71,7 +72,19 @@ export default function App() {
   const notice = useAppStore((state) => state.notice);
   const clearMessage = useAppStore((state) => state.clearMessage);
   const selectApplication = useAppStore((state) => state.selectApplication);
+  const selectedApplicationId = useAppStore(
+    (state) => state.selectedApplicationId,
+  );
+  const selectedProfileId = useAppStore((state) => state.selectedProfileId);
   const [darkOverride, setDarkOverride] = useState(false);
+  const activeApplication = workspace.applications.find(
+    (application) => application.id === selectedApplicationId,
+  );
+  const activeProfile = resolveSelectedProfile(
+    workspace.profiles,
+    selectedProfileId,
+    activeApplication?.profileId,
+  );
 
   useEffect(() => {
     void hydrate();
@@ -187,8 +200,8 @@ export default function App() {
               {document.documentElement.dataset.theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             <button className="profile-chip" onClick={() => setView("profile")}>
-              <span>{workspace.profiles[0]?.firstName?.[0] || "P"}</span>
-              <div><strong>{workspace.profiles[0] ? `${workspace.profiles[0].firstName} ${workspace.profiles[0].lastName}` : "Profil anlegen"}</strong><small>{workspace.profiles[0]?.title || "Absenderdaten"}</small></div>
+              <span>{activeProfile?.firstName?.[0] || "P"}</span>
+              <div><strong>{activeProfile ? `${activeProfile.firstName} ${activeProfile.lastName}` : "Profil anlegen"}</strong><small>{activeProfile?.title || "Absenderdaten"}</small></div>
               <ChevronDown size={15} />
             </button>
           </div>

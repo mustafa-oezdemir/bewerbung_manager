@@ -21,6 +21,7 @@ const api: BewerbungsManagerApi = {
   },
   profiles: {
     save: (profile) => ipcRenderer.invoke("profiles:save", profile),
+    remove: (id) => ipcRenderer.invoke("profiles:remove", id),
   },
   templates: {
     scan: () => ipcRenderer.invoke("templates:scan"),

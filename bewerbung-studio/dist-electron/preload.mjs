@@ -15,7 +15,10 @@ electron.contextBridge.exposeInMainWorld("bewerbungsManager", {
 		changeStatus: (id, status, reason) => electron.ipcRenderer.invoke("applications:change-status", id, status, reason),
 		openFolder: (id) => electron.ipcRenderer.invoke("applications:open-folder", id)
 	},
-	profiles: { save: (profile) => electron.ipcRenderer.invoke("profiles:save", profile) },
+	profiles: {
+		save: (profile) => electron.ipcRenderer.invoke("profiles:save", profile),
+		remove: (id) => electron.ipcRenderer.invoke("profiles:remove", id)
+	},
 	templates: {
 		scan: () => electron.ipcRenderer.invoke("templates:scan"),
 		add: (input) => electron.ipcRenderer.invoke("templates:add", input),

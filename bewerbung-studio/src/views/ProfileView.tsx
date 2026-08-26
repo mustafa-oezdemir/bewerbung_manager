@@ -34,6 +34,7 @@ import {
   type ApplicantProfile,
   type ResumeSpecialSectionKind,
 } from "../shared/schema";
+import { resolveSelectedProfile } from "../shared/profileSelection";
 import { useAppStore } from "../store/useAppStore";
 
 const defaultSections: ApplicantProfile["resumeSections"] = {
@@ -148,11 +149,23 @@ const reorderItem = <T extends { id: string }>(
 
 export function ProfileView({ onSaved }: { onSaved: () => void }) {
   const profiles = useAppStore((state) => state.workspace.profiles);
+  const applications = useAppStore((state) => state.workspace.applications);
   const saveProfile = useAppStore((state) => state.saveProfile);
+  const removeProfile = useAppStore((state) => state.removeProfile);
+  const selectedProfileId = useAppStore((state) => state.selectedProfileId);
+  const applicationProfileId = useAppStore(
+    (state) =>
+      state.workspace.applications.find(
+        (application) => application.id === state.selectedApplicationId,
+      )?.profileId,
+  );
+  const selectActiveProfile = useAppStore((state) => state.selectProfile);
   const initial =
-    profiles.find((profile) => profile.isDefault) ??
-    profiles[0] ??
-    newProfile();
+    resolveSelectedProfile(
+      profiles,
+      selectedProfileId,
+      applicationProfileId,
+    ) ?? newProfile();
   const [draft, setDraft] = useState<ApplicantProfile>(() => ({
     ...structuredClone(initial),
     knowledgeSection: ensureKnowledgeSection(
@@ -166,7 +179,8 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
   const photoSource = getProfileMediaSource(draft.photoPath);
   const signatureSource = getProfileMediaSource(draft.signaturePath);
 
-  const selectProfile = (profile: ApplicantProfile) =>
+  const selectProfile = (profile: ApplicantProfile) => {
+    selectActiveProfile(profile.id);
     setDraft({
       ...structuredClone(profile),
       knowledgeSection: ensureKnowledgeSection(
@@ -174,6 +188,38 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
         profile.skills,
       ),
     });
+  };
+
+  const createProfile = () => {
+    const profile = newProfile();
+    selectActiveProfile(profile.id);
+    setDraft(profile);
+  };
+
+  const deleteProfile = async (profile: ApplicantProfile) => {
+    const linkedApplications = applications.filter(
+      (application) =>
+        application.profileId === profile.id ||
+        (!application.profileId && profile.isDefault),
+    ).length;
+    const name = `${profile.firstName} ${profile.lastName}`.trim();
+    const consequence =
+      profiles.length > 1
+        ? linkedApplications
+          ? ` ${linkedApplications} verbundene Bewerbung(en) werden auf das nächste verfügbare Profil umgestellt.`
+          : ""
+        : " Danach ist kein Profil mehr vorhanden.";
+    if (!window.confirm(`Profil „${name}“ wirklich löschen?${consequence}`)) {
+      return;
+    }
+
+    await removeProfile(profile.id);
+    if (draft.id !== profile.id) return;
+    const remainingProfiles = useAppStore.getState().workspace.profiles;
+    const next = resolveSelectedProfile(remainingProfiles);
+    if (next) selectProfile(next);
+    else createProfile();
+  };
 
   const normalizedProfile = (profile: ApplicantProfile): ApplicantProfile => ({
     ...profile,
@@ -436,28 +482,39 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
           <h3>Profile</h3>
         </header>
         {profiles.map((profile) => (
-          <button
-            key={profile.id}
-            className={profile.id === draft.id ? "active" : ""}
-            onClick={() => selectProfile(profile)}
-          >
-            <span>
-              <UserRound size={18} />
-            </span>
-            <div>
-              <strong>
-                {profile.firstName} {profile.lastName}
-              </strong>
-              <small>
-                {profile.title || "Kein Titel"}
-                {profile.isDefault ? " · Standard" : ""}
-              </small>
-            </div>
-          </button>
+          <div
+            className={`profile-list-item ${profile.id === draft.id ? "active" : ""}`}
+            key={profile.id}>
+            <button
+              className="profile-list-select"
+              type="button"
+              onClick={() => selectProfile(profile)}>
+              <span>
+                <UserRound size={18} />
+              </span>
+              <div>
+                <strong>
+                  {profile.firstName} {profile.lastName}
+                </strong>
+                <small>
+                  {profile.title || "Kein Titel"}
+                  {profile.isDefault ? " · Standard" : ""}
+                </small>
+              </div>
+            </button>
+            <button
+              className="icon-button danger profile-delete-button"
+              type="button"
+              aria-label={`Profil ${profile.firstName} ${profile.lastName} löschen`}
+              title="Profil löschen"
+              onClick={() => void deleteProfile(profile)}>
+              <Trash2 size={15} />
+            </button>
+          </div>
         ))}
         <button
           className="button secondary"
-          onClick={() => setDraft(newProfile())}
+          onClick={createProfile}
         >
           <Plus size={17} /> Neues Profil
         </button>
@@ -481,7 +538,7 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
         <form onSubmit={(event) => void save(event)}>
           <EditorSection
             title="Persönliche Daten"
-            description="Pflichtangaben, Kontakt sowie freiwillige persönliche Angaben."
+            description="Nur relevante Kontakt- und Bewerbungsdaten."
             onSave={() =>
               void saveSection("personal", [
                 "firstName",
@@ -497,11 +554,6 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                 "github",
                 "portfolio",
                 "onlineProfiles",
-                "birthDate",
-                "birthPlace",
-                "nationality",
-                "familyStatus",
-                "children",
               ])
             }
             saving={savingSection === "personal"}
@@ -597,42 +649,6 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                 full
                 onChange={(portfolio) =>
                   setDraft((current) => ({ ...current, portfolio }))
-                }
-              />
-              <FlexibleDateField
-                label="Geburtsdatum (freiwillig)"
-                value={draft.birthDate}
-                mode="date"
-                onChange={(birthDate) =>
-                  setDraft((current) => ({ ...current, birthDate }))
-                }
-              />
-              <TextField
-                label="Geburtsort (freiwillig)"
-                value={draft.birthPlace}
-                onChange={(birthPlace) =>
-                  setDraft((current) => ({ ...current, birthPlace }))
-                }
-              />
-              <TextField
-                label="Staatsangehörigkeit (freiwillig)"
-                value={draft.nationality}
-                onChange={(nationality) =>
-                  setDraft((current) => ({ ...current, nationality }))
-                }
-              />
-              <TextField
-                label="Familienstand (freiwillig)"
-                value={draft.familyStatus}
-                onChange={(familyStatus) =>
-                  setDraft((current) => ({ ...current, familyStatus }))
-                }
-              />
-              <TextField
-                label="Kinder (freiwillig)"
-                value={draft.children}
-                onChange={(children) =>
-                  setDraft((current) => ({ ...current, children }))
                 }
               />
             </div>

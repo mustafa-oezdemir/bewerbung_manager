@@ -2101,10 +2101,14 @@ h3 {
 .paper-stage {
   display: flex;
   overflow: auto;
-  min-height: 750px;
+  height: calc(100vh - 116px);
+  min-height: 360px;
+  align-self: start;
   flex-direction: column;
   align-items: center;
   gap: 28px;
+  position: sticky;
+  top: 96px;
   padding: 32px;
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -2134,6 +2138,10 @@ h3 {
   color: #222b2a;
   background: white;
   box-shadow: 0 22px 60px rgba(23, 32, 30, 0.13);
+}
+
+.paper-stage .document-paper {
+  zoom: var(--document-preview-scale, 1);
 }
 
 .document-paper > :not(.document-background-layer) {
@@ -2202,6 +2210,20 @@ h3 {
   font-size: 9pt;
 }
 
+.document-anschreiben {
+  --letter-padding-block: var(--doc-margin);
+  --letter-padding-inline: var(--doc-margin);
+  padding: 0;
+}
+
+.document-anschreiben .letter-preview {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  padding: var(--letter-padding-block) var(--letter-padding-inline);
+  transform-origin: top left;
+}
+
 .letter-preview .sender-line {
   margin-bottom: 2mm;
   color: #697572;
@@ -2216,7 +2238,7 @@ h3 {
 
 .letter-preview .sender-name {
   color: #222b2a;
-  font-size: 20pt;
+  font-size: 11pt;
   font-weight: 700;
   line-height: 1.2;
 }
@@ -2257,7 +2279,7 @@ h3 {
 .letter-preview h3 {
   margin: 8mm 0 5mm;
   color: var(--doc-accent);
-  font-size: 12pt;
+  font-size: 14pt;
   font-weight: 700;
 }
 
@@ -2282,12 +2304,12 @@ h3 {
 }
 
 .document-anschreiben.layout-sidebar-left .letter-preview {
-  padding-left: 7mm;
+  padding-left: calc(var(--letter-padding-inline) + 7mm);
   border-left: 5mm solid var(--doc-secondary);
 }
 
 .document-anschreiben.layout-sidebar-right .letter-preview {
-  padding-right: 7mm;
+  padding-right: calc(var(--letter-padding-inline) + 7mm);
   border-right: 5mm solid var(--doc-secondary);
 }
 
@@ -2319,12 +2341,14 @@ h3 {
 }
 
 .signature-name {
+  font-size: 11pt;
   font-weight: 400;
   line-height: 1.2;
 }
 
 .letter-compact {
-  padding: 15mm 19mm;
+  --letter-padding-block: 15mm;
+  --letter-padding-inline: 19mm;
 }
 
 .letter-compact .paper-rule {
@@ -2350,7 +2374,8 @@ h3 {
 }
 
 .letter-dense {
-  padding: 13mm 17mm;
+  --letter-padding-block: 13mm;
+  --letter-padding-inline: 17mm;
 }
 
 .letter-dense .paper-rule {
@@ -3587,24 +3612,33 @@ h3 {
   margin-bottom: 14px;
 }
 
-.profile-list > button:not(.button) {
+.profile-list-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 10px;
+}
+
+.profile-list-item.active {
+  border-color: color-mix(in srgb, var(--brand), transparent 70%);
+  background: var(--brand-soft);
+}
+
+.profile-list-select {
   display: flex;
   width: 100%;
+  min-width: 0;
   align-items: center;
   gap: 10px;
   padding: 10px;
-  border: 1px solid transparent;
+  border: 0;
   border-radius: 10px;
   background: transparent;
   text-align: left;
 }
 
-.profile-list > button.active {
-  border-color: color-mix(in srgb, var(--brand), transparent 70%);
-  background: var(--brand-soft);
-}
-
-.profile-list > button > span {
+.profile-list-select > span {
   display: grid;
   width: 34px;
   height: 34px;
@@ -3614,17 +3648,32 @@ h3 {
   background: var(--surface-muted);
 }
 
-.profile-list > button div {
+.profile-list-select div {
   display: grid;
+  min-width: 0;
 }
 
-.profile-list > button strong {
+.profile-list-select strong {
+  overflow: hidden;
   font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.profile-list > button small {
+.profile-list-select small {
+  overflow: hidden;
   color: var(--muted);
   font-size: 0.65rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-delete-button {
+  width: 32px;
+  height: 32px;
+  margin-right: 7px;
+  border-color: transparent;
+  background: transparent;
 }
 
 .profile-list > .button {
@@ -5625,7 +5674,10 @@ h3 {
   }
 
   .paper-stage {
-    min-height: auto;
+    height: calc(100vh - 88px);
+    min-height: 420px;
+    position: static;
+    top: auto;
   }
 }
 
@@ -6326,6 +6378,10 @@ h3 {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
     box-shadow: none;
+  }
+
+  .paper-stage .document-paper {
+    zoom: 1;
   }
 
   .document-paper:last-child {

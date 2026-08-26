@@ -287,6 +287,43 @@ describe("DataStore backups", () => {
     ).resolves.toContain('"sentAt": "2026-08-22T09:00:00.000Z"');
   });
 
+  it("renames application folders immediately when company and position change", async () => {
+    const input = applicationInput("YKK DEUTSCHLAND GmbH");
+    input.job.title = "Bewerbung als Maschinenbediener";
+    input.sentAt = "2026-08-25T09:00:00.000Z";
+    const created = await store.createApplication(input);
+    const application = created.applications[0];
+    const oldFolderName = application.folderName;
+    const oldAnschreiben = store.files.documentDirectories(application).anschreiben;
+    await writeFile(path.join(oldAnschreiben, "Anschreiben.docx"), "letter");
+
+    application.company.name = "YKK Produktion GmbH";
+    application.job.title = "Maschinenbediener";
+    const saved = await store.saveApplication(application);
+    const updated = saved.applications.find(
+      (item) => item.id === application.id,
+    )!;
+    const newAnschreiben = store.files.documentDirectories(updated).anschreiben;
+
+    expect(updated.folderName).toBe(
+      path.join("YKK_Produktion_GmbH_2026-08-25", "Maschinenbediener"),
+    );
+    expect(updated.folderName).not.toBe(oldFolderName);
+    await expect(access(oldAnschreiben)).rejects.toThrow();
+    await expect(
+      readFile(path.join(newAnschreiben, "Anschreiben.docx"), "utf8"),
+    ).resolves.toBe("letter");
+    await expect(
+      readFile(
+        path.join(
+          store.files.applicationDataPath(updated.folderName),
+          "bewerbung.json",
+        ),
+        "utf8",
+      ),
+    ).resolves.toContain('"title": "Maschinenbediener"');
+  });
+
   it("maps the current cover-letter fields to Word placeholders", async () => {
     const created = await store.createApplication({
       ...applicationInput("Beispiel GmbH"),
@@ -432,6 +469,58 @@ describe("DataStore backups", () => {
     expect(context.data.PROJEKTE).toContain("Bewerbungsplattform");
     expect(context.data.PROJEKTE).toContain(
       "Automatisierte Dokumenterstellung",
+    );
+  });
+
+  it("deletes profiles and safely reassigns linked applications", async () => {
+    const primary = profileSchema.parse({
+      id: crypto.randomUUID(),
+      isDefault: true,
+      firstName: "Mina",
+      lastName: "Kaya",
+      updatedAt: new Date().toISOString(),
+    });
+    const replacement = profileSchema.parse({
+      id: crypto.randomUUID(),
+      isDefault: false,
+      firstName: "Mustafa",
+      lastName: "Özdemir",
+      updatedAt: new Date().toISOString(),
+    });
+    await store.saveProfile(primary);
+    await store.saveProfile(replacement);
+    const created = await store.createApplication({
+      ...applicationInput("Profilwechsel GmbH"),
+      profileId: primary.id,
+    });
+
+    const afterPrimaryRemoval = await store.removeProfile(primary.id);
+
+    expect(afterPrimaryRemoval.profiles).toHaveLength(1);
+    expect(afterPrimaryRemoval.profiles[0]).toMatchObject({
+      id: replacement.id,
+      isDefault: true,
+    });
+    expect(afterPrimaryRemoval.applications[0].profileId).toBe(replacement.id);
+    expect(
+      store.getProfileForApplication(afterPrimaryRemoval.applications[0])?.id,
+    ).toBe(replacement.id);
+
+    const afterLastRemoval = await store.removeProfile(replacement.id);
+
+    expect(afterLastRemoval.profiles).toHaveLength(0);
+    expect(afterLastRemoval.applications[0].profileId).toBeUndefined();
+    expect(
+      store.getProfileForApplication(afterLastRemoval.applications[0]),
+    ).toBeUndefined();
+    expect(created.applications[0].id).toBe(
+      afterLastRemoval.applications[0].id,
+    );
+  });
+
+  it("rejects deleting an unknown profile", async () => {
+    await expect(store.removeProfile(crypto.randomUUID())).rejects.toThrow(
+      "Profil wurde nicht gefunden.",
     );
   });
 

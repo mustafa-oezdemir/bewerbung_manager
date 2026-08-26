@@ -6868,9 +6868,9 @@ var documentCss = (accent, secondary, onSecondary, settings) => {
   h1,h2,h3{font-family:var(--heading-font);font-weight:var(--heading-weight)}h1{font-size:29pt;line-height:1.05;margin:8mm 0 4mm}h2{font-size:14pt;color:var(--accent);margin:8mm 0 3mm}
   h3{font-size:11pt;margin:0 0 1mm}.muted{color:var(--muted)}p,li{font-size:var(--body-size);line-height:var(--body-line)}
   .cover-content{display:flex;flex-direction:column;justify-content:flex-end}.cover-content h1{font-size:36pt;max-width:145mm}
-  .contact{padding-top:8mm;border-top:1px solid var(--line)}.sender{margin-bottom:2mm;color:var(--muted);text-align:center}.sender-name,.sender-title,.sender-contact{display:block}.sender-name{color:var(--ink);font-size:20pt;font-weight:700;line-height:1.2}.sender-title{margin-top:.8mm;color:var(--accent);font-size:11pt;font-weight:700;line-height:1.2}.sender-contact{margin-top:.8mm;font-size:11pt;line-height:1.25}
-  .recipient{margin-top:12mm;min-height:36mm;font-size:11pt;line-height:1.42}.date{text-align:right}.subject{color:var(--accent);font-weight:800;font-size:12pt;margin:8mm 0 5mm}
-  .signature{display:flex;flex-direction:column;align-items:flex-start;margin-top:8mm}.signature p{margin:0}.signature-image{display:block;width:auto;max-width:48mm;height:auto;max-height:14mm;margin:1mm 0 .5mm;object-fit:contain;object-position:left center}.signature-name{font-weight:400;line-height:1.2}
+  .contact{padding-top:8mm;border-top:1px solid var(--line)}.sender{margin-bottom:2mm;color:var(--muted);text-align:center}.sender-name,.sender-title,.sender-contact{display:block}.sender-name{color:var(--ink);font-size:11pt;font-weight:700;line-height:1.2}.sender-title{margin-top:.8mm;color:var(--accent);font-size:11pt;font-weight:700;line-height:1.2}.sender-contact{margin-top:.8mm;font-size:11pt;line-height:1.25}
+  .recipient{margin-top:12mm;min-height:36mm;font-size:11pt;line-height:1.42}.date{text-align:right}.subject{color:var(--accent);font-weight:800;font-size:14pt;margin:8mm 0 5mm}
+  .signature{display:flex;flex-direction:column;align-items:flex-start;margin-top:8mm}.signature p{margin:0;font-size:11pt}.signature-image{display:block;width:auto;max-width:48mm;height:auto;max-height:14mm;margin:1mm 0 .5mm;object-fit:contain;object-position:left center}.signature-name{font-size:11pt;font-weight:400;line-height:1.2}
   .letter-content{padding:var(--doc-margin)}.letter-content>p:not(.subject){font-size:11pt;line-height:1.42}.letter-content>p:not(.date,.subject){margin:0 0 calc(var(--section-gap) * .72)}.letter-content .signature{font-size:11pt;line-height:1.42}.letter-body{text-align:justify;text-justify:inter-word;hyphens:auto;overflow-wrap:break-word}
   .letter-page.layout-split-clean .rule{height:2px}.letter-page.layout-sidebar-left .letter-content{padding-left:calc(var(--doc-margin) + 7mm);border-left:5mm solid var(--secondary)}.letter-page.layout-sidebar-right .letter-content{padding-right:calc(var(--doc-margin) + 7mm);border-right:5mm solid var(--secondary)}.letter-page.layout-bold-grid .rule{height:7mm}.letter-page.layout-timeline .subject{padding-left:3mm;border-left:1mm solid var(--accent)}.letter-page.layout-minimal .rule{height:1px;background:var(--line)}
   .letter-compact .letter-content{padding:16mm 20mm}.letter-compact .rule{margin-bottom:15mm}.letter-compact .recipient{margin-top:10mm;min-height:30mm}.letter-compact .letter-content>p:not(.subject){font-size:11pt;line-height:1.38}.letter-compact .signature{margin-top:6mm}
@@ -9596,7 +9596,10 @@ var DataStore = class {
 		const index = this.workspace.applications.findIndex((item) => item.id === application.id);
 		if (index < 0) throw new Error("Bewerbung wurde nicht gefunden.");
 		const current = this.workspace.applications[index];
-		application.folderName = await this.files.relocateApplicationFolders(current, new Date(application.sentAt ?? current.createdAt));
+		application.folderName = await this.files.relocateApplicationFolders({
+			...application,
+			folderName: current.folderName
+		}, new Date(application.sentAt ?? current.createdAt));
 		application.updatedAt = nowIso();
 		this.workspace.applications[index] = application;
 		this.syncEvents(application);
@@ -9678,6 +9681,21 @@ var DataStore = class {
 		if (index >= 0) this.workspace.profiles[index] = profile;
 		else this.workspace.profiles.push(profile);
 		await this.persist();
+		return this.getWorkspace();
+	}
+	async removeProfile(id) {
+		const index = this.workspace.profiles.findIndex((profile) => profile.id === id);
+		if (index < 0) throw new Error("Profil wurde nicht gefunden.");
+		this.workspace.profiles.splice(index, 1);
+		if (this.workspace.profiles.length > 0 && !this.workspace.profiles.some((profile) => profile.isDefault)) this.workspace.profiles[0].isDefault = true;
+		const replacement = this.workspace.profiles.find((profile) => profile.isDefault) ?? this.workspace.profiles[0];
+		const now = nowIso();
+		const reassignedApplications = this.workspace.applications.filter((application) => application.profileId === id);
+		reassignedApplications.forEach((application) => {
+			application.profileId = replacement?.id;
+			application.updatedAt = now;
+		});
+		await this.persist(reassignedApplications);
 		return this.getWorkspace();
 	}
 	async saveSettings(settings) {
@@ -28096,6 +28114,7 @@ var registerIpc = () => {
 		if (error) throw new Error(error);
 	});
 	ipcMain.handle("profiles:save", (_event, value) => store.saveProfile(profileSchema.parse(value)));
+	ipcMain.handle("profiles:remove", (_event, id) => store.removeProfile(String(id)));
 	ipcMain.handle("templates:scan", () => templateService.scanAllTemplates());
 	ipcMain.handle("templates:add", async (_event, rawInput) => {
 		const value = rawInput ?? {};

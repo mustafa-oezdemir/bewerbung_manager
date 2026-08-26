@@ -26,11 +26,13 @@ const emptyWorkspace: Workspace = {
 type StoreState = {
   workspace: Workspace;
   selectedApplicationId?: string;
+  selectedProfileId?: string;
   loading: boolean;
   error?: string;
   notice?: string;
   hydrate: () => Promise<void>;
   selectApplication: (id?: string) => void;
+  selectProfile: (id?: string) => void;
   createApplication: (input: ApplicationInput) => Promise<void>;
   saveApplication: (application: Application) => Promise<void>;
   syncCoverLetter: (applicationId: string) => Promise<void>;
@@ -42,6 +44,7 @@ type StoreState = {
     reason?: RejectionReason,
   ) => Promise<void>;
   saveProfile: (profile: ApplicantProfile) => Promise<void>;
+  removeProfile: (id: string) => Promise<void>;
   saveSettings: (settings: AppSettings) => Promise<void>;
   saveEvent: (event: CalendarEvent) => Promise<void>;
   addAttachment: (
@@ -112,7 +115,9 @@ export const useAppStore = create<StoreState>((set, get) => {
         });
       }
     },
-    selectApplication: (id) => set({ selectedApplicationId: id }),
+    selectApplication: (id) =>
+      set({ selectedApplicationId: id, selectedProfileId: undefined }),
+    selectProfile: (id) => set({ selectedProfileId: id }),
     async createApplication(input) {
       if (!apiAvailable()) return;
       await perform(
@@ -190,6 +195,16 @@ export const useAppStore = create<StoreState>((set, get) => {
         () => window.bewerbungsManager.profiles.save(profile),
         "Profil wurde gespeichert.",
       );
+    },
+    async removeProfile(id) {
+      if (!apiAvailable()) return;
+      await perform(
+        () => window.bewerbungsManager.profiles.remove(id),
+        "Profil wurde gelöscht.",
+      );
+      if (get().selectedProfileId === id) {
+        set({ selectedProfileId: undefined });
+      }
     },
     async saveSettings(settings) {
       if (!apiAvailable()) return;

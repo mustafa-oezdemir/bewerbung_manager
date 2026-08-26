@@ -250,8 +250,9 @@ describe("Lebenslauf-Dokumente", () => {
       '<span class="sender-contact">Berlin · mina@example.com</span>',
     );
     expect(html).toContain(
-      ".sender-name{color:var(--ink);font-size:20pt;font-weight:700;line-height:1.2}",
+      ".sender-name{color:var(--ink);font-size:11pt;font-weight:700;line-height:1.2}",
     );
+    expect(html).not.toContain(".sender-name{color:var(--ink);font-size:20pt");
     expect(html).toContain(
       ".sender-contact{margin-top:.8mm;font-size:11pt;line-height:1.25}",
     );
@@ -278,7 +279,9 @@ describe("Lebenslauf-Dokumente", () => {
       'class="page letter-page letter-standard layout-sidebar-right',
     );
     expect(html).toContain('data-resume-template="modern-sidebar"');
-    expect(html).toContain(".subject{color:var(--accent)");
+    expect(html).toContain(
+      ".subject{color:var(--accent);font-weight:800;font-size:14pt",
+    );
     expect(html).toContain(
       ".letter-content>p:not(.subject){font-size:11pt;line-height:1.42}",
     );
@@ -455,7 +458,10 @@ describe("Lebenslauf-Dokumente", () => {
     );
     expect(letterHtml).not.toContain("<strong>Mina Kaya</strong>");
     expect(letterHtml).toContain(
-      ".signature p{margin:0}.signature-image",
+      ".signature p{margin:0;font-size:11pt}.signature-image",
+    );
+    expect(letterHtml).toContain(
+      ".signature-name{font-size:11pt;font-weight:400;line-height:1.2}",
     );
   });
 

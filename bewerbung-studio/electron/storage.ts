@@ -649,7 +649,10 @@ export class DataStore {
     if (index < 0) throw new Error("Bewerbung wurde nicht gefunden.");
     const current = this.workspace.applications[index];
     application.folderName = await this.files.relocateApplicationFolders(
-      current,
+      {
+        ...application,
+        folderName: current.folderName,
+      },
       new Date(application.sentAt ?? current.createdAt),
     );
     application.updatedAt = nowIso();
@@ -748,6 +751,35 @@ export class DataStore {
     if (index >= 0) this.workspace.profiles[index] = profile;
     else this.workspace.profiles.push(profile);
     await this.persist();
+    return this.getWorkspace();
+  }
+
+  async removeProfile(id: string) {
+    const index = this.workspace.profiles.findIndex(
+      (profile) => profile.id === id,
+    );
+    if (index < 0) throw new Error("Profil wurde nicht gefunden.");
+
+    this.workspace.profiles.splice(index, 1);
+    if (
+      this.workspace.profiles.length > 0 &&
+      !this.workspace.profiles.some((profile) => profile.isDefault)
+    ) {
+      this.workspace.profiles[0].isDefault = true;
+    }
+    const replacement =
+      this.workspace.profiles.find((profile) => profile.isDefault) ??
+      this.workspace.profiles[0];
+    const now = nowIso();
+    const reassignedApplications = this.workspace.applications.filter(
+      (application) => application.profileId === id,
+    );
+    reassignedApplications.forEach((application) => {
+      application.profileId = replacement?.id;
+      application.updatedAt = now;
+    });
+
+    await this.persist(reassignedApplications);
     return this.getWorkspace();
   }
 

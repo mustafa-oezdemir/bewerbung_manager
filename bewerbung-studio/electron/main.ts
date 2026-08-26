@@ -161,6 +161,9 @@ const registerIpc = () => {
   ipcMain.handle("profiles:save", (_event, value: unknown) =>
     store.saveProfile(profileSchema.parse(value)),
   );
+  ipcMain.handle("profiles:remove", (_event, id: unknown) =>
+    store.removeProfile(String(id)),
+  );
   ipcMain.handle("templates:scan", () =>
     templateService.scanAllTemplates(),
   );

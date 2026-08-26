@@ -57,6 +57,7 @@ export interface BewerbungsManagerApi {
   };
   profiles: {
     save: (profile: ApplicantProfile) => Promise<Workspace>;
+    remove: (id: string) => Promise<Workspace>;
   };
   templates: {
     scan: () => Promise<TemplateScanResult>;
