@@ -81,6 +81,7 @@ export class FileManagementService {
       this.paths.zeugnisseArchive,
       this.paths.zertifikateArchive,
       this.paths.absagenRoot,
+      this.paths.interviewsRoot,
       this.paths.anschreibenTemplates,
       this.paths.deckblattTemplates,
       this.paths.lebenslaufTemplates,
@@ -109,6 +110,40 @@ export class FileManagementService {
       throw new Error("Ungültiger Absageordner.");
     }
     return candidate;
+  }
+
+  interviewPath(
+    application: Pick<Application, "company" | "interviewAt">,
+  ) {
+    const interviewDate = application.interviewAt
+      ? formatLocalDate(new Date(application.interviewAt))
+      : "Termin_offen";
+    const folderName = `${sanitizeFileName(application.company.name)}_${interviewDate}`;
+    const candidate = path.resolve(this.paths.interviewsRoot, folderName);
+    if (!isPathInside(this.paths.interviewsRoot, candidate)) {
+      throw new Error("Ungültiger Vorstellungsgesprächsordner.");
+    }
+    return candidate;
+  }
+
+  async syncInterviewFolder(
+    previous: Pick<Application, "company" | "interviewAt" | "status"> | undefined,
+    next: Pick<Application, "company" | "interviewAt" | "status">,
+  ) {
+    if (next.status !== "Vorstellungsgespräch") return;
+
+    const target = this.interviewPath(next);
+    const source =
+      previous?.status === "Vorstellungsgespräch"
+        ? this.interviewPath(previous)
+        : undefined;
+    if (source === target || !source || !(await pathExists(source))) {
+      await mkdir(target, { recursive: true });
+      return;
+    }
+    if (await pathExists(target)) return;
+
+    await rename(source, target);
   }
 
   documentDirectories(

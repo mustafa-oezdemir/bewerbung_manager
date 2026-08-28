@@ -614,6 +614,39 @@ describe("DataStore backups", () => {
     ).resolves.toBe("resume");
   });
 
+  it("creates the interview notes folder and renames it when the appointment is saved", async () => {
+    const created = await store.createApplication(
+      applicationInput("Gespräch GmbH"),
+    );
+    const application = created.applications[0];
+
+    const withInterviewStatus = await store.changeStatus(
+      application.id,
+      "Vorstellungsgespräch",
+    );
+    const openFolder = path.join(
+      store.files.paths.interviewsRoot,
+      "Gesprach_GmbH_Termin_offen",
+    );
+    await expect(access(openFolder)).resolves.toBeUndefined();
+    await writeFile(path.join(openFolder, "Meine Notizen.txt"), "Vorbereitung");
+
+    const interviewAt = new Date(2026, 8, 8, 10, 30, 0).toISOString();
+    await store.saveApplication({
+      ...withInterviewStatus.applications[0],
+      interviewAt,
+    });
+
+    const datedFolder = path.join(
+      store.files.paths.interviewsRoot,
+      "Gesprach_GmbH_2026-09-08",
+    );
+    await expect(access(openFolder)).rejects.toThrow();
+    await expect(
+      readFile(path.join(datedFolder, "Meine Notizen.txt"), "utf8"),
+    ).resolves.toBe("Vorbereitung");
+  });
+
   it("deletes the application record and its generated folders", async () => {
     const created = await store.createApplication(
       {

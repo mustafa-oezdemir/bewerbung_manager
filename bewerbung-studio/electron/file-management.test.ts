@@ -36,6 +36,7 @@ describe("FileManagementService", () => {
         paths.zeugnisseArchive,
         paths.zertifikateArchive,
         paths.absagenRoot,
+        paths.interviewsRoot,
       ].map((candidate) => expect(access(candidate)).resolves.toBeUndefined()),
     );
   });
@@ -124,6 +125,35 @@ describe("FileManagementService", () => {
     expect(new ApplicationFolderLockedError().message).toMatch(
       /geöffneten Word-, PDF-/,
     );
+  });
+
+  it("creates and dates the personal interview notes folder without losing notes", async () => {
+    const application = {
+      company: { name: "Muster/Firma GmbH" },
+      status: "Vorstellungsgespräch",
+    } as Application;
+
+    await service.syncInterviewFolder(undefined, application);
+    const openInterviewFolder = path.join(
+      service.paths.interviewsRoot,
+      "Muster_Firma_GmbH_Termin_offen",
+    );
+    await writeFile(path.join(openInterviewFolder, "Notizen.txt"), "Fragen");
+
+    const scheduledApplication = {
+      ...application,
+      interviewAt: new Date(2026, 7, 30, 14, 0, 0).toISOString(),
+    };
+    await service.syncInterviewFolder(application, scheduledApplication);
+
+    const scheduledInterviewFolder = path.join(
+      service.paths.interviewsRoot,
+      "Muster_Firma_GmbH_2026-08-30",
+    );
+    await expect(access(openInterviewFolder)).rejects.toThrow();
+    await expect(
+      readFile(path.join(scheduledInterviewFolder, "Notizen.txt"), "utf8"),
+    ).resolves.toBe("Fragen");
   });
 
   it("only accepts archive files from the configured category root", async () => {

@@ -1,0 +1,260 @@
+import { watch, type FSWatcher } from "node:fs";
+import { appendFile, mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { promisify } from "node:util";
+import { execFile } from "node:child_process";
+
+export const APPLICATION_DATA_REMOTE =
+  "https://github.com/mustafa-oezdemir/bewerbung.git";
+
+export type ApplicationGitAction =
+  | "create"
+  | "bewerbung"
+  | "update"
+  | "delete"
+  | "absage"
+  | "vorstellungsgespraech"
+  | "anschreiben";
+
+export interface ApplicationGitCommitQueue {
+  queueCommit(companyName: string, action: ApplicationGitAction): void;
+}
+
+type PowerShellRunner = (
+  scriptPath: string,
+  repositoryPath: string,
+  remoteUrl: string,
+  commitMessage: string,
+) => Promise<void>;
+
+type GitAutomationOptions = {
+  remoteUrl?: string;
+  runner?: PowerShellRunner;
+  watchFileChanges?: boolean;
+  now?: () => Date;
+};
+
+const execFileAsync = promisify(execFile);
+
+const powershellScript = `param(
+  [Parameter(Mandatory = $true)][string]$RepositoryPath,
+  [Parameter(Mandatory = $true)][string]$RemoteUrl,
+  [Parameter(Mandatory = $true)][string]$CommitMessage
+)
+
+$ErrorActionPreference = "Stop"
+
+function Invoke-Git {
+  param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GitArguments)
+  & git -C $RepositoryPath @GitArguments
+  if ($LASTEXITCODE -ne 0) {
+    throw "git $($GitArguments -join ' ') failed with exit code $LASTEXITCODE."
+  }
+}
+
+$insideWorkTree = & git -C $RepositoryPath rev-parse --is-inside-work-tree 2>$null
+if ($LASTEXITCODE -ne 0 -or $insideWorkTree.Trim() -ne "true") {
+  throw "No Git repository found at $RepositoryPath."
+}
+
+$originUrl = & git -C $RepositoryPath remote get-url origin 2>$null
+if ($LASTEXITCODE -ne 0) {
+  Invoke-Git remote add origin $RemoteUrl
+} elseif ($originUrl.Trim() -ne $RemoteUrl) {
+  Invoke-Git remote set-url origin $RemoteUrl
+}
+
+Invoke-Git add --all
+& git -C $RepositoryPath diff --cached --quiet
+$diffExitCode = $LASTEXITCODE
+if ($diffExitCode -eq 0) {
+  exit 0
+}
+if ($diffExitCode -ne 1) {
+  throw "git diff --cached --quiet failed with exit code $diffExitCode."
+}
+
+Invoke-Git commit --message $CommitMessage
+& git -C $RepositoryPath push origin HEAD:main
+if ($LASTEXITCODE -ne 0) {
+  Invoke-Git pull --rebase --autostash origin main
+  Invoke-Git push origin HEAD:main
+}
+`;
+
+const defaultRunner: PowerShellRunner = async (
+  scriptPath,
+  repositoryPath,
+  remoteUrl,
+  commitMessage,
+) => {
+  await execFileAsync(
+    "powershell.exe",
+    [
+      "-NoProfile",
+      "-NonInteractive",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-File",
+      scriptPath,
+      "-RepositoryPath",
+      repositoryPath,
+      "-RemoteUrl",
+      remoteUrl,
+      "-CommitMessage",
+      commitMessage,
+    ],
+    { windowsHide: true, timeout: 120_000, maxBuffer: 1024 * 1024 },
+  );
+};
+
+const localTimestamp = (date: Date) => {
+  const part = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${part(date.getMonth() + 1)}-${part(date.getDate())} ${part(date.getHours())}:${part(date.getMinutes())}:${part(date.getSeconds())}`;
+};
+
+export const buildApplicationCommitMessage = (
+  companyName: string,
+  action: ApplicationGitAction,
+  date = new Date(),
+) => {
+  const company = companyName.replace(/[\r\n|]+/g, " ").replace(/\s+/g, " ").trim();
+  return `${company || "Bewerbung"} | ${localTimestamp(date)} | ${action}`;
+};
+
+const inferredCompanyName = (relativePath: string) => {
+  const parts = relativePath.split(/[\\/]+/).filter(Boolean);
+  const knownRootIndex = parts.findIndex((part, index) =>
+    [
+      "Anschreiben",
+      "Lebenslauf",
+      "Absagen",
+      "Vorstellungsgespräch",
+    ].includes(part) ||
+    (part === "Bewerbungen" && parts[index - 1] === "data"),
+  );
+  const folder = knownRootIndex >= 0 ? parts[knownRootIndex + 1] : undefined;
+  return (
+    folder
+      ?.replace(/_(?:\d{4}-\d{2}-\d{2}|Termin_offen)$/, "")
+      .replace(/_/g, " ") || "BewerbungsManager"
+  );
+};
+
+const shouldIgnoreWatchEvent = (relativePath: string) => {
+  const normalized = relativePath.replace(/\\/g, "/");
+  const fileName = path.basename(normalized);
+  return (
+    normalized.startsWith(".git/") ||
+    normalized.startsWith("data/Logs/") ||
+    normalized.startsWith("data/Electron/") ||
+    normalized.startsWith("data/ElectronSession/") ||
+    normalized.startsWith("data/CrashDumps/") ||
+    normalized.startsWith("data/cache/") ||
+    fileName.startsWith("~$") ||
+    /\.(?:tmp|temp|log|bak)$/i.test(fileName)
+  );
+};
+
+export class GitAutomationService implements ApplicationGitCommitQueue {
+  private readonly remoteUrl: string;
+  private readonly runner: PowerShellRunner;
+  private readonly watchFileChanges: boolean;
+  private readonly now: () => Date;
+  private readonly scriptPath: string;
+  private readonly logPath: string;
+  private pending: Promise<void> = Promise.resolve();
+  private watcher?: FSWatcher;
+  private watchTimer?: NodeJS.Timeout;
+  private pendingWatchCompany = "BewerbungsManager";
+
+  constructor(
+    private readonly repositoryPath: string,
+    options: GitAutomationOptions = {},
+  ) {
+    this.remoteUrl = options.remoteUrl ?? APPLICATION_DATA_REMOTE;
+    this.runner = options.runner ?? defaultRunner;
+    this.watchFileChanges = options.watchFileChanges ?? true;
+    this.now = options.now ?? (() => new Date());
+    this.scriptPath = path.join(
+      repositoryPath,
+      "data",
+      "Settings",
+      "auto-git-sync.ps1",
+    );
+    this.logPath = path.join(
+      repositoryPath,
+      "data",
+      "Logs",
+      "git-automation.log",
+    );
+  }
+
+  async initialize() {
+    await mkdir(path.dirname(this.scriptPath), { recursive: true });
+    await mkdir(path.dirname(this.logPath), { recursive: true });
+    await writeFile(this.scriptPath, powershellScript, "utf8");
+    if (this.watchFileChanges) this.startWatcher();
+  }
+
+  queueCommit(companyName: string, action: ApplicationGitAction) {
+    const commitMessage = buildApplicationCommitMessage(
+      companyName,
+      action,
+      this.now(),
+    );
+    this.pending = this.pending
+      .then(() =>
+        this.runner(
+          this.scriptPath,
+          this.repositoryPath,
+          this.remoteUrl,
+          commitMessage,
+        ),
+      )
+      .catch((error) => this.logFailure(commitMessage, error));
+  }
+
+  async waitForIdle() {
+    await this.pending;
+  }
+
+  dispose() {
+    if (this.watchTimer) clearTimeout(this.watchTimer);
+    this.watcher?.close();
+  }
+
+  private startWatcher() {
+    try {
+      this.watcher = watch(
+        this.repositoryPath,
+        { recursive: true },
+        (_eventType, fileName) => {
+          if (!fileName) return;
+          const relativePath = String(fileName);
+          if (shouldIgnoreWatchEvent(relativePath)) return;
+          this.pendingWatchCompany = inferredCompanyName(relativePath);
+          if (this.watchTimer) clearTimeout(this.watchTimer);
+          this.watchTimer = setTimeout(() => {
+            this.queueCommit(this.pendingWatchCompany, "update");
+          }, 2_500);
+          this.watchTimer.unref();
+        },
+      );
+      this.watcher.on("error", (error) => {
+        void this.logFailure("Dateiüberwachung", error);
+      });
+    } catch (error) {
+      void this.logFailure("Dateiüberwachung", error);
+    }
+  }
+
+  private async logFailure(commitMessage: string, error: unknown) {
+    const detail = error instanceof Error ? error.message : String(error);
+    await appendFile(
+      this.logPath,
+      `[${new Date().toISOString()}] ${commitMessage}: ${detail}\n`,
+      "utf8",
+    ).catch(() => undefined);
+  }
+}

@@ -16,6 +16,7 @@ export interface ApplicationPaths {
   zeugnisseArchive: string;
   zertifikateArchive: string;
   absagenRoot: string;
+  interviewsRoot: string;
   previewCache: string;
   systemTemplateCache: string;
   bundledTemplatesRoot?: string;
@@ -48,6 +49,7 @@ export const resolveApplicationPaths = (
     zeugnisseArchive: path.join(root, "Zeugnisse"),
     zertifikateArchive: path.join(root, "Zertifikate"),
     absagenRoot: path.join(root, "Absagen"),
+    interviewsRoot: path.join(root, "Vorstellungsgespräch"),
     previewCache: path.join(dataRoot, "cache", "template-previews"),
     systemTemplateCache: path.join(dataRoot, "cache", "system-templates"),
     bundledTemplatesRoot,

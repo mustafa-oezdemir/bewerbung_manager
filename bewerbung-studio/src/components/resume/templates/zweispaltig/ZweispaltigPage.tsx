@@ -37,10 +37,10 @@ export function ZweispaltigPage({
   const savedLayout = getProfileResumeSectionLayout(profile, "zweispaltig");
   const mainOrder: ResumeSectionType[] = hasCustomLayout
     ? savedLayout.filter(({ zone }) => zone === "main" || zone === "full").map(({ type }) => type)
-    : ["summary", "experience", "education"];
+    : ["experience", "education"];
   const sidebarOrder: ResumeSectionType[] = hasCustomLayout
     ? savedLayout.filter(({ zone }) => zone === "sidebar").map(({ type }) => type)
-    : ["strengths", "knowledge", "languages", "certifications"];
+    : ["summary", "strengths", "knowledge", "languages", "certifications"];
   const atsOrder: ResumeSectionType[] = hasCustomLayout
     ? savedLayout.map(({ type }) => type)
     : ["summary", "experience", "education", "knowledge", "languages", "strengths", "certifications"];

@@ -25,5 +25,8 @@ describe("application paths", () => {
     expect(paths.zeugnisseArchive).toBe(path.join(root, "Zeugnisse"));
     expect(paths.zertifikateArchive).toBe(path.join(root, "Zertifikate"));
     expect(paths.absagenRoot).toBe(path.join(root, "Absagen"));
+    expect(paths.interviewsRoot).toBe(
+      path.join(root, "Vorstellungsgespräch"),
+    );
   });
 });

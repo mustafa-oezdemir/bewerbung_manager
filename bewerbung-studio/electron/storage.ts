@@ -655,6 +655,7 @@ export class DataStore {
       },
       new Date(application.sentAt ?? current.createdAt),
     );
+    await this.files.syncInterviewFolder(current, application);
     application.updatedAt = nowIso();
     this.workspace.applications[index] = application;
     this.syncEvents(application);
@@ -672,6 +673,10 @@ export class DataStore {
     if (application.status !== status) {
       const now = nowIso();
       const previous = application.status;
+      await this.files.syncInterviewFolder(undefined, {
+        ...application,
+        status,
+      });
       await this.files.transitionApplicationDocuments(application, status);
       application.status = status;
       application.updatedAt = now;

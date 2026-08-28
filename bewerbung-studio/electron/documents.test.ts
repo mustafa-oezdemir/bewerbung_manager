@@ -121,10 +121,10 @@ describe("Lebenslauf-Dokumente", () => {
       "lebenslauf",
     );
     expect(zweispaltigCssHtml).toContain(
-      ".zweispaltig-pdf-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1mm 8mm;width:100%;max-width:none",
+      ".zweispaltig-pdf-contacts{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:1.1mm 8mm;width:100%;max-width:132mm",
     );
     expect(zweispaltigCssHtml).toContain(
-      '[data-contact-kind="github"] i{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}',
+      '[data-contact-kind="github"]>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}',
     );
   });
 
@@ -556,16 +556,31 @@ describe("Lebenslauf-Dokumente", () => {
       "lebenslauf",
     );
     const body = html.slice(html.indexOf("<body>"));
+    const mainStart = body.indexOf('<main class="zweispaltig-pdf-main">');
+    const sidebarStart = body.indexOf(
+      '<aside class="zweispaltig-pdf-sidebar">',
+    );
+    const mainMarkup = body.slice(mainStart, sidebarStart);
+    const sidebarMarkup = body.slice(
+      sidebarStart,
+      body.indexOf("</aside>", sidebarStart),
+    );
 
     expect(body).toContain('data-template="zweispaltig"');
     expect(body).toContain('data-no-fit="true"');
     expect(body).toContain('class="zweispaltig-pdf-columns"');
     expect(body).toContain('<aside class="zweispaltig-pdf-sidebar">');
     expect(html).toContain(
-      "grid-template-columns:minmax(0,62%) minmax(0,38%)",
+      "grid-template-columns:minmax(0,62fr) minmax(0,38fr);column-gap:11mm",
     );
+    expect(html).toContain("width:30mm;height:30mm");
+    expect(body).toContain('class="zweispaltig-pdf-entry-meta"');
+    expect(body).toContain('viewBox="0 0 24 24"');
+    expect(body).toContain('class="zweispaltig-pdf-language-dots"');
     expect(body).toContain("Zusammenfassung");
     expect(body).toContain("Stärken");
+    expect(mainMarkup).not.toContain("Zusammenfassung");
+    expect(sidebarMarkup).toContain("Zusammenfassung");
     expect(body).not.toContain('<img class="zweispaltig-pdf-photo"');
     expect(body).not.toContain("monogram");
   });
@@ -992,6 +1007,43 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).not.toContain("<img");
   });
 
+  it("keeps Ivy League strengths when the knowledge section is disabled", () => {
+    const ivyApplication = applicationSchema.parse({
+      ...application,
+      templateId: "ivy-league",
+      designSettings: {
+        ...application.designSettings,
+        columnLayout: "single",
+        resumeOutputMode: "visual",
+      },
+    });
+    const strengthsOnlyProfile = profileSchema.parse({
+      ...profile,
+      strengths: [
+        {
+          id: crypto.randomUUID(),
+          title: "Analytisches Denken",
+          description: "Komplexe Zusammenhänge sicher bewerten",
+        },
+      ],
+      resumeSections: {
+        ...profile.resumeSections,
+        strengths: true,
+        skills: false,
+      },
+    });
+    const html = buildDocumentHtml(
+      ivyApplication,
+      strengthsOnlyProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain("ivy-pdf-strengths");
+    expect(body).toContain("Analytisches Denken");
+    expect(body).not.toContain(">Kenntnisse<");
+  });
+
   it("removes the Ivy League watercolor with the white background option", () => {
     const ivyApplication = applicationSchema.parse({
       ...application,
@@ -1115,6 +1167,42 @@ describe("Lebenslauf-Dokumente", () => {
     );
     expect(body).toContain("https://mina.example.com");
     expect(body).not.toContain("Seite 1 / 1");
+  });
+
+  it("keeps Stilvoll strengths when the knowledge section is disabled", () => {
+    const stilvollApplication = applicationSchema.parse({
+      ...application,
+      templateId: "stilvoll",
+      designSettings: {
+        ...application.designSettings,
+        resumeOutputMode: "visual",
+      },
+    });
+    const strengthsOnlyProfile = profileSchema.parse({
+      ...profile,
+      strengths: [
+        {
+          id: crypto.randomUUID(),
+          title: "Analytisches Denkvermögen",
+          description: "Komplexe Zusammenhänge strukturiert bewerten",
+        },
+      ],
+      resumeSections: {
+        ...profile.resumeSections,
+        strengths: true,
+        skills: false,
+      },
+    });
+    const html = buildDocumentHtml(
+      stilvollApplication,
+      strengthsOnlyProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain("stilvoll-pdf-strengths");
+    expect(body).toContain("Analytisches Denkvermögen");
+    expect(body).not.toContain(">Kenntnisse<");
   });
 
   it("renders Stilvoll ATS linearly without photo, chevrons, or rating dots", () => {
@@ -1746,6 +1834,30 @@ describe("Lebenslauf-Dokumente", () => {
       body.indexOf(">Erfahrung<"),
     );
     expect(body).not.toContain("column-timeline");
+  });
+
+  it("keeps Tabellarisch strengths when the knowledge section is disabled", () => {
+    const tabellarischApplication = applicationSchema.parse({
+      ...application,
+      templateId: "tabellarisch",
+    });
+    const strengthsOnlyProfile = profileSchema.parse({
+      ...profile,
+      resumeSections: {
+        ...profile.resumeSections,
+        strengths: true,
+        skills: false,
+      },
+    });
+    const html = buildDocumentHtml(
+      tabellarischApplication,
+      strengthsOnlyProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain(">Stärken<");
+    expect(body).toContain("tabellarisch-pdf-strengths");
   });
 
   it("renders Tabellarisch ATS without photo, geometry, or timeline rail", () => {

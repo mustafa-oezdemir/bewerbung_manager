@@ -182,6 +182,14 @@ describe("Zweispaltig rendering", () => {
     expect(markup).toContain("Auf die Stelle zugeschnitten");
     expect(markup).toContain("Beispiel GmbH");
     expect(markup).not.toContain("Zukunft AG");
+    const mainStart = markup.indexOf('class="zweispaltig-main"');
+    const sidebarStart = markup.indexOf('class="zweispaltig-sidebar"');
+    expect(markup.slice(mainStart, sidebarStart)).not.toContain(
+      "Auf die Stelle zugeschnitten",
+    );
+    expect(markup.slice(sidebarStart)).toContain(
+      "Auf die Stelle zugeschnitten",
+    );
   });
 
   it("does not invent a photo placeholder", () => {
