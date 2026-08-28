@@ -245,8 +245,13 @@ export class GitAutomationService implements ApplicationGitCommitQueue {
   }
 
   dispose() {
-    if (this.watchTimer) clearTimeout(this.watchTimer);
+    if (this.watchTimer) {
+      clearTimeout(this.watchTimer);
+      this.watchTimer = undefined;
+      this.queueCommit(this.pendingWatchCompany, "update");
+    }
     this.watcher?.close();
+    this.watcher = undefined;
   }
 
   private startWatcher() {
@@ -261,6 +266,7 @@ export class GitAutomationService implements ApplicationGitCommitQueue {
           this.pendingWatchCompany = inferredCompanyName(relativePath);
           if (this.watchTimer) clearTimeout(this.watchTimer);
           this.watchTimer = setTimeout(() => {
+            this.watchTimer = undefined;
             this.queueCommit(this.pendingWatchCompany, "update");
           }, 2_500);
           this.watchTimer.unref();

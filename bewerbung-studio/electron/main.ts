@@ -40,6 +40,8 @@ let mainWindow: BrowserWindow | null = null;
 let store: DataStore;
 let templateService: TemplateService;
 let gitAutomation: GitAutomationService;
+let gitShutdownInProgress = false;
+let gitShutdownComplete = false;
 const notifiedEvents = new Set<string>();
 const appId = "de.bewerbungsmanager.desktop";
 const __filename = fileURLToPath(import.meta.url);
@@ -579,6 +581,17 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
-app.on("before-quit", () => {
-  gitAutomation?.dispose();
+app.on("before-quit", (event) => {
+  if (!gitAutomation || gitShutdownComplete) return;
+  event.preventDefault();
+  if (gitShutdownInProgress) return;
+  gitShutdownInProgress = true;
+  gitAutomation.dispose();
+  void gitAutomation
+    .waitForIdle()
+    .catch(() => undefined)
+    .finally(() => {
+      gitShutdownComplete = true;
+      app.quit();
+    });
 });

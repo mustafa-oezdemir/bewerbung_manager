@@ -19782,7 +19782,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		}
 	}
 	dispose() {
-		this.watchTimer && clearTimeout(this.watchTimer), this.watcher?.close();
+		this.watchTimer && (clearTimeout(this.watchTimer), this.watchTimer = void 0, this.queueCommit(this.pendingWatchCompany, "update")), this.watcher?.close(), this.watcher = void 0;
 	}
 	startWatcher() {
 		try {
@@ -19790,7 +19790,7 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 				if (!t) return;
 				let n = String(t);
 				Tf(n) || (this.pendingWatchCompany = wf(n), this.watchTimer && clearTimeout(this.watchTimer), this.watchTimer = setTimeout(() => {
-					this.queueCommit(this.pendingWatchCompany, "update");
+					this.watchTimer = void 0, this.queueCommit(this.pendingWatchCompany, "update");
 				}, 2500), this.watchTimer.unref());
 			}), this.watcher.on("error", (e) => {
 				this.logFailure("Dateiüberwachung", e);
@@ -19803,15 +19803,15 @@ while (r === o[++i] && r === o[++i] && r === o[++i] && r === o[++i] && r === o[+
 		let n = t instanceof Error ? t.message : String(t);
 		await a(this.logPath, `[${(/* @__PURE__ */ new Date()).toISOString()}] ${e}: ${n}\n`, "utf8").catch(() => void 0);
 	}
-}, Df = null, $, Of, kf, Af = /* @__PURE__ */ new Set(), jf = "de.bewerbungsmanager.desktop", Mf = g(import.meta.url), Nf = e.dirname(Mf), Pf = !!process.env.VITE_DEV_SERVER_URL, Ff = gc(void 0, e.join(Nf, Pf ? "../public/templates" : "../dist/templates")), If = e.join(Ff.dataRoot, "Electron"), Lf = e.join(Ff.dataRoot, "ElectronSession"), Rf = e.join(Ff.dataRoot, "Logs"), zf = e.join(Ff.dataRoot, "CrashDumps");
+}, Df = null, $, Of, kf, Af = !1, jf = !1, Mf = /* @__PURE__ */ new Set(), Nf = "de.bewerbungsmanager.desktop", Pf = g(import.meta.url), Ff = e.dirname(Pf), If = !!process.env.VITE_DEV_SERVER_URL, Lf = gc(void 0, e.join(Ff, If ? "../public/templates" : "../dist/templates")), Rf = e.join(Lf.dataRoot, "Electron"), zf = e.join(Lf.dataRoot, "ElectronSession"), Bf = e.join(Lf.dataRoot, "Logs"), Vf = e.join(Lf.dataRoot, "CrashDumps");
 for (let e of [
-	If,
-	Lf,
 	Rf,
-	zf
+	zf,
+	Bf,
+	Vf
 ]) n(e, { recursive: !0 });
-b.setPath("userData", If), b.setPath("sessionData", Lf), b.setPath("logs", Rf), b.setPath("crashDumps", zf), process.platform === "win32" && b.setAppUserModelId(jf);
-var Bf = async () => {
+b.setPath("userData", Rf), b.setPath("sessionData", zf), b.setPath("logs", Bf), b.setPath("crashDumps", Vf), process.platform === "win32" && b.setAppUserModelId(Nf);
+var Hf = async () => {
 	Df = new v({
 		width: 1480,
 		height: 940,
@@ -19821,16 +19821,16 @@ var Bf = async () => {
 		backgroundColor: "#f3f1ec",
 		titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "default",
 		webPreferences: {
-			preload: e.join(Nf, "preload.mjs"),
+			preload: e.join(Ff, "preload.mjs"),
 			contextIsolation: !0,
 			nodeIntegration: !1,
 			sandbox: !0,
 			webSecurity: !0
 		}
 	}), Df.webContents.setWindowOpenHandler(({ url: e }) => (/^https?:\/\//i.test(e) && w.openExternal(e), { action: "deny" })), Df.webContents.on("will-navigate", (t, n) => {
-		(Pf ? n.startsWith(process.env.VITE_DEV_SERVER_URL) : n.startsWith(_(e.join(Nf, "../dist/index.html")).toString())) || t.preventDefault();
-	}), Df.once("ready-to-show", () => Df?.show()), Pf ? await Df.loadURL(process.env.VITE_DEV_SERVER_URL) : await Df.loadFile(e.join(Nf, "../dist/index.html"));
-}, Vf = () => {
+		(If ? n.startsWith(process.env.VITE_DEV_SERVER_URL) : n.startsWith(_(e.join(Ff, "../dist/index.html")).toString())) || t.preventDefault();
+	}), Df.once("ready-to-show", () => Df?.show()), If ? await Df.loadURL(process.env.VITE_DEV_SERVER_URL) : await Df.loadFile(e.join(Ff, "../dist/index.html"));
+}, Uf = () => {
 	S.handle("workspace:get", () => $.getWorkspace()), S.handle("application-draft:get", () => $.getApplicationDraft()), S.handle("application-draft:save", (e, t) => $.saveApplicationDraft(Rs.parse(t))), S.handle("application-draft:clear", () => $.clearApplicationDraft()), S.handle("applications:create", (e, t) => $.createApplication(Ls.parse(t))), S.handle("applications:save", async (e, t) => {
 		try {
 			return await $.saveApplication(Is.parse(t));
@@ -20056,7 +20056,7 @@ var Bf = async () => {
 		if (!["http:", "https:"].includes(n.protocol)) throw Error("Nur HTTP- und HTTPS-Links sind erlaubt.");
 		await w.openExternal(n.toString());
 	}), S.handle("system:data-path", () => $.dataPath);
-}, Hf = () => {
+}, Wf = () => {
 	let e = $.getWorkspace();
 	if (!e.settings.notificationsEnabled || !y.isSupported()) return;
 	let t = Date.now();
@@ -20065,19 +20065,21 @@ var Bf = async () => {
 			let r = n - e * 6e4;
 			return r <= t && r > t - 65e3;
 		}), i = `${e.id}:${Math.floor(t / 6e4)}`;
-		r && !Af.has(i) && (Af.add(i), new y({
+		r && !Mf.has(i) && (Mf.add(i), new y({
 			title: "BewerbungsManager",
 			body: e.title
 		}).show());
 	});
 };
 b.whenReady().then(async () => {
-	kf = new Ef(Ff.root), $ = new vu(Ff, kf), await $.initialize(), await kf.initialize(), Of = new vf(Ff), await Of.initialize(), Vf(), await Bf(), Hf(), setInterval(Hf, 6e4).unref(), b.on("activate", () => {
-		v.getAllWindows().length === 0 && Bf();
+	kf = new Ef(Lf.root), $ = new vu(Lf, kf), await $.initialize(), await kf.initialize(), Of = new vf(Lf), await Of.initialize(), Uf(), await Hf(), Wf(), setInterval(Wf, 6e4).unref(), b.on("activate", () => {
+		v.getAllWindows().length === 0 && Hf();
 	});
 }), b.on("window-all-closed", () => {
 	process.platform !== "darwin" && b.quit();
-}), b.on("before-quit", () => {
-	kf?.dispose();
+}), b.on("before-quit", (e) => {
+	!kf || jf || (e.preventDefault(), !Af && (Af = !0, kf.dispose(), kf.waitForIdle().catch(() => void 0).finally(() => {
+		jf = !0, b.quit();
+	})));
 });
 //#endregion
