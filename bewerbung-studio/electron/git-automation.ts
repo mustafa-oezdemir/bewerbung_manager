@@ -73,6 +73,14 @@ if ($remotes -notcontains "origin") {
   }
 }
 
+$remoteMain = @(& git -C $RepositoryPath ls-remote --heads origin main)
+if ($LASTEXITCODE -ne 0) {
+  throw "Unable to read origin/main."
+}
+if ($remoteMain.Count -gt 0) {
+  Invoke-Git pull --rebase --autostash origin main
+}
+
 Invoke-Git add --all
 & git -C $RepositoryPath diff --cached --quiet
 $diffExitCode = $LASTEXITCODE

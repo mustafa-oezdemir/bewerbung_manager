@@ -56,12 +56,14 @@ describe("GitAutomationService", () => {
         "Siemens AG | 2026-08-29 10:30:00 | vorstellungsgespraech",
       ],
     ]);
-    await expect(
-      readFile(
-        path.join(root, "data", "Settings", "auto-git-sync.ps1"),
-        "utf8",
-      ),
-    ).resolves.toContain("push origin HEAD:main");
+    const script = await readFile(
+      path.join(root, "data", "Settings", "auto-git-sync.ps1"),
+      "utf8",
+    );
+    expect(script).toContain("push origin HEAD:main");
+    expect(script.indexOf("pull --rebase --autostash origin main")).toBeLessThan(
+      script.indexOf("add --all"),
+    );
   });
 
   it.skipIf(process.platform !== "win32")(
@@ -122,6 +124,54 @@ describe("GitAutomationService", () => {
         "Test Firma | 2026-08-29 11:00:00 | bewerbung",
       );
       expect(remoteHead.trim()).toBe(localHead.trim());
+
+      const otherClone = path.join(base, "other-clone");
+      await execFileAsync("git", ["clone", "--branch", "main", remote, otherClone]);
+      await execFileAsync("git", [
+        "-C",
+        otherClone,
+        "config",
+        "user.name",
+        "Other User",
+      ]);
+      await execFileAsync("git", [
+        "-C",
+        otherClone,
+        "config",
+        "user.email",
+        "other@example.com",
+      ]);
+      await writeFile(path.join(otherClone, "remote.txt"), "remote", "utf8");
+      await execFileAsync("git", ["-C", otherClone, "add", "--all"]);
+      await execFileAsync("git", [
+        "-C",
+        otherClone,
+        "commit",
+        "-m",
+        "remote update",
+      ]);
+      await execFileAsync("git", ["-C", otherClone, "push", "origin", "main"]);
+      await writeFile(path.join(repository, "local.txt"), "local", "utf8");
+
+      service.queueCommit("Test Firma", "update");
+      await service.waitForIdle();
+
+      await expect(readFile(path.join(repository, "remote.txt"), "utf8")).resolves.toBe(
+        "remote",
+      );
+      const { stdout: synchronizedRemoteHead } = await execFileAsync("git", [
+        "--git-dir",
+        remote,
+        "rev-parse",
+        "refs/heads/main",
+      ]);
+      const { stdout: synchronizedLocalHead } = await execFileAsync("git", [
+        "-C",
+        repository,
+        "rev-parse",
+        "HEAD",
+      ]);
+      expect(synchronizedRemoteHead.trim()).toBe(synchronizedLocalHead.trim());
     },
   );
 });
