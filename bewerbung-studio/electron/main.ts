@@ -34,10 +34,12 @@ import { DataStore } from "./storage";
 import { ApplicationFolderLockedError } from "./file-management";
 import { mergePdfDocuments } from "./pdf";
 import { TemplateService } from "./templates/template.service";
+import { GitAutomationService } from "./git-automation";
 
 let mainWindow: BrowserWindow | null = null;
 let store: DataStore;
 let templateService: TemplateService;
+let gitAutomation: GitAutomationService;
 const notifiedEvents = new Set<string>();
 const appId = "de.bewerbungsmanager.desktop";
 const __filename = fileURLToPath(import.meta.url);
@@ -219,6 +221,10 @@ const registerIpc = () => {
       context.data,
       { atsMode: value.atsMode === true },
     );
+    store.queueGitCommit(
+      value.applicationId,
+      template.documentType === "anschreiben" ? "anschreiben" : "update",
+    );
     const openError = await shell.openPath(result.filePath);
     if (openError) throw new Error(openError);
     return result;
@@ -240,12 +246,14 @@ const registerIpc = () => {
       ]
         .filter(Boolean)
         .join("_");
-      return templateService.synchronizeDocumentFromTemplate(
+      const result = await templateService.synchronizeDocumentFromTemplate(
         template.id,
         context.targetDirectories.anschreiben,
         applicantName ? `Anschreiben_${applicantName}` : "Anschreiben",
         context.data,
       );
+      store.queueGitCommit(id, "anschreiben");
+      return result;
     },
   );
   ipcMain.handle(
@@ -443,6 +451,10 @@ const registerIpc = () => {
               )
             : generatedPdf;
         await writeFile(result.filePath, pdf);
+        store.queueGitCommit(
+          normalizedApplicationId,
+          target === "anschreiben" ? "anschreiben" : "update",
+        );
         return result.filePath;
       } finally {
         exporter.destroy();
@@ -548,8 +560,10 @@ const notifyDueEvents = () => {
 };
 
 app.whenReady().then(async () => {
-  store = new DataStore(applicationPaths);
+  gitAutomation = new GitAutomationService(applicationPaths.root);
+  store = new DataStore(applicationPaths, gitAutomation);
   await store.initialize();
+  await gitAutomation.initialize();
   templateService = new TemplateService(applicationPaths);
   await templateService.initialize();
   registerIpc();
@@ -563,4 +577,8 @@ app.whenReady().then(async () => {
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
+});
+
+app.on("before-quit", () => {
+  gitAutomation?.dispose();
 });

@@ -57,11 +57,20 @@ if ($LASTEXITCODE -ne 0 -or $insideWorkTree.Trim() -ne "true") {
   throw "No Git repository found at $RepositoryPath."
 }
 
-$originUrl = & git -C $RepositoryPath remote get-url origin 2>$null
+$remotes = @(& git -C $RepositoryPath remote)
 if ($LASTEXITCODE -ne 0) {
+  throw "Unable to list Git remotes."
+}
+if ($remotes -notcontains "origin") {
   Invoke-Git remote add origin $RemoteUrl
-} elseif ($originUrl.Trim() -ne $RemoteUrl) {
-  Invoke-Git remote set-url origin $RemoteUrl
+} else {
+  $originUrl = & git -C $RepositoryPath remote get-url origin
+  if ($LASTEXITCODE -ne 0) {
+    throw "Unable to read the origin URL."
+  }
+  if ($originUrl.Trim() -ne $RemoteUrl) {
+    Invoke-Git remote set-url origin $RemoteUrl
+  }
 }
 
 Invoke-Git add --all
@@ -110,7 +119,10 @@ const defaultRunner: PowerShellRunner = async (
 
 const localTimestamp = (date: Date) => {
   const part = (value: number) => String(value).padStart(2, "0");
-  return `${date.getFullYear()}-${part(date.getMonth() + 1)}-${part(date.getDate())} ${part(date.getHours())}:${part(date.getMinutes())}:${part(date.getSeconds())}`;
+  return [
+    `${date.getFullYear()}-${part(date.getMonth() + 1)}-${part(date.getDate())}`,
+    `${part(date.getHours())}:${part(date.getMinutes())}:${part(date.getSeconds())}`,
+  ].join(" ");
 };
 
 export const buildApplicationCommitMessage = (
@@ -118,7 +130,10 @@ export const buildApplicationCommitMessage = (
   action: ApplicationGitAction,
   date = new Date(),
 ) => {
-  const company = companyName.replace(/[\r\n|]+/g, " ").replace(/\s+/g, " ").trim();
+  const company = companyName
+    .replace(/[\r\n|]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   return `${company || "Bewerbung"} | ${localTimestamp(date)} | ${action}`;
 };
 
@@ -164,6 +179,7 @@ export class GitAutomationService implements ApplicationGitCommitQueue {
   private readonly scriptPath: string;
   private readonly logPath: string;
   private pending: Promise<void> = Promise.resolve();
+  private lastError?: Error;
   private watcher?: FSWatcher;
   private watchTimer?: NodeJS.Timeout;
   private pendingWatchCompany = "BewerbungsManager";
@@ -212,11 +228,20 @@ export class GitAutomationService implements ApplicationGitCommitQueue {
           commitMessage,
         ),
       )
-      .catch((error) => this.logFailure(commitMessage, error));
+      .catch((error) => {
+        this.lastError =
+          error instanceof Error ? error : new Error(String(error));
+        return this.logFailure(commitMessage, error);
+      });
   }
 
   async waitForIdle() {
     await this.pending;
+    if (this.lastError) {
+      const error = this.lastError;
+      this.lastError = undefined;
+      throw error;
+    }
   }
 
   dispose() {

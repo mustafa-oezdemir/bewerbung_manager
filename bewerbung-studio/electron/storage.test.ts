@@ -255,6 +255,29 @@ describe("DataStore backups", () => {
     );
   });
 
+  it("queues company-specific Git actions after successful application changes", async () => {
+    const queued: Array<{ company: string; action: string }> = [];
+    const gitStore = new DataStore(root, {
+      queueCommit: (company, action) => queued.push({ company, action }),
+    });
+    await gitStore.initialize();
+
+    const created = await gitStore.createApplication(
+      applicationInput("Git Firma GmbH"),
+    );
+    const application = created.applications[0];
+    await gitStore.changeStatus(application.id, "Vorstellungsgespräch");
+    await gitStore.changeStatus(application.id, "Absage");
+    await gitStore.removeApplication(application.id);
+
+    expect(queued).toEqual([
+      { company: "Git Firma GmbH", action: "create" },
+      { company: "Git Firma GmbH", action: "vorstellungsgespraech" },
+      { company: "Git Firma GmbH", action: "absage" },
+      { company: "Git Firma GmbH", action: "delete" },
+    ]);
+  });
+
   it("renames application folders when the sent date changes", async () => {
     const created = await store.createApplication({
       ...applicationInput("Datum GmbH"),

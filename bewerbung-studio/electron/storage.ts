@@ -52,6 +52,10 @@ import {
   sanitizeFileName,
 } from "./file-management";
 import { LegacyMigrationService } from "./legacy-migration";
+import type {
+  ApplicationGitAction,
+  ApplicationGitCommitQueue,
+} from "./git-automation";
 
 const nowIso = () => new Date().toISOString();
 const createId = () => crypto.randomUUID();
@@ -61,6 +65,22 @@ const terminalStatuses = new Set<ApplicationStatus>([
   "Zurückgezogen",
   "Archiviert",
 ]);
+
+const applicationContentChanged = (
+  current: Application,
+  next: Application,
+) =>
+  JSON.stringify({ ...current, folderName: "", updatedAt: "" }) !==
+  JSON.stringify({ ...next, folderName: "", updatedAt: "" });
+
+const gitActionForStatus = (
+  status: ApplicationStatus,
+): ApplicationGitAction => {
+  if (status === "Absage") return "absage";
+  if (status === "Vorstellungsgespräch") return "vorstellungsgespraech";
+  if (status === "Beworben" || status === "Gesendet") return "bewerbung";
+  return "update";
+};
 
 const templateContactLine = (
   label: string,
@@ -211,7 +231,10 @@ export class DataStore {
   private readonly deletedApplicationsPath: string;
   private workspace: Workspace = emptyWorkspace();
 
-  constructor(rootOrPaths: string | ApplicationPaths) {
+  constructor(
+    rootOrPaths: string | ApplicationPaths,
+    private readonly gitAutomation?: ApplicationGitCommitQueue,
+  ) {
     const paths =
       typeof rootOrPaths === "string"
         ? resolveApplicationPaths(rootOrPaths)
@@ -407,6 +430,18 @@ export class DataStore {
         throw new Error("Ungültiger Sicherungspfad.");
       await rm(target, { force: true });
     }
+  }
+
+  queueGitCommit(id: string, action: ApplicationGitAction) {
+    const application = this.getApplication(id);
+    this.gitAutomation?.queueCommit(application.company.name, action);
+  }
+
+  private queueApplicationGitCommit(
+    application: Pick<Application, "company">,
+    action: ApplicationGitAction,
+  ) {
+    this.gitAutomation?.queueCommit(application.company.name, action);
   }
 
   private applicationPath(application: Application) {
@@ -638,6 +673,10 @@ export class DataStore {
     this.workspace.applications.unshift(applicationSchema.parse(application));
     this.syncEvents(application);
     await this.persist([application]);
+    this.queueApplicationGitCommit(
+      application,
+      input.sentAt ? "bewerbung" : "create",
+    );
     return this.getWorkspace();
   }
 
@@ -648,6 +687,7 @@ export class DataStore {
     );
     if (index < 0) throw new Error("Bewerbung wurde nicht gefunden.");
     const current = this.workspace.applications[index];
+    const shouldCommitUpdate = applicationContentChanged(current, application);
     application.folderName = await this.files.relocateApplicationFolders(
       {
         ...application,
@@ -660,6 +700,9 @@ export class DataStore {
     this.workspace.applications[index] = application;
     this.syncEvents(application);
     await this.persist([application]);
+    if (shouldCommitUpdate) {
+      this.queueApplicationGitCommit(application, "update");
+    }
     return this.getWorkspace();
   }
 
@@ -690,6 +733,7 @@ export class DataStore {
       if (status === "Archiviert") application.archivedAt = now;
       this.syncEvents(application);
       await this.persist([application]);
+      this.queueApplicationGitCommit(application, gitActionForStatus(status));
     }
     return this.getWorkspace();
   }
@@ -712,6 +756,7 @@ export class DataStore {
       (attachment) => attachment.applicationId !== id,
     );
     await this.persist();
+    this.queueApplicationGitCommit(application, "delete");
     return this.getWorkspace();
   }
 
@@ -740,6 +785,7 @@ export class DataStore {
     this.workspace.applications.unshift(duplicate);
     this.syncEvents(duplicate);
     await this.persist([duplicate]);
+    this.queueApplicationGitCommit(duplicate, "create");
     return this.getWorkspace();
   }
 
@@ -802,6 +848,9 @@ export class DataStore {
     if (index < 0) throw new Error("Termin wurde nicht gefunden.");
     this.workspace.events[index] = event;
     await this.persist();
+    if (event.applicationId) {
+      this.queueGitCommit(event.applicationId, "update");
+    }
     return this.getWorkspace();
   }
 
@@ -834,6 +883,7 @@ export class DataStore {
     this.workspace.attachments.push(attachment);
     application.attachmentIds.push(attachment.id);
     await this.persist([application]);
+    this.queueApplicationGitCommit(application, "update");
     return this.getWorkspace();
   }
 
@@ -888,6 +938,7 @@ export class DataStore {
     }
     this.workspace.attachments[index] = attachment;
     await this.persist();
+    this.queueGitCommit(attachment.applicationId, "update");
     return this.getWorkspace();
   }
 
@@ -910,6 +961,7 @@ export class DataStore {
     attachment.order = other.order;
     other.order = currentOrder;
     await this.persist();
+    this.queueGitCommit(attachment.applicationId, "update");
     return this.getWorkspace();
   }
 
@@ -927,6 +979,7 @@ export class DataStore {
       (attachmentId) => attachmentId !== id,
     );
     await this.persist([application]);
+    this.queueApplicationGitCommit(application, "update");
     return this.getWorkspace();
   }
 
