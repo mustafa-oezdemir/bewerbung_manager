@@ -35,7 +35,10 @@ export function ModernLanguagesSection({
                   role="img"
                   style={{ color: accentColor }}>
                   {Array.from({ length: 6 }).map((_, i) => (
-                    <span key={i}>{i < parsed.score ? "●" : "○"}</span>
+                    <span
+                      className={i < parsed.score ? "is-filled" : ""}
+                      key={i}
+                    />
                   ))}
                 </div>
               )}

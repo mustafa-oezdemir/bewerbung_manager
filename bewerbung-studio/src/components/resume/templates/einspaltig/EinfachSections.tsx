@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { ApplicantProfile } from "../../../../shared/schema";
 import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
+import { TechnologyBrandIcon } from "../../TechnologyBrandIcon";
 import {
   formatTemplateDateRange,
   getTemplateKnowledge,
@@ -34,7 +35,7 @@ export function EinfachStrengths({
     >
       <EinfachHeading>{getResumeSectionTitle(profile, "strengths")}</EinfachHeading>
       <div>
-        {strengths.map((strength, index) =>
+        {strengths.map((strength) =>
           atsMode ? (
             <p key={strength.title}>
               <strong>{strength.title}</strong>
@@ -42,7 +43,7 @@ export function EinfachStrengths({
             </p>
           ) : (
             <article key={strength.title}>
-              <i aria-hidden="true">{index % 2 ? "⚑" : "✣"}</i>
+              <TechnologyBrandIcon technology={strength.title} />
               <div>
                 <h3>{strength.title}</h3>
                 {strength.description ? (
@@ -81,12 +82,14 @@ export function EinfachCareer({
       <div>
         {items.map((item) => (
           <article key={item.id}>
-            <h3>{item.title}</h3>
-            <h4>{item.organization}</h4>
-            <p className="einfach-career__meta">
+            <div className="einfach-career__heading">
+              <h3>{item.title}</h3>
               <time>{formatTemplateDateRange(item.from, item.to)}</time>
+            </div>
+            <div className="einfach-career__organization">
+              <h4>{item.organization}</h4>
               {item.city ? <span>{item.city}</span> : null}
-            </p>
+            </div>
             {item.achievements.length ? (
               <ul>
                 {item.achievements.map((achievement, index) => (

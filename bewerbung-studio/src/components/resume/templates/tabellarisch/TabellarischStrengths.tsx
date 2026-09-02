@@ -1,9 +1,7 @@
-import { Flag, Trophy, type LucideIcon } from "lucide-react";
 import type { ApplicantProfile } from "../../../../shared/schema";
+import { TechnologyBrandIcon } from "../../TechnologyBrandIcon";
 import { parseTemplateStrengths } from "../resume-template-data";
 import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
-
-const strengthIcons: LucideIcon[] = [Flag, Trophy];
 
 export function TabellarischStrengths({
   profile,
@@ -35,11 +33,9 @@ export function TabellarischStrengths({
         </ul>
       ) : (
         <div className="tabellarisch-strengths">
-          {strengths.map((strength, index) => {
-            const StrengthIcon = strengthIcons[index] ?? Trophy;
-            return (
+          {strengths.map((strength) => (
               <article className="tabellarisch-strength" key={strength.title}>
-                <StrengthIcon aria-hidden="true" />
+                <TechnologyBrandIcon technology={strength.title} />
                 <div>
                   <h3>{strength.title}</h3>
                   {strength.description.trim() ? (
@@ -47,8 +43,7 @@ export function TabellarischStrengths({
                   ) : null}
                 </div>
               </article>
-            );
-          })}
+          ))}
         </div>
       )}
     </section>

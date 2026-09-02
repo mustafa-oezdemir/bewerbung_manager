@@ -222,6 +222,7 @@ export const applicationSchema = z.object({
   folderName: z.string().min(1),
   company: companySchema,
   contact: contactPersonSchema,
+  additionalContacts: z.array(contactPersonSchema).max(1).default([]),
   job: jobAdvertisementSchema,
   status: z.enum(applicationStatuses),
   templateId: z.string().min(1),
@@ -253,6 +254,7 @@ export const applicationSchema = z.object({
 export const applicationInputSchema = z.object({
   company: companySchema,
   contact: contactPersonSchema,
+  additionalContacts: z.array(contactPersonSchema).max(1).optional(),
   job: jobAdvertisementSchema,
   templateId: z.string().min(1),
   accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
@@ -287,6 +289,7 @@ export const applicationDraftSchema = z.object({
       phone: z.string().optional(),
     })
     .optional(),
+  additionalContacts: z.array(contactPersonSchema).max(1).optional(),
   job: z
     .object({
       title: z.string().optional(),

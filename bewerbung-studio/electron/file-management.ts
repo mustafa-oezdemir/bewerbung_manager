@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { access, mkdir, readdir, rename, rm, rmdir } from "node:fs/promises";
 import path from "node:path";
 import type { Application, ApplicationStatus } from "../src/shared/schema";
@@ -231,6 +232,45 @@ export class FileManagementService {
     return occupied.some(Boolean);
   }
 
+  private async renameApplicationArtifact(
+    root: string,
+    source: string,
+    target: string,
+  ) {
+    const targetInsideSource =
+      source !== target && isPathInside(source, target);
+    const sourceInsideTarget =
+      source !== target && isPathInside(target, source);
+
+    if (!targetInsideSource && !sourceInsideTarget) {
+      await mkdir(path.dirname(target), { recursive: true });
+      await rename(source, target);
+      return;
+    }
+
+    // Windows cannot rename a directory directly into one of its descendants
+    // (or back onto an ancestor during rollback). Stage it beside the application
+    // tree first so legacy company/date-only folders can gain a position level.
+    const staging = path.join(root, `.bewerbung-relocate-${randomUUID()}`);
+    await rename(source, staging);
+    try {
+      if (sourceInsideTarget) {
+        await this.removeEmptyDirectoryChain(root, path.dirname(source));
+      }
+      await mkdir(path.dirname(target), { recursive: true });
+      await rename(staging, target);
+    } catch (error) {
+      try {
+        await this.removeEmptyDirectoryChain(root, path.dirname(target));
+        await mkdir(path.dirname(source), { recursive: true });
+        await rename(staging, source);
+      } catch {
+        // The original relocation error remains the primary failure.
+      }
+      throw error;
+    }
+  }
+
   async relocateApplicationFolders(application: Application, date: Date) {
     const companyDateFolder = `${sanitizeFileName(application.company.name)}_${formatLocalDate(date)}`;
     const positionFolder = sanitizeFileName(application.job.title);
@@ -267,15 +307,21 @@ export class FileManagementService {
         if (await pathExists(move.target.path)) {
           throw new Error(`Der Zielordner existiert bereits: ${move.target.path}`);
         }
-        await mkdir(path.dirname(move.target.path), { recursive: true });
-        await rename(move.source.path, move.target.path);
+        await this.renameApplicationArtifact(
+          move.source.root,
+          move.source.path,
+          move.target.path,
+        );
         completed.push(move);
       }
     } catch (error) {
       for (const move of completed.reverse()) {
         try {
-          await mkdir(path.dirname(move.source.path), { recursive: true });
-          await rename(move.target.path, move.source.path);
+          await this.renameApplicationArtifact(
+            move.source.root,
+            move.target.path,
+            move.source.path,
+          );
         } catch {
           // The original rename error remains the primary failure.
         }
@@ -301,33 +347,35 @@ export class FileManagementService {
       ]),
     );
     await Promise.all(
-      [...parents].map(async ([parent, root]) => {
-        let current = parent;
-        while (current !== root && isPathInside(root, current)) {
-          try {
-            await rmdir(current);
-          } catch (error) {
-            const code =
-              typeof error === "object" && error && "code" in error
-                ? String(error.code)
-                : "";
-            if (code === "ENOENT") {
-              current = path.dirname(current);
-              continue;
-            }
-            if (
-              ["ENOTEMPTY", "EEXIST", "EACCES", "EBUSY", "EPERM"].includes(
-                code,
-              )
-            ) {
-              break;
-            }
-            throw error;
-          }
-          current = path.dirname(current);
-        }
-      }),
+      [...parents].map(([parent, root]) =>
+        this.removeEmptyDirectoryChain(root, parent),
+      ),
     );
+  }
+
+  private async removeEmptyDirectoryChain(root: string, start: string) {
+    let current = start;
+    while (current !== root && isPathInside(root, current)) {
+      try {
+        await rmdir(current);
+      } catch (error) {
+        const code =
+          typeof error === "object" && error && "code" in error
+            ? String(error.code)
+            : "";
+        if (code === "ENOENT") {
+          current = path.dirname(current);
+          continue;
+        }
+        if (
+          ["ENOTEMPTY", "EEXIST", "EACCES", "EBUSY", "EPERM"].includes(code)
+        ) {
+          break;
+        }
+        throw error;
+      }
+      current = path.dirname(current);
+    }
   }
 
   private async containsNestedApplications(folderName: string) {

@@ -488,21 +488,7 @@
 }
 
 .modern-achievements__item {
-  display: grid;
-  grid-template-columns: 9mm minmax(0, 1fr);
-  gap: 3mm;
-  align-items: start;
-}
-
-.modern-achievements__item > span {
-  display: grid;
-  width: 9mm;
-  height: 9mm;
-  place-items: center;
-  border-radius: 50%;
-  color: var(--modern-primary);
-  background: var(--modern-icon-bg);
-  font-size: 8pt;
+  display: block;
 }
 
 .modern-achievements__item p {
@@ -556,10 +542,22 @@
 
 .modern-languages-item__dots {
   display: flex;
-  gap: 1.5mm;
-  font-size: 6pt;
+  gap: 1.2mm;
   color: var(--modern-primary);
   flex-shrink: 0;
+}
+
+.modern-languages-item__dots > span {
+  box-sizing: border-box;
+  width: 2.3mm;
+  height: 2.3mm;
+  border: 0.35mm solid currentColor;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.modern-languages-item__dots > span.is-filled {
+  background: currentColor;
 }
 
 [data-ats-mode="true"] .modern-languages-item__dots {

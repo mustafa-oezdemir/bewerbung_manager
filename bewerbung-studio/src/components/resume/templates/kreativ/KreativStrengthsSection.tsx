@@ -1,15 +1,8 @@
-import {
-  Lightbulb,
-  RefreshCw,
-  Shuffle,
-  type LucideIcon,
-} from "lucide-react";
 import type { ApplicantProfile } from "../../../../shared/schema";
+import { TechnologyBrandIcon } from "../../TechnologyBrandIcon";
 import { KreativSectionHeading } from "./KreativSectionHeading";
 import { parseTemplateStrengths } from "../resume-template-data";
 import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
-
-const strengthIcons: LucideIcon[] = [Shuffle, Lightbulb, RefreshCw];
 
 export function KreativStrengthsSection({
   profile,
@@ -28,13 +21,10 @@ export function KreativStrengthsSection({
     >
       <KreativSectionHeading title={getResumeSectionTitle(profile, "strengths")} />
       <div className="kreativ-strengths__list">
-        {strengths.map((strength, index) => {
-          const StrengthIcon = strengthIcons[index] ?? Lightbulb;
-
-          return (
+        {strengths.map((strength) => (
             <article className="kreativ-strength" key={strength.title}>
               {!atsMode ? (
-                <StrengthIcon aria-hidden="true" />
+                <TechnologyBrandIcon technology={strength.title} />
               ) : null}
               <div>
                 <h3>{strength.title}</h3>
@@ -43,8 +33,7 @@ export function KreativStrengthsSection({
                 ) : null}
               </div>
             </article>
-          );
-        })}
+        ))}
       </div>
     </section>
   );

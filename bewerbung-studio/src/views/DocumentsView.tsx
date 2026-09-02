@@ -1,4 +1,5 @@
 import {
+  ArrowLeft,
   Download,
   FileDown,
   FileText,
@@ -37,6 +38,10 @@ import { TabellarischResume } from "../components/resume/templates/tabellarisch"
 import { ZeitgenoessischResume } from "../components/resume/templates/zeitgenoessisch";
 import { ZweispaltigResume } from "../components/resume/templates/zweispaltig";
 import { analyzeKeywordMatch } from "../lib/keywordMatch";
+import {
+  applicationGreeting,
+  applicationPostalContactLines,
+} from "../shared/applicationContacts";
 import { formatApplicationDateLong } from "../shared/applicationDate";
 import {
   createResumePagePlan,
@@ -313,7 +318,13 @@ function ResumePreviewPage({
   );
 }
 
-export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab }) {
+export function DocumentsView({
+  initialTab = "anschreiben",
+  onOpenApplications,
+}: {
+  initialTab?: Tab;
+  onOpenApplications?: () => void;
+}) {
   const application = useAppStore(selectCurrentApplication);
   const profiles = useAppStore((state) => state.workspace.profiles);
   const selectedProfileId = useAppStore((state) => state.selectedProfileId);
@@ -531,19 +542,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
         .filter(Boolean)
         .join(" · ")
     : "Adresse · E-Mail · Telefon";
-  const recipientName = [
-    application.contact.firstName,
-    application.contact.lastName,
-  ]
-    .filter(Boolean)
-    .join(" ");
-  const recipientContactLine = recipientName
-    ? application.contact.salutation === "Herr"
-      ? `Herrn ${recipientName}`
-      : application.contact.salutation === "Frau"
-        ? `Frau ${recipientName}`
-        : recipientName
-    : "";
+  const recipientContactLines = applicationPostalContactLines(application);
   const paginatedProfile = renderProfile
     ? {
         ...renderProfile,
@@ -772,6 +771,16 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
           </p>
         </div>
         <div className="toolbar-buttons">
+          {onOpenApplications ? (
+            <button
+              className="button secondary"
+              type="button"
+              aria-label="Zur ausgewählten aktiven Bewerbung"
+              onClick={onOpenApplications}
+            >
+              <ArrowLeft size={17} /> Aktive Bewerbungen
+            </button>
+          ) : null}
           <button
             className="button secondary"
             onClick={() => void openFolder(application.id)}>
@@ -1485,12 +1494,12 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                 <address>
                   {application.company.name}
                   <br />
-                  {recipientContactLine ? (
-                    <>
-                      {recipientContactLine}
+                  {recipientContactLines.map((contactLine, index) => (
+                    <span key={`${index}-${contactLine}`}>
+                      {contactLine}
                       <br />
-                    </>
-                  ) : null}
+                    </span>
+                  ))}
                   {application.company.street}
                   <br />
                   {application.company.postalCode} {application.company.city}
@@ -1504,9 +1513,7 @@ export function DocumentsView({ initialTab = "anschreiben" }: { initialTab?: Tab
                     `Bewerbung als ${application.job.title}`}
                 </h3>
                 <p>
-                  {application.contact.lastName
-                    ? `Sehr geehrte${application.contact.salutation === "Herr" ? "r" : ""} ${application.contact.salutation} ${application.contact.lastName},`
-                    : "Sehr geehrte Damen und Herren,"}
+                  {applicationGreeting(application)}
                 </p>
                 <p className="letter-body">{docs.coverIntroduction}</p>
                 <p className="letter-body">

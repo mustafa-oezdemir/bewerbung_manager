@@ -50,7 +50,6 @@ export function ModernRightColumn({
           <div className="modern-achievements__list">
             {achievements.map((item) => (
               <div className="modern-achievements__item" key={item}>
-                <span aria-hidden="true">★</span>
                 <p>{item}</p>
               </div>
             ))}

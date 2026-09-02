@@ -141,7 +141,7 @@ export function ModernResume({
         <section className="modern-section modern-achievements">
           <h2 className="modern-section__title">{getResumeSectionTitle(profile, "certifications")}</h2>
           <div className="modern-achievements__list">
-            {certifications.map((item) => <div className="modern-achievements__item" key={item}><span aria-hidden="true">★</span><p>{item}</p></div>)}
+            {certifications.map((item) => <div className="modern-achievements__item" key={item}><p>{item}</p></div>)}
           </div>
         </section>
       );

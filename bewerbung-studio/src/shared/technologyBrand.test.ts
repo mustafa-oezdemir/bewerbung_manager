@@ -14,4 +14,30 @@ describe("technology brand icons", () => {
     expect(csharp).toContain("<path");
     expect(new Set([go, php, csharp]).size).toBe(3);
   });
+
+  it("provides stable SVG marks for common programming languages", () => {
+    const languages = [
+      "Java",
+      "JavaScript",
+      "TypeScript",
+      "Python",
+      "PHP",
+      "C#",
+      "C++",
+      "Go",
+      "Rust",
+      "Kotlin",
+      "Swift",
+      "Ruby",
+      "SQL",
+      "Bash",
+      "PowerShell",
+    ];
+
+    for (const language of languages) {
+      const first = getTechnologyBrandIconMarkup(language);
+      expect(first).toContain('class="technology-brand-svg"');
+      expect(getTechnologyBrandIconMarkup(language)).toBe(first);
+    }
+  });
 });

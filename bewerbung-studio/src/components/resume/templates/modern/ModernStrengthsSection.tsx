@@ -6,6 +6,7 @@
 import type { ModernStrengthsSectionProps } from "./modern.types";
 import { parseTemplateStrengths } from "../resume-template-data";
 import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
+import { TechnologyBrandIcon } from "../../TechnologyBrandIcon";
 
 export function ModernStrengthsSection({
   profile,
@@ -25,9 +26,10 @@ export function ModernStrengthsSection({
         {strengthItems.map(
           (item, idx: number) => (
             <div key={idx} className="modern-strengths-item">
-              <span className="modern-strengths-item__icon" aria-hidden="true">
-                {idx % 2 === 0 ? "✓" : "⚑"}
-              </span>
+              <TechnologyBrandIcon
+                technology={item.title}
+                className="modern-strengths-item__icon"
+              />
               <div>
                 <h3 className="modern-strengths-item__title">{item.title}</h3>
                 <p className="modern-strengths-item__description">

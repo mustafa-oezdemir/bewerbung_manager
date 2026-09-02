@@ -210,12 +210,28 @@ export default function App() {
           {loading && !workspace.updatedAt ? <Loading /> : (
             <>
               {view === "home" && <DashboardView onOpenApplications={() => setView("active")} onOpenCalendar={() => setView("calendar")} />}
-              {view === "active" && <ApplicationsView initialFilter="active" />}
+              {view === "active" && (
+                <ApplicationsView
+                  initialFilter="active"
+                  onOpenResume={() => setView("resume")}
+                  onOpenCover={() => setView("cover")}
+                />
+              )}
               {view === "interviews" && <ApplicationsView key="interviews" initialFilter="interviews" />}
               {view === "rejections" && <ApplicationsView key="rejections" initialFilter="rejections" />}
               {view === "calendar" && <CalendarView onOpenApplication={goToApplication} />}
-              {view === "resume" && <DocumentsView initialTab="lebenslauf" />}
-              {view === "cover" && <DocumentsView initialTab="anschreiben" />}
+              {view === "resume" && (
+                <DocumentsView
+                  initialTab="lebenslauf"
+                  onOpenApplications={() => setView("active")}
+                />
+              )}
+              {view === "cover" && (
+                <DocumentsView
+                  initialTab="anschreiben"
+                  onOpenApplications={() => setView("active")}
+                />
+              )}
               {view === "documents" && <LibraryView />}
               {view === "templates" && <TemplatesView />}
               {view === "profile" && (

@@ -229,6 +229,35 @@ describe("Lebenslauf-Dokumente", () => {
     expect(html).toContain("Berlin, den 17. Mai 2024");
   });
 
+  it("renders both contacts in the cover-letter recipient and greeting", () => {
+    const twoContactApplication = applicationSchema.parse({
+      ...application,
+      contact: {
+        salutation: "Frau",
+        firstName: "Anna",
+        lastName: "Müller",
+      },
+      additionalContacts: [
+        {
+          salutation: "Herr",
+          firstName: "Mehmet",
+          lastName: "Yılmaz",
+        },
+      ],
+    });
+
+    const html = buildDocumentHtml(
+      twoContactApplication,
+      profile,
+      "anschreiben",
+    );
+
+    expect(html).toContain("Frau Anna Müller<br>Herrn Mehmet Yılmaz");
+    expect(html).toContain(
+      "<p>Sehr geehrte Frau Müller, sehr geehrter Herr Yılmaz,</p>",
+    );
+  });
+
   it("justifies only the body paragraphs of exported cover letters", () => {
     const html = buildDocumentHtml(application, profile, "anschreiben");
 
@@ -1663,6 +1692,42 @@ describe("Lebenslauf-Dokumente", () => {
     );
   });
 
+  it("keeps Modern strengths visible when Kenntnisse is disabled", () => {
+    const modernApplication = applicationSchema.parse({
+      ...application,
+      templateId: "modern",
+    });
+    const strengthsOnlyProfile = profileSchema.parse({
+      ...profile,
+      strengths: [
+        {
+          id: crypto.randomUUID(),
+          title: "Java",
+          description: "Maven, Spring Boot",
+        },
+      ],
+      resumeSections: {
+        ...profile.resumeSections,
+        strengths: true,
+        skills: false,
+      },
+      resumeSectionLayouts: {
+        modern: [{ type: "strengths", zone: "sidebar" }],
+      },
+    });
+    const html = buildDocumentHtml(
+      modernApplication,
+      strengthsOnlyProfile,
+      "lebenslauf",
+    );
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain("Stärken");
+    expect(body).toContain("modern-pdf-strength");
+    expect(body).toContain("Maven, Spring Boot");
+    expect(body).not.toContain(">Fähigkeiten<");
+  });
+
   it("renders Modern ATS linearly without waves, photo, icons, or rating dots", () => {
     const modernApplication = applicationSchema.parse({
       ...application,
@@ -1843,6 +1908,24 @@ describe("Lebenslauf-Dokumente", () => {
     });
     const strengthsOnlyProfile = profileSchema.parse({
       ...profile,
+      skills: [],
+      knowledgeSection: {
+        title: "Kenntnisse",
+        isVisible: true,
+        categories: [],
+      },
+      strengths: [
+        {
+          id: crypto.randomUUID(),
+          title: "Java",
+          description: "Maven, Spring Boot",
+        },
+        {
+          id: crypto.randomUUID(),
+          title: "PHP",
+          description: "Laravel, Symfony",
+        },
+      ],
       resumeSections: {
         ...profile.resumeSections,
         strengths: true,
@@ -1858,6 +1941,9 @@ describe("Lebenslauf-Dokumente", () => {
 
     expect(body).toContain(">Stärken<");
     expect(body).toContain("tabellarisch-pdf-strengths");
+    expect(body).toContain(">Java<");
+    expect(body).toContain("Maven, Spring Boot");
+    expect(body).toContain(">php<");
   });
 
   it("renders Tabellarisch ATS without photo, geometry, or timeline rail", () => {

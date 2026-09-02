@@ -5,6 +5,7 @@ import {
   applicationDraftSchema,
   applicationInputSchema,
   attachmentSchema,
+  defaultSettings,
   profileSchema,
   workspaceSchema,
 } from "./schema";
@@ -52,6 +53,98 @@ describe("BewerbungsManager schemas", () => {
       expect(result.data.designSettings.columnLayout).toBe("template");
       expect(result.data.designSettings.resumeOutputMode).toBe("visual");
       expect(result.data.designSettings.marginLevel).toBe(3);
+    }
+  });
+
+  it("allows one optional second contact in a new application", () => {
+    const baseInput = {
+      company: { name: "Beispiel GmbH", city: "Berlin" },
+      contact: {},
+      job: { title: "Softwareentwickler" },
+      templateId: "classic-professional",
+      accentColor: "#155e58",
+    };
+    const secondContact = {
+      salutation: "Divers",
+      firstName: "Alex",
+      lastName: "Muster",
+      position: "Recruiting",
+      email: "alex@example.com",
+      phone: "+49 30 123456",
+    };
+
+    const result = applicationInputSchema.safeParse({
+      ...baseInput,
+      additionalContacts: [secondContact],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.additionalContacts?.[0].lastName).toBe("Muster");
+    }
+    expect(
+      applicationInputSchema.safeParse({
+        ...baseInput,
+        additionalContacts: [secondContact, secondContact],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("keeps old applications compatible and allows one additional contact", () => {
+    const now = "2026-08-29T10:00:00.000Z";
+    const baseApplication = {
+      schemaVersion: 1,
+      id: "10000000-0000-4000-8000-000000000001",
+      folderName: "Beispiel_2026-08-29/Entwickler",
+      company: { name: "Beispiel GmbH", city: "Berlin" },
+      contact: { salutation: "Herr", lastName: "Mustermann" },
+      job: { title: "Entwickler" },
+      status: "Beworben",
+      templateId: "classic-professional",
+      accentColor: "#155e58",
+      documents: {},
+      statusHistory: [{ at: now, to: "Beworben" }],
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const legacyResult = workspaceSchema.safeParse({
+      schemaVersion: 1,
+      applications: [baseApplication],
+      profiles: [],
+      events: [],
+      attachments: [],
+      settings: defaultSettings,
+      updatedAt: now,
+    });
+    expect(legacyResult.success).toBe(true);
+    if (legacyResult.success) {
+      expect(legacyResult.data.applications[0].additionalContacts).toEqual([]);
+    }
+
+    const secondContactResult = workspaceSchema.safeParse({
+      ...(legacyResult.success ? legacyResult.data : {}),
+      applications: [
+        {
+          ...baseApplication,
+          additionalContacts: [
+            {
+              salutation: "Frau",
+              firstName: "Erika",
+              lastName: "Musterfrau",
+              position: "HR Business Partner",
+              email: "erika@example.com",
+              phone: "+49 30 123456",
+            },
+          ],
+        },
+      ],
+    });
+    expect(secondContactResult.success).toBe(true);
+    if (secondContactResult.success) {
+      expect(
+        secondContactResult.data.applications[0].additionalContacts[0]
+          .salutation,
+      ).toBe("Frau");
     }
   });
 

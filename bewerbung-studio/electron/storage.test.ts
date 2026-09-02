@@ -255,6 +255,34 @@ describe("DataStore backups", () => {
     );
   });
 
+  it("persists an optional second contact when creating an application", async () => {
+    const created = await store.createApplication({
+      ...applicationInput("Kontakt GmbH"),
+      additionalContacts: [
+        {
+          salutation: "Frau",
+          firstName: "Erika",
+          lastName: "Musterfrau",
+          position: "Recruiting",
+          email: "erika@example.com",
+          phone: "+49 30 123456",
+        },
+      ],
+    });
+
+    expect(created.applications[0].additionalContacts[0]).toMatchObject({
+      salutation: "Frau",
+      lastName: "Musterfrau",
+      position: "Recruiting",
+    });
+    const reloadedStore = new DataStore(root);
+    await reloadedStore.initialize();
+    expect(
+      reloadedStore.getWorkspace().applications[0].additionalContacts[0]
+        .email,
+    ).toBe("erika@example.com");
+  });
+
   it("queues company-specific Git actions after successful application changes", async () => {
     const queued: Array<{ company: string; action: string }> = [];
     const gitStore = new DataStore(root, {
@@ -359,6 +387,16 @@ describe("DataStore backups", () => {
         email: "andreas@example.com",
         phone: "",
       },
+      additionalContacts: [
+        {
+          salutation: "Frau",
+          firstName: "Erika",
+          lastName: "Musterfrau",
+          position: "Recruiting",
+          email: "erika@example.com",
+          phone: "",
+        },
+      ],
     });
     const application = created.applications[0];
     application.documents = {
@@ -381,7 +419,8 @@ describe("DataStore backups", () => {
       "Beispiel_GmbH_2024-05-17",
     );
     expect(context.data).toMatchObject({
-      ANSPRECHPARTNER: "Herrn Andreas Steck",
+      ANSPRECHPARTNER: "Herrn Andreas Steck\nFrau Erika Musterfrau",
+      ANREDE: "Sehr geehrter Herr Steck, sehr geehrte Frau Musterfrau,",
       BEWERBUNGSDATUM: "17. Mai 2024",
       MOTIVATION: "Motivation aus dem Editor.",
       FACHLICHE_EIGNUNG: "Fachliche Eignung aus dem Editor.",

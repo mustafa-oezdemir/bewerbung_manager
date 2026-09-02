@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { ApplicantProfile } from "../../../../shared/schema";
 import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
+import { TechnologyBrandIcon } from "../../TechnologyBrandIcon";
 import {
   formatTemplateDateRange,
   getTemplateKnowledge,
@@ -94,11 +95,9 @@ export function StilvollLeftColumn({
           data-element-id="stilvoll.strengths"
         >
           <StilvollHeading>{getResumeSectionTitle(profile, "strengths")}</StilvollHeading>
-          {strengths.map((strength, index) => (
+          {strengths.map((strength) => (
             <article key={strength.title}>
-              <i aria-hidden="true">
-                {["♛", "♥", "↗", "◇"][index]}
-              </i>
+              <TechnologyBrandIcon technology={strength.title} />
               <div>
                 <h3>{strength.title}</h3>
                 {strength.description ? (

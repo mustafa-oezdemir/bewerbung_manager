@@ -1,5 +1,6 @@
 import type { ApplicantProfile } from "../../../../shared/schema";
 import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
+import { TechnologyBrandIcon } from "../../TechnologyBrandIcon";
 import {
   formatTemplateDateRange,
   getTemplateKnowledge,
@@ -157,9 +158,9 @@ export function KompaktRightColumn({
           data-element-id="kompakt.strengths"
         >
           <KompaktHeading>{getResumeSectionTitle(profile, "strengths")}</KompaktHeading>
-          {strengths.slice(0, 2).map((strength, index) => (
+          {strengths.slice(0, 2).map((strength) => (
             <article key={strength.title}>
-              <i aria-hidden="true">{index ? "⚑" : "★"}</i>
+              <TechnologyBrandIcon technology={strength.title} />
               <div>
                 <h3>{strength.title}</h3>
                 {strength.description ? (

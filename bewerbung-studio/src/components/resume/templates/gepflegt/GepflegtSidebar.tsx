@@ -1,4 +1,4 @@
-import { CheckCircle2, Lightbulb, Sparkles } from "lucide-react";
+import { TechnologyBrandIcon } from "../../TechnologyBrandIcon";
 import {
   getTemplateKnowledge,
   parseTemplateLanguage,
@@ -8,8 +8,6 @@ import {
 import { GepflegtSidebarPhoto } from "./GepflegtSidebarPhoto";
 import type { GepflegtSidebarProps } from "./gepflegt.types";
 import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
-
-const strengthIcons = [Lightbulb, Sparkles, CheckCircle2];
 
 export function GepflegtSidebar({
   profile,
@@ -79,18 +77,15 @@ export function GepflegtSidebar({
         >
           <h2 className="gepflegt-sidebar__title">{getResumeSectionTitle(profile, "strengths")}</h2>
           <div className="gepflegt-strengths">
-            {strengths.map((strength, index) => {
-              const Icon = strengthIcons[index % strengthIcons.length];
-              return (
+            {strengths.map((strength, index) => (
                 <article className="gepflegt-strength" key={`${strength.title}-${index}`}>
-                  {!atsMode ? <Icon aria-hidden="true" /> : null}
+                  {!atsMode ? <TechnologyBrandIcon technology={strength.title} /> : null}
                   <div>
                     <h3>{strength.title}</h3>
                     {strength.description ? <p>{strength.description}</p> : null}
                   </div>
                 </article>
-              );
-            })}
+            ))}
           </div>
         </section>
       ) : null}

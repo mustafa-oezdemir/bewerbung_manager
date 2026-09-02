@@ -1,6 +1,7 @@
 import {
   Copy,
   ExternalLink,
+  FileText,
   FolderOpen,
   Link2,
   Mail,
@@ -9,6 +10,9 @@ import {
   Save,
   Search,
   Trash2,
+  UserMinus,
+  UserPlus,
+  UserRound,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
@@ -37,8 +41,12 @@ type Filter = "active" | "interviews" | "rejections" | "offers" | "all";
 
 export function ApplicationsView({
   initialFilter = "active",
+  onOpenResume,
+  onOpenCover,
 }: {
   initialFilter?: Filter;
+  onOpenResume?: () => void;
+  onOpenCover?: () => void;
 }) {
   const workspace = useAppStore((state) => state.workspace);
   const selected = useAppStore(selectCurrentApplication);
@@ -121,21 +129,6 @@ export function ApplicationsView({
     });
   };
 
-  const submitContact = async (event: React.FormEvent<HTMLFormElement>) => {
-    const data = formData(event);
-    if (!selected) return;
-    await saveApplication({
-      ...selected,
-      contact: {
-        ...selected.contact,
-        firstName: String(data.get("contactFirstName")),
-        lastName: String(data.get("contactLastName")),
-        email: String(data.get("contactEmail")),
-        phone: String(data.get("contactPhone")),
-      },
-    });
-  };
-
   const submitDates = async (event: React.FormEvent<HTMLFormElement>) => {
     const data = formData(event);
     if (!selected) return;
@@ -175,7 +168,7 @@ export function ApplicationsView({
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Bewerbungen suchen …"
+            placeholder="Firma, Ansprechpartner, Stelle oder Stadt suchen …"
           />
         </div>
         <div className="filter-tabs">
@@ -260,8 +253,23 @@ export function ApplicationsView({
           </header>
           <div className="contact-strip">
             <span><MapPin size={15} /> {selected.company.city || "Ort offen"}</span>
-            <span><Mail size={15} /> {selected.contact.email || "E-Mail offen"}</span>
-            <span><Phone size={15} /> {selected.contact.phone || "Telefon offen"}</span>
+            {[selected.contact, ...selected.additionalContacts].map(
+              (contact, index) => {
+                const name = [contact.firstName, contact.lastName]
+                  .filter(Boolean)
+                  .join(" ");
+                return (
+                  <div
+                    className="contact-strip-person"
+                    key={`${index}-${contact.email}-${contact.phone}`}
+                  >
+                    <span><UserRound size={15} /> {name || "Name offen"}</span>
+                    <span><Mail size={15} /> {contact.email || "E-Mail offen"}</span>
+                    <span><Phone size={15} /> {contact.phone || "Telefon offen"}</span>
+                  </div>
+                );
+              },
+            )}
             {selected.job.url && (
               <button onClick={() => void window.bewerbungsManager.system.openExternal(selected.job.url)}>
                 <Link2 size={15} /> Stellenanzeige <ExternalLink size={13} />
@@ -269,6 +277,34 @@ export function ApplicationsView({
             )}
           </div>
           <div className="detail-form">
+            {initialFilter === "active" &&
+            (onOpenResume || onOpenCover) ? (
+              <nav
+                className="detail-document-nav"
+                aria-label="Bewerbungsunterlagen"
+              >
+                {onOpenResume ? (
+                  <button
+                    className="button secondary detail-document-link"
+                    type="button"
+                    aria-label="Lebenslauf öffnen"
+                    onClick={onOpenResume}
+                  >
+                    <UserRound size={16} /> Lebenslauf
+                  </button>
+                ) : null}
+                {onOpenCover ? (
+                  <button
+                    className="button secondary detail-document-link"
+                    type="button"
+                    aria-label="Anschreiben öffnen"
+                    onClick={onOpenCover}
+                  >
+                    <FileText size={16} /> Anschreiben
+                  </button>
+                ) : null}
+              </nav>
+            ) : null}
             <FormSection
               title="Status & Gestaltung"
               onSubmit={submitStatusAndDesign}
@@ -325,16 +361,11 @@ export function ApplicationsView({
               <label className="field"><span>Quelle</span><input name="source" defaultValue={selected.job.source} /></label>
               <label className="field"><span>Gehaltsvorstellung</span><input name="salaryExpectation" defaultValue={selected.job.salaryExpectation} /></label>
             </FormSection>
-            <FormSection
-              title="Ansprechpartner"
-              onSubmit={submitContact}
+            <ContactFormSection
+              application={selected}
+              saveApplication={saveApplication}
               saving={saving}
-            >
-              <label className="field"><span>Vorname</span><input name="contactFirstName" defaultValue={selected.contact.firstName} /></label>
-              <label className="field"><span>Nachname</span><input name="contactLastName" defaultValue={selected.contact.lastName} /></label>
-              <label className="field"><span>E-Mail</span><input name="contactEmail" type="email" defaultValue={selected.contact.email} /></label>
-              <label className="field"><span>Telefon</span><input name="contactPhone" defaultValue={selected.contact.phone} /></label>
-            </FormSection>
+            />
             <FormSection
               title="Termine"
               onSubmit={submitDates}
@@ -379,6 +410,134 @@ export function ApplicationsView({
         </main>
       )}
     </div>
+  );
+}
+
+const emptyContact: Application["contact"] = {
+  salutation: "",
+  firstName: "",
+  lastName: "",
+  position: "",
+  email: "",
+  phone: "",
+};
+
+function ContactFields({
+  prefix,
+  contact,
+}: {
+  prefix: string;
+  contact: Application["contact"];
+}) {
+  return (
+    <>
+      <label className="field">
+        <span>Anrede / Geschlecht</span>
+        <select name={`${prefix}Salutation`} defaultValue={contact.salutation}>
+          <option value="">Nicht angegeben</option>
+          <option value="Frau">Frau</option>
+          <option value="Herr">Herr</option>
+          <option value="Divers">Divers</option>
+        </select>
+      </label>
+      <label className="field">
+        <span>Position / Funktion</span>
+        <input name={`${prefix}Position`} defaultValue={contact.position} />
+      </label>
+      <label className="field">
+        <span>Vorname</span>
+        <input name={`${prefix}FirstName`} defaultValue={contact.firstName} />
+      </label>
+      <label className="field">
+        <span>Nachname</span>
+        <input name={`${prefix}LastName`} defaultValue={contact.lastName} />
+      </label>
+      <label className="field">
+        <span>E-Mail</span>
+        <input name={`${prefix}Email`} type="email" defaultValue={contact.email} />
+      </label>
+      <label className="field">
+        <span>Telefon</span>
+        <input name={`${prefix}Phone`} defaultValue={contact.phone} />
+      </label>
+    </>
+  );
+}
+
+function ContactFormSection({
+  application,
+  saveApplication,
+  saving,
+}: {
+  application: Application;
+  saveApplication: (application: Application) => Promise<void>;
+  saving: boolean;
+}) {
+  const savedSecondContact = application.additionalContacts[0];
+  const [showSecondContact, setShowSecondContact] = useState(
+    Boolean(savedSecondContact),
+  );
+
+  const submitContact = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const readContact = (prefix: string): Application["contact"] => ({
+      salutation: String(data.get(`${prefix}Salutation`) || "") as
+        Application["contact"]["salutation"],
+      position: String(data.get(`${prefix}Position`) || ""),
+      firstName: String(data.get(`${prefix}FirstName`) || ""),
+      lastName: String(data.get(`${prefix}LastName`) || ""),
+      email: String(data.get(`${prefix}Email`) || ""),
+      phone: String(data.get(`${prefix}Phone`) || ""),
+    });
+    await saveApplication({
+      ...application,
+      contact: readContact("contact"),
+      additionalContacts: showSecondContact
+        ? [readContact("secondContact")]
+        : [],
+    });
+  };
+
+  return (
+    <FormSection
+      title="Ansprechpartner"
+      onSubmit={submitContact}
+      saving={saving}
+    >
+      <div className="contact-person-heading full">
+        <strong>Erster Ansprechpartner</strong>
+      </div>
+      <ContactFields prefix="contact" contact={application.contact} />
+      {showSecondContact ? (
+        <>
+          <div className="contact-person-heading full">
+            <strong>Zweiter Ansprechpartner</strong>
+            <button
+              className="button secondary"
+              type="button"
+              onClick={() => setShowSecondContact(false)}
+            >
+              <UserMinus size={16} /> Entfernen
+            </button>
+          </div>
+          <ContactFields
+            prefix="secondContact"
+            contact={savedSecondContact ?? emptyContact}
+          />
+        </>
+      ) : (
+        <div className="contact-person-add full">
+          <button
+            className="button secondary"
+            type="button"
+            onClick={() => setShowSecondContact(true)}
+          >
+            <UserPlus size={16} /> Zweiten Ansprechpartner hinzufügen
+          </button>
+        </div>
+      )}
+    </FormSection>
   );
 }
 

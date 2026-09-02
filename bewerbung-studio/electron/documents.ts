@@ -30,6 +30,10 @@ import { getProfileMediaSource } from "../src/shared/profileMedia";
 import { getTechnologyBrandIconMarkup } from "../src/shared/technologyBrand";
 import { getReadableTextColor, getTemplate } from "../src/shared/templates";
 import {
+  applicationGreeting,
+  applicationPostalContactLines,
+} from "../src/shared/applicationContacts";
+import {
   knowledgeLevelLabels,
   knowledgeLevelScores,
 } from "../src/features/knowledge/knowledge.constants";
@@ -180,23 +184,10 @@ const renderKnowledgeSection = (
 const fullName = (profile?: ApplicantProfile) =>
   profile ? `${profile.firstName} ${profile.lastName}`.trim() : "Vorname Nachname";
 
-const contactName = (application: Application) =>
-  [application.contact.firstName, application.contact.lastName]
-    .filter(Boolean)
-    .join(" ");
-
-const salutation = (application: Application) => {
-  const name = contactName(application);
-  if (!name) return "Sehr geehrte Damen und Herren";
-  if (application.contact.salutation === "Frau") return `Sehr geehrte Frau ${application.contact.lastName}`;
-  if (application.contact.salutation === "Herr") return `Sehr geehrter Herr ${application.contact.lastName}`;
-  return `Guten Tag ${name}`;
-};
-
 const addressBlock = (application: Application) =>
   [
     application.company.name,
-    contactName(application),
+    ...applicationPostalContactLines(application),
     application.company.street,
     `${application.company.postalCode} ${application.company.city}`.trim(),
   ]
@@ -261,6 +252,7 @@ const documentCss = (
   :root{--accent:${accent};--secondary:${secondary};--on-secondary:${onSecondary};--ink:#172026;--muted:#5c6870;--line:#d9e0e3;--doc-margin:${margin}mm;--section-gap:${sectionGap}mm;--body-size:${bodySize}pt;--body-line:${lineHeight};--body-font:${bodyFont.family};--heading-font:${headingFont.family};--heading-weight:${headingFont.headingWeight}}
   @page{size:A4;margin:0}
   *{box-sizing:border-box}body{margin:0;background:#eef1f1;color:var(--ink);font-family:var(--body-font)}
+  .technology-brand-svg{display:block;width:5.5mm;height:5.5mm;overflow:visible;color:var(--accent)}
   .page{width:210mm;height:297mm;min-height:297mm;max-height:297mm;margin:0 auto 8mm;overflow:hidden;background:#fff;break-after:page;page-break-after:always;position:relative;print-color-adjust:exact;-webkit-print-color-adjust:exact}
   .page:last-child{break-after:auto;page-break-after:auto}.page-content{position:relative;z-index:1;width:100%;height:100%;transform-origin:top left}.standard-page-content{padding:var(--doc-margin)}
   .document-background-layer{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;user-select:none}.programming-languages-layer{color:color-mix(in srgb,var(--accent),#70808a 45%);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;opacity:.105}.programming-languages-layer:before,.programming-languages-layer:after{position:absolute;border:1px solid currentColor;border-radius:4mm;content:""}.programming-languages-layer:before{width:54mm;height:37mm;right:-15mm;top:-9mm}.programming-languages-layer:after{width:61mm;height:42mm;left:-20mm;bottom:-12mm}.programming-languages-layer span{position:absolute;display:flex;align-items:center;gap:1.3mm;padding:1.2mm 2.3mm;border:1px solid currentColor;border-radius:2.5mm;font-size:7.8pt;font-weight:650;letter-spacing:.025em;white-space:nowrap}.programming-languages-layer span>i{display:grid;width:5mm;height:5mm;flex:0 0 5mm;place-items:center;font-style:normal}.programming-languages-layer span>i svg{display:block;width:100%;height:100%}.programming-languages-layer span>b{font-weight:700}.programming-languages-layer span:nth-child(1){right:9mm;top:12mm}.programming-languages-layer span:nth-child(2){right:31mm;top:23mm}.programming-languages-layer span:nth-child(3){right:7mm;top:38mm}.programming-languages-layer span:nth-child(4){right:26mm;top:52mm}.programming-languages-layer span:nth-child(5){right:8mm;top:68mm}.programming-languages-layer span:nth-child(6){left:8mm;bottom:77mm}.programming-languages-layer span:nth-child(7){left:25mm;bottom:62mm}.programming-languages-layer span:nth-child(8){left:7mm;bottom:47mm}.programming-languages-layer span:nth-child(9){left:31mm;bottom:33mm}.programming-languages-layer span:nth-child(10){left:8mm;bottom:18mm}.programming-languages-layer span:nth-child(11){left:51mm;bottom:13mm}.programming-languages-layer span:nth-child(12){right:8mm;bottom:16mm}.programming-languages-layer span:nth-child(13){right:26mm;bottom:31mm}.programming-languages-layer span:nth-child(14){right:8mm;bottom:47mm}
@@ -557,6 +549,10 @@ const extendedResumeDocumentCss = `
   .einfach-pdf{isolation:isolate;--managed-primary:var(--accent);--managed-accent:var(--secondary);--managed-text:#3e484e;--managed-muted:#68747a;--managed-divider:var(--accent);--managed-pattern:#eaf5fd;--managed-margin:max(15mm,var(--doc-margin));--managed-section-gap:calc(var(--section-gap) + 1.5mm);--managed-entry-gap:4.5mm;font-size:calc(var(--body-size) + 1.2pt);line-height:clamp(1.1,calc(var(--body-line) - .25),1.18)}.einfach-pdf p,.einfach-pdf li{font-size:inherit;line-height:inherit}.einfach-pdf .managed-pdf-background{z-index:-1;color:var(--managed-pattern);opacity:.78}.einfach-pdf .managed-pdf-background path{fill:none;stroke:currentColor;stroke-width:4.2}.einfach-pdf-inner{position:relative;z-index:2;height:100%;padding:max(14mm,calc(var(--managed-margin) - 1mm)) var(--managed-margin) 16mm}.einfach-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 36mm;gap:8mm;min-height:35mm;margin-bottom:5.5mm}.einfach-pdf-header.no-photo{grid-template-columns:1fr}.einfach-pdf-header h1{margin:0;color:var(--managed-primary);font-size:24pt;font-weight:750;line-height:1;text-transform:uppercase}.einfach-pdf-header h2{margin:2mm 0;color:var(--managed-accent);font-size:11.5pt;line-height:1.2}.einfach-pdf-contacts{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:1mm 8mm;width:100%;max-width:132mm;margin:0;font-size:8.2pt;font-style:normal;line-height:1.18}.einfach-pdf-contact{display:grid;grid-template-columns:4mm minmax(0,1fr);gap:1mm;min-width:0}.einfach-pdf-contact i{color:var(--managed-accent);font-style:normal;font-weight:700}.einfach-pdf-contact a,.einfach-pdf-contact span{min-width:0;overflow-wrap:anywhere}.einfach-pdf-contact[data-contact-kind="linkedin"] a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}.einfach-pdf-photo{width:34mm;height:34mm;border-radius:50%;object-fit:cover}.einfach-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:auto;margin-bottom:6mm;padding-bottom:3mm;border-bottom:.5mm solid var(--managed-primary)}.einfach-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-accent);font-size:7pt;text-transform:uppercase}.einfach-pdf-header.compact h1{font-size:16pt}.einfach-pdf-header.compact h2{margin:0;font-size:9pt}.einfach-pdf .managed-pdf-section>p{margin:0;hyphens:auto;overflow-wrap:break-word}.einfach-pdf .managed-pdf-title{margin-bottom:3.5mm;padding-bottom:1mm;border-bottom:.65mm solid var(--managed-primary);color:var(--managed-primary);font-size:13.5pt;font-weight:750}.einfach-pdf-strengths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4mm 15mm}.einfach-pdf-strength{display:grid;grid-template-columns:7mm minmax(0,1fr);gap:2mm}.einfach-pdf-strength i{color:var(--managed-accent);font-size:14pt;font-style:normal}.einfach-pdf-strength h3{margin:0 0 1.5mm;color:var(--managed-primary);font-size:9.5pt}.einfach-pdf-strength p{margin:0}.einfach-pdf-entry{padding-bottom:3mm;border-bottom:.25mm dashed #d4d9dc}.einfach-pdf-entry:last-child{padding-bottom:0;border-bottom:0}.einfach-pdf-entry h3{color:var(--managed-primary);font-size:11.5pt;font-weight:500;line-height:1.15}.einfach-pdf-entry h4{margin-top:1mm;color:var(--managed-accent);font-size:10pt;line-height:1.15}.einfach-pdf-meta{display:flex;flex-wrap:wrap;gap:1mm 4mm;margin:1mm 0 1.5mm;color:var(--managed-muted);font-size:8.1pt}.einfach-pdf-meta span:first-child:before{margin-right:1.5mm;color:var(--managed-accent);content:"▦"}.einfach-pdf-meta span+span:before{margin-right:1.5mm;color:var(--managed-accent);content:"⌖"}.einfach-pdf-entry li{margin:.3mm 0}.einfach-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3mm 15mm}.einfach-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:3mm;align-items:center}.einfach-pdf-language strong{color:var(--managed-primary);font-size:9.5pt}.einfach-pdf-language .managed-pdf-dots{gap:1mm}.einfach-pdf-language .managed-pdf-dots i{width:2.8mm;height:2.8mm}.einfach-pdf-language .managed-pdf-dots i.filled{background:var(--managed-accent)}
   .managed-pdf[data-density="compact"]{--managed-entry-gap:max(3.2mm,calc(var(--managed-entry-gap) - 1mm));--managed-section-gap:max(4mm,calc(var(--managed-section-gap) - 1mm))}.managed-pdf[data-density="dense"]{--managed-entry-gap:3mm;--managed-section-gap:4mm}.kompakt-pdf[data-density="dense"]{--managed-entry-gap:2.5mm;--managed-section-gap:3.5mm;font-size:max(7.5pt,calc(var(--body-size) - .5pt));line-height:max(1.18,calc(var(--body-line) - .07))}.einfach-pdf[data-density="compact"]{--managed-section-gap:max(5mm,var(--section-gap));--managed-entry-gap:3.8mm}.einfach-pdf[data-density="dense"]{--managed-section-gap:max(4.5mm,calc(var(--section-gap) - .5mm));--managed-entry-gap:3mm}
   .managed-pdf-ats{--managed-primary:#173b63;--managed-dark:#173b63;--managed-accent:#173b63;--managed-text:#303b42;--managed-muted:#626e75;--managed-divider:#aeb8bf;padding:14mm var(--managed-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.managed-pdf-ats .managed-pdf-header{display:block;min-height:auto;margin:0;padding:0 0 4mm;border-bottom:.3mm solid var(--managed-divider)}.managed-pdf-ats .managed-pdf-header h1{max-width:none;font-size:19pt}.managed-pdf-ats .managed-pdf-header h2{margin-top:1mm;color:var(--managed-primary);font-size:10pt}.managed-pdf-ats .managed-pdf-section{margin-top:var(--managed-section-gap);margin-bottom:0}.managed-pdf-ats .managed-pdf-title{margin-bottom:2mm;padding-bottom:1mm;border-bottom:.3mm solid var(--managed-divider);color:var(--managed-primary);font-size:10.5pt;font-weight:700}.managed-pdf-ats .managed-pdf-list{gap:var(--managed-entry-gap)}
+  .einfach-pdf-strengths{grid-template-columns:repeat(3,minmax(0,1fr));gap:4mm 8mm}
+  .einfach-pdf-entry-heading,.einfach-pdf-entry-organization{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4mm;align-items:baseline}.einfach-pdf-entry-heading time,.einfach-pdf-entry-organization span{color:var(--managed-muted);font-size:8.1pt;text-align:right;white-space:nowrap}.einfach-pdf-entry-organization{margin:1mm 0 1.5mm}.einfach-pdf-entry-organization h4{margin:0}
+  .modern-pdf-achievements article{display:block}
+  .modern-pdf-dots{gap:1.1mm;font-size:0}.modern-pdf-dots i{display:block;box-sizing:border-box;width:2.3mm;height:2.3mm;border:.35mm solid var(--modern-primary);border-radius:50%;background:transparent}.modern-pdf-dots i.filled{background:var(--modern-primary)}
   @media print{.no-print-background .managed-pdf-background{display:none!important}}
 `;
 
@@ -566,7 +562,7 @@ const klassischDocumentCss = `
   .klassisch-pdf-header{display:grid;grid-template-columns:minmax(0,1fr) 34mm;gap:8mm;align-items:start;min-height:33mm;margin-bottom:7mm}.klassisch-pdf-header.no-photo{grid-template-columns:1fr}.klassisch-pdf-header h1{max-width:138mm;margin:0;color:var(--klassisch-primary);font-size:26pt;font-weight:750;letter-spacing:-.01em;line-height:1;overflow-wrap:anywhere}.klassisch-pdf-header h2{margin:2mm 0 1.5mm;color:var(--klassisch-text);font-size:12.2pt;font-weight:400;line-height:1.12;overflow-wrap:anywhere}.klassisch-pdf-contacts{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:.8mm 8mm;width:100%;max-width:132mm;margin:0;color:var(--klassisch-text);font-size:8pt;font-style:normal;line-height:1.25}.klassisch-pdf-contacts span{min-width:0;overflow-wrap:anywhere}.klassisch-pdf-contacts [data-contact-kind="linkedin"]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}.klassisch-pdf-photo{justify-self:end;width:32mm;height:32mm;border-radius:50%;object-fit:cover;background:#edf1f3}
   .klassisch-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:auto;margin-bottom:6mm;padding-bottom:2.5mm;border-bottom:.3mm solid var(--klassisch-border)}.klassisch-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--klassisch-accent);font-size:7pt;font-weight:700;letter-spacing:.09em;text-transform:uppercase}.klassisch-pdf-header.compact h1{font-size:15.5pt}.klassisch-pdf-header.compact h2{margin:0;font-size:8.8pt}
   .klassisch-pdf-section{min-width:0;margin:0 0 var(--klassisch-section-gap);break-inside:avoid;page-break-inside:avoid}.klassisch-pdf-title{margin:0 0 3mm;color:var(--klassisch-heading);font-size:10.4pt;font-weight:750;letter-spacing:.01em;line-height:1;text-transform:uppercase;break-after:avoid}.klassisch-pdf-section>p{margin:0;hyphens:auto;overflow-wrap:break-word}
-  .klassisch-pdf-strengths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4mm 9mm}.klassisch-pdf-strength h3{margin:0 0 1.2mm;color:var(--klassisch-accent);font-size:9.8pt;font-weight:750;line-height:1.1;overflow-wrap:anywhere}.klassisch-pdf-strength p{margin:0;hyphens:auto}
+  .klassisch-pdf-strengths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4mm 9mm}.klassisch-pdf-strength{display:grid;grid-template-columns:6mm minmax(0,1fr);gap:1.5mm}.klassisch-pdf-strength .technology-brand-svg{width:5mm;height:5mm}.klassisch-pdf-strength h3{margin:0 0 1.2mm;color:var(--klassisch-accent);font-size:9.8pt;font-weight:750;line-height:1.1;overflow-wrap:anywhere}.klassisch-pdf-strength p{margin:0;hyphens:auto}
   .klassisch-pdf-list{display:flex;flex-direction:column;gap:var(--klassisch-entry-gap)}.klassisch-pdf-entry{min-width:0;break-inside:avoid}.klassisch-pdf-entry-head{display:grid;grid-template-columns:minmax(0,1fr) 34mm;gap:7mm;align-items:start}.klassisch-pdf-entry h3,.klassisch-pdf-entry h4{margin:0;overflow-wrap:anywhere}.klassisch-pdf-entry h3{color:var(--klassisch-primary);font-size:12.2pt;font-weight:450;line-height:1.08}.klassisch-pdf-entry h4{margin-top:1mm;color:var(--klassisch-accent);font-size:10pt;font-weight:650;line-height:1.12}.klassisch-pdf-entry-meta{display:flex;flex-direction:column;gap:2mm;margin:0;color:var(--klassisch-muted);font-size:7.8pt;line-height:1.15;text-align:right}.klassisch-pdf-entry ul,.klassisch-pdf-certifications{margin:1.2mm 0 0;padding-left:4.3mm}.klassisch-pdf-entry li,.klassisch-pdf-certifications li{margin:.15mm 0;padding-left:.5mm;hyphens:auto;overflow-wrap:break-word}.klassisch-pdf-education .klassisch-pdf-list{gap:3.5mm}.klassisch-pdf-education .klassisch-pdf-entry h3{font-size:11.7pt}.klassisch-pdf-education .klassisch-pdf-entry h4{color:var(--klassisch-text);font-size:9.4pt;font-weight:450}
   .klassisch-pdf-languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2mm 18mm;max-width:112mm}.klassisch-pdf-language{display:flex;gap:3mm;margin:0;color:var(--klassisch-text);font-size:9pt}.klassisch-pdf-language strong{color:var(--klassisch-primary);font-weight:500}.klassisch-pdf-footer{position:absolute;right:var(--klassisch-margin);bottom:6mm;left:var(--klassisch-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--klassisch-muted);font-size:7pt}.klassisch-pdf-footer span:last-child{margin-left:auto}
   .klassisch-pdf[data-density="compact"]{--klassisch-section-gap:max(4.8mm,calc(var(--section-gap) - 1mm));--klassisch-entry-gap:3.5mm}.klassisch-pdf[data-density="dense"]{--klassisch-section-gap:max(3.8mm,calc(var(--section-gap) - 2mm));--klassisch-entry-gap:2.8mm;font-size:max(8pt,calc(var(--body-size) - .3pt))}.klassisch-pdf[data-density="dense"] .klassisch-pdf-header{min-height:29mm;margin-bottom:5mm}.klassisch-pdf[data-density="dense"] .klassisch-pdf-header h1{font-size:23pt}
@@ -601,6 +597,7 @@ const modernDocumentCss = `
   .modern-pdf-footer{position:absolute;right:var(--modern-margin);bottom:6mm;left:var(--modern-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--modern-muted);font-size:7.2pt}.modern-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}
   .modern-pdf[data-density="compact"]{--modern-section-gap:5mm;--modern-entry-gap:3.7mm;font-size:8.1pt}.modern-pdf[data-density="dense"]{--modern-section-gap:4mm;--modern-entry-gap:3mm;font-size:7.7pt;line-height:1.2}.modern-pdf[data-density="dense"] .modern-pdf-title{margin-bottom:2.5mm}.modern-pdf[data-density="dense"] .modern-pdf-contacts{gap:2.5mm}.modern-pdf[data-density="dense"] .modern-pdf-strengths{gap:3mm}
   .modern-pdf-ats{--modern-primary:#173b63;--modern-heading:#26343e;--modern-text:#303b42;--modern-muted:#626e75;--modern-divider:#aeb8bf;padding:14mm var(--modern-margin) 16mm;background:#fff;font-family:Arial,sans-serif}.modern-pdf-ats .modern-pdf-header{display:block;min-height:auto;margin-bottom:5mm;padding-bottom:3mm;border-bottom:.35mm solid var(--modern-divider)}.modern-pdf-ats .modern-pdf-header h1{font-size:19pt}.modern-pdf-ats .modern-pdf-header h2{margin-top:1mm;color:var(--modern-heading);font-size:10pt}.modern-pdf-ats .modern-pdf-section{margin-bottom:5mm}.modern-pdf-ats .modern-pdf-title{margin-bottom:2mm;color:var(--modern-heading);font-size:10.5pt;font-weight:700}.modern-pdf-ats .modern-pdf-contacts{display:flex;flex-wrap:wrap;gap:1mm 5mm}.modern-pdf-ats .modern-pdf-contact{display:block}.modern-pdf-ats .modern-pdf-contact i{display:none}.modern-pdf-ats .modern-pdf-language{display:block}.modern-pdf-ats .modern-pdf-dots{display:none}
+  .modern-pdf-achievements article{display:block}.modern-pdf-achievements article p{width:100%;overflow-wrap:break-word}
   @media print{.no-print-background .modern-pdf-background{display:none!important}}
 `;
 
@@ -736,7 +733,7 @@ export const buildDocumentHtml = (
         <div class="recipient">${addressBlock(application)}</div>
         <p class="date">${escapeHtml(profile?.city || application.company.city)}, den ${applicationDate}</p>
         <p class="subject">${escapeHtml(docs.coverSubject || `Bewerbung als ${role}`)}</p>
-        <p>${escapeHtml(salutation(application))},</p>
+        <p>${escapeHtml(applicationGreeting(application))}</p>
         <p class="letter-body">${escapeHtml(docs.coverIntroduction || `die ausgeschriebene Position als ${role} bei ${company} spricht mich besonders an, weil sie fachliche Verantwortung mit konkretem Gestaltungsspielraum verbindet.`)}</p>
         <p class="letter-body">${escapeHtml(docs.coverMotivation || "Meine Motivation entsteht aus der Möglichkeit, vorhandene Erfahrung gezielt einzusetzen, mich fachlich weiterzuentwickeln und gemeinsam mit Ihrem Team messbare Ergebnisse zu erzielen.")}</p>
         <p class="letter-body">${escapeHtml(docs.coverQualification || profile?.summary || "Ich arbeite strukturiert, zuverlässig und lösungsorientiert. Neue Anforderungen erfasse ich schnell und überführe sie in nachvollziehbare, belastbare Ergebnisse.")}</p>
@@ -962,8 +959,8 @@ export const buildDocumentHtml = (
   const visualStrengthSection = elegantStrengths.length
     ? `<section><h3>Stärken</h3><div class="elegant-pdf-strengths">${elegantStrengths
         .map(
-          (strength, index) =>
-            `<article class="elegant-pdf-strength"><i aria-hidden="true">${index ? "♥" : "◉"}</i><div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+          (strength) =>
+            `<article class="elegant-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
         )
         .join("")}</div></section>`
     : "";
@@ -1262,16 +1259,11 @@ export const buildDocumentHtml = (
   const zweispaltigStrengths = explicitZweispaltigStrengths.length
     ? explicitZweispaltigStrengths
     : elegantStrengths;
-  const zweispaltigStrengthIcons = [
-    '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-    '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m15 4 5 5L7 22l-4 1 1-4Z"/><path d="m14 5 5 5M6 3v4M4 5h4M19 16v4M17 18h4"/></svg>',
-    '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V5l8-3 8 3z"/><path d="m9 12 2 2 4-4"/></svg>',
-  ];
   const zweispaltigVisualStrengthSection = zweispaltigStrengths.length
     ? `<section><h3>${escapeHtml(getResumeSectionTitle(profile, "strengths"))}</h3><div class="zweispaltig-pdf-strengths">${zweispaltigStrengths
         .map(
-          (strength, index) =>
-            `<article class="zweispaltig-pdf-strength">${zweispaltigStrengthIcons[index] ?? zweispaltigStrengthIcons[2]}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+          (strength) =>
+            `<article class="zweispaltig-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
         )
         .join("")}</div></section>`
     : "";
@@ -1602,7 +1594,7 @@ export const buildDocumentHtml = (
     ? `<section>${zeitHeading("Stärken", "strengths")}<div class="zeit-pdf-strengths">${zeitStrengths
         .map(
           (strength) =>
-            `<article class="zeit-pdf-strength"><i aria-hidden="true"></i><div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+            `<article class="zeit-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
         )
         .join("")}</div></section>`
     : "";
@@ -1910,7 +1902,7 @@ export const buildDocumentHtml = (
     ? `<section><h3>Stärken</h3><div class="kreativ-pdf-strengths">${kreativStrengthItems
         .map(
           (strength) =>
-            `<article class="kreativ-pdf-strength">${kreativIconMarkup("strength")}<div><h4>${escapeHtml(strength.name)}</h4>${strength.description?.trim() ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+            `<article class="kreativ-pdf-strength">${getTechnologyBrandIconMarkup(strength.name)}<div><h4>${escapeHtml(strength.name)}</h4>${strength.description?.trim() ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
         )
         .join("")}</div></section>`
     : "";
@@ -2187,8 +2179,8 @@ export const buildDocumentHtml = (
   const ivyVisualStrengths = ivyStrengths.length
     ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Stärken</h3><div class="ivy-pdf-strengths">${ivyStrengths
         .map(
-          (strength, index) =>
-            `<article class="ivy-pdf-strength"><i aria-hidden="true">${["♥", "✦", "⚑", "◆", "★", "✣"][index]}</i><div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+          (strength) =>
+            `<article class="ivy-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
         )
         .join("")}</div></section>`
     : "";
@@ -2434,6 +2426,7 @@ export const buildDocumentHtml = (
   ]
     .filter(Boolean)
     .join(" | ");
+  const managedJobTitle = (profile?.title || role).trim();
   const managedFooter = (
     plan: ResumePagePlan,
     hideSinglePageNumber = false,
@@ -2488,7 +2481,7 @@ export const buildDocumentHtml = (
           .join("")}</ul>`
       : "";
     if (variant === "einfach") {
-      return `<article class="managed-pdf-entry einfach-pdf-entry"><h3>${escapeHtml(item.title)}</h3><h4>${escapeHtml(item.organization)}</h4><p class="einfach-pdf-meta"><span>${escapeHtml(formatDateRange(item.from, item.to))}</span>${item.city ? `<span>${escapeHtml(item.city)}</span>` : ""}</p>${achievements}</article>`;
+      return `<article class="managed-pdf-entry einfach-pdf-entry"><div class="einfach-pdf-entry-heading"><h3>${escapeHtml(item.title)}</h3><time>${escapeHtml(formatDateRange(item.from, item.to))}</time></div><div class="einfach-pdf-entry-organization"><h4>${escapeHtml(item.organization)}</h4>${item.city ? `<span>${escapeHtml(item.city)}</span>` : ""}</div>${achievements}</article>`;
     }
     if (variant === "kompakt") {
       return `<article class="managed-pdf-entry kompakt-pdf-entry"><h3>${escapeHtml(item.title)}</h3><p class="kompakt-pdf-meta"><strong>${escapeHtml(item.organization)}</strong><span>${escapeHtml(formatDateRange(item.from, item.to))}</span>${item.city ? `<span>${escapeHtml(item.city)}</span>` : ""}</p>${achievements}</article>`;
@@ -2550,7 +2543,7 @@ export const buildDocumentHtml = (
     return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="${templateId}" data-no-fit="true"><div class="page-content managed-pdf ${variant}-pdf managed-pdf-ats" data-density="${plan.density}">
       <header class="managed-pdf-header ${variant}-pdf-header${isContinuation ? " compact" : ""}">
         ${isContinuation ? '<p class="kicker">Lebenslauf · Fortsetzung</p>' : ""}
-        <h1>${escapeHtml(name)}</h1>${managedProfession ? `<h2>${escapeHtml(managedProfession)}</h2>` : ""}
+        <h1>${escapeHtml(name)}</h1>${variant === "einfach" ? (managedJobTitle ? `<h2>${escapeHtml(managedJobTitle)}</h2>` : "") : (managedProfession ? `<h2>${escapeHtml(managedProfession)}</h2>` : "")}
       </header>
       ${!isContinuation ? managedSection("Persönliche Daten", `<p>${managedAtsContacts}</p>`) : ""}
       ${sections.profile && !isContinuation ? managedSection("Zusammenfassung", `<p>${escapeHtml(managedSummary)}</p>`) : ""}
@@ -2591,15 +2584,15 @@ export const buildDocumentHtml = (
         ? `<img class="${photoClass}" src="${escapeHtml(photoSource)}" alt="">`
         : "";
     return `<header class="managed-pdf-header ${variant}-pdf-header${isContinuation ? " compact" : ""}${!photo ? " no-photo" : ""}">
-      <div>${isContinuation ? '<p class="kicker">Lebenslauf · Fortsetzung</p>' : ""}<h1>${escapeHtml(name)}</h1>${managedProfession ? `<h2>${escapeHtml(managedProfession)}</h2>` : ""}${!isContinuation && managedContactValues.length ? `<address class="${contactsClass}">${contacts}</address>` : ""}</div>${photo}
+      <div>${isContinuation ? '<p class="kicker">Lebenslauf · Fortsetzung</p>' : ""}<h1>${escapeHtml(name)}</h1>${variant === "einfach" ? (managedJobTitle ? `<h2>${escapeHtml(managedJobTitle)}</h2>` : "") : (managedProfession ? `<h2>${escapeHtml(managedProfession)}</h2>` : "")}${!isContinuation && managedContactValues.length ? `<address class="${contactsClass}">${contacts}</address>` : ""}</div>${photo}
     </header>`;
   };
   const managedStrengthCards = (variant: "stilvoll" | "kompakt" | "einfach") =>
     managedStrengths.length
       ? `<div class="${variant}-pdf-strengths">${managedStrengths
           .map(
-            (strength, index) =>
-              `<article class="${variant}-pdf-strength"><i aria-hidden="true">${["★", "⚑", "↗", "◇"][index]}</i><div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+            (strength) =>
+              `<article class="${variant}-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
           )
           .join("")}</div>`
       : "";
@@ -2739,12 +2732,7 @@ export const buildDocumentHtml = (
       : "";
     return `<article class="klassisch-pdf-entry"><div class="klassisch-pdf-entry-head"><div><h3>${escapeHtml(item.title)}</h3><h4>${escapeHtml(item.organization)}</h4></div><p class="klassisch-pdf-entry-meta">${item.city ? `<span>${escapeHtml(item.city)}</span>` : ""}<time>${escapeHtml(formatDateRange(item.from, item.to))}</time></p></div>${achievements}</article>`;
   };
-  const klassischProfession = [
-    profile?.title || role,
-    ...managedStrengths.slice(0, 2).map((strength) => strength.title),
-  ]
-    .filter(Boolean)
-    .join(" | ");
+  const klassischProfession = (profile?.title || role).trim();
   const klassischContacts = managedContactValues
     .map((contact) => {
       const value = escapeHtml(contact.value);
@@ -2757,7 +2745,7 @@ export const buildDocumentHtml = (
         .slice(0, 6)
         .map(
           (strength) =>
-            `<article class="klassisch-pdf-strength"><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</article>`,
+            `<article class="klassisch-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
         )
         .join("")}</div>`
     : "";
@@ -2787,16 +2775,23 @@ export const buildDocumentHtml = (
         )
         .join("")}</div>`
     : "";
-  const klassischHeader = (isContinuation: boolean, includePhoto: boolean) => {
+  const klassischHeader = (
+    isContinuation: boolean,
+    includePhoto: boolean,
+    showProfession = true,
+  ) => {
     const photo =
       includePhoto && !isContinuation && photoSource
         ? `<img class="klassisch-pdf-photo" src="${escapeHtml(photoSource)}" alt="">`
         : "";
-    return `<header class="klassisch-pdf-header${isContinuation ? " compact" : ""}${!photo ? " no-photo" : ""}"><div>${isContinuation ? '<p class="kicker">Lebenslauf · Fortsetzung</p>' : ""}<h1>${escapeHtml(name)}</h1>${klassischProfession ? `<h2>${escapeHtml(klassischProfession)}</h2>` : ""}${includePhoto && !isContinuation && klassischContacts ? `<address class="klassisch-pdf-contacts">${klassischContacts}</address>` : ""}</div>${photo}</header>`;
+    return `<header class="klassisch-pdf-header${isContinuation ? " compact" : ""}${!photo ? " no-photo" : ""}"><div>${isContinuation ? '<p class="kicker">Lebenslauf · Fortsetzung</p>' : ""}<h1>${escapeHtml(name)}</h1>${showProfession && klassischProfession ? `<h2>${escapeHtml(klassischProfession)}</h2>` : ""}${includePhoto && !isContinuation && klassischContacts ? `<address class="klassisch-pdf-contacts">${klassischContacts}</address>` : ""}</div>${photo}</header>`;
   };
   const klassischFooter = (plan: ResumePagePlan) =>
     `<footer class="klassisch-pdf-footer">${managedPortfolio ? `<a href="${escapeHtml(externalHref(managedPortfolio))}">${escapeHtml(managedPortfolio)}</a>` : "<span></span>"}${resumePlan.length > 1 ? `<span>Seite ${plan.pageNumber} / ${resumePlan.length}</span>` : ""}</footer>`;
-  const renderKlassischResumePage = (plan: ResumePagePlan) => {
+  const renderKlassischResumePage = (
+    plan: ResumePagePlan,
+    showProfession = true,
+  ) => {
     const isContinuation = plan.pageNumber > 1;
     const isLastPage = plan.pageNumber === resumePlan.length;
     const experiences = plan.items
@@ -2817,7 +2812,7 @@ export const buildDocumentHtml = (
     const isContinuation = plan.pageNumber > 1;
     const isLastPage = plan.pageNumber === resumePlan.length;
     if (atsMode) {
-      return renderKlassischResumePage(plan).replaceAll("klassisch", "mehrspaltig");
+      return renderKlassischResumePage(plan, true).replaceAll("klassisch", "mehrspaltig");
     }
     const experiences = plan.items
       .filter((item) => item.kind === "experience")
@@ -2838,7 +2833,7 @@ export const buildDocumentHtml = (
       ? `<div class="mehrspaltig-pdf-skills">${klassischKnowledgeValues.map((value) => `<strong>${escapeHtml(value)}</strong>`).join("")}</div>`
       : "";
     const strengths = managedStrengths.length
-      ? `<div class="mehrspaltig-pdf-strengths">${managedStrengths.slice(0, 4).map((strength, index) => `<article class="mehrspaltig-pdf-strength"><i aria-hidden="true">${["✦", "⚑", "♡", "↗"][index]}</i><div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div>`
+      ? `<div class="mehrspaltig-pdf-strengths">${managedStrengths.slice(0, 4).map((strength) => `<article class="mehrspaltig-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div>`
       : "";
     const languages = klassischLanguages.replaceAll("klassisch", "mehrspaltig");
     const left = !isContinuation
@@ -2974,8 +2969,8 @@ export const buildDocumentHtml = (
   const modernVisualStrengths = modernDescribedStrengths.length
     ? `<div class="modern-pdf-strengths">${modernDescribedStrengths
         .map(
-          (item, index) =>
-            `<article class="modern-pdf-strength"><i aria-hidden="true">${index % 2 === 0 ? "✓" : "⚑"}</i><div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description)}</p></div></article>`,
+          (item) =>
+            `<article class="modern-pdf-strength">${getTechnologyBrandIconMarkup(item.title)}<div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description)}</p></div></article>`,
         )
         .join("")}</div>`
     : "";
@@ -2983,13 +2978,13 @@ export const buildDocumentHtml = (
     ? `<div class="modern-pdf-knowledge">${kreativSkillValues.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>`
     : "";
   const modernVisualAchievements = kreativCertifications.length
-    ? `<div class="modern-pdf-achievements">${kreativCertifications.map((item) => `<article><i aria-hidden="true">★</i><p>${escapeHtml(item)}</p></article>`).join("")}</div>`
+    ? `<div class="modern-pdf-achievements">${kreativCertifications.map((item) => `<article><p>${escapeHtml(item)}</p></article>`).join("")}</div>`
     : "";
   const modernVisualLanguages = kreativLanguages.length
     ? `<div class="modern-pdf-languages">${kreativLanguages
         .map(
           (language) =>
-            `<article class="modern-pdf-language"><div><strong>${escapeHtml(language.name)}</strong></div><span class="modern-pdf-dots" aria-label="${escapeHtml(`${language.name}: ${language.level}`)}">${Array.from({ length: 6 }, (_, index) => (index < language.score ? "●" : "○")).join("")}</span></article>`,
+            `<article class="modern-pdf-language"><div><strong>${escapeHtml(language.name)}</strong></div><span class="modern-pdf-dots" aria-label="${escapeHtml(`${language.name}: ${language.level}`)}">${Array.from({ length: 6 }, (_, index) => `<i class="${index < language.score ? "filled" : ""}"></i>`).join("")}</span></article>`,
         )
         .join("")}</div>`
     : "";
@@ -3053,9 +3048,11 @@ export const buildDocumentHtml = (
       if (type === "education") return educationSection;
       if (!isLastPage) return "";
       if (type === "knowledge") {
-        return sections.strengths
+        return sections.skills
           ? modernSection(
-              variant === "ats" ? "Kenntnisse" : "Fähigkeiten",
+              variant === "ats"
+                ? getResumeSectionTitle(profile, "knowledge")
+                : "Fähigkeiten",
               variant === "ats" ? modernAtsKnowledge : modernVisualKnowledge,
             )
           : "";
@@ -3069,9 +3066,9 @@ export const buildDocumentHtml = (
           : "";
       }
       if (type === "strengths") {
-        return sections.skills
+        return sections.strengths
           ? modernSection(
-              "Stärken",
+              getResumeSectionTitle(profile, "strengths"),
               variant === "ats" ? modernAtsStrengths : modernVisualStrengths,
             )
           : "";
@@ -3079,7 +3076,7 @@ export const buildDocumentHtml = (
       if (type === "certifications") {
         return sections.certifications
           ? modernSection(
-              variant === "ats" ? "Zertifikate" : "Erfolge",
+              getResumeSectionTitle(profile, "certifications"),
               variant === "ats"
                 ? modernAtsCertifications
                 : modernVisualAchievements,
@@ -3094,13 +3091,13 @@ export const buildDocumentHtml = (
         ? savedLayout
             .map(({ type }) => renderOrderedSection(type, "ats"))
             .join("")
-        : `${sections.profile && !isContinuation ? modernSection("Zusammenfassung", `<p class="modern-pdf-summary">${escapeHtml(managedSummary)}</p>`) : ""}${experienceSection}${educationSection}${isLastPage && sections.skills ? modernSection("Kenntnisse", modernAtsKnowledge) : ""}${isLastPage && sections.languages ? modernSection("Sprachen", modernAtsLanguages) : ""}${isLastPage && sections.strengths ? modernSection("Stärken", modernAtsStrengths) : ""}${isLastPage && sections.certifications ? modernSection("Zertifikate", modernAtsCertifications) : ""}`;
+        : `${sections.profile && !isContinuation ? modernSection("Zusammenfassung", `<p class="modern-pdf-summary">${escapeHtml(managedSummary)}</p>`) : ""}${experienceSection}${educationSection}${isLastPage && sections.skills ? modernSection("Kenntnisse", modernAtsKnowledge) : ""}${isLastPage && sections.languages ? modernSection("Sprachen", modernAtsLanguages) : ""}${isLastPage && sections.strengths ? modernSection("Stärken", modernAtsStrengths) : ""}${isLastPage && sections.certifications ? modernSection(getResumeSectionTitle(profile, "certifications"), modernAtsCertifications) : ""}`;
       return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="modern" data-no-fit="true"><div class="page-content modern-pdf modern-pdf-ats" data-density="${plan.density}">${renderModernHeader(isContinuation, true)}${!isContinuation ? modernSection("Persönliche Daten", renderModernContacts(true)) : ""}${orderedSections}${modernFooter(plan)}</div></section>`;
     }
 
     const right = isContinuation
       ? ""
-      : `<aside class="modern-pdf-right">${hasCustomLayout ? savedLayout.filter(({ zone }) => zone === "sidebar").map(({ type }) => renderOrderedSection(type, "visual")).join("") : `${sections.strengths ? modernSection("Stärken", modernVisualStrengths) : ""}${sections.languages ? modernSection("Sprachen", modernVisualLanguages) : ""}${sections.skills ? modernSection("Fähigkeiten", modernVisualKnowledge) : ""}${sections.certifications ? modernSection("Erfolge", modernVisualAchievements) : ""}`}</aside>`;
+      : `<aside class="modern-pdf-right">${hasCustomLayout ? savedLayout.filter(({ zone }) => zone === "sidebar").map(({ type }) => renderOrderedSection(type, "visual")).join("") : `${sections.strengths ? modernSection("Stärken", modernVisualStrengths) : ""}${sections.languages ? modernSection("Sprachen", modernVisualLanguages) : ""}${sections.skills ? modernSection("Fähigkeiten", modernVisualKnowledge) : ""}${sections.certifications ? modernSection(getResumeSectionTitle(profile, "certifications"), modernVisualAchievements) : ""}`}</aside>`;
     const visualSummary =
       sections.profile && !isContinuation
         ? modernSection(
@@ -3190,21 +3187,21 @@ export const buildDocumentHtml = (
     content
       ? `<section class="tabellarisch-pdf-section ${extraClass}"><h2 class="tabellarisch-pdf-title">${escapeHtml(title)}${continuation ? "<small>Fortsetzung</small>" : ""}</h2>${content}</section>`
       : "";
-  const tabellarischStrengthItems = kreativStrengthItems.slice(0, 2);
+  const tabellarischStrengthItems = managedStrengths.slice(0, 2);
   const tabellarischStrengths = (ats = false) => {
     if (!tabellarischStrengthItems.length) return "";
     if (ats) {
       return `<ul>${tabellarischStrengthItems
         .map(
           (item) =>
-            `<li><strong>${escapeHtml(item.name)}</strong>${item.description?.trim() ? ` - ${escapeHtml(item.description)}` : ""}</li>`,
+            `<li><strong>${escapeHtml(item.title)}</strong>${item.description.trim() ? ` - ${escapeHtml(item.description)}` : ""}</li>`,
         )
         .join("")}</ul>`;
     }
     return `<div class="tabellarisch-pdf-strengths">${tabellarischStrengthItems
       .map(
-        (item, index) =>
-          `<article class="tabellarisch-pdf-strength">${tabellarischExtraIcon(index === 0 ? "flag" : "trophy")}<div><h3>${escapeHtml(item.name)}</h3>${item.description?.trim() ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`,
+        (item) =>
+          `<article class="tabellarisch-pdf-strength">${getTechnologyBrandIconMarkup(item.title)}<div><h3>${escapeHtml(item.title)}</h3>${item.description.trim() ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`,
       )
       .join("")}</div>`;
   };
@@ -3445,7 +3442,7 @@ export const buildDocumentHtml = (
     return `<section><h3>Stärken</h3><div class="gepflegt-pdf-strengths">${gepflegtStrengths
       .map(
         (strength) =>
-          `<article class="gepflegt-pdf-strength">${gepflegtIconMarkup("strength")}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+          `<article class="gepflegt-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
       )
       .join("")}</div></section>`;
   };
@@ -3628,7 +3625,7 @@ export const buildDocumentHtml = (
             : template.id === "einspaltig"
               ? renderEinspaltigResumePage
               : template.id === "klassisch"
-                ? renderKlassischResumePage
+                ? (plan) => renderKlassischResumePage(plan)
                 : template.id === "mehrspaltig"
                   ? renderMehrspaltigResumePage
               : template.id === "elegant"
@@ -3659,7 +3656,7 @@ export const buildCoverLetterMarkdown = (
   const docs = application.documents;
   return `# ${docs.coverSubject || `Bewerbung als ${application.job.title}`}
 
-${salutation(application)},
+${applicationGreeting(application)}
 
 ${docs.coverIntroduction}
 

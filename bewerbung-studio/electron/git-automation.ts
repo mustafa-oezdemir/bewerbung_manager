@@ -145,23 +145,35 @@ export const buildApplicationCommitMessage = (
   return `${company || "Bewerbung"} | ${localTimestamp(date)} | ${action}`;
 };
 
-const inferredCompanyName = (relativePath: string) => {
+export const inferApplicationGitChange = (relativePath: string) => {
   const parts = relativePath.split(/[\\/]+/).filter(Boolean);
-  const knownRootIndex = parts.findIndex((part, index) =>
-    [
-      "Anschreiben",
-      "Lebenslauf",
-      "Absagen",
-      "Vorstellungsgespräch",
-    ].includes(part) ||
-    (part === "Bewerbungen" && parts[index - 1] === "data"),
-  );
+  const applicationRoots = [
+    "Anschreiben",
+    "Lebenslauf",
+    "Absagen",
+    "Vorstellungsgespräch",
+  ];
+  const knownRootIndex = applicationRoots.includes(parts[0])
+    ? 0
+    : parts[0] === "data" && parts[1] === "Bewerbungen"
+      ? 1
+      : -1;
+  if (knownRootIndex < 0) return undefined;
+  const category = parts[knownRootIndex];
   const folder = knownRootIndex >= 0 ? parts[knownRootIndex + 1] : undefined;
-  return (
-    folder
-      ?.replace(/_(?:\d{4}-\d{2}-\d{2}|Termin_offen)$/, "")
-      .replace(/_/g, " ") || "BewerbungsManager"
-  );
+  if (!folder) return undefined;
+  const companyName = folder
+    .replace(/_(?:\d{4}-\d{2}-\d{2}|Termin_offen)$/, "")
+    .replace(/_/g, " ");
+  const action: ApplicationGitAction =
+    category === "Anschreiben"
+      ? "anschreiben"
+      : category === "Absagen"
+        ? "absage"
+        : category === "Vorstellungsgespräch"
+          ? "vorstellungsgespraech"
+          : "update";
+  return { companyName, action };
 };
 
 const shouldIgnoreWatchEvent = (relativePath: string) => {
@@ -190,7 +202,10 @@ export class GitAutomationService implements ApplicationGitCommitQueue {
   private lastError?: Error;
   private watcher?: FSWatcher;
   private watchTimer?: NodeJS.Timeout;
-  private pendingWatchCompany = "BewerbungsManager";
+  private pendingWatchChange?: {
+    companyName: string;
+    action: ApplicationGitAction;
+  };
 
   constructor(
     private readonly repositoryPath: string,
@@ -222,6 +237,15 @@ export class GitAutomationService implements ApplicationGitCommitQueue {
   }
 
   queueCommit(companyName: string, action: ApplicationGitAction) {
+    if (this.watchTimer) {
+      clearTimeout(this.watchTimer);
+      this.watchTimer = undefined;
+      this.pendingWatchChange = undefined;
+    }
+    this.enqueueCommit(companyName, action);
+  }
+
+  private enqueueCommit(companyName: string, action: ApplicationGitAction) {
     const commitMessage = buildApplicationCommitMessage(
       companyName,
       action,
@@ -253,10 +277,12 @@ export class GitAutomationService implements ApplicationGitCommitQueue {
   }
 
   dispose() {
-    if (this.watchTimer) {
+    if (this.watchTimer && this.pendingWatchChange) {
       clearTimeout(this.watchTimer);
       this.watchTimer = undefined;
-      this.queueCommit(this.pendingWatchCompany, "update");
+      const change = this.pendingWatchChange;
+      this.pendingWatchChange = undefined;
+      this.enqueueCommit(change.companyName, change.action);
     }
     this.watcher?.close();
     this.watcher = undefined;
@@ -271,11 +297,20 @@ export class GitAutomationService implements ApplicationGitCommitQueue {
           if (!fileName) return;
           const relativePath = String(fileName);
           if (shouldIgnoreWatchEvent(relativePath)) return;
-          this.pendingWatchCompany = inferredCompanyName(relativePath);
+          const change = inferApplicationGitChange(relativePath);
+          if (!change) return;
+          this.pendingWatchChange = change;
           if (this.watchTimer) clearTimeout(this.watchTimer);
           this.watchTimer = setTimeout(() => {
             this.watchTimer = undefined;
-            this.queueCommit(this.pendingWatchCompany, "update");
+            const pendingChange = this.pendingWatchChange;
+            this.pendingWatchChange = undefined;
+            if (pendingChange) {
+              this.enqueueCommit(
+                pendingChange.companyName,
+                pendingChange.action,
+              );
+            }
           }, 2_500);
           this.watchTimer.unref();
         },

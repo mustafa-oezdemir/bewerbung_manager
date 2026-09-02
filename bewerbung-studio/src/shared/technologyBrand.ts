@@ -1,5 +1,5 @@
 const svg = (content: string) =>
-  `<svg viewBox="0 0 32 32" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">${content}</svg>`;
+  `<svg class="technology-brand-svg" viewBox="0 0 32 32" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">${content}</svg>`;
 
 const letterMark = (text: string, shape = "rounded") =>
   svg(
@@ -13,7 +13,10 @@ const letterMark = (text: string, shape = "rounded") =>
   );
 
 export const getTechnologyBrandIconMarkup = (technology: string) => {
-  const normalized = technology.trim().toLocaleLowerCase("en-US");
+  const normalized = technology
+    .trim()
+    .toLocaleLowerCase("en-US")
+    .replace(/^(?:programming|programmiersprache)\s*[:–-]?\s*/i, "");
   if (normalized === "react") {
     return svg(
       '<circle cx="16" cy="16" r="2.3" fill="currentColor"/><ellipse cx="16" cy="16" rx="13" ry="5.2" fill="none" stroke="currentColor" stroke-width="1.6"/><ellipse cx="16" cy="16" rx="13" ry="5.2" transform="rotate(60 16 16)" fill="none" stroke="currentColor" stroke-width="1.6"/><ellipse cx="16" cy="16" rx="13" ry="5.2" transform="rotate(120 16 16)" fill="none" stroke="currentColor" stroke-width="1.6"/>',
@@ -52,5 +55,34 @@ export const getTechnologyBrandIconMarkup = (technology: string) => {
   }
   if (normalized === ".net") return letterMark(".NET");
   if (normalized === "typescript") return letterMark("TS");
+  if (["javascript", "javascript (es6+)", "js"].includes(normalized)) {
+    return letterMark("JS");
+  }
+  if (["kotlin", "kt"].includes(normalized)) return letterMark("KT", "hexagon");
+  if (normalized === "swift") return letterMark("SW", "rounded");
+  if (normalized === "ruby") return letterMark("RB", "hexagon");
+  if (normalized === "dart") return letterMark("D", "hexagon");
+  if (normalized === "scala") return letterMark("SC", "rounded");
+  if (normalized === "r") return letterMark("R", "oval");
+  if (["sql", "pl/sql", "tsql", "t-sql"].includes(normalized)) {
+    return svg(
+      '<ellipse cx="16" cy="7" rx="10" ry="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 7v18c0 2.2 4.5 4 10 4s10-1.8 10-4V7M6 16c0 2.2 4.5 4 10 4s10-1.8 10-4" fill="none" stroke="currentColor" stroke-width="2"/>',
+    );
+  }
+  if (["bash", "shell", "zsh"].includes(normalized)) return letterMark(">_");
+  if (["powershell", "power shell"].includes(normalized)) return letterMark("PS");
+  if (["visual basic", "vb", "vb.net"].includes(normalized)) return letterMark("VB");
+  if (["f#", "fsharp"].includes(normalized)) return letterMark("F#", "hexagon");
+  if (normalized === "objective-c") return letterMark("ObjC", "rounded");
+  if (normalized === "solidity") return letterMark("SOL", "hexagon");
+  if (normalized === "elixir") return letterMark("EX", "rounded");
+  if (normalized === "erlang") return letterMark("ER", "rounded");
+  if (normalized === "haskell") return letterMark("HS", "rounded");
+  if (normalized === "lua") return letterMark("Lua", "oval");
+  if (normalized === "perl") return letterMark("PL", "oval");
+  if (normalized === "matlab") return letterMark("MAT", "rounded");
+  if (normalized === "groovy") return letterMark("GV", "rounded");
+  if (["assembly", "assembler", "asm"].includes(normalized)) return letterMark("ASM");
+  if (normalized === "cobol") return letterMark("COB");
   return letterMark(technology.slice(0, 3).toLocaleUpperCase("en-US"));
 };

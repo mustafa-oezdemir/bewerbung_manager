@@ -46,6 +46,7 @@ const defaults: ApplicationInput = {
   accentColor: templates[0].accent,
   secondaryColor: templates[0].secondary,
   designSettings: defaultDocumentDesign,
+  additionalContacts: [],
   notes: "",
 };
 
@@ -68,6 +69,7 @@ const mergeDraft = (draft: unknown): ApplicationInput => {
 export function NewApplicationWizard({ onClose }: Props) {
   const [step, setStep] = useState(1);
   const [draftReady, setDraftReady] = useState(false);
+  const [showSecondContact, setShowSecondContact] = useState(false);
   const completedRef = useRef(false);
   const createApplication = useAppStore((state) => state.createApplication);
   const profiles = useAppStore((state) => state.workspace.profiles);
@@ -91,6 +93,8 @@ export function NewApplicationWizard({ onClose }: Props) {
   const selectedTemplateId = watch("templateId");
   const sentAt = watch("sentAt");
   const deadlineAt = watch("deadlineAt");
+  const primaryContact = watch("contact");
+  const secondContact = watch("additionalContacts.0");
   const selectedTemplate = useMemo(
     () =>
       templates.find((template) => template.id === selectedTemplateId) ??
@@ -102,7 +106,9 @@ export function NewApplicationWizard({ onClose }: Props) {
     let active = true;
     void window.bewerbungsManager.applicationDraft.get().then((draft) => {
       if (!active) return;
-      reset(mergeDraft(draft));
+      const mergedDraft = mergeDraft(draft);
+      reset(mergedDraft);
+      setShowSecondContact(Boolean(mergedDraft.additionalContacts?.length));
       setDraftReady(true);
     });
     return () => {
@@ -144,6 +150,13 @@ export function NewApplicationWizard({ onClose }: Props) {
           ? (["contact.email", "job.url", "company.website"] as const)
           : [];
     if (fields.length && !(await trigger(fields))) return;
+    if (
+      step === 2 &&
+      showSecondContact &&
+      !(await trigger("additionalContacts.0.email"))
+    ) {
+      return;
+    }
     setStep((current) => Math.min(4, current + 1));
   };
 
@@ -262,6 +275,84 @@ export function NewApplicationWizard({ onClose }: Props) {
                   <span>Telefon</span>
                   <input {...register("contact.phone")} />
                 </label>
+                <label className="field">
+                  <span>Position / Funktion</span>
+                  <input {...register("contact.position")} />
+                </label>
+                {showSecondContact ? (
+                  <>
+                    <div className="contact-person-heading full">
+                      <strong>Zweiter Ansprechpartner</strong>
+                      <button
+                        className="button secondary"
+                        type="button"
+                        onClick={() => {
+                          setValue("additionalContacts", []);
+                          setShowSecondContact(false);
+                        }}
+                      >
+                        Entfernen
+                      </button>
+                    </div>
+                    <label className="field">
+                      <span>Anrede / Geschlecht</span>
+                      <select {...register("additionalContacts.0.salutation")}>
+                        <option value="">Nicht bekannt</option>
+                        <option>Frau</option>
+                        <option>Herr</option>
+                        <option>Divers</option>
+                      </select>
+                    </label>
+                    <label className="field">
+                      <span>Position / Funktion</span>
+                      <input {...register("additionalContacts.0.position")} />
+                    </label>
+                    <label className="field">
+                      <span>Vorname</span>
+                      <input {...register("additionalContacts.0.firstName")} />
+                    </label>
+                    <label className="field">
+                      <span>Nachname</span>
+                      <input {...register("additionalContacts.0.lastName")} />
+                    </label>
+                    <label className="field">
+                      <span>E-Mail</span>
+                      <input
+                        type="email"
+                        {...register("additionalContacts.0.email")}
+                      />
+                      <small>
+                        {errors.additionalContacts?.[0]?.email?.message}
+                      </small>
+                    </label>
+                    <label className="field">
+                      <span>Telefon</span>
+                      <input {...register("additionalContacts.0.phone")} />
+                    </label>
+                  </>
+                ) : (
+                  <div className="contact-person-add full">
+                    <button
+                      className="button secondary"
+                      type="button"
+                      onClick={() => {
+                        setValue("additionalContacts", [
+                          {
+                            salutation: "",
+                            firstName: "",
+                            lastName: "",
+                            position: "",
+                            email: "",
+                            phone: "",
+                          },
+                        ]);
+                        setShowSecondContact(true);
+                      }}
+                    >
+                      Zweiten Ansprechpartner hinzufügen
+                    </button>
+                  </div>
+                )}
                 <label className="field">
                   <span>Bewerbungsdatum</span>
                   <input
@@ -392,6 +483,24 @@ export function NewApplicationWizard({ onClose }: Props) {
                     <div><dt>Arbeitsmodell</dt><dd>{watch("job.workModel")}</dd></div>
                     <div><dt>Vorlage</dt><dd>{selectedTemplate.name}</dd></div>
                     <div><dt>Status</dt><dd>{watch("sentAt") ? "Beworben" : "Entwurf"}</dd></div>
+                    <div>
+                      <dt>1. Ansprechpartner</dt>
+                      <dd>
+                        {[primaryContact.firstName, primaryContact.lastName]
+                          .filter(Boolean)
+                          .join(" ") || "Nicht angegeben"}
+                      </dd>
+                    </div>
+                    {secondContact ? (
+                      <div>
+                        <dt>2. Ansprechpartner</dt>
+                        <dd>
+                          {[secondContact.firstName, secondContact.lastName]
+                            .filter(Boolean)
+                            .join(" ") || "Nicht angegeben"}
+                        </dd>
+                      </div>
+                    ) : null}
                   </dl>
                 </div>
               </div>

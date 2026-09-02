@@ -17,6 +17,10 @@ import {
 import { useState } from "react";
 import { KnowledgeSectionEditor } from "../components/knowledge/KnowledgeSectionEditor";
 import { LanguageLevelEditor } from "../components/languages/LanguageLevelEditor";
+import {
+  CertificateListEditor,
+  EntryListEditor,
+} from "../components/profile/EntryListEditor";
 import { defaultKnowledgeSection } from "../features/knowledge/knowledge.constants";
 import {
   defaultEditableResumeSectionTitles,
@@ -1030,50 +1034,7 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                         }))
                       }
                     />
-                    <div className="form-grid">
-                      <TextField
-                        label="Rechtsform / Unternehmenszusatz"
-                        value={experience.legalForm}
-                        onChange={(legalForm) =>
-                          setDraft((current) => ({
-                            ...current,
-                            experiences: current.experiences.map((item) =>
-                              item.id === experience.id
-                                ? { ...item, legalForm }
-                                : item,
-                            ),
-                          }))
-                        }
-                      />
-                      <TextField
-                        label="Beschäftigungsart"
-                        value={experience.employmentType}
-                        onChange={(employmentType) =>
-                          setDraft((current) => ({
-                            ...current,
-                            experiences: current.experiences.map((item) =>
-                              item.id === experience.id
-                                ? { ...item, employmentType }
-                                : item,
-                            ),
-                          }))
-                        }
-                      />
-                      <TextField
-                        label="Teamgröße / Verantwortung"
-                        value={experience.teamSize}
-                        onChange={(teamSize) =>
-                          setDraft((current) => ({
-                            ...current,
-                            experiences: current.experiences.map((item) =>
-                              item.id === experience.id
-                                ? { ...item, teamSize }
-                                : item,
-                            ),
-                          }))
-                        }
-                      />
-                      <label className="checkbox-field field-checkbox">
+                    <label className="checkbox-field field-checkbox">
                         <input
                           type="checkbox"
                           checked={experience.isCurrent}
@@ -1097,88 +1058,30 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                           }
                         />
                         <span>Aktuelle Position (bis heute)</span>
-                      </label>
-                    </div>
-                    <label className="field">
-                      <span>Kurzbeschreibung</span>
-                      <textarea
-                        rows={3}
-                        value={experience.description}
-                        onChange={(event) =>
-                          setDraft((current) => ({
-                            ...current,
-                            experiences: current.experiences.map((item) =>
-                              item.id === experience.id
-                                ? { ...item, description: event.target.value }
-                                : item,
-                            ),
-                          }))
-                        }
-                      />
                     </label>
-                    <div className="form-grid">
-                      <ListField
-                        label="Aufgaben"
-                        values={experience.tasks}
-                        onChange={(tasks) =>
-                          setDraft((current) => ({
-                            ...current,
-                            experiences: current.experiences.map((item) =>
-                              item.id === experience.id ? { ...item, tasks } : item,
-                            ),
-                          }))
-                        }
-                      />
-                      <ListField
-                        label="Projekte"
-                        values={experience.projects}
-                        onChange={(projects) =>
-                          setDraft((current) => ({
-                            ...current,
-                            experiences: current.experiences.map((item) =>
-                              item.id === experience.id
-                                ? { ...item, projects }
-                                : item,
-                            ),
-                          }))
-                        }
-                      />
-                      <ListField
-                        label="Technologien / Methoden"
-                        values={experience.technologies}
-                        full
-                        onChange={(technologies) =>
-                          setDraft((current) => ({
-                            ...current,
-                            experiences: current.experiences.map((item) =>
-                              item.id === experience.id
-                                ? { ...item, technologies }
-                                : item,
-                            ),
-                          }))
-                        }
-                      />
+                    <div className="profile-subsection-header compact-heading">
+                      <div>
+                        <strong>Aufgaben & Erfolge</strong>
+                        <small>Kurze, konkrete Stichpunkte; jeder Punkt wird einzeln angelegt.</small>
+                      </div>
                     </div>
-                    <label className="field">
-                      <span>Erfolge – eine Zeile je Punkt</span>
-                      <textarea
-                        rows={4}
-                        value={experience.achievements.join("\n")}
-                        onChange={(event) =>
+                    <EntryListEditor
+                      values={experience.achievements}
+                      multiline
+                      addLabel="Stichpunkt hinzufügen"
+                      emptyText="Noch keine Aufgabe oder kein Erfolg erfasst."
+                      placeholder="z. B. REST-API mit Symfony entwickelt"
+                      onChange={(achievements) =>
                           setDraft((current) => ({
                             ...current,
                             experiences: current.experiences.map((item) =>
                               item.id === experience.id
-                                ? {
-                                    ...item,
-                                    achievements: event.target.value.split("\n"),
-                                  }
+                                ? { ...item, achievements }
                                 : item,
                             ),
                           }))
-                        }
-                      />
-                    </label>
+                      }
+                    />
                   </div>
                   <SortActions
                     index={index}
@@ -1331,87 +1234,6 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                         }))
                       }
                     />
-                    <div className="form-grid">
-                      <TextField
-                        label="Art (z. B. Studium, Ausbildung)"
-                        value={education.type}
-                        onChange={(type) =>
-                          setDraft((current) => ({
-                            ...current,
-                            education: current.education.map((item) =>
-                              item.id === education.id ? { ...item, type } : item,
-                            ),
-                          }))
-                        }
-                      />
-                      <TextField
-                        label="Fachrichtung"
-                        value={education.fieldOfStudy}
-                        onChange={(fieldOfStudy) =>
-                          setDraft((current) => ({
-                            ...current,
-                            education: current.education.map((item) =>
-                              item.id === education.id
-                                ? { ...item, fieldOfStudy }
-                                : item,
-                            ),
-                          }))
-                        }
-                      />
-                      <TextField
-                        label="Note"
-                        value={education.grade}
-                        onChange={(grade) =>
-                          setDraft((current) => ({
-                            ...current,
-                            education: current.education.map((item) =>
-                              item.id === education.id ? { ...item, grade } : item,
-                            ),
-                          }))
-                        }
-                      />
-                      <TextField
-                        label="Status (z. B. laufend)"
-                        value={education.status}
-                        onChange={(status) =>
-                          setDraft((current) => ({
-                            ...current,
-                            education: current.education.map((item) =>
-                              item.id === education.id ? { ...item, status } : item,
-                            ),
-                          }))
-                        }
-                      />
-                      <TextField
-                        label="Land"
-                        value={education.country}
-                        onChange={(country) =>
-                          setDraft((current) => ({
-                            ...current,
-                            education: current.education.map((item) =>
-                              item.id === education.id ? { ...item, country } : item,
-                            ),
-                          }))
-                        }
-                      />
-                    </div>
-                    <label className="field">
-                      <span>Schwerpunkte / Beschreibung</span>
-                      <textarea
-                        rows={3}
-                        value={education.description}
-                        onChange={(event) =>
-                          setDraft((current) => ({
-                            ...current,
-                            education: current.education.map((item) =>
-                              item.id === education.id
-                                ? { ...item, description: event.target.value }
-                                : item,
-                            ),
-                          }))
-                        }
-                      />
-                    </label>
                   </div>
                   <SortActions
                     index={index}
@@ -1520,10 +1342,8 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                 }))
               }
             />
-            <ListField
-              label="Zertifikate – eine Zeile je Eintrag"
+            <CertificateListEditor
               values={draft.certifications}
-              full
               onChange={(certifications) =>
                 setDraft((current) => ({ ...current, certifications }))
               }
@@ -1735,21 +1555,16 @@ function ListField({
   onChange: (values: string[]) => void;
 }) {
   return (
-    <label className={`field ${full ? "full" : ""}`}>
-      <span>{label} – Komma oder eine Zeile je Eintrag</span>
-      <textarea
-        rows={4}
-        value={values.join(", ")}
-        onChange={(event) =>
-          onChange(
-            event.target.value
-              .split(/[\n,]/)
-              .map((item) => item.trim())
-              .filter(Boolean),
-          )
-        }
+    <div className={`field ${full ? "full" : ""}`}>
+      <span>{label}</span>
+      <EntryListEditor
+        values={values}
+        onChange={onChange}
+        multiline
+        addLabel="Punkt hinzufügen"
+        emptyText="Noch kein Punkt erfasst."
       />
-    </label>
+    </div>
   );
 }
 

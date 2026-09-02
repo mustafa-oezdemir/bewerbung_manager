@@ -1,8 +1,5 @@
 import type { ApplicantProfile } from "../../../../shared/schema";
-import {
-  parseTemplateStrengths,
-  toTemplateExternalHref,
-} from "../resume-template-data";
+import { toTemplateExternalHref } from "../resume-template-data";
 
 export function KlassischHeader({
   profile,
@@ -24,12 +21,7 @@ export function KlassischHeader({
     profile?.birthDate || profile?.birthPlace
       ? `Geb. ${profile?.birthDate || ""}${profile?.birthPlace ? ` in ${profile.birthPlace}` : ""}`.trim()
       : "";
-  const profession = [
-    profile?.title,
-    ...parseTemplateStrengths(profile, 2).map((strength) => strength.title),
-  ]
-    .filter(Boolean)
-    .join(" | ");
+  const profession = profile?.title.trim() ?? "";
   const contacts = [
     {
       kind: "phone",

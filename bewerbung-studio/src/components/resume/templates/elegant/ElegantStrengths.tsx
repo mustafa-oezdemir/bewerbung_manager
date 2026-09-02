@@ -1,6 +1,7 @@
 import { parseTemplateStrengths } from "../resume-template-data";
 import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 import type { ElegantStrengthsProps } from "./elegant.types";
+import { TechnologyBrandIcon } from "../../TechnologyBrandIcon";
 
 export function ElegantStrengths({
   profile,
@@ -36,11 +37,12 @@ export function ElegantStrengths({
     >
       <h2 className="elegant-sidebar__title">{getResumeSectionTitle(profile, "strengths")}</h2>
       <div className="elegant-strengths__list">
-        {strengths.map((strength, index) => (
+        {strengths.map((strength) => (
           <article className="elegant-strength" key={strength.title}>
-            <span className="elegant-strength__icon" aria-hidden="true">
-              {index ? "♥" : "◉"}
-            </span>
+            <TechnologyBrandIcon
+              technology={strength.title}
+              className="elegant-strength__icon"
+            />
             <div>
               <h3>{strength.title}</h3>
               {strength.description ? <p>{strength.description}</p> : null}

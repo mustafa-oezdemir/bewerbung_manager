@@ -1,14 +1,7 @@
-import {
-  BadgeCheck,
-  UsersRound,
-  WandSparkles,
-  type LucideIcon,
-} from "lucide-react";
+import { TechnologyBrandIcon } from "../../TechnologyBrandIcon";
 import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 import { parseTemplateStrengths } from "../resume-template-data";
 import type { ZweispaltigStrengthsProps } from "./zweispaltig.types";
-
-const strengthIcons: LucideIcon[] = [UsersRound, WandSparkles, BadgeCheck];
 
 export function ZweispaltigStrengths({
   profile,
@@ -36,12 +29,9 @@ export function ZweispaltigStrengths({
         </ul>
       ) : (
         <div className="zweispaltig-strengths__list">
-          {strengths.map((strength, index) => {
-            const StrengthIcon = strengthIcons[index] ?? BadgeCheck;
-
-            return (
+          {strengths.map((strength) => (
               <article className="zweispaltig-strength" key={strength.title}>
-                <StrengthIcon aria-hidden="true" />
+                <TechnologyBrandIcon technology={strength.title} />
                 <div>
                   <h3>{strength.title}</h3>
                   {strength.description.trim() ? (
@@ -49,8 +39,7 @@ export function ZweispaltigStrengths({
                   ) : null}
                 </div>
               </article>
-            );
-          })}
+          ))}
         </div>
       )}
     </section>

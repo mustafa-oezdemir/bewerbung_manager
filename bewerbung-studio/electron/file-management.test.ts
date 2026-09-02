@@ -117,6 +117,54 @@ describe("FileManagementService", () => {
     }
   });
 
+  it("moves a legacy company/date folder into its new position subfolder", async () => {
+    const legacyFolderName = "Universitatsklinikum_Frankfurt_2026-08-09";
+    const application = {
+      folderName: legacyFolderName,
+      status: "Beworben",
+      company: { name: "Universitätsklinikum Frankfurt" },
+      job: {
+        title:
+          "Softwareentwickler/in – *Workflow-Modellierung*& User Experience",
+      },
+    } as Application;
+    const legacyPaths = [
+      service.applicationDataPath(legacyFolderName),
+      path.join(service.paths.anschreibenDocuments, legacyFolderName),
+      path.join(service.paths.lebenslaufDocuments, legacyFolderName),
+    ];
+    await Promise.all(
+      legacyPaths.map(async (legacyPath, index) => {
+        await mkdir(legacyPath, { recursive: true });
+        await writeFile(path.join(legacyPath, `Dokument-${index}.txt`), "content");
+      }),
+    );
+
+    const relocated = await service.relocateApplicationFolders(
+      application,
+      new Date(2026, 7, 9, 12, 0, 0),
+    );
+
+    expect(relocated).toBe(
+      path.join(
+        legacyFolderName,
+        "Softwareentwickler_in_–_Workflow-Modellierung_&_User_Experience",
+      ),
+    );
+    for (const [index, legacyPath] of legacyPaths.entries()) {
+      await expect(
+        readFile(
+          path.join(
+            legacyPath,
+            path.basename(relocated),
+            `Dokument-${index}.txt`,
+          ),
+          "utf8",
+        ),
+      ).resolves.toBe("content");
+    }
+  });
+
   it("recognizes Windows file-lock errors", () => {
     for (const code of ["EACCES", "EBUSY", "EPERM"]) {
       expect(isApplicationFolderLockError({ code })).toBe(true);

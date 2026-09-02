@@ -14,6 +14,10 @@ import {
 } from "../../shared/schema";
 import { KnowledgeSectionEditor } from "../knowledge/KnowledgeSectionEditor";
 import { LanguageLevelEditor } from "../languages/LanguageLevelEditor";
+import {
+  CertificateListEditor,
+  EntryListEditor,
+} from "../profile/EntryListEditor";
 
 type Props = {
   profile: ApplicantProfile;
@@ -196,9 +200,6 @@ export function ResumeDataEditor({ profile, onPreview, onSave }: Props) {
               <EditorInput label="LinkedIn" value={draft.linkedin} onChange={(linkedin) => setDraft((current) => ({ ...current, linkedin }))} />
               <EditorInput label="GitHub" value={draft.github} onChange={(github) => setDraft((current) => ({ ...current, github }))} />
               <EditorInput label="Portfolio" value={draft.portfolio} onChange={(portfolio) => setDraft((current) => ({ ...current, portfolio }))} />
-              <EditorInput label="Geburtsdatum" value={draft.birthDate} onChange={(birthDate) => setDraft((current) => ({ ...current, birthDate }))} />
-              <EditorInput label="Geburtsort" value={draft.birthPlace} onChange={(birthPlace) => setDraft((current) => ({ ...current, birthPlace }))} />
-              <EditorInput label="Nationalität" value={draft.nationality} onChange={(nationality) => setDraft((current) => ({ ...current, nationality }))} />
             </div>
             <label className="field">
               <span>{draft.resumeSectionTitles.summary}</span>
@@ -361,23 +362,26 @@ export function ResumeDataEditor({ profile, onPreview, onSave }: Props) {
                     <EditorInput label="Unternehmen" value={experience.company} onChange={(company) => setDraft((current) => ({ ...current, experiences: current.experiences.map((item) => item.id === experience.id ? { ...item, company } : item) }))} />
                     <EditorInput label="Ort" value={experience.city} onChange={(city) => setDraft((current) => ({ ...current, experiences: current.experiences.map((item) => item.id === experience.id ? { ...item, city } : item) }))} />
                   </div>
-                  <label className="field">
-                    <span>Aufgaben und Erfolge – eine Zeile je Punkt</span>
-                    <textarea
-                      rows={5}
-                      value={experience.achievements.join("\n")}
-                      onChange={(event) =>
+                  <div className="field">
+                    <span>Aufgaben & Erfolge</span>
+                    <EntryListEditor
+                      values={experience.achievements}
+                      multiline
+                      addLabel="Stichpunkt hinzufügen"
+                      emptyText="Noch keine Aufgabe oder kein Erfolg erfasst."
+                      placeholder="z. B. REST-API mit Symfony entwickelt"
+                      onChange={(achievements) =>
                         setDraft((current) => ({
                           ...current,
                           experiences: current.experiences.map((item) =>
                             item.id === experience.id
-                              ? { ...item, achievements: event.target.value.split("\n") }
+                              ? { ...item, achievements }
                               : item,
                           ),
                         }))
                       }
                     />
-                  </label>
+                  </div>
                 </article>
               ))}
             </div>
@@ -485,10 +489,12 @@ export function ResumeDataEditor({ profile, onPreview, onSave }: Props) {
                 }))
               }
             />
-            <label className="field">
-              <span>Zertifikate – eine Zeile je Eintrag</span>
-              <textarea rows={5} value={draft.certifications.join("\n")} onChange={(event) => setDraft((current) => ({ ...current, certifications: event.target.value.split("\n") }))} />
-            </label>
+            <CertificateListEditor
+              values={draft.certifications}
+              onChange={(certifications) =>
+                setDraft((current) => ({ ...current, certifications }))
+              }
+            />
             <SectionUpdateButton onClick={updateSection} />
           </details>
 
@@ -746,18 +752,20 @@ function ResumeSpecialSectionsEditor({
                     }
                   />
                 </label>
-                <label className="field">
-                  <span>Details / Erfolge – eine Zeile je Eintrag</span>
-                  <textarea
-                    rows={4}
-                    value={entry.bullets.join("\n")}
-                    onChange={(event) =>
+                <div className="field">
+                  <span>Details / Erfolge</span>
+                  <EntryListEditor
+                    values={entry.bullets}
+                    multiline
+                    addLabel="Punkt hinzufügen"
+                    emptyText="Noch kein Punkt erfasst."
+                    onChange={(bullets) =>
                       updateEntry(section.id, entry.id, {
-                        bullets: event.target.value.split("\n"),
+                        bullets,
                       })
                     }
                   />
-                </label>
+                </div>
               </article>
             ))}
           </div>

@@ -39,6 +39,10 @@ import {
 import { templates } from "../src/shared/templates";
 import { formatApplicationDateLong } from "../src/shared/applicationDate";
 import {
+  applicationGreeting,
+  applicationPostalContactLines,
+} from "../src/shared/applicationContacts";
+import {
   compactWordMarginLevelToMm,
   getDocumentFont,
 } from "../src/shared/documentDesign";
@@ -646,6 +650,7 @@ export class DataStore {
       id: createId(),
       folderName,
       ...input,
+      additionalContacts: input.additionalContacts ?? [],
       status: input.sentAt ? "Beworben" : "Entwurf",
       documents: {
         coverSubject: `Bewerbung als ${input.job.title}`,
@@ -1025,26 +1030,10 @@ export class DataStore {
     const applicantName = profile
       ? `${profile.firstName} ${profile.lastName}`.trim()
       : "";
-    const contactName = [
-      application.contact.firstName,
-      application.contact.lastName,
-    ]
-      .filter(Boolean)
-      .join(" ");
-    const postalContactName = contactName
-      ? application.contact.salutation === "Herr"
-        ? `Herrn ${contactName}`
-        : application.contact.salutation === "Frau"
-          ? `Frau ${contactName}`
-          : contactName
-      : "";
-    const greeting = application.contact.lastName
-      ? application.contact.salutation === "Herr"
-        ? `Sehr geehrter Herr ${application.contact.lastName},`
-        : application.contact.salutation === "Frau"
-          ? `Sehr geehrte Frau ${application.contact.lastName},`
-          : `Guten Tag ${contactName},`
-      : "Sehr geehrte Damen und Herren,";
+    const postalContactName = applicationPostalContactLines(application).join(
+      "\n",
+    );
+    const greeting = applicationGreeting(application);
     const knowledgeSection = ensureKnowledgeSection(
       profile?.knowledgeSection,
       profile?.skills ?? [],

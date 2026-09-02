@@ -229,8 +229,8 @@
 
 .einfach-strengths > div {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4mm 15mm;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4mm 8mm;
 }
 
 .einfach-strengths article {
@@ -286,6 +286,22 @@
   overflow-wrap: anywhere;
 }
 
+.einfach-career__heading,
+.einfach-career__organization {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4mm;
+  align-items: baseline;
+}
+
+.einfach-career__heading time,
+.einfach-career__organization span {
+  color: var(--einfach-muted);
+  font-size: 8.1pt;
+  text-align: right;
+  white-space: nowrap;
+}
+
 .einfach-career h4 {
   margin: 1mm 0 0;
   color: var(--einfach-accent);
@@ -295,27 +311,8 @@
   overflow-wrap: anywhere;
 }
 
-.einfach-career__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1mm 4mm;
+.einfach-career__organization {
   margin: 1mm 0 1.5mm;
-  color: var(--einfach-muted);
-  font-size: 8.1pt;
-}
-
-.einfach-career__meta span::before {
-  margin-right: 1.5mm;
-  content: "⌖";
-  color: var(--einfach-accent);
-  font-size: 8pt;
-}
-
-.einfach-career__meta time::before {
-  margin-right: 1.5mm;
-  content: "▦";
-  color: var(--einfach-accent);
-  font-size: 7.5pt;
 }
 
 .einfach-career ul,

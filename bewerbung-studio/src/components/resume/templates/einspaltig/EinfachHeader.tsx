@@ -1,8 +1,5 @@
 import type { ApplicantProfile } from "../../../../shared/schema";
-import {
-  parseTemplateStrengths,
-  toTemplateExternalHref,
-} from "../resume-template-data";
+import { toTemplateExternalHref } from "../resume-template-data";
 
 export function EinfachHeader({
   profile,
@@ -24,12 +21,7 @@ export function EinfachHeader({
     profile?.birthDate || profile?.birthPlace
       ? `Geb. ${profile?.birthDate || ""}${profile?.birthPlace ? ` in ${profile.birthPlace}` : ""}`.trim()
       : "";
-  const specialties = parseTemplateStrengths(profile, 3)
-    .map((item) => item.title)
-    .join(" | ");
-  const profession = [profile?.title, specialties]
-    .filter(Boolean)
-    .join(" | ");
+  const profession = profile?.title.trim() ?? "";
   const contacts = [
     {
       kind: "phone",

@@ -8,6 +8,7 @@ import {
   APPLICATION_DATA_REMOTE,
   GitAutomationService,
   buildApplicationCommitMessage,
+  inferApplicationGitChange,
 } from "./git-automation";
 
 describe("GitAutomationService", () => {
@@ -30,6 +31,33 @@ describe("GitAutomationService", () => {
         new Date(2026, 7, 29, 14, 5, 9),
       ),
     ).toBe("Muster GmbH Berlin intern | 2026-08-29 14:05:09 | absage");
+  });
+
+  it("only infers commits from company-specific application folders", () => {
+    expect(
+      inferApplicationGitChange(
+        "Anschreiben/planen-bauen4.0_GmbH_2026-08-31/Full-Stack/Anschreiben.docx",
+      ),
+    ).toEqual({
+      companyName: "planen-bauen4.0 GmbH",
+      action: "anschreiben",
+    });
+    expect(
+      inferApplicationGitChange(
+        "Vorstellungsgespräch/Siemens_AG_2026-09-02/Notizen.txt",
+      ),
+    ).toEqual({
+      companyName: "Siemens AG",
+      action: "vorstellungsgespraech",
+    });
+    expect(
+      inferApplicationGitChange("data/Settings/workspace.json"),
+    ).toBeUndefined();
+    expect(
+      inferApplicationGitChange(
+        "data/Muster/Lebenslauf/Modern Lebenslauf Muster.template.json",
+      ),
+    ).toBeUndefined();
   });
 
   it("writes and invokes the PowerShell synchronization script for the data repository", async () => {
@@ -173,5 +201,6 @@ describe("GitAutomationService", () => {
       ]);
       expect(synchronizedRemoteHead.trim()).toBe(synchronizedLocalHead.trim());
     },
+    15_000,
   );
 });

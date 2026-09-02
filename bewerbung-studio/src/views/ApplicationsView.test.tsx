@@ -80,14 +80,50 @@ describe("ApplicationsView", () => {
       openFolder: vi.fn(),
     };
 
-    const markup = renderToStaticMarkup(<ApplicationsView />);
+    const markup = renderToStaticMarkup(
+      <ApplicationsView onOpenResume={vi.fn()} onOpenCover={vi.fn()} />,
+    );
 
     expect(markup.match(/<form/g)).toHaveLength(5);
     expect(markup.match(/Bereich speichern/g)).toHaveLength(5);
     expect(markup).toContain("Status &amp; Gestaltung");
     expect(markup).toContain("Unternehmen &amp; Position");
     expect(markup).toContain("Ansprechpartner");
+    expect(markup).toContain("Anrede / Geschlecht");
+    expect(markup).toContain("Zweiten Ansprechpartner hinzufügen");
     expect(markup).toContain("Termine");
     expect(markup).toContain("Inhalt");
+    expect(markup).toContain('aria-label="Lebenslauf öffnen"');
+    expect(markup).toContain('aria-label="Anschreiben öffnen"');
+    expect(markup.indexOf('aria-label="Lebenslauf öffnen"')).toBeLessThan(
+      markup.indexOf("Status &amp; Gestaltung"),
+    );
+
+    mockedStore.state = {
+      ...mockedStore.state,
+      workspace: {
+        ...workspace,
+        applications: [
+          {
+            ...application,
+            additionalContacts: [
+              {
+                salutation: "Frau",
+                firstName: "Erika",
+                lastName: "Musterfrau",
+                position: "Recruiting",
+                email: "erika@example.com",
+                phone: "+49 30 123456",
+              },
+            ],
+          },
+        ],
+      },
+    };
+    const twoContactMarkup = renderToStaticMarkup(<ApplicationsView />);
+    expect(twoContactMarkup).not.toContain("1. Ansprechpartner");
+    expect(twoContactMarkup).not.toContain("2. Ansprechpartner");
+    expect(twoContactMarkup).toContain("Erika Musterfrau");
+    expect(twoContactMarkup).toContain("erika@example.com");
   });
 });

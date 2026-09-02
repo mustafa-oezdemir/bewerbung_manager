@@ -6,14 +6,24 @@ export const applicationMatchesQuery = (
 ) => {
   const normalizedQuery = query.trim().toLocaleLowerCase("de-DE");
   if (!normalizedQuery) return true;
-  return [
+  const contacts = [application.contact, ...application.additionalContacts];
+  const searchableText = [
     application.company.name,
     application.job.title,
     application.company.city,
     application.status,
-  ].some((value) =>
-    value.toLocaleLowerCase("de-DE").includes(normalizedQuery),
-  );
+    ...contacts.flatMap((contact) => [
+      contact.firstName,
+      contact.lastName,
+      [contact.firstName, contact.lastName].filter(Boolean).join(" "),
+    ]),
+  ]
+    .join(" ")
+    .toLocaleLowerCase("de-DE");
+
+  return normalizedQuery
+    .split(/\s+/)
+    .every((term) => searchableText.includes(term));
 };
 
 export const searchApplications = (

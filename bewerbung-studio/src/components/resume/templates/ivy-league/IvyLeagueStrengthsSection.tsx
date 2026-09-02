@@ -2,8 +2,7 @@ import type { ApplicantProfile } from "../../../../shared/schema";
 import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 import { parseIvyLeagueStrengths } from "./ivy-league.model";
 import { IvyLeagueSectionHeading } from "./IvyLeagueSectionHeading";
-
-const strengthIcons = ["♥", "✦", "⚑", "◆", "★", "✣"];
+import { TechnologyBrandIcon } from "../../TechnologyBrandIcon";
 
 export function IvyLeagueStrengthsSection({
   profile,
@@ -35,12 +34,12 @@ export function IvyLeagueStrengthsSection({
           className="ivy-league-strengths"
           data-count={Math.min(strengths.length, 3)}
         >
-          {strengths.map((strength, index) => (
+          {strengths.map((strength) => (
             <article
               className="ivy-league-strength"
               key={`${strength.title}-${strength.description}`}
             >
-              <i aria-hidden="true">{strengthIcons[index]}</i>
+              <TechnologyBrandIcon technology={strength.title} />
               <div>
                 <h3>{strength.title}</h3>
                 {strength.description ? <p>{strength.description}</p> : null}

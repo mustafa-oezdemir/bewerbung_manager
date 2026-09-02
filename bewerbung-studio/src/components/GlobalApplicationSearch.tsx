@@ -71,7 +71,7 @@ export function GlobalApplicationSearch({ applications, onSelect }: Props) {
           type="search"
           role="combobox"
           value={query}
-          placeholder="Bewerbungen suchen"
+          placeholder="Firma, Ansprechpartner, Stelle oder Stadt suchen"
           aria-label="Bewerbungen suchen"
           aria-autocomplete="list"
           aria-expanded={showResults}
