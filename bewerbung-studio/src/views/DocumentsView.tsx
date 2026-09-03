@@ -72,6 +72,7 @@ import { calculateA4PreviewScale } from "../shared/documentPreview";
 import {
   getDeckblattCompetencies,
   getDeckblattContacts,
+  getDeckblattDocuments,
 } from "../shared/deckblatt";
 import type { ProfileMediaKind } from "../shared/ipc";
 import { getProfileMediaSource } from "../shared/profileMedia";
@@ -336,6 +337,7 @@ export function DocumentsView({
   const saveProfile = useAppStore((state) => state.saveProfile);
   const exportPdf = useAppStore((state) => state.exportPdf);
   const openFolder = useAppStore((state) => state.openFolder);
+  const attachments = useAppStore((state) => state.workspace.attachments);
   const [tab, setTab] = useState<Tab>(initialTab);
   const [designPanelOpen, setDesignPanelOpen] = useState(true);
   const [resumeSectionPreview, setResumeSectionPreview] = useState<{
@@ -513,6 +515,7 @@ export function DocumentsView({
   const signatureSource = getProfileMediaSource(profile?.signaturePath);
   const deckblattContacts = getDeckblattContacts(profile);
   const deckblattCompetencies = getDeckblattCompetencies(profile);
+  const deckblattDocuments = getDeckblattDocuments(attachments, application.id);
   const template = getTemplate(design.templateId);
   const renderProfile =
     resumeSectionPreview?.templateId === template.id &&
@@ -1488,6 +1491,22 @@ export function DocumentsView({
                 </section>
                 <section className="deckblatt-preview__details">
                   <div>
+                    <h3>Bewerbungsunterlagen</h3>
+                    <ul>
+                      {deckblattDocuments.map((document) => (
+                        <li key={document}>{document}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    {deckblattCompetencies.length ? (
+                      <>
+                        <h3>Kernkompetenzen</h3>
+                        <p className="deckblatt-preview__competencies">
+                          {deckblattCompetencies.join(" · ")}
+                        </p>
+                      </>
+                    ) : null}
                     <h3>Kontakt</h3>
                     <ul>
                       {deckblattContacts.length ? (
@@ -1504,20 +1523,6 @@ export function DocumentsView({
                       ) : (
                         <li>Kontaktdaten im Profil ergänzen.</li>
                       )}
-                    </ul>
-                  </div>
-                  <div>
-                    {deckblattCompetencies.length ? (
-                      <>
-                        <h3>Kernkompetenzen</h3>
-                        <p className="deckblatt-preview__competencies">
-                          {deckblattCompetencies.join(" · ")}
-                        </p>
-                      </>
-                    ) : null}
-                    <h3>Bewerbungsunterlagen</h3>
-                    <ul>
-                      <li>Lebenslauf</li>
                     </ul>
                   </div>
                 </section>

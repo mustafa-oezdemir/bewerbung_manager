@@ -1,4 +1,4 @@
-import type { ApplicantProfile } from "./schema";
+import type { ApplicantProfile, Attachment } from "./schema";
 
 export type DeckblattContact = {
   label: string;
@@ -59,3 +59,25 @@ export const getDeckblattCompetencies = (
         .filter(Boolean),
     ),
   ).slice(0, 6);
+
+export const getDeckblattDocuments = (
+  attachments: readonly Attachment[],
+  applicationId: string,
+) => [
+  "Lebenslauf",
+  ...attachments
+    .filter(
+      (attachment) =>
+        attachment.applicationId === applicationId &&
+        attachment.includedInPackage,
+    )
+    .sort(
+      (left, right) =>
+        (left.category === right.category
+          ? 0
+          : left.category === "Zeugnisse"
+            ? -1
+            : 1) || left.order - right.order,
+    )
+    .map((attachment) => attachment.fileName),
+];

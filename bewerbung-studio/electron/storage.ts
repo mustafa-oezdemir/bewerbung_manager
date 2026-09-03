@@ -1461,6 +1461,7 @@ export class DataStore {
       application,
       this.getProfileForApplication(application),
       target,
+      this.workspace.attachments,
     );
   }
 

@@ -1,4 +1,8 @@
-import type { ApplicantProfile, Application } from "../src/shared/schema";
+import type {
+  ApplicantProfile,
+  Application,
+  Attachment,
+} from "../src/shared/schema";
 import { formatApplicationDateLong } from "../src/shared/applicationDate";
 import {
   createResumePagePlan,
@@ -30,6 +34,7 @@ import { getProfileMediaSource } from "../src/shared/profileMedia";
 import {
   getDeckblattCompetencies,
   getDeckblattContacts,
+  getDeckblattDocuments,
 } from "../src/shared/deckblatt";
 import { getTechnologyBrandIconMarkup } from "../src/shared/technologyBrand";
 import { getReadableTextColor, getTemplate } from "../src/shared/templates";
@@ -656,6 +661,7 @@ export const buildDocumentHtml = (
   application: Application,
   profile: ApplicantProfile | undefined,
   target: "deckblatt" | "anschreiben" | "lebenslauf" | "mappe",
+  attachments: readonly Attachment[] = [],
 ) => {
   const template = getTemplate(application.templateId);
   const accent = application.accentColor || template.accent;
@@ -709,6 +715,7 @@ export const buildDocumentHtml = (
   const letterTemplateClass = `layout-${template.layout}`;
   const deckblattContacts = getDeckblattContacts(profile);
   const deckblattCompetencies = getDeckblattCompetencies(profile);
+  const deckblattDocuments = getDeckblattDocuments(attachments, application.id);
   const deckblattContactMarkup = deckblattContacts.length
     ? deckblattContacts
         .map((contact) => {
@@ -729,7 +736,7 @@ export const buildDocumentHtml = (
         <p class="kicker">Bewerbung</p>
         <section class="cover-hero"><div><h1>${escapeHtml(role)}</h1><p class="muted">bei ${escapeHtml(company)}</p>${application.company.city ? `<p class="cover-location">Standort: ${escapeHtml(application.company.city)}</p>` : ""}</div>${photoSource ? `<img class="cover-photo" src="${escapeHtml(photoSource)}" alt="">` : ""}</section>
         <section class="cover-identity"><h2>${escapeHtml(name)}</h2>${profile?.title ? `<p>${escapeHtml(profile.title)}</p>` : ""}${docs.deckblattStatement || profile?.summary ? `<p class="cover-statement">${escapeHtml(docs.deckblattStatement || profile?.summary || "")}</p>` : ""}</section>
-        <section class="cover-details"><div><h3>Kontakt</h3><ul>${deckblattContactMarkup}</ul></div><div>${deckblattCompetencies.length ? `<h3>Kernkompetenzen</h3><p class="cover-competencies">${deckblattCompetencies.map(escapeHtml).join(" · ")}</p>` : ""}<h3>Bewerbungsunterlagen</h3><ul><li>Lebenslauf</li></ul></div></section>
+        <section class="cover-details"><div><h3>Bewerbungsunterlagen</h3><ul>${deckblattDocuments.map((document) => `<li>${escapeHtml(document)}</li>`).join("")}</ul></div><div>${deckblattCompetencies.length ? `<h3>Kernkompetenzen</h3><p class="cover-competencies">${deckblattCompetencies.map(escapeHtml).join(" · ")}</p>` : ""}<h3>Kontakt</h3><ul>${deckblattContactMarkup}</ul></div></section>
       </div>
     </section>`;
   const letter = `
