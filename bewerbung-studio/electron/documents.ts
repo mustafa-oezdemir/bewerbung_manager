@@ -27,6 +27,10 @@ import {
   type DocumentDesignSettings,
 } from "../src/shared/documentDesign";
 import { getProfileMediaSource } from "../src/shared/profileMedia";
+import {
+  getDeckblattCompetencies,
+  getDeckblattContacts,
+} from "../src/shared/deckblatt";
 import { getTechnologyBrandIconMarkup } from "../src/shared/technologyBrand";
 import { getReadableTextColor, getTemplate } from "../src/shared/templates";
 import {
@@ -260,7 +264,7 @@ const documentCss = (
   .kicker{color:var(--accent);font-size:10pt;text-transform:uppercase;letter-spacing:.16em;font-weight:700}
   h1,h2,h3{font-family:var(--heading-font);font-weight:var(--heading-weight)}h1{font-size:29pt;line-height:1.05;margin:8mm 0 4mm}h2{font-size:14pt;color:var(--accent);margin:8mm 0 3mm}
   h3{font-size:11pt;margin:0 0 1mm}.muted{color:var(--muted)}p,li{font-size:var(--body-size);line-height:var(--body-line)}
-  .cover-content{display:flex;flex-direction:column;justify-content:flex-end}.cover-content h1{font-size:36pt;max-width:145mm}
+  .cover-content{padding:var(--doc-margin)}.cover-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:12mm;padding-bottom:11mm;border-bottom:1px solid var(--line)}.cover-content h1{max-width:125mm;margin:4mm 0 2mm;font-size:28pt}.cover-location{margin:3mm 0 0;color:var(--muted);font-size:9pt}.cover-photo{width:36mm;height:36mm;flex:0 0 auto;border-radius:50%;object-fit:cover}.cover-identity{max-width:135mm;margin-top:21mm}.cover-identity h2{margin:0 0 2mm;font-size:19pt}.cover-identity>p{margin:0}.cover-statement{margin-top:5mm!important;line-height:1.45}.cover-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12mm;margin-top:23mm;padding-top:6mm;border-top:1px solid var(--line)}.cover-details h3{margin:0 0 3mm;color:var(--accent);font-size:10pt;letter-spacing:.08em;text-transform:uppercase}.cover-details h3:not(:first-child){margin-top:7mm}.cover-details ul{display:grid;gap:1.5mm;margin:0;padding:0;list-style:none}.cover-details li{overflow-wrap:anywhere}.cover-details strong{display:inline-block;min-width:18mm}.cover-details a{color:inherit;text-decoration:none}.cover-competencies{margin:0;line-height:1.55}
   .contact{padding-top:8mm;border-top:1px solid var(--line)}.sender{margin-bottom:2mm;color:var(--muted);text-align:center}.sender-name,.sender-title,.sender-contact{display:block}.sender-name{color:var(--ink);font-size:15pt;font-weight:700;line-height:1.2}.sender-title{margin-top:.8mm;color:var(--accent);font-size:11pt;font-weight:700;line-height:1.2}.sender-contact{margin-top:.8mm;font-size:11pt;line-height:1.25}
   .recipient{margin-top:12mm;min-height:36mm;font-size:11pt;line-height:1.42}.date{text-align:right}.subject{color:var(--accent);font-weight:800;font-size:14pt;margin:8mm 0 5mm}
   .signature{display:flex;flex-direction:column;align-items:flex-start;margin-top:0}.signature p{margin:0;font-size:11pt}.signature-image{display:block;width:auto;max-width:48mm;height:auto;max-height:14mm;margin:1mm 0 .5mm;object-fit:contain;object-position:left center}.signature-name{font-size:11pt;font-weight:400;line-height:1.2}
@@ -703,17 +707,29 @@ export const buildDocumentHtml = (
   const applicationDate = formatApplicationDateLong(application);
   const letterStatus = getLetterPageStatus(docs);
   const letterTemplateClass = `layout-${template.layout}`;
+  const deckblattContacts = getDeckblattContacts(profile);
+  const deckblattCompetencies = getDeckblattCompetencies(profile);
+  const deckblattContactMarkup = deckblattContacts.length
+    ? deckblattContacts
+        .map((contact) => {
+          const value = escapeHtml(contact.value);
+          return `<li><strong>${escapeHtml(contact.label)}</strong> ${
+            contact.href
+              ? `<a href="${escapeHtml(contact.href)}">${value}</a>`
+              : value
+          }</li>`;
+        })
+        .join("")
+    : "<li>Kontaktdaten im Profil ergänzen.</li>";
   const cover = `
     <section class="page cover-page ${designClasses}">
       ${backgroundLayer}
       <div class="page-content standard-page-content cover-content">
         <div class="rule"></div>
         <p class="kicker">Bewerbung</p>
-        <h1>${escapeHtml(role)}</h1>
-        <p class="muted">bei ${escapeHtml(company)}</p>
-        <h2>${escapeHtml(name)}</h2>
-        <p>${escapeHtml(docs.deckblattStatement || profile?.summary || "Motiviert, strukturiert und bereit für die nächste berufliche Aufgabe.")}</p>
-        <div class="contact"><p>${senderLine(profile)}</p></div>
+        <section class="cover-hero"><div><h1>${escapeHtml(role)}</h1><p class="muted">bei ${escapeHtml(company)}</p>${application.company.city ? `<p class="cover-location">Standort: ${escapeHtml(application.company.city)}</p>` : ""}</div>${photoSource ? `<img class="cover-photo" src="${escapeHtml(photoSource)}" alt="">` : ""}</section>
+        <section class="cover-identity"><h2>${escapeHtml(name)}</h2>${profile?.title ? `<p>${escapeHtml(profile.title)}</p>` : ""}${docs.deckblattStatement || profile?.summary ? `<p class="cover-statement">${escapeHtml(docs.deckblattStatement || profile?.summary || "")}</p>` : ""}</section>
+        <section class="cover-details"><div><h3>Kontakt</h3><ul>${deckblattContactMarkup}</ul></div><div>${deckblattCompetencies.length ? `<h3>Kernkompetenzen</h3><p class="cover-competencies">${deckblattCompetencies.map(escapeHtml).join(" · ")}</p>` : ""}<h3>Bewerbungsunterlagen</h3><ul><li>Lebenslauf</li></ul></div></section>
       </div>
     </section>`;
   const letter = `

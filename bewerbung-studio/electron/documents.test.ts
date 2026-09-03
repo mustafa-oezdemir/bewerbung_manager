@@ -55,6 +55,27 @@ const profile = profileSchema.parse({
 });
 
 describe("Lebenslauf-Dokumente", () => {
+  it("renders Deckblatt information from the actual profile data", () => {
+    const deckblattProfile = profileSchema.parse({
+      ...profile,
+      street: "Musterstraße 1",
+      postalCode: "10115",
+      phone: "+49 30 123456",
+      linkedin: "linkedin.com/in/mina-kaya",
+      photoPath: "data:image/png;base64,AA==",
+    });
+    const html = buildDocumentHtml(application, deckblattProfile, "deckblatt");
+
+    expect(html).toContain("Standort: Berlin");
+    expect(html).toContain("Musterstraße 1, 10115 Berlin");
+    expect(html).toContain('href="mailto:mina@example.com"');
+    expect(html).toContain('href="https://linkedin.com/in/mina-kaya"');
+    expect(html).toContain('class="cover-photo"');
+    expect(html).toContain("Kernkompetenzen");
+    expect(html).toContain("Bewerbungsunterlagen");
+    expect(html).toContain("<li>Lebenslauf</li>");
+  });
+
   it("keeps the signature directly below the final cover-letter paragraph", () => {
     const html = buildDocumentHtml(application, profile, "anschreiben");
 

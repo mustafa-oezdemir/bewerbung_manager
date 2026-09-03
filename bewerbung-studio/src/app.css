@@ -2248,32 +2248,108 @@ h3 {
 }
 
 .deckblatt-preview {
+  min-height: 100%;
+  padding: var(--doc-margin);
+}
+
+.deckblatt-preview__hero {
   display: flex;
-  min-height: 210mm;
-  flex-direction: column;
-  justify-content: flex-end;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12mm;
+  padding-bottom: 11mm;
+  border-bottom: 1px solid #dfe2dd;
 }
 
 .deckblatt-preview h1 {
-  max-width: 145mm;
+  max-width: 125mm;
   margin: 4mm 0 2mm;
   font-family: Georgia, serif;
-  font-size: 34pt;
+  font-size: 28pt;
   line-height: 1.05;
 }
 
+.deckblatt-preview__location {
+  margin: 3mm 0 0;
+  color: #53605d;
+  font-size: 9pt;
+}
+
+.deckblatt-preview__photo {
+  width: 36mm;
+  height: 36mm;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.deckblatt-preview__identity {
+  max-width: 135mm;
+  margin-top: 21mm;
+}
+
 .deckblatt-preview h2 {
-  margin: 12mm 0 3mm;
+  margin: 0 0 2mm;
   color: var(--doc-accent);
   font-size: 19pt;
 }
 
-.deckblatt-preview footer {
-  margin-top: 14mm;
-  padding-top: 5mm;
+.deckblatt-preview__identity > p {
+  margin: 0;
+}
+
+.deckblatt-preview__statement {
+  margin-top: 5mm !important;
+  line-height: 1.45;
+}
+
+.deckblatt-preview__details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12mm;
+  margin-top: 23mm;
+  padding-top: 6mm;
   border-top: 1px solid #dfe2dd;
-  color: #697572;
+}
+
+.deckblatt-preview__details h3 {
+  margin: 0 0 3mm;
+  color: var(--doc-accent);
+  font-size: 10pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.deckblatt-preview__details h3:not(:first-child) {
+  margin-top: 7mm;
+}
+
+.deckblatt-preview__details ul {
+  display: grid;
+  gap: 1.5mm;
+  margin: 0;
+  padding: 0;
+  list-style: none;
   font-size: 9pt;
+}
+
+.deckblatt-preview__details li {
+  overflow-wrap: anywhere;
+}
+
+.deckblatt-preview__details strong {
+  display: inline-block;
+  min-width: 18mm;
+}
+
+.deckblatt-preview__details a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.deckblatt-preview__competencies {
+  margin: 0;
+  line-height: 1.55;
 }
 
 .document-anschreiben {
