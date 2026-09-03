@@ -613,6 +613,27 @@ describe("DataStore backups", () => {
     );
   });
 
+  it("imports a PDF selected outside the central archive", async () => {
+    const created = await store.createApplication(
+      applicationInput("Import GmbH"),
+    );
+    const sourcePath = path.join(root, "Arbeitszeugnis.pdf");
+    await writeFile(sourcePath, "zeugnis");
+
+    const linked = await store.addAttachment(
+      created.applications[0].id,
+      "Zeugnisse",
+      sourcePath,
+    );
+    const attachment = linked.attachments[0];
+
+    expect(attachment.archiveRelativePath).toBe("Arbeitszeugnis.pdf");
+    await expect(
+      readFile(store.getAttachmentPathById(attachment.id), "utf8"),
+    ).resolves.toBe("zeugnis");
+    await expect(readFile(sourcePath, "utf8")).resolves.toBe("zeugnis");
+  });
+
   it("keeps the record and archives company documents when status becomes Absage", async () => {
     const created = await store.createApplication(
       {

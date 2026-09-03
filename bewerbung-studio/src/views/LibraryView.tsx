@@ -46,8 +46,8 @@ export function LibraryView() {
           <p className="eyebrow">Dokumentenablage</p>
           <h2>Zeugnisse & Zertifikate</h2>
           <p>
-            Dateien bleiben im zentralen Archiv und werden ohne zusätzliche
-            Kopie mit der Bewerbung verknüpft.
+            PDF-Dateien werden sicher im zentralen Archiv abgelegt und mit der
+            Bewerbung verknüpft.
           </p>
         </div>
         {application && (

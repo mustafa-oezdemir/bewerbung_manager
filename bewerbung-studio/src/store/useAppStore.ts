@@ -225,7 +225,7 @@ export const useAppStore = create<StoreState>((set, get) => {
       await perform(
         () =>
           window.bewerbungsManager.attachments.add(applicationId, category),
-        "Dokument wurde aus dem zentralen Archiv verknüpft.",
+        "Dokument wurde zur Bewerbungsmappe hinzugefügt.",
       );
     },
     async saveAttachment(attachment) {
