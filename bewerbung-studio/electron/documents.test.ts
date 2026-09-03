@@ -92,7 +92,9 @@ describe("Lebenslauf-Dokumente", () => {
   it("keeps the signature directly below the final cover-letter paragraph", () => {
     const html = buildDocumentHtml(application, profile, "anschreiben");
 
-    expect(html).toContain(".signature{display:flex;flex-direction:column;align-items:flex-start;margin-top:0}");
+    expect(html).toContain(
+      ".signature{display:flex;flex-direction:column;align-items:flex-start;margin-top:0;padding-bottom:6mm}",
+    );
     expect(html).toContain(".letter-compact .signature{margin-top:0}");
     expect(html).toContain(".letter-dense .signature{margin-top:0}");
     expect(html).toContain(".letter-content>.letter-closing{margin-bottom:0}");
@@ -368,13 +370,13 @@ describe("Lebenslauf-Dokumente", () => {
       ".subject{color:var(--accent);font-weight:800;font-size:14pt",
     );
     expect(html).toContain(
-      ".letter-content>p:not(.subject){font-size:11pt;line-height:1.42}",
+      ".letter-content>p:not(.subject){font-size:11pt;line-height:1.32}",
     );
     expect(html).toContain(
-      ".letter-compact .letter-content>p:not(.subject){font-size:11pt;line-height:1.38}",
+      ".letter-compact .letter-content>p:not(.subject){font-size:11pt;line-height:1.3}",
     );
     expect(html).toContain(
-      ".letter-dense .letter-content>p:not(.subject){font-size:11pt;line-height:1.32}",
+      ".letter-dense .letter-content>p:not(.subject){font-size:11pt;line-height:1.26}",
     );
     expect(html).toContain(
       ".letter-page.layout-sidebar-right .letter-content{padding-right:calc(var(--doc-margin) + 7mm);border-right:5mm solid var(--secondary)}",

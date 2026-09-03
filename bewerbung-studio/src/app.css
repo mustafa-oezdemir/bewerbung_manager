@@ -2403,7 +2403,7 @@ h3 {
 .document-anschreiben .letter-preview address,
 .document-anschreiben .letter-signature {
   font-size: 11pt;
-  line-height: 1.42;
+  line-height: 1.32;
 }
 
 .letter-preview address {
@@ -2483,7 +2483,7 @@ h3 {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin: 0;
+  margin: 0 0 6mm;
 }
 
 .signature-image {
@@ -2519,7 +2519,7 @@ h3 {
 
 .letter-compact .letter-preview p {
   font-size: 11pt;
-  line-height: 1.38;
+  line-height: 1.3;
 }
 
 .letter-compact .letter-preview > p:not(.sender-line, .paper-date, .letter-signature) {
@@ -2548,7 +2548,7 @@ h3 {
 
 .letter-dense .letter-preview p {
   font-size: 11pt;
-  line-height: 1.32;
+  line-height: 1.26;
 }
 
 .letter-dense .letter-preview > p:not(.sender-line, .paper-date, .letter-signature) {
