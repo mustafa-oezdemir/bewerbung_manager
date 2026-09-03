@@ -574,18 +574,6 @@ const klassischDocumentCss = `
   @media print{.no-print-background .klassisch-pdf-background{display:none!important}}
 `;
 
-const mehrspaltigDocumentCss = `${klassischDocumentCss.replaceAll(
-  "klassisch",
-  "mehrspaltig",
-)}
-  .mehrspaltig-pdf{--mehrspaltig-primary:#003c96;--mehrspaltig-accent:#57adf4;--mehrspaltig-heading:#003c96;--mehrspaltig-border:#d7dee3;--mehrspaltig-margin:max(15mm,var(--doc-margin));font-size:calc(var(--body-size) + .1pt);line-height:min(1.22,var(--body-line))}.mehrspaltig-pdf-background .fill,.mehrspaltig-pdf-background .line{display:none}.mehrspaltig-pdf-background .ribbon{fill:none;stroke-width:2.3;stroke-linecap:round}.mehrspaltig-pdf-background .red{stroke:#f26b67}.mehrspaltig-pdf-background .orange{stroke:#f7a24c}.mehrspaltig-pdf-background .yellow{stroke:#f3cf54}.mehrspaltig-pdf-background .green{stroke:#73bf80}.mehrspaltig-pdf-background .blue{stroke:#59afe9}.mehrspaltig-pdf-background .purple{stroke:#a686cc}
-  .mehrspaltig-pdf-content{padding:14mm var(--mehrspaltig-margin) 16mm}.mehrspaltig-pdf-header{position:relative;grid-template-columns:minmax(0,1fr) 30mm;gap:7mm;min-height:31mm;margin-bottom:5mm}.mehrspaltig-pdf-header h1,.mehrspaltig-pdf-title,.mehrspaltig-pdf-entry h3,.mehrspaltig-pdf-strength h3{font-family:Georgia,"Times New Roman",serif}.mehrspaltig-pdf-header h1{max-width:none;color:var(--mehrspaltig-primary);font-size:25pt;font-weight:700;letter-spacing:.012em;line-height:.96;text-transform:uppercase}.mehrspaltig-pdf-header h2{margin:2.2mm 0 2mm;color:var(--mehrspaltig-accent);font-family:Georgia,"Times New Roman",serif;font-size:11.4pt;font-weight:700}.mehrspaltig-pdf-contacts{gap:1mm 8mm;width:100%;max-width:132mm;font-size:7.7pt;line-height:1.15}.mehrspaltig-pdf-photo{width:30mm;height:30mm}.mehrspaltig-pdf-header.compact{margin-bottom:5mm;border-color:var(--mehrspaltig-primary)}
-  .mehrspaltig-pdf-columns{display:grid;grid-template-columns:40mm minmax(0,1fr) 40mm;gap:9mm;align-items:start}.mehrspaltig-pdf-columns.continuation{display:block}.mehrspaltig-pdf-column{min-width:0}.mehrspaltig-pdf-section{margin:0 0 5.4mm}.mehrspaltig-pdf-title{margin:0 0 2.4mm;padding-bottom:1.2mm;border-bottom:.45mm solid var(--mehrspaltig-primary);color:var(--mehrspaltig-primary);font-size:10.6pt;font-weight:700}.mehrspaltig-pdf-section>p{margin:0}.mehrspaltig-pdf-skills{display:flex;flex-direction:column;gap:1.5mm}.mehrspaltig-pdf-skills strong{padding-bottom:1.1mm;border-bottom:.25mm solid var(--mehrspaltig-border);color:var(--mehrspaltig-primary);font-size:8.1pt}
-  .mehrspaltig-pdf-strengths{display:flex;flex-direction:column;gap:4.2mm}.mehrspaltig-pdf-strength{display:grid;grid-template-columns:8mm minmax(0,1fr);column-gap:2mm}.mehrspaltig-pdf-strength i{grid-row:span 2;display:grid;place-items:center;width:7.5mm;height:7.5mm;border-radius:50%;color:var(--mehrspaltig-accent);background:#f0f2f3;font-size:12pt;font-style:normal}.mehrspaltig-pdf-strength h3{margin:0 0 .8mm;color:var(--mehrspaltig-primary);font-size:9.4pt;font-weight:700}.mehrspaltig-pdf-strength p{margin:0}
-  .mehrspaltig-pdf-list{gap:4mm}.mehrspaltig-pdf-entry-head{display:block}.mehrspaltig-pdf-entry h3{color:var(--mehrspaltig-primary);font-size:12.2pt;font-weight:400;line-height:1.06}.mehrspaltig-pdf-entry h4{margin-top:.9mm;color:var(--mehrspaltig-accent);font-size:9.5pt;font-weight:700}.mehrspaltig-pdf-entry-meta{display:flex;flex-direction:row;flex-wrap:wrap;gap:1mm 4mm;margin:1.2mm 0;color:var(--mehrspaltig-muted);font-size:7.2pt;text-align:left}.mehrspaltig-pdf-entry ul{margin:0;padding-left:3.5mm}.mehrspaltig-pdf-entry li::marker{color:var(--mehrspaltig-primary)}.mehrspaltig-pdf-education .mehrspaltig-pdf-entry h3{font-size:11.3pt}.mehrspaltig-pdf-education .mehrspaltig-pdf-entry h4{color:var(--mehrspaltig-text);font-weight:400}
-  .mehrspaltig-pdf-languages{display:flex;flex-direction:column;gap:2.3mm;max-width:none}.mehrspaltig-pdf-language{display:block;margin:0;font-size:8pt}.mehrspaltig-pdf-language strong{color:var(--mehrspaltig-primary);font-weight:700}.mehrspaltig-pdf-language span{display:block;color:var(--mehrspaltig-muted)}.mehrspaltig-pdf-footer{bottom:5.5mm}.mehrspaltig-pdf[data-density="dense"] .mehrspaltig-pdf-columns{gap:7mm}.mehrspaltig-pdf-ats .mehrspaltig-pdf-title{border-color:var(--mehrspaltig-border);font-family:Arial,sans-serif}.mehrspaltig-pdf-ats .mehrspaltig-pdf-columns{display:block}
-`;
-
 const modernDocumentCss = `
   .modern-pdf{--modern-primary:var(--accent);--modern-soft:var(--secondary);--modern-heading:#303437;--modern-text:#444b4f;--modern-muted:#686f73;--modern-divider:#aeb4b6;--modern-icon-bg:#f2f3f3;--modern-margin:15mm;--modern-section-gap:7mm;--modern-entry-gap:4.5mm;position:relative;width:100%;height:100%;overflow:hidden;color:var(--modern-text);background:#fff;font-family:var(--body-font);font-size:8.4pt;line-height:1.27}
   .modern-pdf *{box-sizing:border-box}.modern-pdf a{color:inherit;text-decoration:none}.modern-pdf-content{position:relative;z-index:2;height:100%;padding:14mm var(--modern-margin) 14mm}
@@ -2816,42 +2804,6 @@ export const buildDocumentHtml = (
     return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="klassisch" data-no-fit="true"><div class="page-content klassisch-pdf" data-density="${plan.density}">${designSettings.backgroundId === "classic-soft-blue-waves" && !isContinuation ? klassischBackground : ""}<div class="klassisch-pdf-content">${klassischHeader(isContinuation, true)}${sections.profile && !isContinuation ? klassischSection("Zusammenfassung", `<p>${escapeHtml(managedSummary)}</p>`) : ""}${sections.strengths && !isContinuation ? klassischSection("Stärken", klassischStrengths) : ""}${sections.experience && experiences ? klassischSection(`Erfahrung${isContinuation ? " · Fortsetzung" : ""}`, `<div class="klassisch-pdf-list">${experiences}</div>`) : ""}${sections.education && education ? klassischSection("Ausbildung", `<div class="klassisch-pdf-list">${education}</div>`, "klassisch-pdf-education") : ""}${isLastPage && sections.skills ? klassischSection("Kenntnisse", klassischKnowledge) : ""}${isLastPage && sections.languages ? klassischSection("Sprachen", klassischLanguages) : ""}${isLastPage && sections.certifications ? klassischSection("Zertifikate", managedCertifications) : ""}</div>${klassischFooter(plan)}</div></section>`;
   };
 
-  const renderMehrspaltigResumePage = (plan: ResumePagePlan) => {
-    const isContinuation = plan.pageNumber > 1;
-    const isLastPage = plan.pageNumber === resumePlan.length;
-    if (atsMode) {
-      return renderKlassischResumePage(plan, true).replaceAll("klassisch", "mehrspaltig");
-    }
-    const experiences = plan.items
-      .filter((item) => item.kind === "experience")
-      .map((item) => klassischCareerEntry(item.id, "experience").replaceAll("klassisch", "mehrspaltig"))
-      .join("");
-    const education = plan.items
-      .filter((item) => item.kind === "education")
-      .map((item) => klassischCareerEntry(item.id, "education").replaceAll("klassisch", "mehrspaltig"))
-      .join("");
-    const section = (title: string, content: string, extraClass = "") =>
-      content
-        ? `<section class="mehrspaltig-pdf-section ${extraClass}"><h3 class="mehrspaltig-pdf-title">${escapeHtml(title)}</h3>${content}</section>`
-        : "";
-    const header = klassischHeader(isContinuation, true).replaceAll("klassisch", "mehrspaltig");
-    const footer = klassischFooter(plan).replaceAll("klassisch", "mehrspaltig");
-    const background = `<svg class="mehrspaltig-pdf-background" viewBox="0 0 210 297" preserveAspectRatio="none" aria-hidden="true"><g><path class="ribbon red" d="M168 5l28 16"/><path class="ribbon orange" d="M169 10l28 16"/><path class="ribbon yellow" d="M170 15l28 16"/><path class="ribbon green" d="M171 20l28 16"/><path class="ribbon blue" d="M172 25l28 16"/><path class="ribbon purple" d="M173 30l28 16"/></g><g><path class="ribbon red" d="M7 269l21 12"/><path class="ribbon orange" d="M8 273l21 12"/><path class="ribbon yellow" d="M9 277l21 12"/><path class="ribbon green" d="M10 281l21 12"/><path class="ribbon blue" d="M11 285l21 12"/><path class="ribbon purple" d="M12 289l21 12"/></g></svg>`;
-    const skills = klassischKnowledgeValues.length
-      ? `<div class="mehrspaltig-pdf-skills">${klassischKnowledgeValues.map((value) => `<strong>${escapeHtml(value)}</strong>`).join("")}</div>`
-      : "";
-    const strengths = managedStrengths.length
-      ? `<div class="mehrspaltig-pdf-strengths">${managedStrengths.slice(0, 4).map((strength) => `<article class="mehrspaltig-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div>`
-      : "";
-    const languages = klassischLanguages.replaceAll("klassisch", "mehrspaltig");
-    const left = !isContinuation
-      ? `${sections.profile ? section("Zusammenfassung", `<p>${escapeHtml(managedSummary)}</p>`) : ""}${sections.skills ? section("Fähigkeiten", skills) : ""}${isLastPage && sections.languages ? section("Sprachen", languages) : ""}`
-      : "";
-    const main = `${sections.experience && experiences ? section(`Erfahrung${isContinuation ? " · Fortsetzung" : ""}`, `<div class="mehrspaltig-pdf-list">${experiences}</div>`) : ""}${sections.education && education ? section("Ausbildung", `<div class="mehrspaltig-pdf-list">${education}</div>`, "mehrspaltig-pdf-education") : ""}${isLastPage && sections.certifications ? section("Zertifizierung", managedCertifications.replaceAll("klassisch", "mehrspaltig")) : ""}`;
-    const right = !isContinuation && sections.strengths ? section("Stärken", strengths) : "";
-    return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="mehrspaltig" data-no-fit="true"><div class="page-content mehrspaltig-pdf" data-density="${plan.density}">${designSettings.backgroundId === "classic-soft-blue-waves" && !isContinuation ? background : ""}<div class="mehrspaltig-pdf-content">${header}<div class="mehrspaltig-pdf-columns${isContinuation ? " continuation" : ""}">${!isContinuation ? `<aside class="mehrspaltig-pdf-column">${left}</aside>` : ""}<main class="mehrspaltig-pdf-column">${main}</main>${!isContinuation ? `<aside class="mehrspaltig-pdf-column">${right}</aside>` : ""}</div></div>${footer}</div></section>`;
-  };
-
   const modernSection = (title: string, content: string, extraClass = "") =>
     content
       ? `<section class="modern-pdf-section ${extraClass}"><h3 class="modern-pdf-title">${escapeHtml(title)}</h3>${content}</section>`
@@ -3634,9 +3586,7 @@ export const buildDocumentHtml = (
               ? renderEinspaltigResumePage
               : template.id === "klassisch"
                 ? (plan) => renderKlassischResumePage(plan)
-                : template.id === "mehrspaltig"
-                  ? renderMehrspaltigResumePage
-              : template.id === "elegant"
+                : template.id === "elegant"
                 ? renderElegantResumePage
                 : template.id === "gepflegt"
                   ? renderGepflegtResumePage
@@ -3654,7 +3604,7 @@ export const buildDocumentHtml = (
     )
     .join("");
   const selected = target === "mappe" ? [cover, letter, resume] : target === "deckblatt" ? [cover] : target === "anschreiben" ? [letter] : [resume];
-  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}${ivyLeagueDocumentCss}${extendedResumeDocumentCss}${klassischDocumentCss}${mehrspaltigDocumentCss}${modernDocumentCss}${gepflegtDocumentCss}${tabellarischDocumentCss}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}${ivyLeagueDocumentCss}${extendedResumeDocumentCss}${klassischDocumentCss}${modernDocumentCss}${gepflegtDocumentCss}${tabellarischDocumentCss}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
 };
 
 export const buildCoverLetterMarkdown = (

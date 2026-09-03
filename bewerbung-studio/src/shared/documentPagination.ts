@@ -104,12 +104,6 @@ export const klassischPaginationOptions: ResumePaginationOptions = {
   preserveItemOrder: true,
 };
 
-export const mehrspaltigPaginationOptions: ResumePaginationOptions = {
-  firstPageCapacity: 42,
-  secondPageCapacity: 48,
-  preserveItemOrder: true,
-};
-
 const textWeight = (value: string, charactersPerUnit = 95) =>
   Math.max(0, Math.ceil(value.trim().length / charactersPerUnit));
 

@@ -173,7 +173,6 @@ Lebenslauf, Anschreiben ve Deckblatt belgelerinde şu standartları uygula:
 * Kreativ
 * Zeitgenoessisch
 * Modern
-* Mehrspaltig
 * Einspaltig
 * Stillvol
 * Klassisch
@@ -491,4 +490,3 @@ Manuel olarak doğrulanması gereken maddeleri belirt.
 * Ben istemeden Tailwind, Bootstrap veya başka UI framework’üne geçme
 
 Bundan sonra sana belirli bir hata, ekran görüntüsü, test sonucu veya dosya içeriği vereceğim. Verilen problemi mevcut proje yapısına uygun, güvenli, test edilebilir ve production ortamında çalışacak şekilde çöz.
-

@@ -6636,12 +6636,6 @@ h3 {
   color: var(--einfach-accent);
 }
 
-.mehrspaltig-strengths article > .technology-brand-icon {
-  width: 7mm;
-  height: 7mm;
-  color: var(--mehrspaltig-accent);
-}
-
 .stilvoll-strengths article > .technology-brand-icon {
   width: 7mm;
   height: 7mm;

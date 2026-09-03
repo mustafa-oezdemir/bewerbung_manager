@@ -13,7 +13,6 @@ import {
   gepflegtLebenslaufTemplateConfig,
   ivyLeagueLebenslaufTemplateConfig,
   klassischLebenslaufTemplateConfig,
-  mehrspaltigLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   maximumTemplateFileSize,
@@ -234,9 +233,7 @@ export class TemplateService {
                   ? einspaltigLebenslaufTemplateConfig
                   : template.id === klassischLebenslaufTemplateConfig.id
                     ? klassischLebenslaufTemplateConfig
-                    : template.id === mehrspaltigLebenslaufTemplateConfig.id
-                      ? mehrspaltigLebenslaufTemplateConfig
-                    : template.id === gepflegtLebenslaufTemplateConfig.id
+                      : template.id === gepflegtLebenslaufTemplateConfig.id
                       ? gepflegtLebenslaufTemplateConfig
                       : undefined;
     if (managedResumeConfig && options.atsMode) {

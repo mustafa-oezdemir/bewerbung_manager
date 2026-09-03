@@ -35,14 +35,6 @@ describe("resume section capabilities", () => {
     });
   });
 
-  it("defines three protected layout zones for Mehrspaltig", () => {
-    expect(getTemplateSectionCapabilities("mehrspaltig").availableZones).toEqual([
-      "main",
-      "left-sidebar",
-      "right-sidebar",
-    ]);
-  });
-
   it("resolves editable and knowledge-backed profile titles", () => {
     const profile = profileSchema.parse({
       id: crypto.randomUUID(),

@@ -88,7 +88,6 @@ describe("Lebenslauf-Dokumente", () => {
       "zweispaltig",
       "einspaltig",
       "klassisch",
-      "mehrspaltig",
       "modern",
       "tabellarisch",
     ] as const;

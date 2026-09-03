@@ -155,39 +155,6 @@ const twoColumnCapabilities = (
   },
 });
 
-const threeColumnCapabilities = (
-  templateId: string,
-): TemplateSectionCapabilities => ({
-  templateId,
-  availableZones: ["main", "left-sidebar", "right-sidebar"],
-  lockedSectionTypes: [],
-  allowedZonesBySection: {
-    summary: ["left-sidebar", "right-sidebar"],
-    strengths: ["left-sidebar", "right-sidebar"],
-    experience: ["main"],
-    education: ["main"],
-    projects: ["main"],
-    knowledge: ["left-sidebar", "right-sidebar", "main"],
-    certifications: ["left-sidebar", "right-sidebar", "main"],
-    languages: ["left-sidebar", "right-sidebar"],
-    additional: ["main", "left-sidebar", "right-sidebar"],
-    references: ["main", "left-sidebar", "right-sidebar"],
-  },
-  defaultSectionOrder: naturalOrder,
-  defaultZoneBySection: {
-    summary: "left-sidebar",
-    strengths: "right-sidebar",
-    experience: "main",
-    education: "main",
-    projects: "main",
-    knowledge: "left-sidebar",
-    certifications: "right-sidebar",
-    languages: "left-sidebar",
-    additional: "main",
-    references: "main",
-  },
-});
-
 export const templateSectionCapabilities: Record<
   string,
   TemplateSectionCapabilities
@@ -220,7 +187,6 @@ export const templateSectionCapabilities: Record<
   elegant: twoColumnCapabilities("elegant"),
   zeitgenoessisch: twoColumnCapabilities("zeitgenoessisch"),
   kreativ: twoColumnCapabilities("kreativ"),
-  mehrspaltig: threeColumnCapabilities("mehrspaltig"),
 };
 
 export const getTemplateSectionCapabilities = (templateId: string) =>

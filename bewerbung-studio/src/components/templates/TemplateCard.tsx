@@ -14,7 +14,6 @@ import {
   gepflegtLebenslaufTemplateConfig,
   ivyLeagueLebenslaufTemplateConfig,
   klassischLebenslaufTemplateConfig,
-  mehrspaltigLebenslaufTemplateConfig,
   kompaktLebenslaufTemplateConfig,
   kreativLebenslaufTemplateConfig,
   stilvollLebenslaufTemplateConfig,
@@ -69,8 +68,6 @@ export function TemplateCard({
     template.id === einspaltigLebenslaufTemplateConfig.id;
   const isKlassisch =
     template.id === klassischLebenslaufTemplateConfig.id;
-  const isMehrspaltig =
-    template.id === mehrspaltigLebenslaufTemplateConfig.id;
   const isGepflegt = template.id === gepflegtLebenslaufTemplateConfig.id;
   const showsManagedFacts =
     isWordMuster ||
@@ -82,7 +79,6 @@ export function TemplateCard({
     isStilvoll ||
     isEinspaltig ||
     isKlassisch ||
-    isMehrspaltig ||
     isGepflegt;
   const modifiedLabel = template.modifiedAt
     ? new Intl.DateTimeFormat("de-DE", {
@@ -217,15 +213,6 @@ export function TemplateCard({
         {isKlassisch ? (
           <ul className="managed-template-highlights contemporary">
             {klassischLebenslaufTemplateConfig.cardHighlights.map(
-              (highlight) => (
-                <li key={highlight}>{highlight}</li>
-              ),
-            )}
-          </ul>
-        ) : null}
-        {isMehrspaltig ? (
-          <ul className="managed-template-highlights contemporary">
-            {mehrspaltigLebenslaufTemplateConfig.cardHighlights.map(
               (highlight) => (
                 <li key={highlight}>{highlight}</li>
               ),

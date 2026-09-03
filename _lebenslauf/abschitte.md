@@ -14,7 +14,6 @@ Modern
 Elegant
 Zeitgenössisch
 Kreativ
-Mehrspaltig
 Ivy League
 Stillvoll
 Kompakt
@@ -114,18 +113,6 @@ Kullanıcı:
 * Deneyim kayıtlarını kendi içinde yeniden sıralayabilsin.
 * `Ausbildung` bölümünü taşıyabilsin.
 * Timeline kayıtları timeline dışındaki sıradan bir alana dönüştürülmesin.
-
-#### Mehrspaltig
-
-Bu modelde üç ayrı drop zone kullan:
-
-```text
-Hauptspalte
-Linke Seitenleiste
-Rechte Seitenleiste
-```
-
-Her bölüm yalnızca şablon config’inde izin verilen sütunlara taşınabilsin. Mobil veya dar önizlemede görsel sütunlar alt alta gösterilse bile veri modeli aynı kalsın.
 
 #### Kompakt
 

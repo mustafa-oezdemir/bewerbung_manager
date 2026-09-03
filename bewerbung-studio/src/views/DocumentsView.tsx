@@ -28,7 +28,6 @@ import { ElegantResume } from "../components/resume/templates/elegant";
 import { EinspaltigResume } from "../components/resume/templates/einspaltig";
 import { GepflegtResume } from "../components/resume/templates/gepflegt";
 import { KlassischResume } from "../components/resume/templates/klassisch";
-import { MehrspaltigResume } from "../components/resume/templates/mehrspaltig";
 import { KompaktResume } from "../components/resume/templates/kompakt";
 import { KreativResume } from "../components/resume/templates/kreativ";
 import { IvyLeagueResume } from "../components/resume/templates/ivy-league";
@@ -50,7 +49,6 @@ import {
   getLetterPageStatus,
   ivyLeaguePaginationOptions,
   klassischPaginationOptions,
-  mehrspaltigPaginationOptions,
   kompaktPaginationOptions,
   kreativPaginationOptions,
   gepflegtPaginationOptions,
@@ -573,8 +571,6 @@ export function DocumentsView({
                       ? einspaltigPaginationOptions
                       : template.id === "klassisch"
                         ? klassischPaginationOptions
-                        : template.id === "mehrspaltig"
-                          ? mehrspaltigPaginationOptions
                         : template.id === "tabellarisch"
                           ? tabellarischPaginationOptions
                           : template.id === "modern"
@@ -1598,20 +1594,6 @@ export function DocumentsView({
                   />
                 ) : template.id === "klassisch" ? (
                   <KlassischResume
-                    profile={renderProfile}
-                    name={name}
-                    atsMode={isAtsMode}
-                    plan={plan}
-                    totalPages={resumePlan.length}
-                    accentColor={design.accentColor}
-                    secondaryColor={design.secondaryColor}
-                    backgroundId={design.settings.backgroundId}
-                    photoSource={getProfileMediaSource(renderProfile?.photoPath)}
-                    resumeProfile={docs.resumeProfile}
-                    sections={sections}
-                  />
-                ) : template.id === "mehrspaltig" ? (
-                  <MehrspaltigResume
                     profile={renderProfile}
                     name={name}
                     atsMode={isAtsMode}
