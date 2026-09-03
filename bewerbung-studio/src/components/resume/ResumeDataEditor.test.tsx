@@ -44,12 +44,26 @@ const profile = profileSchema.parse({
 });
 
 describe("ResumeDataEditor", () => {
+  it("is collapsed by default", () => {
+    const markup = renderToStaticMarkup(
+      <ResumeDataEditor
+        profile={profile}
+        onPreview={vi.fn()}
+        onSave={vi.fn()}
+      />,
+    );
+
+    expect(markup).toContain('aria-expanded="false"');
+    expect(markup).not.toContain("resume-data-editor-body");
+  });
+
   it("renders direct CRUD controls for all resume data groups", () => {
     const markup = renderToStaticMarkup(
       <ResumeDataEditor
         profile={profile}
         onPreview={vi.fn()}
         onSave={vi.fn()}
+        defaultOpen
       />,
     );
 
@@ -102,7 +116,12 @@ describe("ResumeDataEditor", () => {
       ],
     });
     const markup = renderToStaticMarkup(
-      <ResumeDataEditor profile={extended} onPreview={vi.fn()} onSave={vi.fn()} />,
+      <ResumeDataEditor
+        profile={extended}
+        onPreview={vi.fn()}
+        onSave={vi.fn()}
+        defaultOpen
+      />,
     );
 
     expect(markup).toContain("Kernkompetenzen");

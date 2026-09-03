@@ -279,9 +279,8 @@ describe("Lebenslauf-Dokumente", () => {
       '<span class="sender-contact">Berlin · mina@example.com</span>',
     );
     expect(html).toContain(
-      ".sender-name{color:var(--ink);font-size:11pt;font-weight:700;line-height:1.2}",
+      ".sender-name{color:var(--ink);font-size:15pt;font-weight:700;line-height:1.2}",
     );
-    expect(html).not.toContain(".sender-name{color:var(--ink);font-size:20pt");
     expect(html).toContain(
       ".sender-contact{margin-top:.8mm;font-size:11pt;line-height:1.25}",
     );
@@ -300,6 +299,11 @@ describe("Lebenslauf-Dokumente", () => {
     const html = buildDocumentHtml(application, profile, "anschreiben");
     const splitCleanHtml = buildDocumentHtml(
       applicationSchema.parse({ ...application, templateId: "zweispaltig" }),
+      profile,
+      "anschreiben",
+    );
+    const zeitgenoessischHtml = buildDocumentHtml(
+      applicationSchema.parse({ ...application, templateId: "zeitgenoessisch" }),
       profile,
       "anschreiben",
     );
@@ -326,6 +330,18 @@ describe("Lebenslauf-Dokumente", () => {
     expect(splitCleanHtml).toContain("layout-split-clean");
     expect(splitCleanHtml).not.toContain(
       ".letter-page.layout-split-clean .sender{text-align:left}",
+    );
+    expect(zeitgenoessischHtml).toContain(
+      'data-resume-template="zeitgenoessisch"',
+    );
+    expect(zeitgenoessischHtml).toContain(
+      '.letter-page[data-resume-template="zeitgenoessisch"].layout-sidebar-left .letter-content{padding-left:var(--doc-margin);border-left:0}',
+    );
+    expect(zeitgenoessischHtml).toContain(
+      '.letter-page.letter-compact[data-resume-template="zeitgenoessisch"].layout-sidebar-left .letter-content{padding-left:20mm}',
+    );
+    expect(zeitgenoessischHtml).toContain(
+      '.letter-page.letter-dense[data-resume-template="zeitgenoessisch"].layout-sidebar-left .letter-content{padding-left:18mm}',
     );
   });
 
@@ -727,6 +743,24 @@ describe("Lebenslauf-Dokumente", () => {
     const mediaProfile = profileSchema.parse({
       ...profile,
       photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      skills: [],
+      strengths: [
+        {
+          id: "80000000-0000-4000-8000-000000000001",
+          title: "Java",
+          description: "Maven, Spring Boot",
+        },
+        {
+          id: "80000000-0000-4000-8000-000000000002",
+          title: "PHP",
+          description: "Laravel, Symfony",
+        },
+        {
+          id: "80000000-0000-4000-8000-000000000003",
+          title: "Go",
+          description: "Echo, Gin",
+        },
+      ],
     });
 
     const html = buildDocumentHtml(
@@ -744,6 +778,15 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).toContain("Zusammenfassung");
     expect(body).toContain("Erfahrung");
     expect(body).toContain("Stärken");
+    expect(body).toContain(">Java<");
+    expect(body).toContain("Maven, Spring Boot");
+    expect(body).toContain(">PHP<");
+    expect(body).toContain("Laravel, Symfony");
+    expect(body).toContain(">Go<");
+    expect(body).toContain("Echo, Gin");
+    expect(html).toContain(
+      ".zeit-pdf-strength{display:grid;grid-template-columns:5.5mm minmax(0,1fr);gap:1.5mm",
+    );
     expect(body).toContain("zeit-pdf-heading");
     expect(body).toContain("<svg");
     expect(body).not.toContain("monogram");

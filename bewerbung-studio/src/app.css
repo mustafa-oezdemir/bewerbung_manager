@@ -2103,8 +2103,8 @@ h3 {
 
 .document-layout {
   display: grid;
-  grid-template-columns: 390px minmax(0, 1fr);
-  gap: 18px;
+  grid-template-columns: clamp(420px, 32vw, 480px) minmax(0, 1fr);
+  gap: clamp(12px, 1.2vw, 18px);
 }
 
 .document-layout > * {
@@ -2172,10 +2172,10 @@ h3 {
   align-self: start;
   flex-direction: column;
   align-items: center;
-  gap: 28px;
+  gap: clamp(16px, 1.5vw, 24px);
   position: sticky;
   top: 96px;
-  padding: 32px;
+  padding: clamp(14px, 1.4vw, 22px);
   border: 1px solid var(--line);
   border-radius: 18px;
   background:
@@ -2304,7 +2304,7 @@ h3 {
 
 .letter-preview .sender-name {
   color: #222b2a;
-  font-size: 11pt;
+  font-size: 14pt;
   font-weight: 700;
   line-height: 1.2;
 }
@@ -2372,6 +2372,12 @@ h3 {
 .document-anschreiben.layout-sidebar-left .letter-preview {
   padding-left: calc(var(--letter-padding-inline) + 7mm);
   border-left: 5mm solid var(--doc-secondary);
+}
+
+.document-anschreiben[data-resume-template="zeitgenoessisch"].layout-sidebar-left
+  .letter-preview {
+  padding-left: var(--letter-padding-inline);
+  border-left: 0;
 }
 
 .document-anschreiben.layout-sidebar-right .letter-preview {
@@ -5697,7 +5703,7 @@ h3 {
   }
 
   .document-layout {
-    grid-template-columns: 350px minmax(0, 1fr);
+    grid-template-columns: clamp(380px, 38vw, 420px) minmax(0, 1fr);
   }
 
   .profile-chip div,

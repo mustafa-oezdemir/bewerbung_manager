@@ -23,6 +23,7 @@ type Props = {
   profile: ApplicantProfile;
   onPreview: (profile: ApplicantProfile | null) => void;
   onSave: (profile: ApplicantProfile) => Promise<void>;
+  defaultOpen?: boolean;
 };
 
 const cloneProfile = (profile: ApplicantProfile): ApplicantProfile => ({
@@ -81,9 +82,14 @@ export const normalizeResumeDataDraft = (
   updatedAt: new Date().toISOString(),
 });
 
-export function ResumeDataEditor({ profile, onPreview, onSave }: Props) {
+export function ResumeDataEditor({
+  profile,
+  onPreview,
+  onSave,
+  defaultOpen = false,
+}: Props) {
   const [draft, setDraft] = useState<ApplicantProfile>(() => cloneProfile(profile));
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(defaultOpen);
 
   useEffect(() => {
     setDraft(cloneProfile(profile));
