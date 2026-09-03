@@ -142,6 +142,8 @@
 
 .kompakt-section__title {
   margin: 0 0 3mm;
+  padding-bottom: 1mm;
+  border-bottom: 0.3mm solid var(--kompakt-divider);
   color: var(--kompakt-muted);
   font-size: 8.5pt;
   font-weight: 450;
@@ -149,6 +151,22 @@
   text-transform: uppercase;
   break-after: avoid;
   page-break-after: avoid;
+}
+
+.kompakt-career-entry__heading,
+.kompakt-career-entry__meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0.7mm 4mm;
+}
+
+.kompakt-career-entry__heading time {
+  color: var(--kompakt-muted);
+  font-size: 7.4pt;
+  line-height: 1.15;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .kompakt-career__list {
@@ -172,13 +190,14 @@
 }
 
 .kompakt-career-entry__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.7mm 4mm;
   margin: 0.7mm 0 1mm;
   color: var(--kompakt-muted);
   font-size: 7.4pt;
   line-height: 1.15;
+}
+
+.kompakt-career-entry__meta span {
+  text-align: right;
 }
 
 .kompakt-career-entry__meta strong {

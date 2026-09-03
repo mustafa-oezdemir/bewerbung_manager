@@ -315,7 +315,7 @@
   overflow-wrap: anywhere;
 }
 
-.ivy-league-career-entry__role {
+.ivy-league-career-entry__top {
   margin-top: 0.7mm;
 }
 
@@ -366,13 +366,26 @@
 
 .ivy-league-languages {
   display: grid;
+  gap: 3mm 8mm;
+}
+
+.ivy-league-languages--columns-1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.ivy-league-languages--columns-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 3mm 20mm;
+  column-gap: 20mm;
+}
+
+.ivy-league-languages--columns-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .ivy-league-language {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: auto auto;
+  justify-content: start;
   gap: 2mm;
   align-items: center;
   min-width: 0;

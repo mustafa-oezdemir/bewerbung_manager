@@ -5,6 +5,7 @@ import type { ResumePagePlan } from "../../../../shared/documentPagination";
 import { profileSchema } from "../../../../shared/schema";
 import { getTemplate } from "../../../../shared/templates";
 import { ivyLeagueDefaults } from "./ivy-league.defaults";
+import { IvyLeagueLanguagesSection } from "./IvyLeagueLanguagesSection";
 import {
   createIvyLeaguePageData,
   formatIvyLeagueDateRange,
@@ -174,11 +175,26 @@ describe("Ivy League rendering", () => {
     expect(markup).toContain("ivy-league-header");
     expect(markup).toContain("ivy-league-strengths");
     expect(markup).toContain("ivy-league-career");
+    expect(markup).toContain('<div class="ivy-league-career-entry__role"><h4>Senior Maschinenbauingenieurin</h4><time>2019 – 2023</time></div><div class="ivy-league-career-entry__top"><h3>Siemens AG</h3><span>Berlin</span></div>');
     expect(markup).toContain("ivy-league-languages");
+    expect(markup).toContain("ivy-league-languages--columns-2");
     expect(markup).toContain('href="https://linkedin.com/in/lena"');
     expect(markup).toContain("https://lena.example.com");
     expect(markup).not.toContain("Seite 1 / 1");
     expect(markup).not.toContain("<img");
+  });
+
+  it("uses three language columns and wraps a fourth language", () => {
+    const fourLanguageProfile = profileSchema.parse({
+      ...profile,
+      languages: ["Deutsch", "Englisch", "Türkisch", "Französisch"],
+    });
+    const markup = renderToStaticMarkup(
+      <IvyLeagueLanguagesSection profile={fourLanguageProfile} />,
+    );
+
+    expect(markup).toContain("ivy-league-languages--columns-3");
+    expect(markup.match(/class="ivy-league-language"/g)).toHaveLength(4);
   });
 
   it("turns the watercolor off with the white background option", () => {

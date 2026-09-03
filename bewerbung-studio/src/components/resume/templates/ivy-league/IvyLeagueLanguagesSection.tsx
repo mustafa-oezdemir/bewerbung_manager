@@ -17,6 +17,7 @@ export function IvyLeagueLanguagesSection({
     parseIvyLeagueLanguage,
   );
   if (!languages.length) return null;
+  const columnCount = Math.min(3, languages.length);
 
   return (
     <section
@@ -34,7 +35,7 @@ export function IvyLeagueLanguagesSection({
           ))}
         </ul>
       ) : (
-        <div className="ivy-league-languages">
+        <div className={`ivy-league-languages ivy-league-languages--columns-${columnCount}`}>
           {languages.map((language) => (
             <article className="ivy-league-language" key={language.raw}>
               <strong>{language.name}</strong>

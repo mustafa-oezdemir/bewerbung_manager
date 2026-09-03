@@ -1,4 +1,3 @@
-import { CalendarDays, MapPin } from "lucide-react";
 import { formatKreativDateRange } from "./kreativ.model";
 import type { KreativCareerSectionProps } from "./kreativ.types";
 import { KreativSectionHeading } from "./KreativSectionHeading";
@@ -24,20 +23,18 @@ export function KreativCareerSection({
       <div className="kreativ-career__list">
         {items.map((item) => (
           <article className="kreativ-career-entry" key={item.id}>
-            <h3>{item.title}</h3>
-            <h4>{item.organization}</h4>
-            <p className="kreativ-career-entry__meta">
-              <span>
-                <CalendarDays aria-hidden="true" />
+            <div className="kreativ-career-entry__heading">
+              <h3>{item.title}</h3>
+              <p className="kreativ-career-entry__meta">
                 {formatKreativDateRange(item.from, item.to)}
-              </span>
+              </p>
+            </div>
+            <div className="kreativ-career-entry__subheading">
+              <h4>{item.organization}</h4>
               {item.city ? (
-                <span>
-                  <MapPin aria-hidden="true" />
-                  {item.city}
-                </span>
+                <p className="kreativ-career-entry__location">{item.city}</p>
               ) : null}
-            </p>
+            </div>
             {item.achievements?.length ? (
               <ul>
                 {item.achievements.map((achievement) => (

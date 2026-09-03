@@ -43,13 +43,13 @@ export function StilvollCareer({
       <div className="stilvoll-career__list">
         {items.map((item) => (
           <article key={item.id}>
-            <h3>{item.title}</h3>
+            <div className="stilvoll-career__heading">
+              <h3>{item.title}</h3>
+              <time>{formatTemplateDateRange(item.from, item.to)}</time>
+            </div>
             <div className="stilvoll-career__meta">
               <strong>{item.organization}</strong>
-              <span>
-                {formatTemplateDateRange(item.from, item.to)}
-                {item.city ? ` · ${item.city}` : ""}
-              </span>
+              {item.city ? <span>{item.city}</span> : null}
             </div>
             {item.achievements.length ? (
               <ul>

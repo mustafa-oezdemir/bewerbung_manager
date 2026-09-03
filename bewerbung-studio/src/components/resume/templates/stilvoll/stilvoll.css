@@ -313,16 +313,26 @@
   overflow-wrap: anywhere;
 }
 
+.stilvoll-career__heading,
 .stilvoll-career__meta {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
   gap: 1mm 4mm;
+}
+
+.stilvoll-career__heading time {
+  color: var(--stilvoll-muted);
+  font-size: 7.8pt;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.stilvoll-career__meta {
   margin: 1mm 0 1.5mm;
 }
 
 .stilvoll-career__meta strong {
-  margin-right: auto;
   color: var(--stilvoll-primary);
   font-size: 9.8pt;
   font-weight: 400;
@@ -331,6 +341,7 @@
 .stilvoll-career__meta span {
   color: var(--stilvoll-muted);
   font-size: 7.8pt;
+  text-align: right;
 }
 
 .stilvoll-career ul,

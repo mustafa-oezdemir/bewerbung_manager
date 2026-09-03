@@ -29,13 +29,13 @@ export function IvyLeagueCareerSection({
       <div className="ivy-league-career__list">
         {items.map((item) => (
           <article className="ivy-league-career-entry" key={item.id}>
-            <div className="ivy-league-career-entry__top">
-              <h3>{item.organization}</h3>
-              {item.city ? <span>{item.city}</span> : null}
-            </div>
             <div className="ivy-league-career-entry__role">
               <h4>{item.title}</h4>
               <time>{formatIvyLeagueDateRange(item.from, item.to)}</time>
+            </div>
+            <div className="ivy-league-career-entry__top">
+              <h3>{item.organization}</h3>
+              {item.city ? <span>{item.city}</span> : null}
             </div>
             {item.achievements.length ? (
               <ul>

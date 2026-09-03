@@ -1530,7 +1530,7 @@ export function DocumentsView({
                 {docs.coverExtraParagraph ? (
                   <p className="letter-body">{docs.coverExtraParagraph}</p>
                 ) : null}
-                <p className="letter-body">{docs.coverClosing}</p>
+                <p className="letter-body letter-closing">{docs.coverClosing}</p>
                 <p className="letter-signature">
                   <span>Mit freundlichen Grüßen</span>
                   {signatureSource ? (

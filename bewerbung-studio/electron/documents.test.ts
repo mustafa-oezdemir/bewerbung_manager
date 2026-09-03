@@ -55,6 +55,20 @@ const profile = profileSchema.parse({
 });
 
 describe("Lebenslauf-Dokumente", () => {
+  it("keeps the signature directly below the final cover-letter paragraph", () => {
+    const html = buildDocumentHtml(application, profile, "anschreiben");
+
+    expect(html).toContain(".signature{display:flex;flex-direction:column;align-items:flex-start;margin-top:0}");
+    expect(html).toContain(".letter-compact .signature{margin-top:0}");
+    expect(html).toContain(".letter-dense .signature{margin-top:0}");
+    expect(html).toContain(".letter-content>.letter-closing{margin-bottom:0}");
+    expect(html).toContain('class="letter-body letter-closing"');
+    expect(html).toContain('.letter-page[data-resume-template="stilvoll"] .letter-content{padding-bottom:calc(var(--doc-margin) + 5mm)}');
+    expect(html).toContain('.letter-page[data-resume-template="stilvoll"] .letter-content>p:not(.subject),.letter-page[data-resume-template="stilvoll"] .signature{line-height:1.28}');
+    expect(html).toContain('.letter-page[data-resume-template="kompakt"] .letter-content{padding-bottom:calc(var(--doc-margin) + 5mm)}');
+    expect(html).toContain('.letter-page[data-resume-template="kompakt"] .letter-content>p:not(.subject),.letter-page[data-resume-template="kompakt"] .signature{line-height:1.28}');
+  });
+
   it("exports long LinkedIn contacts in two columns for every requested template", () => {
     const linkedin =
       "https://www.linkedin.com/in/mustafa-oezdemir/";
@@ -264,7 +278,7 @@ describe("Lebenslauf-Dokumente", () => {
     expect(html).toContain(
       ".letter-body{text-align:justify;text-justify:inter-word;hyphens:auto;overflow-wrap:break-word}",
     );
-    expect(html.match(/<p class="letter-body">/g)).toHaveLength(5);
+    expect(html.match(/<p class="letter-body(?: letter-closing)?">/g)).toHaveLength(5);
     expect(html).toContain("<p>Sehr geehrte Damen und Herren,</p>");
   });
 
@@ -307,6 +321,11 @@ describe("Lebenslauf-Dokumente", () => {
       profile,
       "anschreiben",
     );
+    const kreativHtml = buildDocumentHtml(
+      applicationSchema.parse({ ...application, templateId: "kreativ" }),
+      profile,
+      "anschreiben",
+    );
 
     expect(html).toContain(
       'class="page letter-page letter-standard layout-sidebar-right',
@@ -342,6 +361,22 @@ describe("Lebenslauf-Dokumente", () => {
     );
     expect(zeitgenoessischHtml).toContain(
       '.letter-page.letter-dense[data-resume-template="zeitgenoessisch"].layout-sidebar-left .letter-content{padding-left:18mm}',
+    );
+    expect(kreativHtml).toContain('data-resume-template="kreativ"');
+    expect(kreativHtml).toContain(
+      '.letter-page[data-resume-template="kreativ"].layout-bold-grid .rule{height:4px}',
+    );
+    expect(kreativHtml).toContain(
+      ".letter-page.layout-split-clean .rule{height:4px}",
+    );
+    expect(kreativHtml).toContain(
+      ".letter-page.layout-bold-grid .rule{height:4px}",
+    );
+    expect(kreativHtml).toContain(
+      ".letter-page.layout-minimal .rule{height:4px;background:var(--line)}",
+    );
+    expect(kreativHtml).toContain(
+      ".letter-dense .rule{height:4px;margin-bottom:10mm}",
     );
   });
 
@@ -890,6 +925,28 @@ describe("Lebenslauf-Dokumente", () => {
     const mediaProfile = profileSchema.parse({
       ...profile,
       photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      resumeSections: {
+        ...profile.resumeSections,
+        strengths: true,
+        skills: false,
+      },
+      strengths: [
+        {
+          id: "81000000-0000-4000-8000-000000000001",
+          title: "Java",
+          description: "Maven, Spring Boot",
+        },
+        {
+          id: "81000000-0000-4000-8000-000000000002",
+          title: "PHP",
+          description: "Laravel, Symfony",
+        },
+        {
+          id: "81000000-0000-4000-8000-000000000003",
+          title: "Go",
+          description: "Echo, Gin",
+        },
+      ],
       experiences: Array.from({ length: 3 }, (_, index) => ({
         id: crypto.randomUUID(),
         from: `01/202${index}`,
@@ -932,7 +989,18 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).toContain('data-density="standard"');
     expect(body).toContain("Zusammenfassung");
     expect(body).toContain("Erfahrung");
-    expect(body).toContain("Fähigkeiten");
+    expect(body).not.toContain(">Fähigkeiten<");
+    expect(body).toContain("Stärken");
+    expect(body).toContain(">Java<");
+    expect(body).toContain("Maven, Spring Boot");
+    expect(body).toContain(">PHP<");
+    expect(body).toContain("Laravel, Symfony");
+    expect(body).toContain(">Go<");
+    expect(body).toContain("Echo, Gin");
+    expect(body).toContain('class="kreativ-pdf-entry-heading"');
+    expect(body).toContain('class="kreativ-pdf-entry-subheading"');
+    expect(body).toContain('class="kreativ-pdf-entry-meta">01/2020 – 12/2020</p>');
+    expect(body).toContain('class="kreativ-pdf-entry-location">Berlin</p>');
   });
 
   it("removes the Kreativ PDF photo placeholder when no photo exists", () => {
@@ -1040,6 +1108,7 @@ describe("Lebenslauf-Dokumente", () => {
       ...profile,
       linkedin: "linkedin.com/in/mina-kaya",
       portfolio: "mina.example.com",
+      languages: ["Deutsch", "Englisch", "Türkisch", "Französisch"],
       skills: [
         "Analysefähigkeit – Präzise Bewertung komplexer Systeme",
         "Teamführung – Führung interdisziplinärer Teams",
@@ -1069,7 +1138,11 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).toContain("ivy-pdf-watercolor");
     expect(body).toContain("ivy-pdf-strengths");
     expect(body).toContain("ivy-pdf-languages");
+    expect(body).toContain("ivy-pdf-languages--columns-3");
+    expect(html).toContain("grid-template-columns:auto auto;justify-content:start;gap:2mm");
     expect(body).toContain("Erfahrung");
+    expect(body).toContain('<div class="ivy-pdf-entry-role"><h4>Senior Entwicklerin</h4><span>01/2022 – Heute</span></div>');
+    expect(body).toContain('<div class="ivy-pdf-entry-top"><h3>Beispiel GmbH</h3><span>Berlin</span></div>');
     expect(body).toContain(
       'href="https://linkedin.com/in/mina-kaya"',
     );
@@ -1232,8 +1305,12 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).toContain("stilvoll-pdf-columns");
     expect(body).toContain("stilvoll-pdf-chevron");
     expect(body).toContain('<img class="stilvoll-pdf-photo"');
+    expect(body).toContain("<h2>Softwareentwicklerin</h2>");
+    expect(body).not.toContain("Softwareentwicklerin | TypeScript");
     expect(body).toContain("Zusammenfassung");
     expect(body).toContain("Erfahrung");
+    expect(body).toContain('<div class="stilvoll-pdf-heading"><h3>Senior Entwicklerin</h3><span>01/2022 – Heute</span></div>');
+    expect(body).toContain('<p class="stilvoll-pdf-meta"><strong>Beispiel GmbH</strong><span>Berlin</span></p>');
     expect(body).toContain(
       'href="https://linkedin.com/in/mina-kaya"',
     );
@@ -1346,6 +1423,18 @@ describe("Lebenslauf-Dokumente", () => {
     const mediaProfile = profileSchema.parse({
       ...profile,
       photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      resumeSections: {
+        ...profile.resumeSections,
+        strengths: true,
+        skills: false,
+      },
+      strengths: [
+        {
+          id: "82000000-0000-4000-8000-000000000001",
+          title: "Java",
+          description: "Maven, Spring Boot",
+        },
+      ],
       linkedin: "linkedin.com/in/mina-kaya",
       portfolio: "mina.example.com",
       certifications: ["Prozessqualität verbessert"],
@@ -1363,8 +1452,15 @@ describe("Lebenslauf-Dokumente", () => {
     );
     expect(body).toContain("kompakt-pdf-columns");
     expect(body).toContain('class="managed-pdf-background"');
-    expect(body).toContain("kompakt-pdf-skills");
+    expect(body).not.toContain("kompakt-pdf-skills");
     expect(body).toContain('class="kompakt-pdf-strength"');
+    expect(body).toContain("<h2>Softwareentwicklerin</h2>");
+    expect(body).toContain("Java");
+    expect(body).toContain("&#9733;");
+    expect(body).not.toContain("&#9873;");
+    expect(body).toContain('<div class="kompakt-pdf-entry-heading"><h3>Senior Entwicklerin</h3><time>01/2022 – Heute</time></div>');
+    expect(body).toContain('<p class="kompakt-pdf-meta"><strong>Beispiel GmbH</strong><span>Berlin</span></p>');
+    expect(html).toContain(".kompakt-pdf .managed-pdf-title{padding-bottom:1mm;border-bottom:.3mm solid var(--managed-divider)}");
     expect(body).toContain('href="https://linkedin.com/in/mina-kaya"');
     expect(body).toContain("https://mina.example.com");
     expect(body).not.toContain("Seite 1 / 1");

@@ -308,6 +308,14 @@
   overflow-wrap: anywhere;
 }
 
+.kreativ-career-entry__heading,
+.kreativ-career-entry__subheading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 1mm 4mm;
+}
+
 .kreativ-career-entry h3 {
   color: var(--kreativ-heading);
   font-size: var(--kreativ-entry-title-size);
@@ -316,34 +324,31 @@
 }
 
 .kreativ-career-entry h4 {
-  margin-top: 1mm;
   color: var(--kreativ-primary);
   font-size: 9.5pt;
   font-weight: 750;
   line-height: 1.2;
 }
 
+.kreativ-career-entry__subheading {
+  margin-top: 1mm;
+}
+
 .kreativ-career-entry__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1mm 4mm;
-  margin: 1mm 0 1.5mm;
+  margin: 0;
   color: var(--kreativ-muted);
   font-size: var(--kreativ-small-size);
   line-height: 1.2;
+  text-align: right;
+  white-space: nowrap;
 }
 
-.kreativ-career-entry__meta span {
-  display: inline-flex;
-  align-items: center;
-  gap: 1mm;
-}
-
-.kreativ-career-entry__meta svg {
-  width: 2.8mm;
-  height: 2.8mm;
-  color: var(--kreativ-primary);
-  stroke-width: 2.3;
+.kreativ-career-entry__location {
+  margin: 0;
+  color: var(--kreativ-muted);
+  font-size: var(--kreativ-small-size);
+  line-height: 1.2;
+  text-align: right;
 }
 
 .kreativ-career-entry ul,

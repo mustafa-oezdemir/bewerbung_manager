@@ -14,7 +14,7 @@ export function KompaktHeader({
     >
       {compact ? <p>Lebenslauf · Fortsetzung</p> : null}
       <h1>{name}</h1>
-      {compact && title ? <h2>{title}</h2> : null}
+      {title ? <h2>{title}</h2> : null}
     </header>
   );
 }

@@ -43,10 +43,12 @@ export function KompaktCareer({
       <div className="kompakt-career__list">
         {items.map((item) => (
           <article className="kompakt-career-entry" key={item.id}>
-            <h3>{item.title}</h3>
+            <div className="kompakt-career-entry__heading">
+              <h3>{item.title}</h3>
+              <time>{formatTemplateDateRange(item.from, item.to)}</time>
+            </div>
             <div className="kompakt-career-entry__meta">
               <strong>{item.organization}</strong>
-              <time>{formatTemplateDateRange(item.from, item.to)}</time>
               {item.city ? <span>{item.city}</span> : null}
             </div>
             {item.achievements.length ? (
@@ -158,7 +160,7 @@ export function KompaktRightColumn({
           data-element-id="kompakt.strengths"
         >
           <KompaktHeading>{getResumeSectionTitle(profile, "strengths")}</KompaktHeading>
-          {strengths.slice(0, 2).map((strength) => (
+          {strengths.map((strength) => (
             <article key={strength.title}>
               <TechnologyBrandIcon technology={strength.title} />
               <div>
@@ -177,9 +179,9 @@ export function KompaktRightColumn({
           data-element-id="kompakt.achievements"
         >
           <KompaktHeading>{getResumeSectionTitle(profile, "certifications")}</KompaktHeading>
-          {achievements.map((achievement, index) => (
+          {achievements.map((achievement) => (
             <article key={achievement}>
-              <i aria-hidden="true">{index ? "★" : "♜"}</i>
+              <i aria-hidden="true">★</i>
               <div>
                 <h3>{achievement}</h3>
               </div>

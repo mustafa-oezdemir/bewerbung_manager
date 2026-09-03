@@ -2360,8 +2360,12 @@ h3 {
   overflow-wrap: break-word;
 }
 
+.letter-preview > .letter-closing {
+  margin-bottom: 0;
+}
+
 .document-anschreiben.layout-split-clean .paper-rule {
-  height: 2px;
+  height: 4px;
 }
 
 .document-anschreiben.layout-sidebar-left .letter-preview,
@@ -2386,7 +2390,12 @@ h3 {
 }
 
 .document-anschreiben.layout-bold-grid .paper-rule {
-  height: 7mm;
+  height: 4px;
+}
+
+.document-anschreiben[data-resume-template="kreativ"].layout-bold-grid
+  .paper-rule {
+  height: 4px;
 }
 
 .document-anschreiben.layout-timeline .letter-preview h3 {
@@ -2398,7 +2407,7 @@ h3 {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin: 8mm 0 0;
+  margin: 0;
 }
 
 .signature-image {
@@ -2451,7 +2460,7 @@ h3 {
 }
 
 .letter-dense .paper-rule {
-  height: 3px;
+  height: 4px;
   margin-bottom: 9mm;
 }
 
@@ -2475,7 +2484,29 @@ h3 {
 }
 
 .letter-dense .letter-signature {
-  margin-top: 4mm;
+  margin-top: 0;
+}
+
+.document-anschreiben[data-resume-template="stilvoll"] .letter-preview {
+  padding-bottom: calc(var(--letter-padding-block) + 5mm);
+}
+
+.document-anschreiben[data-resume-template="kompakt"] .letter-preview {
+  padding-bottom: calc(var(--letter-padding-block) + 5mm);
+}
+
+.document-anschreiben[data-resume-template="stilvoll"]
+  .letter-preview
+  > p:not(.sender-line, .paper-date),
+.document-anschreiben[data-resume-template="stilvoll"] .letter-signature {
+  line-height: 1.28;
+}
+
+.document-anschreiben[data-resume-template="kompakt"]
+  .letter-preview
+  > p:not(.sender-line, .paper-date),
+.document-anschreiben[data-resume-template="kompakt"] .letter-signature {
+  line-height: 1.28;
 }
 
 .document-paper.document-lebenslauf {
@@ -3217,6 +3248,10 @@ h3 {
 
 .layout-minimal .paper-rule {
   height: 1px;
+}
+
+.document-anschreiben.layout-minimal .paper-rule {
+  height: 4px;
 }
 
 .library-grid,

@@ -19,13 +19,13 @@ export function KreativAdditionalSections({
 
   return (
     <>
-      {sections.strengths ? (
+      {sections.skills ? (
         <KreativSkillsSection profile={profile} atsMode />
       ) : null}
       {sections.languages ? (
         <KreativLanguagesSection profile={profile} atsMode />
       ) : null}
-      {sections.skills ? (
+      {sections.strengths ? (
         <KreativStrengthsSection profile={profile} atsMode />
       ) : null}
       {sections.certifications && certifications.length ? (
