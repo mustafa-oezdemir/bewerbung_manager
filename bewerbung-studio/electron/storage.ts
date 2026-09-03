@@ -53,6 +53,7 @@ import { formatKnowledgeSectionAsText } from "../src/features/knowledge/knowledg
 import { buildDocumentHtml } from "./documents";
 import {
   FileManagementService,
+  isPathInside,
   sanitizeFileName,
 } from "./file-management";
 import { LegacyMigrationService } from "./legacy-migration";
@@ -869,15 +870,30 @@ export class DataStore {
     );
     if (!application) throw new Error("Bewerbung wurde nicht gefunden.");
     const sourceName = path.basename(sourcePath);
-    const archiveRelativePath = this.files.archiveRelativePath(
-      category,
-      sourcePath,
-    );
+    if (path.extname(sourceName).toLocaleLowerCase("de-DE") !== ".pdf") {
+      throw new Error("Bitte wählen Sie eine PDF-Datei aus.");
+    }
+    const archiveRoot = this.files.archiveRootForCategory(category);
+    const sourceIsInArchive = isPathInside(archiveRoot, sourcePath);
+    let archiveRelativePath: string;
+    if (sourceIsInArchive) {
+      archiveRelativePath = this.files.archiveRelativePath(category, sourcePath);
+    } else {
+      const extension = path.extname(sourceName);
+      const baseName = path.basename(sourceName, extension);
+      const archiveNames = new Set(await readdir(archiveRoot));
+      let targetName = sourceName;
+      for (let index = 2; archiveNames.has(targetName); index += 1) {
+        targetName = `${baseName} (${index})${extension}`;
+      }
+      await copyFile(sourcePath, path.join(archiveRoot, targetName));
+      archiveRelativePath = targetName;
+    }
     const attachment = {
       id: createId(),
       applicationId,
       category,
-      fileName: sourceName,
+      fileName: archiveRelativePath,
       archiveRelativePath,
       description: "",
       documentDate: "",

@@ -7388,19 +7388,28 @@ var Rc = "B1", zc = (e) => {
 	async addAttachment(t, n, r) {
 		let i = this.workspace.applications.find((e) => e.id === t);
 		if (!i) throw Error("Bewerbung wurde nicht gefunden.");
-		let a = e.basename(r), o = this.files.archiveRelativePath(n, r), s = {
+		let a = e.basename(r);
+		if (e.extname(a).toLocaleLowerCase("de-DE") !== ".pdf") throw Error("Bitte wählen Sie eine PDF-Datei aus.");
+		let s = this.files.archiveRootForCategory(n), c = Hl(s, r), l;
+		if (c) l = this.files.archiveRelativePath(n, r);
+		else {
+			let t = e.extname(a), n = e.basename(a, t), i = new Set(await u(s)), c = a;
+			for (let e = 2; i.has(c); e += 1) c = `${n} (${e})${t}`;
+			await o(r, e.join(s, c)), l = c;
+		}
+		let d = {
 			id: iu(),
 			applicationId: t,
 			category: n,
-			fileName: a,
-			archiveRelativePath: o,
+			fileName: l,
+			archiveRelativePath: l,
 			description: "",
 			documentDate: "",
 			order: i.attachmentIds.length,
 			includedInPackage: !0,
 			createdAt: ru()
 		};
-		return this.workspace.attachments.push(s), i.attachmentIds.push(s.id), await this.persist([i]), this.queueApplicationGitCommit(i, "update"), this.getWorkspace();
+		return this.workspace.attachments.push(d), i.attachmentIds.push(d.id), await this.persist([i]), this.queueApplicationGitCommit(i, "update"), this.getWorkspace();
 	}
 	getAttachmentPath(t) {
 		if (t.archiveRelativePath) return this.files.resolveArchivePath(t.category, t.archiveRelativePath);
