@@ -64,7 +64,19 @@ describe("Lebenslauf-Dokumente", () => {
       linkedin: "linkedin.com/in/mina-kaya",
       photoPath: "data:image/png;base64,AA==",
     });
-    const html = buildDocumentHtml(application, deckblattProfile, "deckblatt");
+    const html = buildDocumentHtml(application, deckblattProfile, "deckblatt", [
+      {
+        id: "50f9a46a-f5f6-4101-9eb0-bbef5b9dc557",
+        applicationId: application.id,
+        category: "Zeugnisse",
+        fileName: "Arbeitszeugnis.pdf",
+        description: "",
+        documentDate: "",
+        order: 0,
+        includedInPackage: true,
+        createdAt: now,
+      },
+    ]);
 
     expect(html).toContain("Standort: Berlin");
     expect(html).toContain("Musterstraße 1, 10115 Berlin");
@@ -74,6 +86,7 @@ describe("Lebenslauf-Dokumente", () => {
     expect(html).toContain("Kernkompetenzen");
     expect(html).toContain("Bewerbungsunterlagen");
     expect(html).toContain("<li>Lebenslauf</li>");
+    expect(html).toContain("<li>Arbeitszeugnis.pdf</li>");
   });
 
   it("keeps the signature directly below the final cover-letter paragraph", () => {
