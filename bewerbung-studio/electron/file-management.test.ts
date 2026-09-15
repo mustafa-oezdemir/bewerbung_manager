@@ -59,11 +59,11 @@ describe("FileManagementService", () => {
         date,
       ),
     ).resolves.toBe(
-      path.join("Siemens_2026-07-30", "Softwareentwickler"),
+      path.join("Siemens_30.07.2026", "Softwareentwickler"),
     );
     await expect(
       service.allocateApplicationFolderName("Siemens", "IT Support", date),
-    ).resolves.toBe(path.join("Siemens_2026-07-30", "IT_Support"));
+    ).resolves.toBe(path.join("Siemens_30.07.2026", "IT_Support"));
     await expect(
       service.allocateApplicationFolderName(
         "Siemens",
@@ -71,12 +71,12 @@ describe("FileManagementService", () => {
         date,
       ),
     ).resolves.toBe(
-      path.join("Siemens_2026-07-30", "Softwareentwickler_2"),
+      path.join("Siemens_30.07.2026", "Softwareentwickler_2"),
     );
   });
 
   it("moves every application artifact when the application date changes", async () => {
-    const folderName = path.join("Siemens_2026-07-30", "Softwareentwickler");
+    const folderName = path.join("Siemens_30.07.2026", "Softwareentwickler");
     const application = {
       folderName,
       status: "Beworben",
@@ -101,7 +101,7 @@ describe("FileManagementService", () => {
     );
 
     expect(relocated).toBe(
-      path.join("Siemens_2026-08-22", "Softwareentwickler"),
+      path.join("Siemens_22.08.2026", "Softwareentwickler"),
     );
     for (const [index, source] of sourcePaths.entries()) {
       await expect(access(source)).rejects.toThrow();
@@ -147,7 +147,7 @@ describe("FileManagementService", () => {
 
     expect(relocated).toBe(
       path.join(
-        legacyFolderName,
+        "Universitatsklinikum_Frankfurt_09.08.2026",
         "Softwareentwickler_in_–_Workflow-Modellierung_&_User_Experience",
       ),
     );
@@ -155,8 +155,7 @@ describe("FileManagementService", () => {
       await expect(
         readFile(
           path.join(
-            legacyPath,
-            path.basename(relocated),
+            legacyPath.replace(legacyFolderName, relocated),
             `Dokument-${index}.txt`,
           ),
           "utf8",

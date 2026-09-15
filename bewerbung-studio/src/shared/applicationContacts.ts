@@ -18,6 +18,23 @@ export const applicationPostalContactLines = (application: Application) =>
     .map(postalContactName)
     .filter(Boolean);
 
+export const applicationContactDepartmentLines = (application: Application) =>
+  Array.from(
+    new Set(
+      [application.contact, ...application.additionalContacts]
+        .map((contact) => contact.position.trim())
+        .filter(Boolean),
+    ),
+  );
+
+export const applicationRecipientLines = (application: Application) => [
+  application.company.name,
+  ...applicationPostalContactLines(application),
+  ...applicationContactDepartmentLines(application),
+  application.company.street,
+  `${application.company.postalCode} ${application.company.city}`.trim(),
+].filter(Boolean);
+
 const greetingForContact = (contact: Contact) => {
   const name = contactFullName(contact);
   if (!name) return "";

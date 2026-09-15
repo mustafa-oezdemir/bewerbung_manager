@@ -166,6 +166,7 @@ export const contactPersonSchema = z.object({
 
 export const jobAdvertisementSchema = z.object({
   title: z.string().trim().min(1, "Position ist erforderlich."),
+  reference: optionalText,
   source: optionalText,
   url: z.union([z.url(), z.literal("")]).default(""),
   fullText: optionalText,
@@ -184,6 +185,7 @@ export const statusHistorySchema = z.object({
 export const documentDraftSchema = z.object({
   coverSubject: optionalText,
   coverIntroduction: optionalText,
+  coverMainBody: optionalText,
   coverMotivation: optionalText,
   coverQualification: optionalText,
   coverCompanyFit: optionalText,
@@ -191,6 +193,9 @@ export const documentDraftSchema = z.object({
   coverClosing: optionalText,
   resumeProfile: optionalText,
   deckblattStatement: optionalText,
+  emailSubject: optionalText,
+  emailMessage: optionalText,
+  emailAttachmentNote: optionalText,
 });
 
 const designLevelSchema = z.union([
@@ -293,6 +298,7 @@ export const applicationDraftSchema = z.object({
   job: z
     .object({
       title: z.string().optional(),
+      reference: z.string().optional(),
       source: z.string().optional(),
       url: z.string().optional(),
       fullText: z.string().optional(),

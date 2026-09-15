@@ -122,6 +122,7 @@ export function ApplicationsView({
       job: {
         ...selected.job,
         title: String(data.get("role")),
+        reference: String(data.get("jobReference")),
         url: String(data.get("jobUrl")),
         source: String(data.get("source")),
         salaryExpectation: String(data.get("salaryExpectation")),
@@ -351,6 +352,7 @@ export function ApplicationsView({
             >
               <label className="field"><span>Unternehmen</span><input name="company" defaultValue={selected.company.name} required /></label>
               <label className="field"><span>Position</span><input name="role" defaultValue={selected.job.title} required /></label>
+              <label className="field"><span>Kennziffer / Referenznummer</span><input name="jobReference" defaultValue={selected.job.reference} /></label>
               <label className="field"><span>Straße</span><input name="street" defaultValue={selected.company.street} /></label>
               <div className="split-fields">
                 <label className="field"><span>PLZ</span><input name="postalCode" defaultValue={selected.company.postalCode} /></label>
@@ -371,7 +373,7 @@ export function ApplicationsView({
               onSubmit={submitDates}
               saving={saving}
             >
-              <label className="field"><span>Gesendet</span><input name="sentAt" type="date" defaultValue={toDateInput(selected.sentAt)} /></label>
+              <label className="field"><span>Bewerbungsdatum</span><input name="sentAt" type="date" defaultValue={toDateInput(selected.sentAt)} /></label>
               <label className="field"><span>Bewerbungsfrist</span><input name="deadlineAt" type="date" defaultValue={toDateInput(selected.deadlineAt)} /></label>
               <label className="field"><span>Vorstellungsgespräch</span><input name="interviewAt" type="datetime-local" defaultValue={toDateTimeInput(selected.interviewAt)} /></label>
               <label className="field"><span>Zweites Gespräch</span><input name="secondInterviewAt" type="datetime-local" defaultValue={toDateTimeInput(selected.secondInterviewAt)} /></label>

@@ -1,0 +1,70 @@
+import { describe, expect, it } from "vitest";
+import {
+  createCoverSubject,
+  getCoverLetterAttachments,
+  getCoverLetterMainBody,
+} from "./coverLetter";
+
+describe("cover-letter helpers", () => {
+  it("migrates the two legacy body fields into one main body", () => {
+    expect(
+      getCoverLetterMainBody({
+        coverMainBody: "",
+        coverMotivation: "Erster belegbarer Punkt.",
+        coverQualification: "Zweiter belegbarer Punkt.",
+      }),
+    ).toBe("Erster belegbarer Punkt.\n\nZweiter belegbarer Punkt.");
+    expect(
+      getCoverLetterMainBody({
+        coverMainBody: "Neuer Hauptteil.",
+        coverMotivation: "Alter Text.",
+        coverQualification: "",
+      }),
+    ).toBe("Neuer Hauptteil.");
+  });
+
+  it("does not duplicate the Bewerbung-als prefix", () => {
+    expect(createCoverSubject("Bewerbung als Verkäufer - Teilzeit")).toBe(
+      "Bewerbung als Verkäufer - Teilzeit",
+    );
+    expect(
+      createCoverSubject(
+        "Verkäufer - Teilzeit",
+        "Bewerbung als Bewerbung als Verkäufer - Teilzeit",
+      ),
+    ).toBe("Bewerbung als Verkäufer - Teilzeit");
+  });
+
+  it("lists only included application attachments after the resume", () => {
+    const applicationId = crypto.randomUUID();
+    const otherApplicationId = crypto.randomUUID();
+    const attachment = (
+      fileName: string,
+      category: "Zeugnisse" | "Zertifikate",
+      order: number,
+      includedInPackage = true,
+      owner = applicationId,
+    ) => ({
+      id: crypto.randomUUID(),
+      applicationId: owner,
+      category,
+      fileName,
+      description: "",
+      documentDate: "",
+      order,
+      includedInPackage,
+      createdAt: new Date().toISOString(),
+    });
+    expect(
+      getCoverLetterAttachments(
+        [
+          attachment("Zertifikat.pdf", "Zertifikate", 0),
+          attachment("Zeugnis.pdf", "Zeugnisse", 0),
+          attachment("Nicht dabei.pdf", "Zeugnisse", 1, false),
+          attachment("Andere Bewerbung.pdf", "Zeugnisse", 0, true, otherApplicationId),
+        ],
+        applicationId,
+      ),
+    ).toEqual(["Lebenslauf", "Zeugnis.pdf", "Zertifikat.pdf"]);
+  });
+});

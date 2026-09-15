@@ -35,6 +35,7 @@ const defaults: ApplicationInput = {
   },
   job: {
     title: "",
+    reference: "",
     source: "",
     url: "",
     fullText: "",
@@ -382,6 +383,10 @@ export function NewApplicationWizard({ onClose }: Props) {
                       )
                     }
                   />
+                </label>
+                <label className="field">
+                  <span>Kennziffer / Referenznummer</span>
+                  <input placeholder="z. B. ABC-123" {...register("job.reference")} />
                 </label>
                 <label className="field">
                   <span>Quelle</span>

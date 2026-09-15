@@ -36,7 +36,7 @@ const profile = profileSchema.parse({
   title: "Softwareentwicklerin",
   city: "Berlin",
   email: "mina@example.com",
-  skills: ["TypeScript", "React"],
+  skills: ["TypeScript", "React", "Node.js"],
   experiences: [
     {
       id: "0f15f341-0b0d-49de-8b14-d53d517577f2",
@@ -78,31 +78,57 @@ describe("Lebenslauf-Dokumente", () => {
       },
     ]);
 
+    expect(html).toContain("Bewerbung als Senior Softwareentwickler");
     expect(html).toContain("Standort: Berlin");
+    expect(html).toContain("19.07.2026");
     expect(html).toContain("Musterstraße 1, 10115 Berlin");
     expect(html).toContain('href="mailto:mina@example.com"');
     expect(html).toContain('href="https://linkedin.com/in/mina-kaya"');
     expect(html).toContain('class="cover-photo"');
     expect(html).toContain("Kernkompetenzen");
     expect(html).toContain("Bewerbungsunterlagen");
+    expect(html).toContain("<li>Anschreiben</li>");
     expect(html).toContain("<li>Lebenslauf</li>");
+    expect(html).toContain(
+      ".cover-identity{width:100%;max-width:none;margin-top:21mm}",
+    );
+    expect(html).toContain(
+      ".cover-statement{width:100%;margin-top:5mm!important;line-height:1.45;text-align:justify;text-justify:inter-word;hyphens:auto}",
+    );
+    expect(html).toContain(
+      ".cover-details{display:grid;grid-template-columns:34% minmax(0,1fr);gap:0",
+    );
+    expect(html).toContain(
+      ".cover-details>div:nth-child(2){padding-left:4mm}",
+    );
     expect(html).toContain("<li>Arbeitszeugnis.pdf</li>");
+  });
+
+  it("keeps the package order Anschreiben, Deckblatt, Lebenslauf", () => {
+    const html = buildDocumentHtml(application, profile, "mappe");
+    const body = html.slice(html.indexOf("<body>"));
+    expect(body.indexOf("letter-page")).toBeLessThan(body.indexOf("cover-page"));
+    expect(body.indexOf("cover-page")).toBeLessThan(body.indexOf("cv-sheet"));
+  });
+
+  it("validates mandatory applicant data before Deckblatt export", () => {
+    expect(() => buildDocumentHtml(application, undefined, "deckblatt")).toThrow(
+      "Name der Bewerberin oder des Bewerbers",
+    );
   });
 
   it("keeps the signature directly below the final cover-letter paragraph", () => {
     const html = buildDocumentHtml(application, profile, "anschreiben");
 
     expect(html).toContain(
-      ".signature{display:flex;flex-direction:column;align-items:flex-start;margin-top:0;padding-bottom:6mm}",
+      ".signature{display:flex;flex-direction:column;align-items:flex-start;margin-top:3.2mm}",
     );
-    expect(html).toContain(".letter-compact .signature{margin-top:0}");
-    expect(html).toContain(".letter-dense .signature{margin-top:0}");
     expect(html).toContain(".letter-content>.letter-closing{margin-bottom:0}");
     expect(html).toContain('class="letter-body letter-closing"');
-    expect(html).toContain('.letter-page[data-resume-template="stilvoll"] .letter-content{padding-bottom:calc(var(--doc-margin) + 5mm)}');
-    expect(html).toContain('.letter-page[data-resume-template="stilvoll"] .letter-content>p:not(.subject),.letter-page[data-resume-template="stilvoll"] .signature{line-height:1.28}');
-    expect(html).toContain('.letter-page[data-resume-template="kompakt"] .letter-content{padding-bottom:calc(var(--doc-margin) + 5mm)}');
-    expect(html).toContain('.letter-page[data-resume-template="kompakt"] .letter-content>p:not(.subject),.letter-page[data-resume-template="kompakt"] .signature{line-height:1.28}');
+    expect(html.indexOf('class="letter-body letter-closing"')).toBeLessThan(
+      html.indexOf('<div class="signature">'),
+    );
+    expect(html).toContain('class="attachments-note"');
   });
 
   it("exports long LinkedIn contacts in two columns for every requested template", () => {
@@ -271,11 +297,15 @@ describe("Lebenslauf-Dokumente", () => {
     const datedApplication = applicationSchema.parse({
       ...application,
       sentAt: "2024-05-17T09:00:00.000Z",
+      job: { ...application.job, reference: "R-284848" },
     });
 
     const html = buildDocumentHtml(datedApplication, profile, "anschreiben");
 
     expect(html).toContain("Berlin, den 17. Mai 2024");
+    expect(html).toContain(
+      "Bewerbung als Senior Softwareentwickler - Referenz R-284848",
+    );
   });
 
   it("renders both contacts in the cover-letter recipient and greeting", () => {
@@ -303,61 +333,56 @@ describe("Lebenslauf-Dokumente", () => {
 
     expect(html).toContain("Frau Anna Müller<br>Herrn Mehmet Yılmaz");
     expect(html).toContain(
-      "<p>Sehr geehrte Frau Müller, sehr geehrter Herr Yılmaz,</p>",
+      '<p class="letter-salutation">Sehr geehrte Frau Müller, sehr geehrter Herr Yılmaz,</p>',
     );
   });
 
-  it("justifies only the body paragraphs of exported cover letters", () => {
+  it("justifies the body paragraphs of exported cover letters", () => {
     const html = buildDocumentHtml(application, profile, "anschreiben");
 
     expect(html).toContain(
       ".letter-body{text-align:justify;text-justify:inter-word;hyphens:auto;overflow-wrap:break-word}",
     );
-    expect(html.match(/<p class="letter-body(?: letter-closing)?">/g)).toHaveLength(5);
-    expect(html).toContain("<p>Sehr geehrte Damen und Herren,</p>");
+    expect(html.match(/<p class="letter-body(?: letter-closing)?">/g)).toHaveLength(4);
+    expect(html).toContain(
+      '<p class="letter-salutation">Sehr geehrte Damen und Herren,</p>',
+    );
   });
 
-  it("places the applicant contact details above the cover letter rule", () => {
-    const html = buildDocumentHtml(application, profile, "anschreiben");
+  it("places compact applicant details in the DIN letterhead", () => {
+    const profileWithWebsite = profileSchema.parse({
+      ...profile,
+      portfolio: "https://pehlione.com/",
+    });
+    const html = buildDocumentHtml(application, profileWithWebsite, "anschreiben");
 
     expect(html).toContain('<span class="sender-name">Mina Kaya</span>');
     expect(html).toContain(
       '<span class="sender-title">Softwareentwicklerin</span>',
     );
     expect(html).toContain(
-      '<span class="sender-contact">Berlin · mina@example.com</span>',
+      '<span class="sender-contact">Berlin | mina@example.com</span>',
+    );
+    expect(html).not.toContain("pehlione.com");
+    expect(html).toContain(
+      ".sender-name{color:#000;font-size:16pt;font-weight:800;line-height:1.12}",
     );
     expect(html).toContain(
-      ".sender-name{color:var(--ink);font-size:15pt;font-weight:700;line-height:1.2}",
+      ".sender-contact{margin-top:.5mm;color:#000;font-size:10pt;line-height:1.2}",
     );
     expect(html).toContain(
-      ".sender-contact{margin-top:.8mm;font-size:11pt;line-height:1.25}",
+      ".letter-header{display:flex;min-height:24mm;align-items:flex-start;justify-content:center;border-bottom:.65mm solid var(--accent)}",
     );
-    expect(html).toContain(
-      ".sender{margin-bottom:2mm;color:var(--muted);text-align:center}",
-    );
+    expect(html).toContain(".letter-header{min-height:0;padding-bottom:1mm}");
     expect(html.indexOf('<div class="sender">')).toBeLessThan(
-      html.indexOf('<div class="rule"></div>'),
-    );
-    expect(html.indexOf('<div class="rule"></div>')).toBeLessThan(
       html.indexOf('<div class="recipient">'),
     );
   });
 
-  it("uses the resume template style and consistent letter typography in the PDF", () => {
+  it("uses a stable DIN A4 composition independent of the resume design", () => {
     const html = buildDocumentHtml(application, profile, "anschreiben");
     const splitCleanHtml = buildDocumentHtml(
       applicationSchema.parse({ ...application, templateId: "zweispaltig" }),
-      profile,
-      "anschreiben",
-    );
-    const zeitgenoessischHtml = buildDocumentHtml(
-      applicationSchema.parse({ ...application, templateId: "zeitgenoessisch" }),
-      profile,
-      "anschreiben",
-    );
-    const kreativHtml = buildDocumentHtml(
-      applicationSchema.parse({ ...application, templateId: "kreativ" }),
       profile,
       "anschreiben",
     );
@@ -367,51 +392,17 @@ describe("Lebenslauf-Dokumente", () => {
     );
     expect(html).toContain('data-resume-template="modern-sidebar"');
     expect(html).toContain(
-      ".subject{color:var(--accent);font-weight:800;font-size:14pt",
+      ".letter-content{padding:10mm 20mm 25mm;border-top:0}",
     );
     expect(html).toContain(
-      ".letter-content>p:not(.subject){font-size:11pt;line-height:1.32}",
+      ".subject{margin:0 0 6mm;color:var(--accent);font-size:14pt;font-weight:800;line-height:1.2}",
     );
     expect(html).toContain(
-      ".letter-compact .letter-content>p:not(.subject){font-size:11pt;line-height:1.3}",
-    );
-    expect(html).toContain(
-      ".letter-dense .letter-content>p:not(.subject){font-size:11pt;line-height:1.26}",
-    );
-    expect(html).toContain(
-      ".letter-page.layout-sidebar-right .letter-content{padding-right:calc(var(--doc-margin) + 7mm);border-right:5mm solid var(--secondary)}",
+      ".letter-content>p:not(.subject,.date){margin:0 0 3.2mm;font-size:11pt;line-height:1.28}",
     );
     expect(splitCleanHtml).toContain("layout-split-clean");
-    expect(splitCleanHtml).not.toContain(
-      ".letter-page.layout-split-clean .sender{text-align:left}",
-    );
-    expect(zeitgenoessischHtml).toContain(
-      'data-resume-template="zeitgenoessisch"',
-    );
-    expect(zeitgenoessischHtml).toContain(
-      '.letter-page[data-resume-template="zeitgenoessisch"].layout-sidebar-left .letter-content{padding-left:var(--doc-margin);border-left:0}',
-    );
-    expect(zeitgenoessischHtml).toContain(
-      '.letter-page.letter-compact[data-resume-template="zeitgenoessisch"].layout-sidebar-left .letter-content{padding-left:20mm}',
-    );
-    expect(zeitgenoessischHtml).toContain(
-      '.letter-page.letter-dense[data-resume-template="zeitgenoessisch"].layout-sidebar-left .letter-content{padding-left:18mm}',
-    );
-    expect(kreativHtml).toContain('data-resume-template="kreativ"');
-    expect(kreativHtml).toContain(
-      '.letter-page[data-resume-template="kreativ"].layout-bold-grid .rule{height:4px}',
-    );
-    expect(kreativHtml).toContain(
-      ".letter-page.layout-split-clean .rule{height:4px}",
-    );
-    expect(kreativHtml).toContain(
-      ".letter-page.layout-bold-grid .rule{height:4px}",
-    );
-    expect(kreativHtml).toContain(
-      ".letter-page.layout-minimal .rule{height:4px;background:var(--line)}",
-    );
-    expect(kreativHtml).toContain(
-      ".letter-dense .rule{height:4px;margin-bottom:10mm}",
+    expect(splitCleanHtml).toContain(
+      ".letter-content{padding:10mm 20mm 25mm;border-top:0}",
     );
   });
 
@@ -573,7 +564,7 @@ describe("Lebenslauf-Dokumente", () => {
     );
     expect(letterHtml).not.toContain("<strong>Mina Kaya</strong>");
     expect(letterHtml).toContain(
-      ".signature p{margin:0;font-size:11pt}.signature-image",
+      ".signature p{margin:0;font-size:11pt;line-height:1.28}.signature-image",
     );
     expect(letterHtml).toContain(
       ".signature-name{font-size:11pt;font-weight:400;line-height:1.2}",

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { mkdirSync } from "node:fs";
-import { readFile, writeFile } from "node:fs/promises";
+import { access, readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   app,
@@ -28,12 +28,15 @@ import type {
   AddTemplateInput,
   UseTemplateInput,
 } from "../src/features/templates/template.types";
-import { wordMusterTemplateConfig } from "../src/features/templates/template.constants";
 import { resolveApplicationPaths } from "../src/config/application-paths";
 import { DataStore } from "./storage";
 import { ApplicationFolderLockedError } from "./file-management";
 import { mergePdfDocuments } from "./pdf";
 import { TemplateService } from "./templates/template.service";
+import { createDefaultCoverLetterDocument } from "./templates/default-cover-letter";
+import { createDefaultDeckblattDocument } from "./templates/default-deckblatt";
+import { sanitizeTemplateFileName } from "./templates/template-filename.service";
+import { wordMusterTemplateConfig } from "../src/features/templates/template.constants";
 import { GitAutomationService } from "./git-automation";
 
 let mainWindow: BrowserWindow | null = null;
@@ -112,6 +115,66 @@ const createMainWindow = async () => {
   }
 };
 
+const synchronizeApplicationCoverLetter = async (applicationId: string) => {
+  const context = store.getTemplateDocumentContext(applicationId);
+  const data = { ...context.data };
+  if (data.UNTERSCHRIFT_GRAFIK) {
+    const signature = nativeImage.createFromDataURL(data.UNTERSCHRIFT_GRAFIK);
+    data.UNTERSCHRIFT_GRAFIK = signature.isEmpty()
+      ? ""
+      : `data:image/png;base64,${signature.toPNG().toString("base64")}`;
+  }
+  const personalTemplate = await templateService.getTemplateById(
+    wordMusterTemplateConfig.id,
+  );
+  if (personalTemplate) {
+    return templateService.synchronizeDocumentFromTemplate(
+      personalTemplate.id,
+      context.targetDirectories.anschreiben,
+      context.requestedBaseName,
+      data,
+    );
+  }
+  return createDefaultCoverLetterDocument(
+    context.targetDirectories.anschreiben,
+    context.requestedBaseName,
+    data,
+  );
+};
+
+const synchronizeApplicationDeckblatt = async (applicationId: string) => {
+  const context = store.getTemplateDocumentContext(applicationId);
+  const data = { ...context.data };
+  if (data.PROFILFOTO) {
+    const photo = nativeImage.createFromDataURL(data.PROFILFOTO);
+    data.PROFILFOTO = photo.isEmpty()
+      ? ""
+      : `data:image/png;base64,${photo.toPNG().toString("base64")}`;
+  }
+  return createDefaultDeckblattDocument(
+    context.targetDirectories.deckblatt,
+    context.requestedBaseNames.deckblatt,
+    data,
+  );
+};
+
+const createMissingExistingDeckblatts = async () => {
+  for (const application of store.getWorkspace().applications) {
+    const context = store.getTemplateDocumentContext(application.id);
+    const targetPath = path.join(
+      context.targetDirectories.deckblatt,
+      `${sanitizeTemplateFileName(context.requestedBaseNames.deckblatt)}.docx`,
+    );
+    try {
+      await access(targetPath);
+    } catch {
+      if (store.getProfileForApplication(application)) {
+        await synchronizeApplicationDeckblatt(application.id);
+      }
+    }
+  }
+};
+
 const registerIpc = () => {
   ipcMain.handle("workspace:get", () => store.getWorkspace());
   ipcMain.handle("application-draft:get", () => store.getApplicationDraft());
@@ -121,12 +184,25 @@ const registerIpc = () => {
   ipcMain.handle("application-draft:clear", () =>
     store.clearApplicationDraft(),
   );
-  ipcMain.handle("applications:create", (_event, value: unknown) =>
-    store.createApplication(applicationInputSchema.parse(value)),
-  );
+  ipcMain.handle("applications:create", async (_event, value: unknown) => {
+    const workspace = await store.createApplication(
+      applicationInputSchema.parse(value),
+    );
+    await Promise.all([
+      synchronizeApplicationCoverLetter(workspace.applications[0].id),
+      synchronizeApplicationDeckblatt(workspace.applications[0].id),
+    ]);
+    return workspace;
+  });
   ipcMain.handle("applications:save", async (_event, value: unknown) => {
     try {
-      return await store.saveApplication(applicationSchema.parse(value));
+      const next = applicationSchema.parse(value);
+      const workspace = await store.saveApplication(next);
+      await Promise.all([
+        synchronizeApplicationDeckblatt(next.id),
+        synchronizeApplicationCoverLetter(next.id),
+      ]);
+      return workspace;
     } catch (error) {
       if (error instanceof ApplicationFolderLockedError && mainWindow) {
         await dialog.showMessageBox(mainWindow, {
@@ -144,9 +220,14 @@ const registerIpc = () => {
   ipcMain.handle("applications:remove", (_event, id: unknown) =>
     store.removeApplication(String(id)),
   );
-  ipcMain.handle("applications:duplicate", (_event, id: unknown) =>
-    store.duplicateApplication(String(id)),
-  );
+  ipcMain.handle("applications:duplicate", async (_event, id: unknown) => {
+    const workspace = await store.duplicateApplication(String(id));
+    await Promise.all([
+      synchronizeApplicationCoverLetter(workspace.applications[0].id),
+      synchronizeApplicationDeckblatt(workspace.applications[0].id),
+    ]);
+    return workspace;
+  });
   ipcMain.handle(
     "applications:change-status",
     (_event, id: unknown, status: unknown, reason: unknown) => {
@@ -162,12 +243,34 @@ const registerIpc = () => {
     );
     if (error) throw new Error(error);
   });
-  ipcMain.handle("profiles:save", (_event, value: unknown) =>
-    store.saveProfile(profileSchema.parse(value)),
-  );
-  ipcMain.handle("profiles:remove", (_event, id: unknown) =>
-    store.removeProfile(String(id)),
-  );
+  ipcMain.handle("profiles:save", async (_event, value: unknown) => {
+    const profile = profileSchema.parse(value);
+    const workspace = await store.saveProfile(profile);
+    await Promise.all(
+      workspace.applications
+        .filter(
+          (application) =>
+            store.getProfileForApplication(application)?.id === profile.id,
+        )
+        .flatMap((application) => [
+          synchronizeApplicationDeckblatt(application.id),
+          synchronizeApplicationCoverLetter(application.id),
+        ]),
+    );
+    return workspace;
+  });
+  ipcMain.handle("profiles:remove", async (_event, id: unknown) => {
+    const workspace = await store.removeProfile(String(id));
+    await Promise.all(
+      workspace.applications
+        .filter((application) => store.getProfileForApplication(application))
+        .flatMap((application) => [
+          synchronizeApplicationDeckblatt(application.id),
+          synchronizeApplicationCoverLetter(application.id),
+        ]),
+    );
+    return workspace;
+  });
   ipcMain.handle("templates:scan", () =>
     templateService.scanAllTemplates(),
   );
@@ -219,7 +322,7 @@ const registerIpc = () => {
     const result = await templateService.createDocumentFromTemplate(
       template.id,
       context.targetDirectories[template.documentType],
-      context.requestedBaseName,
+      context.requestedBaseNames[template.documentType],
       context.data,
       { atsMode: value.atsMode === true },
     );
@@ -235,25 +338,7 @@ const registerIpc = () => {
     "templates:sync-anschreiben",
     async (_event, applicationId: unknown) => {
       const id = String(applicationId);
-      const template = await templateService.getTemplateById(
-        wordMusterTemplateConfig.id,
-      );
-      if (!template) {
-        throw new Error("Die Anschreiben-Word-Vorlage wurde nicht gefunden.");
-      }
-      const context = store.getTemplateDocumentContext(id);
-      const applicantName = [
-        context.data.BEWERBER_VORNAME,
-        context.data.BEWERBER_NACHNAME,
-      ]
-        .filter(Boolean)
-        .join("_");
-      const result = await templateService.synchronizeDocumentFromTemplate(
-        template.id,
-        context.targetDirectories.anschreiben,
-        applicantName ? `Anschreiben_${applicantName}` : "Anschreiben",
-        context.data,
-      );
+      const result = await synchronizeApplicationCoverLetter(id);
       store.queueGitCommit(id, "anschreiben");
       return result;
     },
@@ -351,28 +436,47 @@ const registerIpc = () => {
       });
       if (selection.canceled || !selection.filePaths[0])
         return store.getWorkspace();
-      return store.addAttachment(
+      const workspace = await store.addAttachment(
         String(applicationId),
         category,
         selection.filePaths[0],
       );
+      await synchronizeApplicationDeckblatt(String(applicationId));
+      return workspace;
     },
   );
-  ipcMain.handle("attachments:save", (_event, value: unknown) =>
-    store.saveAttachment(attachmentSchema.parse(value)),
-  );
+  ipcMain.handle("attachments:save", async (_event, value: unknown) => {
+    const attachment = attachmentSchema.parse(value);
+    const workspace = await store.saveAttachment(attachment);
+    await synchronizeApplicationDeckblatt(attachment.applicationId);
+    return workspace;
+  });
   ipcMain.handle(
     "attachments:move",
-    (_event, id: unknown, rawDirection: unknown) => {
+    async (_event, id: unknown, rawDirection: unknown) => {
       const direction = Number(rawDirection);
       if (direction !== -1 && direction !== 1)
         throw new Error("Ungültige Sortierrichtung.");
-      return store.moveAttachment(String(id), direction);
+      const attachment = store
+        .getWorkspace()
+        .attachments.find((item) => item.id === String(id));
+      const workspace = await store.moveAttachment(String(id), direction);
+      if (attachment) {
+        await synchronizeApplicationDeckblatt(attachment.applicationId);
+      }
+      return workspace;
     },
   );
-  ipcMain.handle("attachments:remove", (_event, id: unknown) =>
-    store.removeAttachment(String(id)),
-  );
+  ipcMain.handle("attachments:remove", async (_event, id: unknown) => {
+    const attachment = store
+      .getWorkspace()
+      .attachments.find((item) => item.id === String(id));
+    const workspace = await store.removeAttachment(String(id));
+    if (attachment) {
+      await synchronizeApplicationDeckblatt(attachment.applicationId);
+    }
+    return workspace;
+  });
   ipcMain.handle("attachments:open", async (_event, id: unknown) => {
     const error = await shell.openPath(store.getAttachmentPathById(String(id)));
     if (error) throw new Error(error);
@@ -568,6 +672,7 @@ app.whenReady().then(async () => {
   await gitAutomation.initialize();
   templateService = new TemplateService(applicationPaths);
   await templateService.initialize();
+  await createMissingExistingDeckblatts();
   registerIpc();
   await createMainWindow();
   notifyDueEvents();

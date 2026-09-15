@@ -3,7 +3,10 @@ import type {
   Application,
   Attachment,
 } from "../src/shared/schema";
-import { formatApplicationDateLong } from "../src/shared/applicationDate";
+import {
+  formatApplicationDate,
+  formatApplicationDateLong,
+} from "../src/shared/applicationDate";
 import {
   createResumePagePlan,
   einspaltigPaginationOptions,
@@ -35,13 +38,19 @@ import {
   getDeckblattCompetencies,
   getDeckblattContacts,
   getDeckblattDocuments,
+  validateDeckblattData,
 } from "../src/shared/deckblatt";
 import { getTechnologyBrandIconMarkup } from "../src/shared/technologyBrand";
 import { getReadableTextColor, getTemplate } from "../src/shared/templates";
 import {
   applicationGreeting,
-  applicationPostalContactLines,
+  applicationRecipientLines,
 } from "../src/shared/applicationContacts";
+import {
+  createCoverSubject,
+  getCoverLetterAttachments,
+  getCoverLetterMainBody,
+} from "../src/shared/coverLetter";
 import {
   knowledgeLevelLabels,
   knowledgeLevelScores,
@@ -194,29 +203,10 @@ const fullName = (profile?: ApplicantProfile) =>
   profile ? `${profile.firstName} ${profile.lastName}`.trim() : "Vorname Nachname";
 
 const addressBlock = (application: Application) =>
-  [
-    application.company.name,
-    ...applicationPostalContactLines(application),
-    application.company.street,
-    `${application.company.postalCode} ${application.company.city}`.trim(),
-  ]
+  applicationRecipientLines(application)
     .filter(Boolean)
     .map(escapeHtml)
     .join("<br>");
-
-const senderLine = (profile?: ApplicantProfile) =>
-  profile
-    ? [
-        fullName(profile),
-        profile.street,
-        `${profile.postalCode} ${profile.city}`.trim(),
-        profile.phone,
-        profile.email,
-      ]
-        .filter(Boolean)
-        .map(escapeHtml)
-        .join(" · ")
-    : "Bitte unter Profile Ihre Absenderdaten ergänzen.";
 
 const senderHeader = (profile?: ApplicantProfile) => {
   if (!profile) {
@@ -233,7 +223,7 @@ const senderHeader = (profile?: ApplicantProfile) => {
   ]
     .filter(Boolean)
     .map(escapeHtml)
-    .join(" · ");
+    .join(" | ");
   const title = profile.title?.trim();
   return (
     `<span class="sender-name">${escapeHtml(fullName(profile))}</span>` +
@@ -269,18 +259,9 @@ const documentCss = (
   .kicker{color:var(--accent);font-size:10pt;text-transform:uppercase;letter-spacing:.16em;font-weight:700}
   h1,h2,h3{font-family:var(--heading-font);font-weight:var(--heading-weight)}h1{font-size:29pt;line-height:1.05;margin:8mm 0 4mm}h2{font-size:14pt;color:var(--accent);margin:8mm 0 3mm}
   h3{font-size:11pt;margin:0 0 1mm}.muted{color:var(--muted)}p,li{font-size:var(--body-size);line-height:var(--body-line)}
-  .cover-content{padding:var(--doc-margin)}.cover-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:12mm;padding-bottom:11mm;border-bottom:1px solid var(--line)}.cover-content h1{max-width:125mm;margin:4mm 0 2mm;font-size:28pt}.cover-location{margin:3mm 0 0;color:var(--muted);font-size:9pt}.cover-photo{width:36mm;height:36mm;flex:0 0 auto;border-radius:50%;object-fit:cover}.cover-identity{max-width:135mm;margin-top:21mm}.cover-identity h2{margin:0 0 2mm;font-size:19pt}.cover-identity>p{margin:0}.cover-statement{margin-top:5mm!important;line-height:1.45}.cover-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12mm;margin-top:23mm;padding-top:6mm;border-top:1px solid var(--line)}.cover-details h3{margin:0 0 3mm;color:var(--accent);font-size:10pt;letter-spacing:.08em;text-transform:uppercase}.cover-details h3:not(:first-child){margin-top:7mm}.cover-details ul{display:grid;gap:1.5mm;margin:0;padding:0;list-style:none}.cover-details li{overflow-wrap:anywhere}.cover-details strong{display:inline-block;min-width:18mm}.cover-details a{color:inherit;text-decoration:none}.cover-competencies{margin:0;line-height:1.55}
-  .contact{padding-top:8mm;border-top:1px solid var(--line)}.sender{margin-bottom:2mm;color:var(--muted);text-align:center}.sender-name,.sender-title,.sender-contact{display:block}.sender-name{color:var(--ink);font-size:15pt;font-weight:700;line-height:1.2}.sender-title{margin-top:.8mm;color:var(--accent);font-size:11pt;font-weight:700;line-height:1.2}.sender-contact{margin-top:.8mm;font-size:11pt;line-height:1.25}
-  .recipient{margin-top:12mm;min-height:36mm;font-size:11pt;line-height:1.42}.date{text-align:right}.subject{color:var(--accent);font-weight:800;font-size:14pt;margin:8mm 0 5mm}
-  .signature{display:flex;flex-direction:column;align-items:flex-start;margin-top:0;padding-bottom:6mm}.signature p{margin:0;font-size:11pt}.signature-image{display:block;width:auto;max-width:48mm;height:auto;max-height:14mm;margin:1mm 0 .5mm;object-fit:contain;object-position:left center}.signature-name{font-size:11pt;font-weight:400;line-height:1.2}
-  .letter-content{padding:var(--doc-margin)}.letter-content>p:not(.subject){font-size:11pt;line-height:1.32}.letter-content>p:not(.date,.subject){margin:0 0 calc(var(--section-gap) * .72)}.letter-content>.letter-closing{margin-bottom:0}.letter-content .signature{font-size:11pt;line-height:1.32}.letter-body{text-align:justify;text-justify:inter-word;hyphens:auto;overflow-wrap:break-word}
-  .letter-page.layout-split-clean .rule{height:4px}.letter-page.layout-sidebar-left .letter-content{padding-left:calc(var(--doc-margin) + 7mm);border-left:5mm solid var(--secondary)}.letter-page.layout-sidebar-right .letter-content{padding-right:calc(var(--doc-margin) + 7mm);border-right:5mm solid var(--secondary)}.letter-page.layout-bold-grid .rule{height:4px}.letter-page.layout-timeline .subject{padding-left:3mm;border-left:1mm solid var(--accent)}.letter-page.layout-minimal .rule{height:4px;background:var(--line)}
-  .letter-compact .letter-content{padding:16mm 20mm}.letter-compact .rule{margin-bottom:15mm}.letter-compact .recipient{margin-top:10mm;min-height:30mm}.letter-compact .letter-content>p:not(.subject){font-size:11pt;line-height:1.3}.letter-compact .signature{margin-top:0}
-  .letter-dense .letter-content{padding:14mm 18mm}.letter-dense .rule{height:4px;margin-bottom:10mm}.letter-dense .recipient{margin-top:7mm;min-height:24mm;font-size:11pt}.letter-dense .letter-content>p:not(.subject){font-size:11pt;line-height:1.26}.letter-dense .letter-content>p:not(.date,.subject){margin-bottom:2.6mm}.letter-dense .subject{margin:5mm 0 3mm}.letter-dense .signature{margin-top:0}
-  .letter-page[data-resume-template="zeitgenoessisch"].layout-sidebar-left .letter-content{padding-left:var(--doc-margin);border-left:0}.letter-page.letter-compact[data-resume-template="zeitgenoessisch"].layout-sidebar-left .letter-content{padding-left:20mm}.letter-page.letter-dense[data-resume-template="zeitgenoessisch"].layout-sidebar-left .letter-content{padding-left:18mm}
-  .letter-page[data-resume-template="kreativ"].layout-bold-grid .rule{height:4px}
-  .letter-page[data-resume-template="stilvoll"] .letter-content{padding-bottom:calc(var(--doc-margin) + 5mm)}.letter-page.letter-compact[data-resume-template="stilvoll"] .letter-content{padding-bottom:21mm}.letter-page.letter-dense[data-resume-template="stilvoll"] .letter-content{padding-bottom:19mm}.letter-page[data-resume-template="stilvoll"] .letter-content>p:not(.subject),.letter-page[data-resume-template="stilvoll"] .signature{line-height:1.28}
-  .letter-page[data-resume-template="kompakt"] .letter-content{padding-bottom:calc(var(--doc-margin) + 5mm)}.letter-page.letter-compact[data-resume-template="kompakt"] .letter-content{padding-bottom:21mm}.letter-page.letter-dense[data-resume-template="kompakt"] .letter-content{padding-bottom:19mm}.letter-page[data-resume-template="kompakt"] .letter-content>p:not(.subject),.letter-page[data-resume-template="kompakt"] .signature{line-height:1.28}
+  .cover-content{padding:var(--doc-margin)}.cover-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:12mm;padding-bottom:11mm;border-bottom:1px solid var(--line)}.cover-content h1{max-width:125mm;margin:4mm 0 2mm;font-size:28pt}.cover-location{margin:3mm 0 0;color:var(--muted);font-size:9pt}.cover-photo{width:36mm;height:36mm;flex:0 0 auto;border-radius:50%;object-fit:cover}.cover-identity{width:100%;max-width:none;margin-top:21mm}.cover-identity h2{margin:0 0 2mm;font-size:19pt}.cover-identity>p{margin:0}.cover-statement{width:100%;margin-top:5mm!important;line-height:1.45;text-align:justify;text-justify:inter-word;hyphens:auto}.cover-details{display:grid;grid-template-columns:34% minmax(0,1fr);gap:0;margin-top:23mm;padding-top:6mm;border-top:1px solid var(--line)}.cover-details>div:nth-child(2){padding-left:4mm}.cover-details h3{margin:0 0 3mm;color:var(--accent);font-size:10pt;letter-spacing:.08em;text-transform:uppercase}.cover-details h3:not(:first-child){margin-top:7mm}.cover-details ul{display:grid;gap:1.5mm;margin:0;padding:0;list-style:none}.cover-details li{overflow-wrap:anywhere}.cover-details strong{display:inline-block;min-width:18mm}.cover-details a{color:inherit;text-decoration:none}.cover-competencies{margin:0;line-height:1.55}
+  .contact{padding-top:8mm;border-top:1px solid var(--line)}.letter-content{padding:10mm 20mm 25mm;border-top:0}.letter-header{display:flex;min-height:24mm;align-items:flex-start;justify-content:center;border-bottom:.65mm solid var(--accent)}.sender{width:100%;color:var(--ink);text-align:center}.sender-name,.sender-title,.sender-contact{display:block}.sender-name{color:#000;font-size:16pt;font-weight:800;line-height:1.12}.sender-title{margin-top:.4mm;color:var(--accent);font-size:11pt;font-weight:800;line-height:1.15}.sender-contact{margin-top:.5mm;color:#000;font-size:10pt;line-height:1.2}.recipient{min-height:20mm;margin-top:20mm;font-size:10pt;line-height:1.28}.date{margin:0 0 20mm;text-align:right;font-size:10pt}.subject{margin:0 0 6mm;color:var(--accent);font-size:14pt;font-weight:800;line-height:1.2}.letter-content>p:not(.subject,.date){margin:0 0 3.2mm;font-size:11pt;line-height:1.28}.letter-body{text-align:justify;text-justify:inter-word;hyphens:auto;overflow-wrap:break-word}.letter-content>.letter-closing{margin-bottom:0}.signature{display:flex;flex-direction:column;align-items:flex-start;margin-top:3.2mm}.signature p{margin:0;font-size:11pt;line-height:1.28}.signature-image{display:block;width:auto;max-width:48mm;height:auto;max-height:14mm;margin:1mm 0 .5mm;object-fit:contain;object-position:left center}.signature-name{font-size:11pt;font-weight:400;line-height:1.2}.attachments-note{margin-top:4mm!important;color:var(--muted);font-size:9pt!important;font-weight:700}.letter-compact .letter-content>p:not(.subject,.date),.letter-compact .signature{line-height:1.24}.letter-compact .letter-content>p:not(.subject,.date){margin-bottom:2.7mm}.letter-dense .recipient{min-height:18mm;margin-top:17mm}.letter-dense .date{margin-bottom:15mm}.letter-dense .letter-content>p:not(.subject,.date),.letter-dense .signature{font-size:11pt;line-height:1.15}.letter-dense .letter-content>p:not(.subject,.date){margin-bottom:2.2mm}
+  .letter-header{min-height:0;padding-bottom:1mm}
   .cv-page{padding:0;display:grid;grid-template:"header header" auto "main side" 1fr/64% 36%;overflow:hidden}
   .cv-header{grid-area:header;display:flex;align-items:center;justify-content:space-between;gap:9mm;padding:var(--doc-margin) var(--doc-margin) calc(var(--doc-margin) * .6)}
   .cv-header h1{margin:1mm 0 0;font-size:25pt;line-height:1;letter-spacing:.015em;text-transform:uppercase}
@@ -663,6 +644,9 @@ export const buildDocumentHtml = (
   target: "deckblatt" | "anschreiben" | "lebenslauf" | "mappe",
   attachments: readonly Attachment[] = [],
 ) => {
+  if (target === "deckblatt" || target === "mappe") {
+    validateDeckblattData(application, profile);
+  }
   const template = getTemplate(application.templateId);
   const accent = application.accentColor || template.accent;
   const secondary = application.secondaryColor || template.secondary;
@@ -710,12 +694,18 @@ export const buildDocumentHtml = (
         .map(escapeHtml)
         .join(" · ")
     : "Telefon · E-Mail · Ort";
-  const applicationDate = formatApplicationDateLong(application);
+  const applicationDate = formatApplicationDate(application);
+  const applicationPlace = profile?.city || application.company.city;
+  const longApplicationDate = `${applicationPlace ? `${applicationPlace}, ` : ""}den ${formatApplicationDateLong(application)}`;
   const letterStatus = getLetterPageStatus(docs);
   const letterTemplateClass = `layout-${template.layout}`;
   const deckblattContacts = getDeckblattContacts(profile);
-  const deckblattCompetencies = getDeckblattCompetencies(profile);
+  const deckblattCompetencies = getDeckblattCompetencies(profile, application);
   const deckblattDocuments = getDeckblattDocuments(attachments, application.id);
+  const coverLetterAttachments = getCoverLetterAttachments(
+    attachments,
+    application.id,
+  );
   const deckblattContactMarkup = deckblattContacts.length
     ? deckblattContacts
         .map((contact) => {
@@ -727,35 +717,34 @@ export const buildDocumentHtml = (
           }</li>`;
         })
         .join("")
-    : "<li>Kontaktdaten im Profil ergänzen.</li>";
+    : "";
   const cover = `
     <section class="page cover-page ${designClasses}">
       ${backgroundLayer}
       <div class="page-content standard-page-content cover-content">
         <div class="rule"></div>
         <p class="kicker">Bewerbung</p>
-        <section class="cover-hero"><div><h1>${escapeHtml(role)}</h1><p class="muted">bei ${escapeHtml(company)}</p>${application.company.city ? `<p class="cover-location">Standort: ${escapeHtml(application.company.city)}</p>` : ""}</div>${photoSource ? `<img class="cover-photo" src="${escapeHtml(photoSource)}" alt="">` : ""}</section>
+        <section class="cover-hero"><div><h1>Bewerbung als ${escapeHtml(role)}</h1><p class="muted">bei ${escapeHtml(company)}</p>${application.company.city ? `<p class="cover-location">Standort: ${escapeHtml(application.company.city)}</p>` : ""}<p class="cover-location">${escapeHtml(applicationDate)}</p></div>${photoSource ? `<img class="cover-photo" src="${escapeHtml(photoSource)}" alt="">` : ""}</section>
         <section class="cover-identity"><h2>${escapeHtml(name)}</h2>${profile?.title ? `<p>${escapeHtml(profile.title)}</p>` : ""}${docs.deckblattStatement || profile?.summary ? `<p class="cover-statement">${escapeHtml(docs.deckblattStatement || profile?.summary || "")}</p>` : ""}</section>
-        <section class="cover-details"><div><h3>Bewerbungsunterlagen</h3><ul>${deckblattDocuments.map((document) => `<li>${escapeHtml(document)}</li>`).join("")}</ul></div><div>${deckblattCompetencies.length ? `<h3>Kernkompetenzen</h3><p class="cover-competencies">${deckblattCompetencies.map(escapeHtml).join(" · ")}</p>` : ""}<h3>Kontakt</h3><ul>${deckblattContactMarkup}</ul></div></section>
+        <section class="cover-details"><div><h3>Bewerbungsunterlagen</h3><ul>${deckblattDocuments.map((document) => `<li>${escapeHtml(document)}</li>`).join("")}</ul></div><div>${deckblattCompetencies.length ? `<h3>Kernkompetenzen</h3><p class="cover-competencies">${deckblattCompetencies.map(escapeHtml).join(" · ")}</p>` : ""}${deckblattContacts.length ? `<h3>Kontakt</h3><ul>${deckblattContactMarkup}</ul>` : ""}</div></section>
       </div>
     </section>`;
   const letter = `
     <section class="page letter-page letter-${letterStatus.density} ${letterTemplateClass} ${designClasses}" data-resume-template="${escapeHtml(template.id)}">
       ${backgroundLayer}
       <div class="page-content letter-content">
-        <div class="sender">${senderHeader(profile)}</div>
-        <div class="rule"></div>
+        <div class="letter-header"><div class="sender">${senderHeader(profile)}</div></div>
         <div class="recipient">${addressBlock(application)}</div>
-        <p class="date">${escapeHtml(profile?.city || application.company.city)}, den ${applicationDate}</p>
-        <p class="subject">${escapeHtml(docs.coverSubject || `Bewerbung als ${role}`)}</p>
-        <p>${escapeHtml(applicationGreeting(application))}</p>
+        <p class="date">${escapeHtml(longApplicationDate)}</p>
+        <p class="subject">${escapeHtml(`${createCoverSubject(role, docs.coverSubject)}${application.job.reference && !createCoverSubject(role, docs.coverSubject).includes(application.job.reference) ? ` - Referenz ${application.job.reference}` : ""}`)}</p>
+        <p class="letter-salutation">${escapeHtml(applicationGreeting(application))}</p>
         <p class="letter-body">${escapeHtml(docs.coverIntroduction || `die ausgeschriebene Position als ${role} bei ${company} spricht mich besonders an, weil sie fachliche Verantwortung mit konkretem Gestaltungsspielraum verbindet.`)}</p>
-        <p class="letter-body">${escapeHtml(docs.coverMotivation || "Meine Motivation entsteht aus der Möglichkeit, vorhandene Erfahrung gezielt einzusetzen, mich fachlich weiterzuentwickeln und gemeinsam mit Ihrem Team messbare Ergebnisse zu erzielen.")}</p>
-        <p class="letter-body">${escapeHtml(docs.coverQualification || profile?.summary || "Ich arbeite strukturiert, zuverlässig und lösungsorientiert. Neue Anforderungen erfasse ich schnell und überführe sie in nachvollziehbare, belastbare Ergebnisse.")}</p>
-        <p class="letter-body">${escapeHtml(docs.coverCompanyFit || `An ${company} überzeugt mich besonders die Verbindung aus professionellem Anspruch und zukunftsorientierter Arbeitsweise.`)}</p>
+        <p class="letter-body">${escapeHtml(getCoverLetterMainBody(docs) || profile?.summary || "Hauptteil im Dokumenteditor ergänzen.")}</p>
         ${docs.coverExtraParagraph ? `<p class="letter-body">${escapeHtml(docs.coverExtraParagraph)}</p>` : ""}
+        <p class="letter-body">${escapeHtml(docs.coverCompanyFit || `An ${company} überzeugt mich besonders die Verbindung aus professionellem Anspruch und zukunftsorientierter Arbeitsweise.`)}</p>
         <p class="letter-body letter-closing">${escapeHtml(docs.coverClosing || "Gerne überzeuge ich Sie in einem persönlichen Gespräch davon, welchen konkreten Beitrag ich in Ihrem Team leisten kann. Auf Ihren Terminvorschlag freue ich mich.")}</p>
         <div class="signature"><p>Mit freundlichen Grüßen</p>${signatureSource ? `<img class="signature-image" src="${escapeHtml(signatureSource)}" alt="">` : ""}<span class="signature-name">${escapeHtml(name)}</span></div>
+        <p class="attachments-note">Anlagen:<br>${coverLetterAttachments.map(escapeHtml).join("<br>")}</p>
       </div>
     </section>`;
   const experienceById = new Map(
@@ -3626,7 +3615,7 @@ export const buildDocumentHtml = (
                             : renderResumePage,
     )
     .join("");
-  const selected = target === "mappe" ? [cover, letter, resume] : target === "deckblatt" ? [cover] : target === "anschreiben" ? [letter] : [resume];
+  const selected = target === "mappe" ? [letter, cover, resume] : target === "deckblatt" ? [cover] : target === "anschreiben" ? [letter] : [resume];
   return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}${ivyLeagueDocumentCss}${extendedResumeDocumentCss}${klassischDocumentCss}${modernDocumentCss}${gepflegtDocumentCss}${tabellarischDocumentCss}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
 };
 
@@ -3635,19 +3624,17 @@ export const buildCoverLetterMarkdown = (
   profile?: ApplicantProfile,
 ) => {
   const docs = application.documents;
-  return `# ${docs.coverSubject || `Bewerbung als ${application.job.title}`}
+  return `# ${createCoverSubject(application.job.title, docs.coverSubject)}
 
 ${applicationGreeting(application)}
 
 ${docs.coverIntroduction}
 
-${docs.coverMotivation}
-
-${docs.coverQualification}
-
-${docs.coverCompanyFit}
+${getCoverLetterMainBody(docs)}
 
 ${docs.coverExtraParagraph}
+
+${docs.coverCompanyFit}
 
 ${docs.coverClosing}
 

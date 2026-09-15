@@ -31,6 +31,38 @@ const decodeXmlText = (value: string) =>
     .replaceAll("&quot;", '"')
     .replaceAll("&apos;", "'");
 
+const escapeXmlText = (value: string) =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
+
+const appendCoverLetterAttachments = (
+  zip: PizZip,
+  attachmentNote: string,
+  accentColor: string,
+) => {
+  const documentPart = zip.file("word/document.xml");
+  if (!documentPart || !attachmentNote.trim()) return;
+  const lines = attachmentNote
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (!lines.length) return;
+  const paragraphs = lines
+    .map(
+      (line, index) =>
+        `<w:p><w:pPr><w:spacing w:before="${index === 0 ? 180 : 0}" w:after="0" w:line="230" w:lineRule="auto"/><w:keepNext/></w:pPr><w:r><w:rPr>${index === 0 ? `<w:b/><w:color w:val="${accentColor}"/>` : ""}<w:sz w:val="18"/></w:rPr><w:t xml:space="preserve">${escapeXmlText(line)}</w:t></w:r></w:p>`,
+    )
+    .join("");
+  zip.file(
+    "word/document.xml",
+    documentPart.asText().replace("<w:sectPr", `${paragraphs}<w:sectPr`),
+  );
+};
+
 const removeEmptyParagraphs = (documentXml: string) =>
   documentXml.replace(
     /<w:p\b[\s\S]*?<\/w:p>/g,
@@ -654,6 +686,16 @@ export class TemplatePlaceholderService {
       ].filter((key) => fullText.includes(`{{${key}}}`));
       document.render(normalizedData);
       const renderedZip = document.getZip();
+      if (
+        template.documentType === "anschreiben" &&
+        !fullText.includes("{{ANLAGENHINWEIS}}")
+      ) {
+        appendCoverLetterAttachments(
+          renderedZip,
+          normalizedData.ANLAGENHINWEIS ?? "",
+          normalizedHex(data.DESIGN_PRIMARY, "0B3D86"),
+        );
+      }
       if (
         template.id === zeitgenoessischLebenslaufTemplateConfig.id ||
         template.id === kreativLebenslaufTemplateConfig.id ||

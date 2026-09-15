@@ -163,7 +163,7 @@ export const inferApplicationGitChange = (relativePath: string) => {
   const folder = knownRootIndex >= 0 ? parts[knownRootIndex + 1] : undefined;
   if (!folder) return undefined;
   const companyName = folder
-    .replace(/_(?:\d{4}-\d{2}-\d{2}|Termin_offen)$/, "")
+    .replace(/_(?:\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2}|Termin_offen)$/, "")
     .replace(/_/g, " ");
   const action: ApplicationGitAction =
     category === "Anschreiben"

@@ -2284,7 +2284,8 @@ h3 {
 }
 
 .deckblatt-preview__identity {
-  max-width: 135mm;
+  width: 100%;
+  max-width: none;
   margin-top: 21mm;
 }
 
@@ -2299,17 +2300,66 @@ h3 {
 }
 
 .deckblatt-preview__statement {
+  width: 100%;
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
   margin-top: 5mm !important;
   line-height: 1.45;
 }
 
 .deckblatt-preview__details {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12mm;
+  grid-template-columns: 34% minmax(0, 1fr);
+  gap: 0;
   margin-top: 23mm;
   padding-top: 6mm;
   border-top: 1px solid #dfe2dd;
+}
+
+.cover-letter-editor-sections {
+  display: grid;
+  gap: 12px;
+}
+
+.cover-letter-editor-section {
+  display: grid;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.cover-letter-editor-section > header {
+  display: grid;
+  gap: 3px;
+}
+
+.cover-letter-editor-section > header b {
+  color: var(--brand);
+  font-size: 0.78rem;
+}
+
+.cover-letter-editor-section > header small,
+.cover-letter-editor-section > p,
+.cover-letter-editor-section > ul {
+  color: var(--muted);
+  font-size: 0.66rem;
+  line-height: 1.45;
+}
+
+.cover-letter-editor-section.is-generated {
+  background: var(--surface-muted);
+}
+
+.cover-letter-editor-section > ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.deckblatt-preview__details > div:nth-child(2) {
+  padding-left: 4mm;
 }
 
 .deckblatt-preview__details h3 {
@@ -2364,6 +2414,66 @@ h3 {
   min-height: 100%;
   padding: var(--letter-padding-block) var(--letter-padding-inline);
   transform-origin: top left;
+}
+
+.document-email {
+  color: #172033;
+  background: #fff;
+}
+
+.email-preview {
+  padding: 18mm 20mm;
+  font-family: var(--document-font-family, Arial, sans-serif);
+  font-size: 11pt;
+  line-height: 1.55;
+}
+
+.email-preview header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #d9d9d9;
+}
+
+.email-preview header h2,
+.email-preview header p {
+  margin: 0;
+  color: #000;
+}
+
+.email-preview dl {
+  display: grid;
+  gap: 8px;
+  margin: 24px 0 30px;
+}
+
+.email-preview dl div {
+  display: grid;
+  grid-template-columns: 34mm 1fr;
+  gap: 10px;
+}
+
+.email-preview dt {
+  font-weight: 700;
+}
+
+.email-preview dd {
+  margin: 0;
+}
+
+.email-preview section {
+  margin-top: 24px;
+}
+
+.email-preview section h3 {
+  margin: 0 0 8px;
+  color: #000;
+}
+
+.email-preview section p {
+  margin: 0;
+  white-space: pre-wrap;
 }
 
 .letter-preview .sender-line {
@@ -2583,6 +2693,158 @@ h3 {
   > p:not(.sender-line, .paper-date),
 .document-anschreiben[data-resume-template="kompakt"] .letter-signature {
   line-height: 1.28;
+}
+
+.letter-attachments {
+  display: grid;
+  gap: 1mm;
+  margin-top: 4mm;
+  color: var(--doc-text);
+  font-size: 9pt;
+  line-height: 1.2;
+}
+
+.letter-attachments strong {
+  color: var(--doc-accent);
+}
+
+/* DIN-5008-orientierte Anschreibenstruktur. Diese Regeln haben bewusst
+   Vorrang vor dekorativen Lebenslauf-Layouts. */
+.document-anschreiben {
+  --letter-accent: var(--doc-accent);
+  --letter-padding-block: 15mm;
+  --letter-padding-inline: 0;
+}
+
+.document-anschreiben .letter-preview,
+.document-anschreiben.layout-sidebar-left .letter-preview,
+.document-anschreiben.layout-sidebar-right .letter-preview,
+.document-anschreiben[data-resume-template="zeitgenoessisch"].layout-sidebar-left
+  .letter-preview,
+.document-anschreiben[data-resume-template="stilvoll"] .letter-preview,
+.document-anschreiben[data-resume-template="kompakt"] .letter-preview {
+  padding: 10mm 20mm 25mm;
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
+}
+
+.letter-preview .letter-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-bottom: 1mm;
+  border-bottom: 0.65mm solid var(--letter-accent);
+}
+
+.letter-preview .sender-line {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  color: #172026;
+  text-align: center;
+}
+
+.letter-preview .sender-name {
+  color: #000;
+  font-size: 16pt;
+  font-weight: 800;
+  line-height: 1.12;
+}
+
+.letter-preview .sender-title {
+  margin-top: 0.4mm;
+  color: var(--letter-accent);
+  font-size: 11pt;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.letter-preview .sender-contact {
+  margin-top: 0.5mm;
+  color: #000;
+  font-size: 10pt;
+  line-height: 1.2;
+}
+
+.letter-preview address,
+.letter-compact .letter-preview address,
+.letter-dense .letter-preview address {
+  min-height: 20mm;
+  margin: 20mm 0 0;
+  font-size: 10pt;
+  line-height: 1.28;
+}
+
+.letter-preview .paper-date {
+  margin: 0 0 20mm;
+  font-size: 10pt;
+  line-height: 1.2;
+}
+
+.letter-preview h3,
+.document-anschreiben.layout-timeline .letter-preview h3,
+.letter-compact .letter-preview h3,
+.letter-dense .letter-preview h3 {
+  margin: 0 0 6mm;
+  padding: 0;
+  border: 0;
+  color: var(--letter-accent);
+  font-size: 14pt;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.letter-preview .letter-salutation {
+  margin: 10pt 0 10pt;
+  font-size: 11pt;
+  font-weight: 400;
+  line-height: 1.15;
+  text-align: left;
+}
+
+.letter-preview .letter-body,
+.document-anschreiben[data-resume-template="stilvoll"]
+  .letter-preview
+  > .letter-body,
+.document-anschreiben[data-resume-template="kompakt"]
+  .letter-preview
+  > .letter-body {
+  margin: 0 0 9pt;
+  font-size: 11pt;
+  line-height: 1.15;
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+.letter-preview > .letter-closing {
+  margin-top: 2pt;
+  margin-bottom: 0;
+}
+
+.letter-preview .letter-signature {
+  margin: 12pt 0 0;
+  font-size: 11pt;
+  line-height: 1.15;
+}
+
+.letter-dense .letter-preview .letter-header {
+  min-height: 0;
+}
+
+.letter-dense .letter-preview address {
+  min-height: 18mm;
+  margin-top: 17mm;
+}
+
+.letter-dense .letter-preview .paper-date {
+  margin-bottom: 15mm;
+}
+
+.letter-dense .letter-preview .letter-body {
+  margin-bottom: 7pt;
+  font-size: 11pt;
+  line-height: 1.15;
 }
 
 .document-paper.document-lebenslauf {

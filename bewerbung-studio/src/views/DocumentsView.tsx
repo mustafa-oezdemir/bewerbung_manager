@@ -5,6 +5,7 @@ import {
   FileText,
   FolderOpen,
   ImagePlus,
+  Mail,
   Palette,
   PenLine,
   Save,
@@ -39,9 +40,18 @@ import { ZweispaltigResume } from "../components/resume/templates/zweispaltig";
 import { analyzeKeywordMatch } from "../lib/keywordMatch";
 import {
   applicationGreeting,
-  applicationPostalContactLines,
+  applicationRecipientLines,
 } from "../shared/applicationContacts";
-import { formatApplicationDateLong } from "../shared/applicationDate";
+import {
+  formatApplicationDate,
+  formatApplicationDateLong,
+} from "../shared/applicationDate";
+import { getApplicationEmail } from "../shared/applicationEmail";
+import {
+  createCoverSubject,
+  getCoverLetterAttachments,
+  getCoverLetterMainBody,
+} from "../shared/coverLetter";
 import {
   createResumePagePlan,
   einspaltigPaginationOptions,
@@ -93,7 +103,7 @@ import {
   useAppStore,
 } from "../store/useAppStore";
 
-type Tab = "deckblatt" | "anschreiben" | "lebenslauf";
+type Tab = "deckblatt" | "anschreiben" | "email" | "lebenslauf";
 
 type ResumePreviewPageProps = {
   application: Application;
@@ -514,8 +524,12 @@ export function DocumentsView({
   const photoSource = getProfileMediaSource(profile?.photoPath);
   const signatureSource = getProfileMediaSource(profile?.signaturePath);
   const deckblattContacts = getDeckblattContacts(profile);
-  const deckblattCompetencies = getDeckblattCompetencies(profile);
+  const deckblattCompetencies = getDeckblattCompetencies(profile, application);
   const deckblattDocuments = getDeckblattDocuments(attachments, application.id);
+  const coverLetterAttachments = getCoverLetterAttachments(
+    attachments,
+    application.id,
+  );
   const template = getTemplate(design.templateId);
   const renderProfile =
     resumeSectionPreview?.templateId === template.id &&
@@ -526,6 +540,10 @@ export function DocumentsView({
     documentPreview?.applicationId === application.id
       ? documentPreview.documents
       : application.documents;
+  const email = getApplicationEmail(
+    { ...application, documents: docs },
+    profile,
+  );
   const sections = renderProfile?.resumeSections ?? {
     profile: true,
     strengths: true,
@@ -547,9 +565,9 @@ export function DocumentsView({
         renderProfile.phone,
       ]
         .filter(Boolean)
-        .join(" · ")
-    : "Adresse · E-Mail · Telefon";
-  const recipientContactLines = applicationPostalContactLines(application);
+        .join(" | ")
+    : "Adresse | E-Mail | Telefon";
+  const recipientLines = applicationRecipientLines(application);
   const paginatedProfile = renderProfile
     ? {
         ...renderProfile,
@@ -694,14 +712,12 @@ export function DocumentsView({
           "coverIntroduction",
           docs.coverIntroduction,
         ),
-        coverMotivation: value(
-          "coverMotivation",
-          docs.coverMotivation,
+        coverMainBody: value(
+          "coverMainBody",
+          getCoverLetterMainBody(docs),
         ),
-        coverQualification: value(
-          "coverQualification",
-          docs.coverQualification,
-        ),
+        coverMotivation: data?.has("coverMainBody") ? "" : docs.coverMotivation,
+        coverQualification: data?.has("coverMainBody") ? "" : docs.coverQualification,
         coverCompanyFit: value(
           "coverCompanyFit",
           docs.coverCompanyFit,
@@ -715,6 +731,12 @@ export function DocumentsView({
         deckblattStatement: value(
           "deckblattStatement",
           docs.deckblattStatement,
+        ),
+        emailSubject: value("emailSubject", docs.emailSubject),
+        emailMessage: value("emailMessage", docs.emailMessage),
+        emailAttachmentNote: value(
+          "emailAttachmentNote",
+          docs.emailAttachmentNote,
         ),
       },
     };
@@ -791,17 +813,19 @@ export function DocumentsView({
             onClick={() => void openFolder(application.id)}>
             <FolderOpen size={17} /> Ordner
           </button>
-          <button
-            className="button secondary"
-            onClick={() => void exportCurrentPdf(tab)}>
-            <FileDown size={17} />{" "}
-            {tab === "deckblatt"
-              ? "Deckblatt"
-              : tab === "anschreiben"
-                ? "Anschreiben"
-                : "Lebenslauf"}{" "}
-            PDF
-          </button>
+          {tab !== "email" ? (
+            <button
+              className="button secondary"
+              onClick={() => void exportCurrentPdf(tab)}>
+              <FileDown size={17} />{" "}
+              {tab === "deckblatt"
+                ? "Deckblatt"
+                : tab === "anschreiben"
+                  ? "Anschreiben"
+                  : "Lebenslauf"}{" "}
+              PDF
+            </button>
+          ) : null}
           <button
             className="button primary"
             onClick={() => void exportCurrentPdf("mappe")}>
@@ -821,6 +845,11 @@ export function DocumentsView({
               className={tab === "anschreiben" ? "active" : ""}
               onClick={() => setTab("anschreiben")}>
               Anschreiben
+            </button>
+            <button
+              className={tab === "email" ? "active" : ""}
+              onClick={() => setTab("email")}>
+              E-Mail
             </button>
             <button
               className={tab === "lebenslauf" ? "active" : ""}
@@ -865,71 +894,82 @@ export function DocumentsView({
               </label>
             )}
             {tab === "anschreiben" && (
-              <>
-                <label className="field">
-                  <span>Betreff</span>
-                  <input name="coverSubject" defaultValue={docs.coverSubject} />
-                </label>
-                <label className="field">
-                  <span>Einleitung</span>
-                  <textarea
-                    name="coverIntroduction"
-                    rows={4}
-                    defaultValue={docs.coverIntroduction}
-                  />
-                </label>
-                <label className="field">
-                  <span>Motivation</span>
-                  <textarea
-                    name="coverMotivation"
-                    rows={5}
-                    defaultValue={docs.coverMotivation}
-                  />
-                </label>
-                <label className="field">
-                  <span>Fachliche Eignung</span>
-                  <textarea
-                    name="coverQualification"
-                    rows={5}
-                    defaultValue={docs.coverQualification}
-                  />
-                </label>
-                <label className="field">
-                  <span>Unternehmensbezug</span>
-                  <textarea
-                    name="coverCompanyFit"
-                    rows={5}
-                    defaultValue={docs.coverCompanyFit}
-                  />
-                </label>
-                <label className="field">
-                  <span>Zusätzlicher Absatz (optional)</span>
-                  <textarea
-                    name="coverExtraParagraph"
-                    rows={4}
-                    defaultValue={docs.coverExtraParagraph}
-                    placeholder="Optionaler zusätzlicher Absatz – leer lassen, wenn er nicht benötigt wird."
-                  />
-                </label>
-                <label className="field">
-                  <span>Schluss</span>
-                  <textarea
-                    name="coverClosing"
-                    rows={5}
-                    defaultValue={docs.coverClosing}
-                  />
-                </label>
-                <div className="document-media-inline">
-                  <span>Unterschrift</span>
-                  <DocumentMediaCard
-                    kind="signature"
-                    label="Unterschrift"
-                    source={signatureSource}
-                    disabled={!profile}
-                    onPick={() => void pickProfileMedia("signature")}
-                    onRemove={() => void removeProfileMedia("signature")}
-                  />
-                </div>
+              <div className="cover-letter-editor-sections">
+                <section className="cover-letter-editor-section is-generated">
+                  <header><b>1. Briefkopf</b><small>Automatisch aus Profil und Unternehmensdaten</small></header>
+                  <p>{name} · {profile?.title || application.job.title}</p>
+                  <p>{recipientLines.join(" · ")}</p>
+                </section>
+                <section className="cover-letter-editor-section">
+                  <header><b>2. Betreffzeile</b><small>Stelle und Referenz eindeutig benennen</small></header>
+                  <label className="field">
+                    <span>Betreffzeile</span>
+                    <input
+                      name="coverSubject"
+                      defaultValue={createCoverSubject(application.job.title, docs.coverSubject)}
+                    />
+                  </label>
+                </section>
+                <section className="cover-letter-editor-section is-generated">
+                  <header><b>3. Anrede</b><small>Automatisch aus der Ansprechperson</small></header>
+                  <p>{applicationGreeting(application)}</p>
+                </section>
+                <section className="cover-letter-editor-section">
+                  <header><b>4. Einleitung</b><small>2–3 prägnante Sätze mit direktem Stellenbezug</small></header>
+                  <label className="field">
+                    <span>Einleitung</span>
+                    <textarea name="coverIntroduction" rows={4} defaultValue={docs.coverIntroduction} />
+                  </label>
+                </section>
+                <section className="cover-letter-editor-section">
+                  <header><b>5. Hauptteil</b><small>Die 2–3 stärksten belegbaren Argumente</small></header>
+                  <label className="field">
+                    <span>Hauptteil</span>
+                    <textarea name="coverMainBody" rows={8} defaultValue={getCoverLetterMainBody(docs)} />
+                  </label>
+                  <label className="field">
+                    <span>Zusatzabsatz (optional)</span>
+                    <textarea
+                      name="coverExtraParagraph"
+                      rows={4}
+                      defaultValue={docs.coverExtraParagraph}
+                      placeholder="Optionaler zusätzlicher Absatz – leer lassen, wenn er nicht benötigt wird."
+                    />
+                  </label>
+                </section>
+                <section className="cover-letter-editor-section">
+                  <header><b>6. Unternehmensbezug</b><small>Aufgabe, passende Erfahrung und künftiger Beitrag</small></header>
+                  <label className="field">
+                    <span>Unternehmensbezug</span>
+                    <textarea name="coverCompanyFit" rows={5} defaultValue={docs.coverCompanyFit} />
+                  </label>
+                </section>
+                <section className="cover-letter-editor-section">
+                  <header><b>7. Schlussteil</b><small>Kurzer Übergang zum persönlichen Gespräch</small></header>
+                  <label className="field">
+                    <span>Schlussteil</span>
+                    <textarea name="coverClosing" rows={5} defaultValue={docs.coverClosing} />
+                  </label>
+                </section>
+                <section className="cover-letter-editor-section is-generated">
+                  <header><b>8. Grußformel</b><small>Professioneller Abschluss und Unterschrift</small></header>
+                  <p>Mit freundlichen Grüßen</p>
+                  <div className="document-media-inline">
+                    <span>Unterschrift</span>
+                    <DocumentMediaCard
+                      kind="signature"
+                      label="Unterschrift"
+                      source={signatureSource}
+                      disabled={!profile}
+                      onPick={() => void pickProfileMedia("signature")}
+                      onRemove={() => void removeProfileMedia("signature")}
+                    />
+                  </div>
+                </section>
+                <section className="cover-letter-editor-section is-generated">
+                  <header><b>9. Anlagen</b><small>Automatisch aus den Bewerbungsunterlagen</small></header>
+                  <ul>{coverLetterAttachments.map((item) => <li key={item}>{item}</li>)}</ul>
+                </section>
                 <section
                   className={`page-limit-status ${letterStatus.isOverRecommendedLength ? "warning" : "ok"}`}>
                   <strong>Anschreiben: 1 A4-Seite</strong>
@@ -948,6 +988,42 @@ export function DocumentsView({
                   Beim Speichern wird die Word-Datei aus der persönlichen
                   Anschreiben-Vorlage im Bewerbungsordner erstellt oder
                   aktualisiert.
+                </p>
+              </div>
+            )}
+            {tab === "email" && (
+              <>
+                <section className="page-limit-status ok">
+                  <strong>Empfänger</strong>
+                  <span>{email.recipientName || "Kein Ansprechpartner angegeben"}</span>
+                  <small>
+                    {email.recipientEmail ||
+                      "Keine E-Mail-Adresse angegeben. Bitte unter Ansprechpartner ergänzen."}
+                  </small>
+                </section>
+                <label className="field">
+                  <span>Betreff</span>
+                  <input name="emailSubject" defaultValue={email.subject} />
+                </label>
+                <label className="field">
+                  <span>Kurze Bewerbungsnachricht</span>
+                  <textarea
+                    name="emailMessage"
+                    rows={10}
+                    defaultValue={email.message}
+                  />
+                </label>
+                <label className="field">
+                  <span>Hinweis auf Anlagen</span>
+                  <textarea
+                    name="emailAttachmentNote"
+                    rows={4}
+                    defaultValue={email.attachmentNote}
+                  />
+                </label>
+                <p className="word-sync-note">
+                  Beim Speichern werden Email/Email.md und email.json im
+                  Bewerbungsordner aktualisiert.
                 </p>
               </>
             )}
@@ -1462,7 +1538,7 @@ export function DocumentsView({
                 <p className="paper-kicker">Bewerbung</p>
                 <section className="deckblatt-preview__hero">
                   <div>
-                    <h1>{application.job.title}</h1>
+                    <h1>Bewerbung als {application.job.title}</h1>
                     <p className="paper-muted">
                       bei {application.company.name}
                     </p>
@@ -1471,6 +1547,9 @@ export function DocumentsView({
                         Standort: {application.company.city}
                       </p>
                     ) : null}
+                    <p className="deckblatt-preview__location">
+                      {formatApplicationDate(application)}
+                    </p>
                   </div>
                   {photoSource ? (
                     <img
@@ -1507,23 +1586,23 @@ export function DocumentsView({
                         </p>
                       </>
                     ) : null}
-                    <h3>Kontakt</h3>
-                    <ul>
-                      {deckblattContacts.length ? (
-                        deckblattContacts.map((contact) => (
-                          <li key={contact.label}>
-                            <strong>{contact.label}</strong>{" "}
-                            {contact.href ? (
-                              <a href={contact.href}>{contact.value}</a>
-                            ) : (
-                              contact.value
-                            )}
-                          </li>
-                        ))
-                      ) : (
-                        <li>Kontaktdaten im Profil ergänzen.</li>
-                      )}
-                    </ul>
+                    {deckblattContacts.length ? (
+                      <>
+                        <h3>Kontakt</h3>
+                        <ul>
+                          {deckblattContacts.map((contact) => (
+                            <li key={contact.label}>
+                              <strong>{contact.label}</strong>{" "}
+                              {contact.href ? (
+                                <a href={contact.href}>{contact.value}</a>
+                              ) : (
+                                contact.value
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    ) : null}
                   </div>
                 </section>
               </div>
@@ -1540,55 +1619,51 @@ export function DocumentsView({
                 atsMode={isAtsMode}
               />
               <div className="letter-preview">
-                <p className="sender-line">
-                  <span className="sender-name">{name}</span>
-                  <span className="sender-title">
-                    {profile?.title || application.job.title}
-                  </span>
-                  <span className="sender-contact">
-                    {senderContactDetails}
-                  </span>
-                </p>
-                <i className="paper-rule" />
+                <div className="letter-header">
+                  <p className="sender-line">
+                    <span className="sender-name">{name}</span>
+                    <span className="sender-title">
+                      {profile?.title || application.job.title}
+                    </span>
+                    <span className="sender-contact">
+                      {senderContactDetails}
+                    </span>
+                  </p>
+                </div>
                 <address>
-                  {application.company.name}
-                  <br />
-                  {recipientContactLines.map((contactLine, index) => (
-                    <span key={`${index}-${contactLine}`}>
-                      {contactLine}
-                      <br />
+                  {recipientLines.map((line, index) => (
+                    <span key={`${index}-${line}`}>
+                      {line}
+                      {index < recipientLines.length - 1 ? <br /> : null}
                     </span>
                   ))}
-                  {application.company.street}
-                  <br />
-                  {application.company.postalCode} {application.company.city}
                 </address>
                 <p className="paper-date">
-                  {profile?.city ? `${profile.city}, den ` : ""}
-                  {formatApplicationDateLong(application)}
+                  {profile?.city ? `${profile.city}, ` : ""}
+                  den {formatApplicationDateLong(application)}
                 </p>
                 <h3>
-                  {docs.coverSubject ||
-                    `Bewerbung als ${application.job.title}`}
+                  {createCoverSubject(application.job.title, docs.coverSubject)}
+                  {application.job.reference &&
+                  !(docs.coverSubject || "").includes(application.job.reference)
+                    ? ` - Referenz ${application.job.reference}`
+                    : ""}
                 </h3>
-                <p>
+                <p className="letter-salutation">
                   {applicationGreeting(application)}
                 </p>
                 <p className="letter-body">{docs.coverIntroduction}</p>
                 <p className="letter-body">
-                  {docs.coverMotivation || "Motivation ergänzen …"}
-                </p>
-                <p className="letter-body">
-                  {docs.coverQualification ||
+                  {getCoverLetterMainBody(docs) ||
                     profile?.summary ||
-                    "Fachliche Eignung ergänzen …"}
-                </p>
-                <p className="letter-body">
-                  {docs.coverCompanyFit || "Unternehmensbezug ergänzen …"}
+                    "Hauptteil ergänzen …"}
                 </p>
                 {docs.coverExtraParagraph ? (
                   <p className="letter-body">{docs.coverExtraParagraph}</p>
                 ) : null}
+                <p className="letter-body">
+                  {docs.coverCompanyFit || "Unternehmensbezug ergänzen …"}
+                </p>
                 <p className="letter-body letter-closing">{docs.coverClosing}</p>
                 <p className="letter-signature">
                   <span>Mit freundlichen Grüßen</span>
@@ -1601,6 +1676,40 @@ export function DocumentsView({
                   ) : null}
                   <span className="signature-name">{name}</span>
                 </p>
+                <div className="letter-attachments">
+                  <strong>Anlagen</strong>
+                  {coverLetterAttachments.map((item) => (
+                    <span key={item}>{item}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          {tab === "email" && (
+            <div className="document-paper document-email" style={paperStyle}>
+              <div className="email-preview">
+                <header>
+                  <Mail size={30} />
+                  <div>
+                    <p className="eyebrow">Bewerbungs-E-Mail</p>
+                    <h2>{email.subject}</h2>
+                  </div>
+                </header>
+                <dl>
+                  <div><dt>Datum</dt><dd>{email.applicationDate}</dd></div>
+                  <div><dt>Firma</dt><dd>{email.companyName}</dd></div>
+                  <div><dt>Stelle</dt><dd>{email.jobTitle}</dd></div>
+                  <div><dt>Empfänger</dt><dd>{email.recipientName || "Nicht angegeben"}</dd></div>
+                  <div><dt>E-Mail</dt><dd>{email.recipientEmail || "Nicht angegeben"}</dd></div>
+                </dl>
+                <section>
+                  <h3>Nachricht</h3>
+                  <p>{email.message}</p>
+                </section>
+                <section>
+                  <h3>Anlagen</h3>
+                  <p>{email.attachmentNote}</p>
+                </section>
               </div>
             </div>
           )}

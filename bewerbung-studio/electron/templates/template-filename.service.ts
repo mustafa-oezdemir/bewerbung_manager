@@ -18,6 +18,14 @@ export const sanitizeTemplateFileName = (value: string) =>
     .replace(/[. ]+$/g, "")
     .slice(0, 100) || "Vorlage";
 
+export const sanitizeSynchronizedDocumentFileName = (value: string) =>
+  value
+    .normalize("NFC")
+    .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-")
+    .replace(/\s+/g, "_")
+    .replace(/[. ]+$/g, "")
+    .slice(0, 100) || "Dokument";
+
 export const templateTimestamp = (date = new Date()) => {
   const pad = (value: number) => String(value).padStart(2, "0");
   return [

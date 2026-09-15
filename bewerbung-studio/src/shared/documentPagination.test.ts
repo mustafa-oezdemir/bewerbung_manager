@@ -338,6 +338,7 @@ describe("A4 document pagination", () => {
     const status = getLetterPageStatus({
       coverSubject: "Bewerbung",
       coverIntroduction: "A".repeat(900),
+      coverMainBody: "",
       coverMotivation: "B".repeat(900),
       coverQualification: "C".repeat(900),
       coverCompanyFit: "D".repeat(900),
@@ -345,6 +346,9 @@ describe("A4 document pagination", () => {
       coverClosing: "E".repeat(900),
       resumeProfile: "",
       deckblattStatement: "",
+      emailSubject: "",
+      emailMessage: "",
+      emailAttachmentNote: "",
     });
 
     expect(status.density).toBe("dense");

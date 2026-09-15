@@ -32,6 +32,7 @@ const applicationInput = (company: string): ApplicationInput => ({
   },
   job: {
     title: "Softwareentwickler",
+    reference: "",
     source: "",
     url: "",
     fullText: "",

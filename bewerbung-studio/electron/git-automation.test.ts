@@ -36,7 +36,7 @@ describe("GitAutomationService", () => {
   it("only infers commits from company-specific application folders", () => {
     expect(
       inferApplicationGitChange(
-        "Anschreiben/planen-bauen4.0_GmbH_2026-08-31/Full-Stack/Anschreiben.docx",
+        "Anschreiben/planen-bauen4.0_GmbH_31.08.2026/Full-Stack/planen-bauen4.0_GmbH_31.08.2026_Anschreiben.docx",
       ),
     ).toEqual({
       companyName: "planen-bauen4.0 GmbH",

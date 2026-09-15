@@ -1,4 +1,4 @@
-import type { ApplicantProfile, Attachment } from "./schema";
+import type { ApplicantProfile, Application, Attachment } from "./schema";
 
 export type DeckblattContact = {
   label: string;
@@ -51,19 +51,58 @@ export const getDeckblattContacts = (
 
 export const getDeckblattCompetencies = (
   profile: ApplicantProfile | undefined,
-) =>
-  Array.from(
-    new Set(
-      (profile?.skills ?? [])
-        .map((skill) => skill.split(/\s+(?:-|–|—|:)\s+/)[0].trim())
-        .filter(Boolean),
-    ),
-  ).slice(0, 6);
+  application?: Pick<Application, "job">,
+) => {
+  const values = [
+    ...(profile?.strengths ?? []).map((strength) => strength.title),
+    ...(profile?.skills ?? []),
+  ]
+    .map((skill) => skill.split(/\s+(?:-|–|—|:)\s+/)[0].trim())
+    .filter(Boolean);
+  const unique = Array.from(
+    new Map(values.map((value) => [value.toLocaleLowerCase("de-DE"), value])).values(),
+  );
+  const jobText = `${application?.job.title ?? ""} ${application?.job.fullText ?? ""}`
+    .toLocaleLowerCase("de-DE");
+  const ranked = unique
+    .map((value, index) => ({
+      value,
+      index,
+      matchesJob: jobText.includes(value.toLocaleLowerCase("de-DE")),
+    }))
+    .sort(
+      (left, right) =>
+        Number(right.matchesJob) - Number(left.matchesJob) ||
+        left.index - right.index,
+    )
+    .slice(0, 5)
+    .map(({ value }) => value);
+
+  return ranked.length >= 3 ? ranked : [];
+};
+
+export const validateDeckblattData = (
+  application: Pick<Application, "company" | "job">,
+  profile: ApplicantProfile | undefined,
+) => {
+  const missing: string[] = [];
+  if (!`${profile?.firstName ?? ""} ${profile?.lastName ?? ""}`.trim()) {
+    missing.push("Name der Bewerberin oder des Bewerbers");
+  }
+  if (!application.company.name.trim()) missing.push("Unternehmen");
+  if (!application.job.title.trim()) missing.push("Stellenbezeichnung");
+  if (missing.length) {
+    throw new Error(
+      `Deckblatt kann nicht erstellt werden. Bitte ergänzen Sie: ${missing.join(", ")}.`,
+    );
+  }
+};
 
 export const getDeckblattDocuments = (
   attachments: readonly Attachment[],
   applicationId: string,
 ) => [
+  "Anschreiben",
   "Lebenslauf",
   ...attachments
     .filter(

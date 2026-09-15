@@ -36,27 +36,40 @@ Umgebungsvariable `BEWERBUNG_ROOT_PATH` geändert werden.
 D:\bewerbung_mustafa
 ├── data
 │   ├── Bewerbungen
+│   │   └── Firma_TT.MM.JJJJ
+│   │       └── Position
+│   │           ├── Email
+│   │           └── Stellenanzeige
 │   ├── Backups
 │   ├── Muster
 │   └── Settings
 ├── Anschreiben
-│   └── Firma_YYYY-MM-DD
+│   └── Firma_TT.MM.JJJJ
+│       └── Position
 ├── Lebenslauf
-│   └── Firma_YYYY-MM-DD
+│   └── Firma_TT.MM.JJJJ
+│       └── Position
 ├── Zeugnisse
 ├── Zertifikate
 └── Absagen
-    └── Firma_YYYY-MM-DD
+    └── Firma_TT.MM.JJJJ
 ```
 
 `Settings/workspace.json` ist der zentrale, versionierte Datensatz. Aktive
 Bewerbungen, Gespräche und Absagen sind gefilterte Ansichten dieses Datensatzes
 und keine separaten Kopien.
 
+Das Feld `sentAt` ist die zentrale Quelle des Bewerbungsdatums; bei Entwürfen
+wird bis zur Auswahl eines Datums `createdAt` verwendet. Ordner, Anschreiben,
+Word-Inhalt, E-Mail-Dateien und neue Exportnamen werden daraus im Format
+`TT.MM.JJJJ` abgeleitet. Eine Datumsänderung verschiebt die vorhandenen
+Anwendungsordner kollisionssicher und synchronisiert das Anschreiben unter
+`Firma_TT.MM.JJJJ_Anschreiben.docx`.
+
 Zeugnisse und Zertifikate bleiben in ihren zentralen Archivordnern. Eine
 Bewerbung speichert nur die relative Verknüpfung; die Datei wird nicht pro
 Bewerbung kopiert. Bei einer Absage werden firmenspezifische Anschreiben und
-Lebensläufe unter `Absagen/Firma_YYYY-MM-DD` verschoben, der Datensatz bleibt
+Lebensläufe unter `Absagen/Firma_TT.MM.JJJJ` verschoben, der Datensatz bleibt
 erhalten.
 
 Bestehende Daten können in den Einstellungen über **Bisherigen data-Ordner
@@ -105,8 +118,10 @@ werden.
 - sichere PDF-Ablage für Zeugnisse und Zertifikate
 - editierbare Dokumentmetadaten, Kategorien und Bewerbungsmappe-Reihenfolge
 - Vorschau, Ein-/Ausschluss und sicheres Löschen verwalteter PDF-Kopien
-- echte PDF-Zusammenführung in der Reihenfolge Deckblatt, Anschreiben,
+- echte PDF-Zusammenführung in der Reihenfolge Anschreiben, Deckblatt,
   Lebenslauf, Zeugnisse und Zertifikate
+- automatisch erzeugtes und bei Bewerbungs-, Profil- oder Anlagenänderungen
+  aktualisiertes, einseitiges Deckblatt als editierbare DOCX
 - Profile, Theme-Einstellungen und JSON-Sicherung
 - tägliche automatische JSON-Sicherungen mit einstellbarer Aufbewahrung
 - validierte Wiederherstellung kompletter Sicherungen mit Notfallsicherung

@@ -4913,6 +4913,7 @@ var contactPersonSchema = object({
 });
 var jobAdvertisementSchema = object({
 	title: string().trim().min(1, "Position ist erforderlich."),
+	reference: optionalText,
 	source: optionalText,
 	url: union([url(), literal("")]).default(""),
 	fullText: optionalText,
@@ -4929,13 +4930,17 @@ var statusHistorySchema = object({
 var documentDraftSchema = object({
 	coverSubject: optionalText,
 	coverIntroduction: optionalText,
+	coverMainBody: optionalText,
 	coverMotivation: optionalText,
 	coverQualification: optionalText,
 	coverCompanyFit: optionalText,
 	coverExtraParagraph: optionalText,
 	coverClosing: optionalText,
 	resumeProfile: optionalText,
-	deckblattStatement: optionalText
+	deckblattStatement: optionalText,
+	emailSubject: optionalText,
+	emailMessage: optionalText,
+	emailAttachmentNote: optionalText
 });
 var designLevelSchema = union([
 	literal(1),
@@ -5031,6 +5036,7 @@ var applicationDraftSchema = object({
 	additionalContacts: array(contactPersonSchema).max(1).optional(),
 	job: object({
 		title: string().optional(),
+		reference: string().optional(),
 		source: string().optional(),
 		url: string().optional(),
 		fullText: string().optional(),
@@ -5214,540 +5220,6 @@ var defaultSettings = {
 	sidebarCollapsed: false,
 	language: "de"
 };
-//#endregion
-//#region src/features/templates/template.constants.ts
-var allowedTemplateExtensions = /* @__PURE__ */ new Set([
-	".docx",
-	".dotx",
-	".doc"
-]);
-var templateSourceLabels = {
-	"muster-folder": "Musterordner",
-	"existing-document": "Eigenes Dokument",
-	"uploaded-word-template": "Eigene Word-Vorlage",
-	"system-word-template": "System Word-Vorlage"
-};
-var defaultTemplateSortOrder = 1e3;
-var wordMusterTemplateConfig = {
-	id: "word-muster-anschreiben",
-	fileName: "Anschreiben_Muster.docx",
-	name: "Anschreiben Mustafa Özdemir",
-	documentType: "anschreiben",
-	format: "docx",
-	source: "uploaded-word-template",
-	sortOrder: 2,
-	isSystemTemplate: false,
-	supportsPreview: true,
-	supportsPlaceholders: true,
-	editableInWord: true,
-	isProtected: true,
-	description: "Persönliche Word-Vorlage nach dem Anschreiben von Mustafa Özdemir. Beim Verwenden wird eine neue, ausgefüllte Kopie im Firmen-Datumsordner erstellt.",
-	tags: [
-		"Word",
-		"DOCX",
-		"Anschreiben"
-	]
-};
-var elegantLebenslaufTemplateConfig = {
-	id: "word-lebenslauf-elegant",
-	fileName: "Elegant_Lebenslauf_Muster.docx",
-	atsFileName: "Elegant_Lebenslauf_ATS.docx",
-	previewFileName: "Elegant_Lebenslauf_Muster.preview.png",
-	name: "Elegant",
-	documentType: "lebenslauf",
-	format: "docx",
-	source: "system-word-template",
-	sortOrder: 6,
-	category: "elegant",
-	layout: "two-column-right-sidebar",
-	atsFriendly: true,
-	supportsPhoto: true,
-	supportsPlaceholders: true,
-	supportsPreview: true,
-	supportsAtsMode: true,
-	editableInWord: true,
-	isSystemTemplate: true,
-	isProtected: true,
-	description: "Zweispaltige Word-Lebenslaufvorlage mit breiter Hauptspalte für Berufserfahrung und eleganter dunkelblauer Seitenleiste für persönliche Highlights.",
-	tags: [
-		"Elegant",
-		"Word",
-		"DOCX",
-		"Lebenslauf",
-		"ATS",
-		"Foto",
-		"Dunkelblau"
-	],
-	cardHighlights: ["Breite Hauptspalte für Berufserfahrung", "Dunkelblaue Seitenleiste für persönliche Highlights"]
-};
-var zeitgenoessischLebenslaufTemplateConfig = {
-	id: "word-lebenslauf-zeitgenoessisch",
-	fileName: "Zeitgenoessisch_Lebenslauf_Muster.docx",
-	atsFileName: "Zeitgenoessisch_Lebenslauf_ATS.docx",
-	previewFileName: "Zeitgenoessisch_Lebenslauf_Muster.preview.png",
-	name: "Zeitgenössisch",
-	documentType: "lebenslauf",
-	format: "docx",
-	source: "system-word-template",
-	sortOrder: 3,
-	category: "contemporary",
-	layout: "two-column-left-sidebar",
-	atsFriendly: true,
-	supportsPhoto: true,
-	supportsPlaceholders: true,
-	supportsPreview: true,
-	supportsAtsMode: true,
-	editableInWord: true,
-	isSystemTemplate: true,
-	isProtected: true,
-	description: "Grüne moderne Word-Lebenslaufvorlage. Saubere zweispaltige Struktur mit Foto, Stärken, Zusammenfassung und Erfahrung.",
-	tags: [
-		"Zeitgenössisch",
-		"Word",
-		"DOCX",
-		"Lebenslauf",
-		"ATS",
-		"Foto",
-		"Grün"
-	],
-	cardHighlights: ["Grüne moderne Word-Lebenslaufvorlage", "Foto, Stärken, Zusammenfassung und Erfahrung"]
-};
-var gepflegtLebenslaufTemplateConfig = {
-	id: "word-lebenslauf-gepflegt",
-	fileName: "Gepflegt_Lebenslauf_Muster.docx",
-	atsFileName: "Gepflegt_Lebenslauf_ATS.docx",
-	previewFileName: "Gepflegt_Lebenslauf_Muster.preview.png",
-	name: "Gepflegt",
-	documentType: "lebenslauf",
-	format: "docx",
-	source: "system-word-template",
-	sortOrder: 7,
-	category: "business",
-	layout: "two-column-left-sidebar",
-	atsFriendly: true,
-	supportsPhoto: true,
-	supportsPlaceholders: true,
-	supportsPreview: true,
-	supportsAtsMode: true,
-	editableInWord: true,
-	isSystemTemplate: true,
-	isProtected: true,
-	description: "Raffinierte Business-Lebenslaufvorlage mit linker Farbfläche und klarer Informationshierarchie.",
-	tags: [
-		"Gepflegt",
-		"Word",
-		"DOCX",
-		"Lebenslauf",
-		"ATS",
-		"Business",
-		"Kundenorientiert"
-	],
-	cardHighlights: ["Linke Farbfläche für Profil und Kernkompetenzen", "Klare Business-Hierarchie für kundenorientierte Rollen"]
-};
-var modernLebenslaufTemplateConfig = {
-	id: "word-lebenslauf-modern",
-	fileName: "Modern_Lebenslauf_Muster.docx",
-	atsFileName: "Modern_Lebenslauf_ATS.docx",
-	previewFileName: "Modern_Lebenslauf_Muster.preview.png",
-	name: "Modern",
-	documentType: "lebenslauf",
-	format: "docx",
-	source: "system-word-template",
-	sortOrder: 8,
-	category: "creative-professional",
-	layout: "two-column-equal",
-	atsFriendly: true,
-	supportsPhoto: true,
-	supportsPlaceholders: true,
-	supportsPreview: true,
-	supportsAtsMode: true,
-	editableInWord: true,
-	isSystemTemplate: true,
-	isProtected: true,
-	description: "Perfekte Lebenslauf-Vorlage mit kreativen Elementen, die Berufserfahrung und Qualifikationen übersichtlich zur Geltung bringt.",
-	tags: [
-		"Modern",
-		"Word",
-		"DOCX",
-		"Lebenslauf",
-		"ATS",
-		"Türkis",
-		"Kreativ",
-		"Professionell"
-	],
-	cardHighlights: ["Türkise Wellenmuster für professionelle Ausstrahlung", "Zwei Spalten mit separaten Kontakt- und Erfahrungsbereichen"]
-};
-var kreativLebenslaufTemplateConfig = {
-	id: "word-lebenslauf-kreativ",
-	fileName: "Kreativ_Lebenslauf_Muster.docx",
-	atsFileName: "Kreativ_Lebenslauf_ATS.docx",
-	previewFileName: "Kreativ_Lebenslauf_Muster.preview.png",
-	name: "Kreativ",
-	documentType: "lebenslauf",
-	format: "docx",
-	source: "system-word-template",
-	sortOrder: 4,
-	category: "creative",
-	layout: "two-column-header-banner",
-	atsFriendly: true,
-	supportsPhoto: true,
-	supportsBackground: true,
-	supportsPlaceholders: true,
-	supportsPreview: true,
-	supportsAtsMode: true,
-	editableInWord: true,
-	isSystemTemplate: true,
-	isProtected: true,
-	emphasis: "compact-information",
-	description: "Kompakte, kreative Word-Lebenslaufvorlage. Ideal, um viele Informationen übersichtlich auf einer Seite unterzubringen.",
-	tags: [
-		"Kreativ",
-		"Word",
-		"DOCX",
-		"Lebenslauf",
-		"ATS",
-		"Foto",
-		"Zweispaltig",
-		"Kompakt"
-	],
-	colorVariants: {
-		gruen: "#39B774",
-		schwarz: "#111111",
-		dunkelblau: "#244766",
-		tuerkis: "#159F9B",
-		violett: "#7052B5",
-		orange: "#D97706"
-	},
-	cardHighlights: ["Viele Informationen übersichtlich auf einer Seite", "Zweispaltig · Mit Foto · DOCX"]
-};
-var ivyLeagueLebenslaufTemplateConfig = {
-	id: "word-lebenslauf-ivy-league",
-	fileName: "Ivy_League_Lebenslauf_Muster.docx",
-	atsFileName: "Ivy_League_Lebenslauf_ATS.docx",
-	previewFileName: "Ivy_League_Lebenslauf_Muster.preview.png",
-	name: "Ivy League",
-	documentType: "lebenslauf",
-	format: "docx",
-	source: "system-word-template",
-	sortOrder: 9,
-	category: "classic-professional",
-	layout: "single-column-watercolor",
-	atsFriendly: true,
-	supportsPhoto: false,
-	supportsBackground: true,
-	supportsPlaceholders: true,
-	supportsPreview: true,
-	supportsAtsMode: true,
-	editableInWord: true,
-	isSystemTemplate: true,
-	isProtected: true,
-	emphasis: "classic-single-column",
-	description: "Die klassische Harvard-Lebenslaufvorlage, aktualisiert für das 21. Jahrhundert mit einem raffinierten, ATS-freundlichen Design.",
-	tags: [
-		"Ivy League",
-		"Word",
-		"DOCX",
-		"Lebenslauf",
-		"ATS",
-		"Ohne Foto",
-		"Einspaltig",
-		"Klassisch"
-	],
-	cardHighlights: ["Klassische Serifentypografie mit ruhiger Einspaltenstruktur", "Pastell-Hintergrund · Ohne Foto · ATS-freundlich"]
-};
-var kompaktLebenslaufTemplateConfig = {
-	id: "word-lebenslauf-kompakt",
-	fileName: "Kompakt_Lebenslauf_Muster.docx",
-	atsFileName: "Kompakt_Lebenslauf_ATS.docx",
-	previewFileName: "Kompakt_Lebenslauf_Muster.preview.png",
-	name: "Kompakt",
-	documentType: "lebenslauf",
-	format: "docx",
-	source: "system-word-template",
-	sortOrder: 5,
-	category: "compact",
-	layout: "two-column-compact",
-	atsFriendly: true,
-	supportsPhoto: false,
-	supportsBackground: true,
-	supportsPlaceholders: true,
-	supportsPreview: true,
-	supportsAtsMode: true,
-	editableInWord: true,
-	isSystemTemplate: true,
-	isProtected: true,
-	emphasis: "single-page-high-density",
-	description: "Einseitige Word-Lebenslaufvorlage mit kleineren Seitenrändern und hoher Informationsdichte.",
-	tags: [
-		"Kompakt",
-		"Word",
-		"DOCX",
-		"Lebenslauf",
-		"ATS",
-		"Ohne Foto",
-		"Zweispaltig",
-		"Einseitig"
-	],
-	colorVariants: {
-		dunkelblau: "#0A3485",
-		schwarz: "#111111",
-		petrol: "#145B63",
-		violett: "#5B3F91",
-		dunkelgruen: "#185D47"
-	},
-	cardHighlights: ["Einseitig · Hohe Informationsdichte", "Zweispaltig · Ohne Foto · ATS-freundlich · DOCX"]
-};
-var stilvollLebenslaufTemplateConfig = {
-	id: "word-lebenslauf-stilvoll",
-	fileName: "Stilvoll_Lebenslauf_Muster.docx",
-	atsFileName: "Stilvoll_Lebenslauf_ATS.docx",
-	previewFileName: "Stilvoll_Lebenslauf_Muster.preview.png",
-	name: "Stilvoll",
-	documentType: "lebenslauf",
-	format: "docx",
-	source: "system-word-template",
-	sortOrder: 10,
-	category: "modern-professional",
-	layout: "two-column-right-wide",
-	atsFriendly: true,
-	supportsPhoto: true,
-	supportsBackground: true,
-	supportsPlaceholders: true,
-	supportsPreview: true,
-	supportsAtsMode: true,
-	editableInWord: true,
-	isSystemTemplate: true,
-	isProtected: true,
-	emphasis: "skills-and-career",
-	description: "Stilvolle Word-Lebenslaufvorlage mit kompakter linker Informationsspalte, breiter Karrierespalte und geometrischem Hintergrund.",
-	tags: [
-		"Stilvoll",
-		"Word",
-		"DOCX",
-		"Lebenslauf",
-		"ATS",
-		"Foto",
-		"Zweispaltig",
-		"Grün"
-	],
-	cardHighlights: ["Kompakte Profilspalte und breite Karrierespalte", "Geometrisches Muster · Mit Foto · ATS-freundlich"]
-};
-var einspaltigLebenslaufTemplateConfig = {
-	id: "word-lebenslauf-einspaltig",
-	fileName: "Einfach_Lebenslauf_Muster.docx",
-	atsFileName: "Einfach_Lebenslauf_ATS.docx",
-	previewFileName: "Einfach_Lebenslauf_Muster.preview.png",
-	name: "Einspaltig",
-	documentType: "lebenslauf",
-	format: "docx",
-	source: "system-word-template",
-	sortOrder: 11,
-	category: "single-column",
-	layout: "single-column",
-	atsFriendly: true,
-	supportsPhoto: true,
-	supportsBackground: true,
-	supportsPlaceholders: true,
-	supportsPreview: true,
-	supportsAtsMode: true,
-	editableInWord: true,
-	isSystemTemplate: true,
-	isProtected: true,
-	emphasis: "simple-ats-readable",
-	description: "Einfache Word-Lebenslaufvorlage mit klarer einspaltiger Struktur, blauer Hierarchie und separater ATS-Ausgabe.",
-	tags: [
-		"Einspaltig",
-		"Word",
-		"DOCX",
-		"Lebenslauf",
-		"ATS",
-		"Foto",
-		"Alle Branchen",
-		"Blau"
-	],
-	cardHighlights: ["Klare Einspaltenstruktur mit kräftigen Abschnittslinien", "Mit Foto · Geometrisches Dekor · ATS-freundlich"]
-};
-var klassischLebenslaufTemplateConfig = {
-	id: "word-lebenslauf-klassisch",
-	fileName: "Klassisch_Lebenslauf_Muster.docx",
-	atsFileName: "Klassisch_Lebenslauf_ATS.docx",
-	previewFileName: "Klassisch_Lebenslauf_Muster.preview.png",
-	name: "Klassisch",
-	documentType: "lebenslauf",
-	format: "docx",
-	source: "system-word-template",
-	sortOrder: 8,
-	category: "classic",
-	layout: "single-column-classic",
-	atsFriendly: true,
-	supportsPhoto: true,
-	supportsBackground: true,
-	supportsPlaceholders: true,
-	supportsPreview: true,
-	supportsAtsMode: true,
-	editableInWord: true,
-	isSystemTemplate: true,
-	isProtected: true,
-	emphasis: "traditional-professional",
-	description: "Traditionelle Word-Lebenslaufvorlage mit klarer Einspaltenstruktur, modernem hellblauem Wellendekor und separater ATS-Ausgabe.",
-	tags: [
-		"Klassisch",
-		"Word",
-		"DOCX",
-		"Lebenslauf",
-		"ATS",
-		"Foto",
-		"Einspaltig",
-		"Konservative Branchen"
-	],
-	cardHighlights: ["Traditionelles Layout mit modernem hellblauem Wellendekor", "Einspaltig · Mit Foto · ATS-freundlich · DOCX"]
-};
-var coreTemplatePlaceholderKeys = [
-	"BEWERBER_NAME",
-	"BEWERBER_VORNAME",
-	"BEWERBER_NACHNAME",
-	"BEWERBER_ADRESSE",
-	"BEWERBER_PLZ",
-	"BEWERBER_ORT",
-	"BEWERBER_TELEFON",
-	"BEWERBER_EMAIL",
-	"FIRMA_NAME",
-	"FIRMA_ADRESSE",
-	"FIRMA_PLZ",
-	"FIRMA_ORT",
-	"ANSPRECHPARTNER",
-	"STELLENBEZEICHNUNG",
-	"STELLENNUMMER",
-	"BEWERBUNGSDATUM",
-	"BETREFF",
-	"ANREDE",
-	"EINLEITUNG",
-	"MOTIVATION",
-	"FACHLICHE_EIGNUNG",
-	"UNTERNEHMENSBEZUG",
-	"ZUSATZABSATZ",
-	"HAUPTTEXT",
-	"SCHLUSSTEXT",
-	"GRUSSFORMEL",
-	"UNTERSCHRIFT",
-	"KENNTNISSE"
-];
-var templatePlaceholderAliases = {
-	FIRMA_ADI: "FIRMA_NAME",
-	FIRMA_ADRESI: "FIRMA_ADRESSE",
-	POSTA_KODU: "FIRMA_PLZ",
-	SEHIR: "FIRMA_ORT",
-	TARIH: "BEWERBUNGSDATUM",
-	STELLE: "STELLENBEZEICHNUNG",
-	REFERENZNUMMER: "STELLENNUMMER",
-	ANSCHREIBEN_METNI: "HAUPTTEXT",
-	EK_PARAGRAF: "ZUSATZABSATZ",
-	KAPANIS: "SCHLUSSTEXT"
-};
-var elegantStaticPlaceholderKeys = [
-	"VORNAME",
-	"NACHNAME",
-	"BERUFSBEZEICHNUNG",
-	"FACHGEBIET_1",
-	"FACHGEBIET_2",
-	"FACHGEBIETE",
-	"TELEFON",
-	"EMAIL",
-	"WEBSITE",
-	"LINKEDIN",
-	"ORT",
-	"GEBURTSDATUM",
-	"GEBURTSORT",
-	"GEBURTSZEILE",
-	"GITHUB",
-	"KONTAKTDATEN_TITEL",
-	"KONTAKT_ZEILE_1",
-	"KONTAKT_ZEILE_2",
-	"KONTAKT_ZEILE_3",
-	"KONTAKTE_TITEL",
-	"HEADER_KONTAKT_1",
-	"HEADER_KONTAKT_2",
-	"HEADER_KONTAKT_3",
-	"HEADER_KONTAKT_4",
-	"HEADER_KONTAKT_5",
-	"HEADER_KONTAKT_6",
-	"TELEFON_ZEILE",
-	"EMAIL_ZEILE",
-	"WEBSITE_ZEILE",
-	"LINKEDIN_ZEILE",
-	"ORT_ZEILE",
-	"PROFILFOTO",
-	"ZUSAMMENFASSUNG_TITEL",
-	"ZUSAMMENFASSUNG",
-	"STAERKEN_TITEL",
-	"STAERKEN_ATS",
-	"ERFOLGE_TITEL",
-	"ERFOLGE_ATS",
-	"ERFOLG_HIGHLIGHT_1_TITEL",
-	"ERFOLG_HIGHLIGHT_1_BESCHREIBUNG",
-	"ERFOLG_HIGHLIGHT_2_TITEL",
-	"ERFOLG_HIGHLIGHT_2_BESCHREIBUNG",
-	"KENNTNISSE_TITEL",
-	"SPRACHEN_TITEL",
-	"SPRACHEN_ATS",
-	"BERUFSERFAHRUNG_TITEL",
-	"ERFAHRUNG_TITEL",
-	"AUSBILDUNG_TITEL",
-	"PROJEKTE_TITEL",
-	"PROJEKTE",
-	"WEITERBILDUNGEN_TITEL",
-	"WEITERBILDUNGEN",
-	"ZERTIFIKATE_TITEL",
-	"ZERTIFIKATE",
-	"VEROEFFENTLICHUNGEN_TITEL",
-	"VEROEFFENTLICHUNGEN",
-	"EHRENAMT_TITEL",
-	"EHRENAMT",
-	"SOFTWARE_TITEL",
-	"SOFTWARE",
-	"ZUSATZANGABEN_TITEL",
-	"ZUSATZANGABEN",
-	"FUEHRERSCHEIN_TITEL",
-	"FUEHRERSCHEIN",
-	"INTERESSEN_TITEL",
-	"INTERESSEN",
-	"LEBENSLAUF_ORT",
-	"LEBENSLAUF_DATUM",
-	"LEBENSLAUF_UNTERSCHRIFT",
-	"ATS_MODUS"
-];
-var numberedPlaceholderKeys = (count, fields) => Array.from({ length: count }, (_, offset) => fields.map((field) => `${field}_${offset + 1}`)).flat();
-var elegantTemplatePlaceholderKeys = [
-	...elegantStaticPlaceholderKeys,
-	...numberedPlaceholderKeys(8, [
-		"POSITION",
-		"UNTERNEHMEN",
-		"STARTDATUM",
-		"DATUM_TRENNER",
-		"ENDDATUM",
-		"ARBEITSORT",
-		"BESCHREIBUNG",
-		"METADATA_TRENNER",
-		"TECHNOLOGIEN",
-		"ERFAHRUNG_TRENNER"
-	]),
-	...Array.from({ length: 8 }, (_, experienceOffset) => Array.from({ length: 5 }, (_, achievementOffset) => `ERFOLG_${experienceOffset + 1}_${achievementOffset + 1}`)).flat(),
-	...numberedPlaceholderKeys(3, [
-		"ABSCHLUSS",
-		"FACHRICHTUNG",
-		"HOCHSCHULE",
-		"AUSBILDUNG_START",
-		"AUSBILDUNG_DATUM_TRENNER",
-		"AUSBILDUNG_ENDE",
-		"AUSBILDUNG_ORT",
-		"AUSBILDUNG_METADATA_TRENNER"
-	]),
-	...numberedPlaceholderKeys(3, ["SPRACHE", "SPRACHNIVEAU"]),
-	...Array.from({ length: 3 }, (_, offset) => `SPRACHE_${offset + 1}_PUNKTE`),
-	...Array.from({ length: 4 }, (_, offset) => [`STAERKE_${offset + 1}_TITEL`, `STAERKE_${offset + 1}_BESCHREIBUNG`]).flat(),
-	...numberedPlaceholderKeys(6, ["KENNTNIS_KATEGORIE", "KENNTNIS_EINTRAEGE"])
-];
-var templatePlaceholderKeys = [...coreTemplatePlaceholderKeys, ...elegantTemplatePlaceholderKeys];
 var BEWERBUNG_ROOT_PATH_ENV = "BEWERBUNG_ROOT_PATH";
 var resolveBewerbungRootPath = (environment = process.env) => {
 	const configured = environment[BEWERBUNG_ROOT_PATH_ENV]?.trim();
@@ -6306,6 +5778,16 @@ var getReadableTextColor = (hex) => {
 //#endregion
 //#region src/shared/applicationDate.ts
 var getApplicationDate = (application) => new Date(application.sentAt ?? application.createdAt);
+var formatApplicationDate = (application) => new Intl.DateTimeFormat("de-DE", {
+	day: "2-digit",
+	month: "2-digit",
+	year: "numeric"
+}).format(getApplicationDate(application));
+var formatApplicationDateFolder = (date) => new Intl.DateTimeFormat("de-DE", {
+	day: "2-digit",
+	month: "2-digit",
+	year: "numeric"
+}).format(date);
 var formatApplicationDateLong = (application) => new Intl.DateTimeFormat("de-DE", {
 	day: "numeric",
 	month: "long",
@@ -6322,6 +5804,14 @@ var postalContactName = (contact) => {
 	return name;
 };
 var applicationPostalContactLines = (application) => [application.contact, ...application.additionalContacts].map(postalContactName).filter(Boolean);
+var applicationContactDepartmentLines = (application) => Array.from(new Set([application.contact, ...application.additionalContacts].map((contact) => contact.position.trim()).filter(Boolean)));
+var applicationRecipientLines = (application) => [
+	application.company.name,
+	...applicationPostalContactLines(application),
+	...applicationContactDepartmentLines(application),
+	application.company.street,
+	`${application.company.postalCode} ${application.company.city}`.trim()
+].filter(Boolean);
 var greetingForContact = (contact) => {
 	const name = contactFullName(contact);
 	if (!name) return "";
@@ -6333,6 +5823,143 @@ var applicationGreeting = (application) => {
 	const greetings = [application.contact, ...application.additionalContacts].map(greetingForContact).filter(Boolean).map((greeting, index) => index === 0 ? greeting : `${greeting.charAt(0).toLocaleLowerCase("de-DE")}${greeting.slice(1)}`);
 	return greetings.length ? `${greetings.join(", ")},` : "Sehr geehrte Damen und Herren,";
 };
+//#endregion
+//#region src/shared/coverLetter.ts
+var getCoverLetterMainBody = (documents) => documents.coverMainBody.trim() || [documents.coverMotivation, documents.coverQualification].map((value) => value.trim()).filter(Boolean).join("\n\n");
+var createCoverSubject = (jobTitle, current = "") => {
+	const subject = current.trim();
+	if (subject) return subject.replace(/^(?:Bewerbung\s+als\s+){2,}/i, "Bewerbung als ");
+	const title = jobTitle.trim();
+	return /^Bewerbung\b/i.test(title) ? title : `Bewerbung als ${title}`;
+};
+var getCoverLetterAttachments = (attachments, applicationId) => ["Lebenslauf", ...attachments.filter((attachment) => attachment.applicationId === applicationId && attachment.includedInPackage).sort((left, right) => (left.category === right.category ? 0 : left.category === "Zeugnisse" ? -1 : 1) || left.order - right.order).map((attachment) => attachment.fileName)];
+var coverLetterApplicantFileName = (application, applicantName) => {
+	const sanitize = (value) => value.trim().replace(/[<>:"/\\|?*\x00-\x1f]/g, "_").replace(/\s+/g, "_").replace(/_+/g, "_");
+	const safeApplicantName = sanitize(applicantName);
+	return safeApplicantName ? `Anschreiben_${safeApplicantName}` : `Anschreiben_${sanitize(application.company.name)}`;
+};
+//#endregion
+//#region src/shared/applicationEmail.ts
+var contactName = (contact) => [
+	contact.salutation,
+	contact.firstName,
+	contact.lastName
+].filter(Boolean).join(" ");
+var defaultApplicationEmail = (application) => ({
+	emailSubject: createCoverSubject(application.job.title),
+	emailMessage: `anbei übersende ich Ihnen meine Bewerbung für die ausgeschriebene Position als ${application.job.title.replace(/^Bewerbung\s+als\s+/i, "")} bei ${application.company.name}.`,
+	emailAttachmentNote: "Mein Anschreiben und meinen Lebenslauf finden Sie im Anhang."
+});
+var getApplicationEmail = (application, profile) => {
+	const defaults = defaultApplicationEmail(application);
+	const recipient = [application.contact, ...application.additionalContacts].find((contact) => Boolean(contact.email || contact.firstName || contact.lastName)) ?? application.contact;
+	return {
+		applicationDate: formatApplicationDate(application),
+		companyName: application.company.name,
+		jobTitle: application.job.title,
+		recipientName: contactName(recipient),
+		recipientEmail: recipient.email,
+		senderName: profile ? [profile.firstName, profile.lastName].filter(Boolean).join(" ") : "",
+		senderEmail: profile?.email ?? "",
+		salutation: applicationGreeting(application),
+		closing: "Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.",
+		greeting: "Mit freundlichen Grüßen",
+		subject: createCoverSubject(application.job.title, application.documents.emailSubject || defaults.emailSubject),
+		message: application.documents.emailMessage || defaults.emailMessage,
+		attachmentNote: application.documents.emailAttachmentNote || defaults.emailAttachmentNote
+	};
+};
+var buildApplicationEmailMarkdown = (application, profile) => {
+	const email = getApplicationEmail(application, profile);
+	return [
+		"# Bewerbungs-E-Mail",
+		"",
+		`- Bewerbungsdatum: ${email.applicationDate}`,
+		`- Firma: ${email.companyName}`,
+		`- Stellenbezeichnung: ${email.jobTitle}`,
+		`- Empfänger: ${email.recipientName || "Nicht angegeben"}`,
+		`- E-Mail-Adresse: ${email.recipientEmail || "Nicht angegeben"}`,
+		`- Absender: ${email.senderName || "Nicht angegeben"}`,
+		`- Absender-E-Mail: ${email.senderEmail || "Nicht angegeben"}`,
+		`- Betreff: ${email.subject}`,
+		"",
+		"## Nachricht",
+		"",
+		email.salutation,
+		"",
+		email.message,
+		"",
+		email.attachmentNote,
+		"",
+		email.closing,
+		"",
+		email.greeting,
+		"",
+		email.senderName,
+		""
+	].join("\n");
+};
+//#endregion
+//#region src/shared/deckblatt.ts
+var externalHref$1 = (value) => /^https?:\/\//i.test(value) ? value : `https://${value}`;
+var getDeckblattContacts = (profile) => {
+	if (!profile) return [];
+	const address = [profile.street, `${profile.postalCode} ${profile.city}`.trim()].filter(Boolean).join(", ");
+	return [
+		address ? {
+			label: "Adresse",
+			value: address
+		} : void 0,
+		profile.phone ? {
+			label: "Telefon",
+			value: profile.phone,
+			href: `tel:${profile.phone.replace(/[^\d+]/g, "")}`
+		} : void 0,
+		profile.email ? {
+			label: "E-Mail",
+			value: profile.email,
+			href: `mailto:${profile.email}`
+		} : void 0,
+		profile.linkedin ? {
+			label: "LinkedIn",
+			value: profile.linkedin,
+			href: externalHref$1(profile.linkedin)
+		} : void 0,
+		profile.github ? {
+			label: "GitHub",
+			value: profile.github,
+			href: externalHref$1(profile.github)
+		} : void 0,
+		profile.portfolio ? {
+			label: "Website",
+			value: profile.portfolio,
+			href: externalHref$1(profile.portfolio)
+		} : void 0
+	].filter((contact) => Boolean(contact));
+};
+var getDeckblattCompetencies = (profile, application) => {
+	const values = [...(profile?.strengths ?? []).map((strength) => strength.title), ...profile?.skills ?? []].map((skill) => skill.split(/\s+(?:-|–|—|:)\s+/)[0].trim()).filter(Boolean);
+	const unique = Array.from(new Map(values.map((value) => [value.toLocaleLowerCase("de-DE"), value])).values());
+	const jobText = `${application?.job.title ?? ""} ${application?.job.fullText ?? ""}`.toLocaleLowerCase("de-DE");
+	const ranked = unique.map((value, index) => ({
+		value,
+		index,
+		matchesJob: jobText.includes(value.toLocaleLowerCase("de-DE"))
+	})).sort((left, right) => Number(right.matchesJob) - Number(left.matchesJob) || left.index - right.index).slice(0, 5).map(({ value }) => value);
+	return ranked.length >= 3 ? ranked : [];
+};
+var validateDeckblattData = (application, profile) => {
+	const missing = [];
+	if (!`${profile?.firstName ?? ""} ${profile?.lastName ?? ""}`.trim()) missing.push("Name der Bewerberin oder des Bewerbers");
+	if (!application.company.name.trim()) missing.push("Unternehmen");
+	if (!application.job.title.trim()) missing.push("Stellenbezeichnung");
+	if (missing.length) throw new Error(`Deckblatt kann nicht erstellt werden. Bitte ergänzen Sie: ${missing.join(", ")}.`);
+};
+var getDeckblattDocuments = (attachments, applicationId) => [
+	"Anschreiben",
+	"Lebenslauf",
+	...attachments.filter((attachment) => attachment.applicationId === applicationId && attachment.includedInPackage).sort((left, right) => (left.category === right.category ? 0 : left.category === "Zeugnisse" ? -1 : 1) || left.order - right.order).map((attachment) => attachment.fileName)
+];
 //#endregion
 //#region src/features/knowledge/knowledge.presets.ts
 var categories = (type, titles) => titles.map((title) => ({
@@ -6639,8 +6266,7 @@ var getLetterPageStatus = (documents) => {
 	const characterCount = [
 		documents.coverSubject,
 		documents.coverIntroduction,
-		documents.coverMotivation,
-		documents.coverQualification,
+		getCoverLetterMainBody(documents),
 		documents.coverCompanyFit,
 		documents.coverExtraParagraph,
 		documents.coverClosing
@@ -6656,46 +6282,6 @@ var getLetterPageStatus = (documents) => {
 //#region src/shared/profileMedia.ts
 var supportedProfileMedia = /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=\s]+$/i;
 var getProfileMediaSource = (value) => value && supportedProfileMedia.test(value) ? value : "";
-//#endregion
-//#region src/shared/deckblatt.ts
-var externalHref$1 = (value) => /^https?:\/\//i.test(value) ? value : `https://${value}`;
-var getDeckblattContacts = (profile) => {
-	if (!profile) return [];
-	const address = [profile.street, `${profile.postalCode} ${profile.city}`.trim()].filter(Boolean).join(", ");
-	return [
-		address ? {
-			label: "Adresse",
-			value: address
-		} : void 0,
-		profile.phone ? {
-			label: "Telefon",
-			value: profile.phone,
-			href: `tel:${profile.phone.replace(/[^\d+]/g, "")}`
-		} : void 0,
-		profile.email ? {
-			label: "E-Mail",
-			value: profile.email,
-			href: `mailto:${profile.email}`
-		} : void 0,
-		profile.linkedin ? {
-			label: "LinkedIn",
-			value: profile.linkedin,
-			href: externalHref$1(profile.linkedin)
-		} : void 0,
-		profile.github ? {
-			label: "GitHub",
-			value: profile.github,
-			href: externalHref$1(profile.github)
-		} : void 0,
-		profile.portfolio ? {
-			label: "Website",
-			value: profile.portfolio,
-			href: externalHref$1(profile.portfolio)
-		} : void 0
-	].filter((contact) => Boolean(contact));
-};
-var getDeckblattCompetencies = (profile) => Array.from(new Set((profile?.skills ?? []).map((skill) => skill.split(/\s+(?:-|–|—|:)\s+/)[0].trim()).filter(Boolean))).slice(0, 6);
-var getDeckblattDocuments = (attachments, applicationId) => ["Lebenslauf", ...attachments.filter((attachment) => attachment.applicationId === applicationId && attachment.includedInPackage).sort((left, right) => (left.category === right.category ? 0 : left.category === "Zeugnisse" ? -1 : 1) || left.order - right.order).map((attachment) => attachment.fileName)];
 //#endregion
 //#region src/shared/technologyBrand.ts
 var svg = (content) => `<svg class="technology-brand-svg" viewBox="0 0 32 32" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">${content}</svg>`;
@@ -6814,12 +6400,7 @@ var renderKnowledgeSection = (profile, atsMode) => {
 	return categories ? `<section class="knowledge-section"><h3>${escapeHtml(sectionTitle)}</h3>${categories}</section>` : "";
 };
 var fullName = (profile) => profile ? `${profile.firstName} ${profile.lastName}`.trim() : "Vorname Nachname";
-var addressBlock = (application) => [
-	application.company.name,
-	...applicationPostalContactLines(application),
-	application.company.street,
-	`${application.company.postalCode} ${application.company.city}`.trim()
-].filter(Boolean).map(escapeHtml).join("<br>");
+var addressBlock = (application) => applicationRecipientLines(application).filter(Boolean).map(escapeHtml).join("<br>");
 var senderHeader = (profile) => {
 	if (!profile) return "<span class=\"sender-name\">Vorname Nachname</span><span class=\"sender-contact\">E-Mail · Telefon</span>";
 	const details = [
@@ -6827,7 +6408,7 @@ var senderHeader = (profile) => {
 		`${profile.postalCode} ${profile.city}`.trim(),
 		profile.email,
 		profile.phone
-	].filter(Boolean).map(escapeHtml).join(" · ");
+	].filter(Boolean).map(escapeHtml).join(" | ");
 	const title = profile.title?.trim();
 	return `<span class="sender-name">${escapeHtml(fullName(profile))}</span>` + (title ? `<span class="sender-title">${escapeHtml(title)}</span>` : "") + `<span class="sender-contact">${details}</span>`;
 };
@@ -6846,18 +6427,9 @@ var documentCss = (accent, secondary, onSecondary, settings) => {
   .kicker{color:var(--accent);font-size:10pt;text-transform:uppercase;letter-spacing:.16em;font-weight:700}
   h1,h2,h3{font-family:var(--heading-font);font-weight:var(--heading-weight)}h1{font-size:29pt;line-height:1.05;margin:8mm 0 4mm}h2{font-size:14pt;color:var(--accent);margin:8mm 0 3mm}
   h3{font-size:11pt;margin:0 0 1mm}.muted{color:var(--muted)}p,li{font-size:var(--body-size);line-height:var(--body-line)}
-  .cover-content{padding:var(--doc-margin)}.cover-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:12mm;padding-bottom:11mm;border-bottom:1px solid var(--line)}.cover-content h1{max-width:125mm;margin:4mm 0 2mm;font-size:28pt}.cover-location{margin:3mm 0 0;color:var(--muted);font-size:9pt}.cover-photo{width:36mm;height:36mm;flex:0 0 auto;border-radius:50%;object-fit:cover}.cover-identity{max-width:135mm;margin-top:21mm}.cover-identity h2{margin:0 0 2mm;font-size:19pt}.cover-identity>p{margin:0}.cover-statement{margin-top:5mm!important;line-height:1.45}.cover-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12mm;margin-top:23mm;padding-top:6mm;border-top:1px solid var(--line)}.cover-details h3{margin:0 0 3mm;color:var(--accent);font-size:10pt;letter-spacing:.08em;text-transform:uppercase}.cover-details h3:not(:first-child){margin-top:7mm}.cover-details ul{display:grid;gap:1.5mm;margin:0;padding:0;list-style:none}.cover-details li{overflow-wrap:anywhere}.cover-details strong{display:inline-block;min-width:18mm}.cover-details a{color:inherit;text-decoration:none}.cover-competencies{margin:0;line-height:1.55}
-  .contact{padding-top:8mm;border-top:1px solid var(--line)}.sender{margin-bottom:2mm;color:var(--muted);text-align:center}.sender-name,.sender-title,.sender-contact{display:block}.sender-name{color:var(--ink);font-size:15pt;font-weight:700;line-height:1.2}.sender-title{margin-top:.8mm;color:var(--accent);font-size:11pt;font-weight:700;line-height:1.2}.sender-contact{margin-top:.8mm;font-size:11pt;line-height:1.25}
-  .recipient{margin-top:12mm;min-height:36mm;font-size:11pt;line-height:1.42}.date{text-align:right}.subject{color:var(--accent);font-weight:800;font-size:14pt;margin:8mm 0 5mm}
-  .signature{display:flex;flex-direction:column;align-items:flex-start;margin-top:0;padding-bottom:6mm}.signature p{margin:0;font-size:11pt}.signature-image{display:block;width:auto;max-width:48mm;height:auto;max-height:14mm;margin:1mm 0 .5mm;object-fit:contain;object-position:left center}.signature-name{font-size:11pt;font-weight:400;line-height:1.2}
-  .letter-content{padding:var(--doc-margin)}.letter-content>p:not(.subject){font-size:11pt;line-height:1.32}.letter-content>p:not(.date,.subject){margin:0 0 calc(var(--section-gap) * .72)}.letter-content>.letter-closing{margin-bottom:0}.letter-content .signature{font-size:11pt;line-height:1.32}.letter-body{text-align:justify;text-justify:inter-word;hyphens:auto;overflow-wrap:break-word}
-  .letter-page.layout-split-clean .rule{height:4px}.letter-page.layout-sidebar-left .letter-content{padding-left:calc(var(--doc-margin) + 7mm);border-left:5mm solid var(--secondary)}.letter-page.layout-sidebar-right .letter-content{padding-right:calc(var(--doc-margin) + 7mm);border-right:5mm solid var(--secondary)}.letter-page.layout-bold-grid .rule{height:4px}.letter-page.layout-timeline .subject{padding-left:3mm;border-left:1mm solid var(--accent)}.letter-page.layout-minimal .rule{height:4px;background:var(--line)}
-  .letter-compact .letter-content{padding:16mm 20mm}.letter-compact .rule{margin-bottom:15mm}.letter-compact .recipient{margin-top:10mm;min-height:30mm}.letter-compact .letter-content>p:not(.subject){font-size:11pt;line-height:1.3}.letter-compact .signature{margin-top:0}
-  .letter-dense .letter-content{padding:14mm 18mm}.letter-dense .rule{height:4px;margin-bottom:10mm}.letter-dense .recipient{margin-top:7mm;min-height:24mm;font-size:11pt}.letter-dense .letter-content>p:not(.subject){font-size:11pt;line-height:1.26}.letter-dense .letter-content>p:not(.date,.subject){margin-bottom:2.6mm}.letter-dense .subject{margin:5mm 0 3mm}.letter-dense .signature{margin-top:0}
-  .letter-page[data-resume-template="zeitgenoessisch"].layout-sidebar-left .letter-content{padding-left:var(--doc-margin);border-left:0}.letter-page.letter-compact[data-resume-template="zeitgenoessisch"].layout-sidebar-left .letter-content{padding-left:20mm}.letter-page.letter-dense[data-resume-template="zeitgenoessisch"].layout-sidebar-left .letter-content{padding-left:18mm}
-  .letter-page[data-resume-template="kreativ"].layout-bold-grid .rule{height:4px}
-  .letter-page[data-resume-template="stilvoll"] .letter-content{padding-bottom:calc(var(--doc-margin) + 5mm)}.letter-page.letter-compact[data-resume-template="stilvoll"] .letter-content{padding-bottom:21mm}.letter-page.letter-dense[data-resume-template="stilvoll"] .letter-content{padding-bottom:19mm}.letter-page[data-resume-template="stilvoll"] .letter-content>p:not(.subject),.letter-page[data-resume-template="stilvoll"] .signature{line-height:1.28}
-  .letter-page[data-resume-template="kompakt"] .letter-content{padding-bottom:calc(var(--doc-margin) + 5mm)}.letter-page.letter-compact[data-resume-template="kompakt"] .letter-content{padding-bottom:21mm}.letter-page.letter-dense[data-resume-template="kompakt"] .letter-content{padding-bottom:19mm}.letter-page[data-resume-template="kompakt"] .letter-content>p:not(.subject),.letter-page[data-resume-template="kompakt"] .signature{line-height:1.28}
+  .cover-content{padding:var(--doc-margin)}.cover-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:12mm;padding-bottom:11mm;border-bottom:1px solid var(--line)}.cover-content h1{max-width:125mm;margin:4mm 0 2mm;font-size:28pt}.cover-location{margin:3mm 0 0;color:var(--muted);font-size:9pt}.cover-photo{width:36mm;height:36mm;flex:0 0 auto;border-radius:50%;object-fit:cover}.cover-identity{width:100%;max-width:none;margin-top:21mm}.cover-identity h2{margin:0 0 2mm;font-size:19pt}.cover-identity>p{margin:0}.cover-statement{width:100%;margin-top:5mm!important;line-height:1.45;text-align:justify;text-justify:inter-word;hyphens:auto}.cover-details{display:grid;grid-template-columns:34% minmax(0,1fr);gap:0;margin-top:23mm;padding-top:6mm;border-top:1px solid var(--line)}.cover-details>div:nth-child(2){padding-left:4mm}.cover-details h3{margin:0 0 3mm;color:var(--accent);font-size:10pt;letter-spacing:.08em;text-transform:uppercase}.cover-details h3:not(:first-child){margin-top:7mm}.cover-details ul{display:grid;gap:1.5mm;margin:0;padding:0;list-style:none}.cover-details li{overflow-wrap:anywhere}.cover-details strong{display:inline-block;min-width:18mm}.cover-details a{color:inherit;text-decoration:none}.cover-competencies{margin:0;line-height:1.55}
+  .contact{padding-top:8mm;border-top:1px solid var(--line)}.letter-content{padding:10mm 20mm 25mm;border-top:0}.letter-header{display:flex;min-height:24mm;align-items:flex-start;justify-content:center;border-bottom:.65mm solid var(--accent)}.sender{width:100%;color:var(--ink);text-align:center}.sender-name,.sender-title,.sender-contact{display:block}.sender-name{color:#000;font-size:16pt;font-weight:800;line-height:1.12}.sender-title{margin-top:.4mm;color:var(--accent);font-size:11pt;font-weight:800;line-height:1.15}.sender-contact{margin-top:.5mm;color:#000;font-size:10pt;line-height:1.2}.recipient{min-height:20mm;margin-top:20mm;font-size:10pt;line-height:1.28}.date{margin:0 0 20mm;text-align:right;font-size:10pt}.subject{margin:0 0 6mm;color:var(--accent);font-size:14pt;font-weight:800;line-height:1.2}.letter-content>p:not(.subject,.date){margin:0 0 3.2mm;font-size:11pt;line-height:1.28}.letter-body{text-align:justify;text-justify:inter-word;hyphens:auto;overflow-wrap:break-word}.letter-content>.letter-closing{margin-bottom:0}.signature{display:flex;flex-direction:column;align-items:flex-start;margin-top:3.2mm}.signature p{margin:0;font-size:11pt;line-height:1.28}.signature-image{display:block;width:auto;max-width:48mm;height:auto;max-height:14mm;margin:1mm 0 .5mm;object-fit:contain;object-position:left center}.signature-name{font-size:11pt;font-weight:400;line-height:1.2}.attachments-note{margin-top:4mm!important;color:var(--muted);font-size:9pt!important;font-weight:700}.letter-compact .letter-content>p:not(.subject,.date),.letter-compact .signature{line-height:1.24}.letter-compact .letter-content>p:not(.subject,.date){margin-bottom:2.7mm}.letter-dense .recipient{min-height:18mm;margin-top:17mm}.letter-dense .date{margin-bottom:15mm}.letter-dense .letter-content>p:not(.subject,.date),.letter-dense .signature{font-size:11pt;line-height:1.15}.letter-dense .letter-content>p:not(.subject,.date){margin-bottom:2.2mm}
+  .letter-header{min-height:0;padding-bottom:1mm}
   .cv-page{padding:0;display:grid;grid-template:"header header" auto "main side" 1fr/64% 36%;overflow:hidden}
   .cv-header{grid-area:header;display:flex;align-items:center;justify-content:space-between;gap:9mm;padding:var(--doc-margin) var(--doc-margin) calc(var(--doc-margin) * .6)}
   .cv-header h1{margin:1mm 0 0;font-size:25pt;line-height:1;letter-spacing:.015em;text-transform:uppercase}
@@ -7223,6 +6795,7 @@ var pageFitScript = `
     })();
   <\/script>`;
 var buildDocumentHtml = (application, profile, target, attachments = []) => {
+	if (target === "deckblatt" || target === "mappe") validateDeckblattData(application, profile);
 	const template = getTemplate(application.templateId);
 	const accent = application.accentColor || template.accent;
 	const secondary = application.secondaryColor || template.secondary;
@@ -7255,44 +6828,46 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 		profile.city,
 		profile.linkedin
 	].filter(Boolean).map(escapeHtml).join(" · ") : "Telefon · E-Mail · Ort";
-	const applicationDate = formatApplicationDateLong(application);
+	const applicationDate = formatApplicationDate(application);
+	const applicationPlace = profile?.city || application.company.city;
+	const longApplicationDate = `${applicationPlace ? `${applicationPlace}, ` : ""}den ${formatApplicationDateLong(application)}`;
 	const letterStatus = getLetterPageStatus(docs);
 	const letterTemplateClass = `layout-${template.layout}`;
 	const deckblattContacts = getDeckblattContacts(profile);
-	const deckblattCompetencies = getDeckblattCompetencies(profile);
+	const deckblattCompetencies = getDeckblattCompetencies(profile, application);
 	const deckblattDocuments = getDeckblattDocuments(attachments, application.id);
+	const coverLetterAttachments = getCoverLetterAttachments(attachments, application.id);
 	const deckblattContactMarkup = deckblattContacts.length ? deckblattContacts.map((contact) => {
 		const value = escapeHtml(contact.value);
 		return `<li><strong>${escapeHtml(contact.label)}</strong> ${contact.href ? `<a href="${escapeHtml(contact.href)}">${value}</a>` : value}</li>`;
-	}).join("") : "<li>Kontaktdaten im Profil ergänzen.</li>";
+	}).join("") : "";
 	const cover = `
     <section class="page cover-page ${designClasses}">
       ${backgroundLayer}
       <div class="page-content standard-page-content cover-content">
         <div class="rule"></div>
         <p class="kicker">Bewerbung</p>
-        <section class="cover-hero"><div><h1>${escapeHtml(role)}</h1><p class="muted">bei ${escapeHtml(company)}</p>${application.company.city ? `<p class="cover-location">Standort: ${escapeHtml(application.company.city)}</p>` : ""}</div>${photoSource ? `<img class="cover-photo" src="${escapeHtml(photoSource)}" alt="">` : ""}</section>
+        <section class="cover-hero"><div><h1>Bewerbung als ${escapeHtml(role)}</h1><p class="muted">bei ${escapeHtml(company)}</p>${application.company.city ? `<p class="cover-location">Standort: ${escapeHtml(application.company.city)}</p>` : ""}<p class="cover-location">${escapeHtml(applicationDate)}</p></div>${photoSource ? `<img class="cover-photo" src="${escapeHtml(photoSource)}" alt="">` : ""}</section>
         <section class="cover-identity"><h2>${escapeHtml(name)}</h2>${profile?.title ? `<p>${escapeHtml(profile.title)}</p>` : ""}${docs.deckblattStatement || profile?.summary ? `<p class="cover-statement">${escapeHtml(docs.deckblattStatement || profile?.summary || "")}</p>` : ""}</section>
-        <section class="cover-details"><div><h3>Bewerbungsunterlagen</h3><ul>${deckblattDocuments.map((document) => `<li>${escapeHtml(document)}</li>`).join("")}</ul></div><div>${deckblattCompetencies.length ? `<h3>Kernkompetenzen</h3><p class="cover-competencies">${deckblattCompetencies.map(escapeHtml).join(" · ")}</p>` : ""}<h3>Kontakt</h3><ul>${deckblattContactMarkup}</ul></div></section>
+        <section class="cover-details"><div><h3>Bewerbungsunterlagen</h3><ul>${deckblattDocuments.map((document) => `<li>${escapeHtml(document)}</li>`).join("")}</ul></div><div>${deckblattCompetencies.length ? `<h3>Kernkompetenzen</h3><p class="cover-competencies">${deckblattCompetencies.map(escapeHtml).join(" · ")}</p>` : ""}${deckblattContacts.length ? `<h3>Kontakt</h3><ul>${deckblattContactMarkup}</ul>` : ""}</div></section>
       </div>
     </section>`;
 	const letter = `
     <section class="page letter-page letter-${letterStatus.density} ${letterTemplateClass} ${designClasses}" data-resume-template="${escapeHtml(template.id)}">
       ${backgroundLayer}
       <div class="page-content letter-content">
-        <div class="sender">${senderHeader(profile)}</div>
-        <div class="rule"></div>
+        <div class="letter-header"><div class="sender">${senderHeader(profile)}</div></div>
         <div class="recipient">${addressBlock(application)}</div>
-        <p class="date">${escapeHtml(profile?.city || application.company.city)}, den ${applicationDate}</p>
-        <p class="subject">${escapeHtml(docs.coverSubject || `Bewerbung als ${role}`)}</p>
-        <p>${escapeHtml(applicationGreeting(application))}</p>
+        <p class="date">${escapeHtml(longApplicationDate)}</p>
+        <p class="subject">${escapeHtml(`${createCoverSubject(role, docs.coverSubject)}${application.job.reference && !createCoverSubject(role, docs.coverSubject).includes(application.job.reference) ? ` - Referenz ${application.job.reference}` : ""}`)}</p>
+        <p class="letter-salutation">${escapeHtml(applicationGreeting(application))}</p>
         <p class="letter-body">${escapeHtml(docs.coverIntroduction || `die ausgeschriebene Position als ${role} bei ${company} spricht mich besonders an, weil sie fachliche Verantwortung mit konkretem Gestaltungsspielraum verbindet.`)}</p>
-        <p class="letter-body">${escapeHtml(docs.coverMotivation || "Meine Motivation entsteht aus der Möglichkeit, vorhandene Erfahrung gezielt einzusetzen, mich fachlich weiterzuentwickeln und gemeinsam mit Ihrem Team messbare Ergebnisse zu erzielen.")}</p>
-        <p class="letter-body">${escapeHtml(docs.coverQualification || profile?.summary || "Ich arbeite strukturiert, zuverlässig und lösungsorientiert. Neue Anforderungen erfasse ich schnell und überführe sie in nachvollziehbare, belastbare Ergebnisse.")}</p>
-        <p class="letter-body">${escapeHtml(docs.coverCompanyFit || `An ${company} überzeugt mich besonders die Verbindung aus professionellem Anspruch und zukunftsorientierter Arbeitsweise.`)}</p>
+        <p class="letter-body">${escapeHtml(getCoverLetterMainBody(docs) || profile?.summary || "Hauptteil im Dokumenteditor ergänzen.")}</p>
         ${docs.coverExtraParagraph ? `<p class="letter-body">${escapeHtml(docs.coverExtraParagraph)}</p>` : ""}
+        <p class="letter-body">${escapeHtml(docs.coverCompanyFit || `An ${company} überzeugt mich besonders die Verbindung aus professionellem Anspruch und zukunftsorientierter Arbeitsweise.`)}</p>
         <p class="letter-body letter-closing">${escapeHtml(docs.coverClosing || "Gerne überzeuge ich Sie in einem persönlichen Gespräch davon, welchen konkreten Beitrag ich in Ihrem Team leisten kann. Auf Ihren Terminvorschlag freue ich mich.")}</p>
         <div class="signature"><p>Mit freundlichen Grüßen</p>${signatureSource ? `<img class="signature-image" src="${escapeHtml(signatureSource)}" alt="">` : ""}<span class="signature-name">${escapeHtml(name)}</span></div>
+        <p class="attachments-note">Anlagen:<br>${coverLetterAttachments.map(escapeHtml).join("<br>")}</p>
       </div>
     </section>`;
 	const experienceById = new Map((profile?.experiences ?? []).map((item) => [item.id, item]));
@@ -8819,8 +8394,8 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 	};
 	const resume = resumePlan.map(template.id === "modern" ? renderModernResumePage : template.id === "stilvoll" ? renderStilvollResumePage : template.id === "kompakt" ? renderKompaktResumePage : template.id === "einspaltig" ? renderEinspaltigResumePage : template.id === "klassisch" ? (plan) => renderKlassischResumePage(plan) : template.id === "elegant" ? renderElegantResumePage : template.id === "gepflegt" ? renderGepflegtResumePage : template.id === "ivy-league" ? renderIvyLeagueResumePage : template.id === "kreativ" ? renderKreativResumePage : template.id === "zeitgenoessisch" ? renderZeitgenoessischResumePage : template.id === "zweispaltig" ? renderZweispaltigResumePage : template.id === "tabellarisch" ? renderTabellarischResumePage : renderResumePage).join("");
 	const selected = target === "mappe" ? [
-		cover,
 		letter,
+		cover,
 		resume
 	] : target === "deckblatt" ? [cover] : target === "anschreiben" ? [letter] : [resume];
 	return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}${ivyLeagueDocumentCss}${extendedResumeDocumentCss}${klassischDocumentCss}${modernDocumentCss}${gepflegtDocumentCss}${tabellarischDocumentCss}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
@@ -8865,9 +8440,18 @@ var isApplicationFolderLockError = (error) => {
 		"EPERM"
 	].includes(String(error.code));
 };
+var applicationFileBaseName = (application) => `${sanitizeFileName(application.company.name)}_${formatApplicationDate(application)}`;
 var FileManagementService = class {
 	constructor(paths) {
 		this.paths = paths;
+	}
+	async withRenameRetry(operation) {
+		for (let attempt = 0;; attempt += 1) try {
+			return await operation();
+		} catch (error) {
+			if (attempt >= 2 || !isApplicationFolderLockError(error)) throw error;
+			await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
+		}
 	}
 	async initialize() {
 		const directories = [
@@ -8926,17 +8510,19 @@ var FileManagementService = class {
 			return {
 				anschreiben: rejectionRoot,
 				lebenslauf: path.join(rejectionRoot, "Lebenslauf"),
-				deckblatt: path.join(applicationData, "Deckblatt")
+				deckblatt: path.join(applicationData, "Deckblatt"),
+				email: path.join(applicationData, "Email")
 			};
 		}
 		return {
 			anschreiben: path.join(this.paths.anschreibenDocuments, application.folderName),
 			lebenslauf: path.join(this.paths.lebenslaufDocuments, application.folderName),
-			deckblatt: path.join(applicationData, "Deckblatt")
+			deckblatt: path.join(applicationData, "Deckblatt"),
+			email: path.join(applicationData, "Email")
 		};
 	}
 	async allocateApplicationFolderName(companyName, positionName, date = /* @__PURE__ */ new Date()) {
-		const companyDateFolder = `${sanitizeFileName(companyName)}_${formatLocalDate(date)}`;
+		const companyDateFolder = `${sanitizeFileName(companyName)}_${formatApplicationDateFolder(date)}`;
 		const positionFolder = sanitizeFileName(positionName);
 		for (let suffix = 1; suffix < 1e4; suffix += 1) {
 			const uniquePositionFolder = suffix === 1 ? positionFolder : `${positionFolder}_${suffix}`;
@@ -8999,7 +8585,7 @@ var FileManagementService = class {
 		}
 	}
 	async relocateApplicationFolders(application, date) {
-		const companyDateFolder = `${sanitizeFileName(application.company.name)}_${formatLocalDate(date)}`;
+		const companyDateFolder = `${sanitizeFileName(application.company.name)}_${formatApplicationDateFolder(date)}`;
 		const positionFolder = sanitizeFileName(application.job.title);
 		let targetFolderName = "";
 		for (let suffix = 1; suffix < 1e4; suffix += 1) {
@@ -9023,7 +8609,7 @@ var FileManagementService = class {
 		try {
 			for (const move of moves) {
 				if (await pathExists$1(move.target.path)) throw new Error(`Der Zielordner existiert bereits: ${move.target.path}`);
-				await this.renameApplicationArtifact(move.source.root, move.source.path, move.target.path);
+				await this.withRenameRetry(() => this.renameApplicationArtifact(move.source.root, move.source.path, move.target.path));
 				completed.push(move);
 			}
 		} catch (error) {
@@ -9077,8 +8663,70 @@ var FileManagementService = class {
 	}
 	async ensureApplicationDataDirectories(application) {
 		const dataRoot = this.applicationDataPath(application.folderName);
-		await mkdir(path.join(dataRoot, "Stellenanzeige"), { recursive: true });
+		await Promise.all([mkdir(path.join(dataRoot, "Stellenanzeige"), { recursive: true }), mkdir(path.join(dataRoot, "Email"), { recursive: true })]);
 		return { dataRoot };
+	}
+	async synchronizeApplicationArtifactNames(previous, next) {
+		const previousDate = getApplicationDate(previous);
+		const nextDate = getApplicationDate(next);
+		const replacements = [
+			[previous.folderName.split(/[\\/]/)[0], next.folderName.split(/[\\/]/)[0]],
+			[sanitizeFileName(previous.company.name), sanitizeFileName(next.company.name)],
+			[formatApplicationDate(previous), formatApplicationDate(next)],
+			[formatLocalDate(previousDate), formatLocalDate(nextDate)]
+		].filter(([from, to]) => from !== to);
+		const documentDirectories = this.documentDirectories(next);
+		const directoryCandidates = [
+			this.applicationDataPath(next.folderName),
+			documentDirectories.anschreiben,
+			documentDirectories.lebenslauf
+		];
+		const directories = directoryCandidates.filter((candidate, index) => !directoryCandidates.some((parent, parentIndex) => parentIndex !== index && parent !== candidate && isPathInside$1(parent, candidate)));
+		const moves = [];
+		for (const directory of directories) {
+			let entries;
+			try {
+				entries = await readdir(directory, {
+					withFileTypes: true,
+					recursive: true
+				});
+			} catch (error) {
+				if ((typeof error === "object" && error && "code" in error ? String(error.code) : "") === "ENOENT") continue;
+				throw error;
+			}
+			for (const entry of entries) {
+				if (!entry.isFile()) continue;
+				const source = path.join(entry.parentPath, entry.name);
+				let targetName = entry.name;
+				for (const [from, to] of replacements) targetName = targetName.split(from).join(to);
+				if (path.resolve(entry.parentPath) === path.resolve(documentDirectories.anschreiben) && /^Anschreiben(?:_[^\d._]+){0,4}\.docx$/i.test(entry.name)) targetName = `${applicationFileBaseName(next)}_Anschreiben.docx`;
+				if (targetName === entry.name) continue;
+				moves.push({
+					source,
+					target: path.join(entry.parentPath, targetName)
+				});
+			}
+		}
+		const reservedTargets = /* @__PURE__ */ new Set();
+		for (const move of moves) {
+			const normalizedTarget = path.resolve(move.target).toLocaleLowerCase();
+			if (reservedTargets.has(normalizedTarget)) throw new Error(`Mehrere Dateien würden denselben aktuellen Bewerbungsnamen erhalten: ${move.target}`);
+			reservedTargets.add(normalizedTarget);
+			if (await pathExists$1(move.target)) throw new Error(`Die Datei kann nicht auf den aktuellen Bewerbungsnamen umgestellt werden, weil das Ziel bereits existiert: ${move.target}`);
+		}
+		const completed = [];
+		try {
+			for (const move of moves) {
+				await this.withRenameRetry(() => rename(move.source, move.target));
+				completed.push(move);
+			}
+		} catch (error) {
+			for (const move of completed.reverse()) try {
+				await rename(move.target, move.source);
+			} catch {}
+			if (isApplicationFolderLockError(error)) throw new ApplicationFolderLockedError();
+			throw error;
+		}
 	}
 	archiveRootForCategory(category) {
 		return category === "Zeugnisse" ? this.paths.zeugnisseArchive : this.paths.zertifikateArchive;
@@ -9539,12 +9187,17 @@ var DataStore = class {
 		return this.files.ensureApplicationDataDirectories(application);
 	}
 	async persistApplicationFiles(application) {
-		await mkdir(this.files.documentDirectories(application).anschreiben, { recursive: true });
+		const documents = this.files.documentDirectories(application);
+		await mkdir(documents.anschreiben, { recursive: true });
 		const { dataRoot } = await this.ensureApplicationDataDirectories(application);
+		const profile = this.getProfileForApplication(application);
+		const email = getApplicationEmail(application, profile);
 		await Promise.all([
 			this.atomicWrite(path.join(dataRoot, "bewerbung.json"), JSON.stringify(applicationSchema.parse(application), null, 2)),
 			this.atomicWrite(path.join(dataRoot, "Stellenanzeige", "stellenanzeige.json"), JSON.stringify(application.job, null, 2)),
-			this.atomicWrite(path.join(dataRoot, "Stellenanzeige", "stellenanzeige.txt"), application.job.fullText)
+			this.atomicWrite(path.join(dataRoot, "Stellenanzeige", "stellenanzeige.txt"), application.job.fullText),
+			this.atomicWrite(path.join(documents.email, "Email.md"), buildApplicationEmailMarkdown(application, profile)),
+			this.atomicWrite(path.join(documents.email, "email.json"), JSON.stringify(email, null, 2))
 		]);
 	}
 	createEvent(applicationId, type, title, startAt, allDay) {
@@ -9627,15 +9280,19 @@ var DataStore = class {
 			additionalContacts: input.additionalContacts ?? [],
 			status: input.sentAt ? "Beworben" : "Entwurf",
 			documents: {
-				coverSubject: `Bewerbung als ${input.job.title}`,
+				coverSubject: createCoverSubject(input.job.title),
 				coverIntroduction: `die Position als ${input.job.title} bei ${input.company.name} verbindet genau die Aufgaben, in denen ich meine Erfahrung gezielt einbringen möchte.`,
+				coverMainBody: "",
 				coverMotivation: "",
 				coverQualification: "",
 				coverCompanyFit: "",
 				coverExtraParagraph: "",
 				coverClosing: "Gerne überzeuge ich Sie in einem persönlichen Gespräch von meiner Motivation und Eignung. Auf Ihren Terminvorschlag freue ich mich.",
 				resumeProfile: "",
-				deckblattStatement: ""
+				deckblattStatement: "",
+				emailSubject: "",
+				emailMessage: "",
+				emailAttachmentNote: ""
 			},
 			attachmentIds: [],
 			statusHistory: [{
@@ -9662,6 +9319,15 @@ var DataStore = class {
 			...application,
 			folderName: current.folderName
 		}, new Date(application.sentAt ?? current.createdAt));
+		try {
+			await this.files.synchronizeApplicationArtifactNames(current, application);
+		} catch (error) {
+			await this.files.relocateApplicationFolders({
+				...current,
+				folderName: application.folderName
+			}, new Date(current.sentAt ?? current.createdAt));
+			throw error;
+		}
 		await this.files.syncInterviewFolder(current, application);
 		application.updatedAt = nowIso();
 		this.workspace.applications[index] = application;
@@ -9904,6 +9570,9 @@ var DataStore = class {
 		const greeting = applicationGreeting(application);
 		const knowledgeSection = ensureKnowledgeSection(profile?.knowledgeSection, profile?.skills ?? []);
 		const knowledgeText = formatKnowledgeSectionAsText(knowledgeSection, false);
+		const deckblattContacts = getDeckblattContacts(profile);
+		const deckblattCompetencies = getDeckblattCompetencies(profile, application);
+		const deckblattDocuments = getDeckblattDocuments(this.workspace.attachments, application.id);
 		const strengthItems = profile?.strengths.length ? profile.strengths : (profile?.skills ?? []).map((value) => {
 			const [title, ...description] = value.split(/\s+(?:–|—|:)\s+/);
 			return {
@@ -9974,6 +9643,11 @@ var DataStore = class {
 			HEADER_KONTAKT_5: profile?.birthDate || profile?.birthPlace ? `Geb. ${profile?.birthDate ?? ""}${profile?.birthDate && profile?.birthPlace ? " in " : ""}${profile?.birthPlace ?? ""}` : "",
 			HEADER_KONTAKT_6: profile?.portfolio || profile?.github || extraOnlineProfiles[0] || "",
 			PROFILFOTO: profile?.photoPath ?? "",
+			DECKBLATT_STANDORT: application.company.city,
+			DECKBLATT_KURZPROFIL: application.documents.deckblattStatement || profile?.summary || "",
+			DECKBLATT_DOKUMENTE: deckblattDocuments.join("\n"),
+			DECKBLATT_KOMPETENZEN: deckblattCompetencies.join("\n"),
+			DECKBLATT_KONTAKT: deckblattContacts.map((contact) => `${contact.label}: ${contact.value}`).join("\n"),
 			ZUSAMMENFASSUNG_TITEL: application.documents.resumeProfile || profile?.summary ? getResumeSectionTitle(profile, "summary").toLocaleUpperCase("de-DE") : "",
 			ZUSAMMENFASSUNG: application.documents.resumeProfile || profile?.summary || "",
 			STAERKEN_TITEL: profile && (profile.strengths.length || profile.skills.length) ? getResumeSectionTitle(profile, "strengths").toLocaleUpperCase("de-DE") : "",
@@ -10085,33 +9759,35 @@ var DataStore = class {
 			BEWERBER_ORT: profile?.city ?? "",
 			BEWERBER_TELEFON: profile?.phone ?? "",
 			BEWERBER_EMAIL: profile?.email ?? "",
+			BEWERBER_WEBSITE: profile?.portfolio ?? "",
 			FIRMA_NAME: application.company.name,
 			FIRMA_ADRESSE: application.company.street,
 			FIRMA_PLZ: application.company.postalCode,
 			FIRMA_ORT: application.company.city,
 			ANSPRECHPARTNER: postalContactName,
+			FIRMA_ABTEILUNG: applicationContactDepartmentLines(application).join("\n"),
 			STELLENBEZEICHNUNG: application.job.title,
-			STELLENNUMMER: "",
-			BEWERBUNGSDATUM: formatApplicationDateLong(application),
-			BETREFF: application.documents.coverSubject || `Bewerbung als ${application.job.title}`,
+			STELLENNUMMER: application.job.reference,
+			BEWERBUNGSDATUM: formatApplicationDate(application),
+			BEWERBUNGSDATUM_LANG: formatApplicationDateLong(application),
+			BETREFF: createCoverSubject(application.job.title, application.documents.coverSubject),
 			ANREDE: greeting,
 			EINLEITUNG: application.documents.coverIntroduction,
-			MOTIVATION: application.documents.coverMotivation,
-			FACHLICHE_EIGNUNG: application.documents.coverQualification,
+			MOTIVATION: "",
+			FACHLICHE_EIGNUNG: getCoverLetterMainBody(application.documents),
 			UNTERNEHMENSBEZUG: application.documents.coverCompanyFit,
 			ZUSATZABSATZ: application.documents.coverExtraParagraph,
-			HAUPTTEXT: [
-				application.documents.coverMotivation,
-				application.documents.coverQualification,
-				application.documents.coverCompanyFit
-			].filter(Boolean).join("\n\n"),
+			HAUPTTEXT: getCoverLetterMainBody(application.documents),
 			SCHLUSSTEXT: application.documents.coverClosing,
 			GRUSSFORMEL: "Mit freundlichen Grüßen",
 			UNTERSCHRIFT: applicantName,
+			UNTERSCHRIFT_GRAFIK: profile?.signaturePath ?? "",
+			ANLAGENHINWEIS: ["Anlagen:", ...getCoverLetterAttachments(this.workspace.attachments, application.id)].join("\n"),
 			KENNTNISSE: knowledgeText,
 			...elegantData
 		};
 		const documentDirectories = this.files.documentDirectories(application);
+		const applicationBaseName = applicationFileBaseName(application);
 		return {
 			application,
 			targetDirectories: {
@@ -10119,7 +9795,12 @@ var DataStore = class {
 				deckblatt: documentDirectories.deckblatt,
 				lebenslauf: documentDirectories.lebenslauf
 			},
-			requestedBaseName: application.company.name,
+			requestedBaseName: coverLetterApplicantFileName(application, applicantName),
+			requestedBaseNames: {
+				anschreiben: coverLetterApplicantFileName(application, applicantName),
+				deckblatt: `${applicationBaseName}_Deckblatt`,
+				lebenslauf: `${applicationBaseName}_${sanitizeFileName(application.job.title)}_Lebenslauf`
+			},
 			data: templateData
 		};
 	}
@@ -10130,7 +9811,8 @@ var DataStore = class {
 	}
 	getExportDefaultName(id, target) {
 		const application = this.getApplication(id);
-		return `${sanitizeFileName(application.company.name)}_${sanitizeFileName(application.job.title)}_${target}.pdf`;
+		if (target === "deckblatt") return `${applicationFileBaseName(application)}_Deckblatt.pdf`;
+		return `${applicationFileBaseName(application)}_${sanitizeFileName(application.job.title)}_${target}.pdf`;
 	}
 	async writeBackup(filePath) {
 		await writeFile(filePath, JSON.stringify(workspaceSchema.parse(this.workspace), null, 2), "utf8");
@@ -10223,6 +9905,545 @@ var mergePdfDocuments = async (generatedDocument, additions) => {
 	return merged.save();
 };
 //#endregion
+//#region src/features/templates/template.constants.ts
+var allowedTemplateExtensions = /* @__PURE__ */ new Set([
+	".docx",
+	".dotx",
+	".doc"
+]);
+var templateSourceLabels = {
+	"muster-folder": "Musterordner",
+	"existing-document": "Eigenes Dokument",
+	"uploaded-word-template": "Eigene Word-Vorlage",
+	"system-word-template": "System Word-Vorlage"
+};
+var defaultTemplateSortOrder = 1e3;
+var wordMusterTemplateConfig = {
+	id: "word-muster-anschreiben",
+	fileName: "Anschreiben_Muster.docx",
+	name: "Anschreiben Mustafa Özdemir",
+	documentType: "anschreiben",
+	format: "docx",
+	source: "uploaded-word-template",
+	sortOrder: 2,
+	isSystemTemplate: false,
+	supportsPreview: true,
+	supportsPlaceholders: true,
+	editableInWord: true,
+	isProtected: true,
+	description: "Persönliche Word-Vorlage nach dem Anschreiben von Mustafa Özdemir. Beim Verwenden wird eine neue, ausgefüllte Kopie im Firmen-Datumsordner erstellt.",
+	tags: [
+		"Word",
+		"DOCX",
+		"Anschreiben"
+	]
+};
+var elegantLebenslaufTemplateConfig = {
+	id: "word-lebenslauf-elegant",
+	fileName: "Elegant_Lebenslauf_Muster.docx",
+	atsFileName: "Elegant_Lebenslauf_ATS.docx",
+	previewFileName: "Elegant_Lebenslauf_Muster.preview.png",
+	name: "Elegant",
+	documentType: "lebenslauf",
+	format: "docx",
+	source: "system-word-template",
+	sortOrder: 6,
+	category: "elegant",
+	layout: "two-column-right-sidebar",
+	atsFriendly: true,
+	supportsPhoto: true,
+	supportsPlaceholders: true,
+	supportsPreview: true,
+	supportsAtsMode: true,
+	editableInWord: true,
+	isSystemTemplate: true,
+	isProtected: true,
+	description: "Zweispaltige Word-Lebenslaufvorlage mit breiter Hauptspalte für Berufserfahrung und eleganter dunkelblauer Seitenleiste für persönliche Highlights.",
+	tags: [
+		"Elegant",
+		"Word",
+		"DOCX",
+		"Lebenslauf",
+		"ATS",
+		"Foto",
+		"Dunkelblau"
+	],
+	cardHighlights: ["Breite Hauptspalte für Berufserfahrung", "Dunkelblaue Seitenleiste für persönliche Highlights"]
+};
+var zeitgenoessischLebenslaufTemplateConfig = {
+	id: "word-lebenslauf-zeitgenoessisch",
+	fileName: "Zeitgenoessisch_Lebenslauf_Muster.docx",
+	atsFileName: "Zeitgenoessisch_Lebenslauf_ATS.docx",
+	previewFileName: "Zeitgenoessisch_Lebenslauf_Muster.preview.png",
+	name: "Zeitgenössisch",
+	documentType: "lebenslauf",
+	format: "docx",
+	source: "system-word-template",
+	sortOrder: 3,
+	category: "contemporary",
+	layout: "two-column-left-sidebar",
+	atsFriendly: true,
+	supportsPhoto: true,
+	supportsPlaceholders: true,
+	supportsPreview: true,
+	supportsAtsMode: true,
+	editableInWord: true,
+	isSystemTemplate: true,
+	isProtected: true,
+	description: "Grüne moderne Word-Lebenslaufvorlage. Saubere zweispaltige Struktur mit Foto, Stärken, Zusammenfassung und Erfahrung.",
+	tags: [
+		"Zeitgenössisch",
+		"Word",
+		"DOCX",
+		"Lebenslauf",
+		"ATS",
+		"Foto",
+		"Grün"
+	],
+	cardHighlights: ["Grüne moderne Word-Lebenslaufvorlage", "Foto, Stärken, Zusammenfassung und Erfahrung"]
+};
+var gepflegtLebenslaufTemplateConfig = {
+	id: "word-lebenslauf-gepflegt",
+	fileName: "Gepflegt_Lebenslauf_Muster.docx",
+	atsFileName: "Gepflegt_Lebenslauf_ATS.docx",
+	previewFileName: "Gepflegt_Lebenslauf_Muster.preview.png",
+	name: "Gepflegt",
+	documentType: "lebenslauf",
+	format: "docx",
+	source: "system-word-template",
+	sortOrder: 7,
+	category: "business",
+	layout: "two-column-left-sidebar",
+	atsFriendly: true,
+	supportsPhoto: true,
+	supportsPlaceholders: true,
+	supportsPreview: true,
+	supportsAtsMode: true,
+	editableInWord: true,
+	isSystemTemplate: true,
+	isProtected: true,
+	description: "Raffinierte Business-Lebenslaufvorlage mit linker Farbfläche und klarer Informationshierarchie.",
+	tags: [
+		"Gepflegt",
+		"Word",
+		"DOCX",
+		"Lebenslauf",
+		"ATS",
+		"Business",
+		"Kundenorientiert"
+	],
+	cardHighlights: ["Linke Farbfläche für Profil und Kernkompetenzen", "Klare Business-Hierarchie für kundenorientierte Rollen"]
+};
+var modernLebenslaufTemplateConfig = {
+	id: "word-lebenslauf-modern",
+	fileName: "Modern_Lebenslauf_Muster.docx",
+	atsFileName: "Modern_Lebenslauf_ATS.docx",
+	previewFileName: "Modern_Lebenslauf_Muster.preview.png",
+	name: "Modern",
+	documentType: "lebenslauf",
+	format: "docx",
+	source: "system-word-template",
+	sortOrder: 8,
+	category: "creative-professional",
+	layout: "two-column-equal",
+	atsFriendly: true,
+	supportsPhoto: true,
+	supportsPlaceholders: true,
+	supportsPreview: true,
+	supportsAtsMode: true,
+	editableInWord: true,
+	isSystemTemplate: true,
+	isProtected: true,
+	description: "Perfekte Lebenslauf-Vorlage mit kreativen Elementen, die Berufserfahrung und Qualifikationen übersichtlich zur Geltung bringt.",
+	tags: [
+		"Modern",
+		"Word",
+		"DOCX",
+		"Lebenslauf",
+		"ATS",
+		"Türkis",
+		"Kreativ",
+		"Professionell"
+	],
+	cardHighlights: ["Türkise Wellenmuster für professionelle Ausstrahlung", "Zwei Spalten mit separaten Kontakt- und Erfahrungsbereichen"]
+};
+var kreativLebenslaufTemplateConfig = {
+	id: "word-lebenslauf-kreativ",
+	fileName: "Kreativ_Lebenslauf_Muster.docx",
+	atsFileName: "Kreativ_Lebenslauf_ATS.docx",
+	previewFileName: "Kreativ_Lebenslauf_Muster.preview.png",
+	name: "Kreativ",
+	documentType: "lebenslauf",
+	format: "docx",
+	source: "system-word-template",
+	sortOrder: 4,
+	category: "creative",
+	layout: "two-column-header-banner",
+	atsFriendly: true,
+	supportsPhoto: true,
+	supportsBackground: true,
+	supportsPlaceholders: true,
+	supportsPreview: true,
+	supportsAtsMode: true,
+	editableInWord: true,
+	isSystemTemplate: true,
+	isProtected: true,
+	emphasis: "compact-information",
+	description: "Kompakte, kreative Word-Lebenslaufvorlage. Ideal, um viele Informationen übersichtlich auf einer Seite unterzubringen.",
+	tags: [
+		"Kreativ",
+		"Word",
+		"DOCX",
+		"Lebenslauf",
+		"ATS",
+		"Foto",
+		"Zweispaltig",
+		"Kompakt"
+	],
+	colorVariants: {
+		gruen: "#39B774",
+		schwarz: "#111111",
+		dunkelblau: "#244766",
+		tuerkis: "#159F9B",
+		violett: "#7052B5",
+		orange: "#D97706"
+	},
+	cardHighlights: ["Viele Informationen übersichtlich auf einer Seite", "Zweispaltig · Mit Foto · DOCX"]
+};
+var ivyLeagueLebenslaufTemplateConfig = {
+	id: "word-lebenslauf-ivy-league",
+	fileName: "Ivy_League_Lebenslauf_Muster.docx",
+	atsFileName: "Ivy_League_Lebenslauf_ATS.docx",
+	previewFileName: "Ivy_League_Lebenslauf_Muster.preview.png",
+	name: "Ivy League",
+	documentType: "lebenslauf",
+	format: "docx",
+	source: "system-word-template",
+	sortOrder: 9,
+	category: "classic-professional",
+	layout: "single-column-watercolor",
+	atsFriendly: true,
+	supportsPhoto: false,
+	supportsBackground: true,
+	supportsPlaceholders: true,
+	supportsPreview: true,
+	supportsAtsMode: true,
+	editableInWord: true,
+	isSystemTemplate: true,
+	isProtected: true,
+	emphasis: "classic-single-column",
+	description: "Die klassische Harvard-Lebenslaufvorlage, aktualisiert für das 21. Jahrhundert mit einem raffinierten, ATS-freundlichen Design.",
+	tags: [
+		"Ivy League",
+		"Word",
+		"DOCX",
+		"Lebenslauf",
+		"ATS",
+		"Ohne Foto",
+		"Einspaltig",
+		"Klassisch"
+	],
+	cardHighlights: ["Klassische Serifentypografie mit ruhiger Einspaltenstruktur", "Pastell-Hintergrund · Ohne Foto · ATS-freundlich"]
+};
+var kompaktLebenslaufTemplateConfig = {
+	id: "word-lebenslauf-kompakt",
+	fileName: "Kompakt_Lebenslauf_Muster.docx",
+	atsFileName: "Kompakt_Lebenslauf_ATS.docx",
+	previewFileName: "Kompakt_Lebenslauf_Muster.preview.png",
+	name: "Kompakt",
+	documentType: "lebenslauf",
+	format: "docx",
+	source: "system-word-template",
+	sortOrder: 5,
+	category: "compact",
+	layout: "two-column-compact",
+	atsFriendly: true,
+	supportsPhoto: false,
+	supportsBackground: true,
+	supportsPlaceholders: true,
+	supportsPreview: true,
+	supportsAtsMode: true,
+	editableInWord: true,
+	isSystemTemplate: true,
+	isProtected: true,
+	emphasis: "single-page-high-density",
+	description: "Einseitige Word-Lebenslaufvorlage mit kleineren Seitenrändern und hoher Informationsdichte.",
+	tags: [
+		"Kompakt",
+		"Word",
+		"DOCX",
+		"Lebenslauf",
+		"ATS",
+		"Ohne Foto",
+		"Zweispaltig",
+		"Einseitig"
+	],
+	colorVariants: {
+		dunkelblau: "#0A3485",
+		schwarz: "#111111",
+		petrol: "#145B63",
+		violett: "#5B3F91",
+		dunkelgruen: "#185D47"
+	},
+	cardHighlights: ["Einseitig · Hohe Informationsdichte", "Zweispaltig · Ohne Foto · ATS-freundlich · DOCX"]
+};
+var stilvollLebenslaufTemplateConfig = {
+	id: "word-lebenslauf-stilvoll",
+	fileName: "Stilvoll_Lebenslauf_Muster.docx",
+	atsFileName: "Stilvoll_Lebenslauf_ATS.docx",
+	previewFileName: "Stilvoll_Lebenslauf_Muster.preview.png",
+	name: "Stilvoll",
+	documentType: "lebenslauf",
+	format: "docx",
+	source: "system-word-template",
+	sortOrder: 10,
+	category: "modern-professional",
+	layout: "two-column-right-wide",
+	atsFriendly: true,
+	supportsPhoto: true,
+	supportsBackground: true,
+	supportsPlaceholders: true,
+	supportsPreview: true,
+	supportsAtsMode: true,
+	editableInWord: true,
+	isSystemTemplate: true,
+	isProtected: true,
+	emphasis: "skills-and-career",
+	description: "Stilvolle Word-Lebenslaufvorlage mit kompakter linker Informationsspalte, breiter Karrierespalte und geometrischem Hintergrund.",
+	tags: [
+		"Stilvoll",
+		"Word",
+		"DOCX",
+		"Lebenslauf",
+		"ATS",
+		"Foto",
+		"Zweispaltig",
+		"Grün"
+	],
+	cardHighlights: ["Kompakte Profilspalte und breite Karrierespalte", "Geometrisches Muster · Mit Foto · ATS-freundlich"]
+};
+var einspaltigLebenslaufTemplateConfig = {
+	id: "word-lebenslauf-einspaltig",
+	fileName: "Einfach_Lebenslauf_Muster.docx",
+	atsFileName: "Einfach_Lebenslauf_ATS.docx",
+	previewFileName: "Einfach_Lebenslauf_Muster.preview.png",
+	name: "Einspaltig",
+	documentType: "lebenslauf",
+	format: "docx",
+	source: "system-word-template",
+	sortOrder: 11,
+	category: "single-column",
+	layout: "single-column",
+	atsFriendly: true,
+	supportsPhoto: true,
+	supportsBackground: true,
+	supportsPlaceholders: true,
+	supportsPreview: true,
+	supportsAtsMode: true,
+	editableInWord: true,
+	isSystemTemplate: true,
+	isProtected: true,
+	emphasis: "simple-ats-readable",
+	description: "Einfache Word-Lebenslaufvorlage mit klarer einspaltiger Struktur, blauer Hierarchie und separater ATS-Ausgabe.",
+	tags: [
+		"Einspaltig",
+		"Word",
+		"DOCX",
+		"Lebenslauf",
+		"ATS",
+		"Foto",
+		"Alle Branchen",
+		"Blau"
+	],
+	cardHighlights: ["Klare Einspaltenstruktur mit kräftigen Abschnittslinien", "Mit Foto · Geometrisches Dekor · ATS-freundlich"]
+};
+var klassischLebenslaufTemplateConfig = {
+	id: "word-lebenslauf-klassisch",
+	fileName: "Klassisch_Lebenslauf_Muster.docx",
+	atsFileName: "Klassisch_Lebenslauf_ATS.docx",
+	previewFileName: "Klassisch_Lebenslauf_Muster.preview.png",
+	name: "Klassisch",
+	documentType: "lebenslauf",
+	format: "docx",
+	source: "system-word-template",
+	sortOrder: 8,
+	category: "classic",
+	layout: "single-column-classic",
+	atsFriendly: true,
+	supportsPhoto: true,
+	supportsBackground: true,
+	supportsPlaceholders: true,
+	supportsPreview: true,
+	supportsAtsMode: true,
+	editableInWord: true,
+	isSystemTemplate: true,
+	isProtected: true,
+	emphasis: "traditional-professional",
+	description: "Traditionelle Word-Lebenslaufvorlage mit klarer Einspaltenstruktur, modernem hellblauem Wellendekor und separater ATS-Ausgabe.",
+	tags: [
+		"Klassisch",
+		"Word",
+		"DOCX",
+		"Lebenslauf",
+		"ATS",
+		"Foto",
+		"Einspaltig",
+		"Konservative Branchen"
+	],
+	cardHighlights: ["Traditionelles Layout mit modernem hellblauem Wellendekor", "Einspaltig · Mit Foto · ATS-freundlich · DOCX"]
+};
+var coreTemplatePlaceholderKeys = [
+	"BEWERBER_NAME",
+	"BEWERBER_VORNAME",
+	"BEWERBER_NACHNAME",
+	"BEWERBER_ADRESSE",
+	"BEWERBER_PLZ",
+	"BEWERBER_ORT",
+	"BEWERBER_TELEFON",
+	"BEWERBER_EMAIL",
+	"BEWERBER_WEBSITE",
+	"FIRMA_NAME",
+	"FIRMA_ADRESSE",
+	"FIRMA_PLZ",
+	"FIRMA_ORT",
+	"ANSPRECHPARTNER",
+	"FIRMA_ABTEILUNG",
+	"STELLENBEZEICHNUNG",
+	"STELLENNUMMER",
+	"BEWERBUNGSDATUM",
+	"BEWERBUNGSDATUM_LANG",
+	"BETREFF",
+	"ANREDE",
+	"EINLEITUNG",
+	"MOTIVATION",
+	"FACHLICHE_EIGNUNG",
+	"UNTERNEHMENSBEZUG",
+	"ZUSATZABSATZ",
+	"HAUPTTEXT",
+	"SCHLUSSTEXT",
+	"GRUSSFORMEL",
+	"UNTERSCHRIFT",
+	"UNTERSCHRIFT_GRAFIK",
+	"ANLAGENHINWEIS",
+	"KENNTNISSE"
+];
+var templatePlaceholderAliases = {
+	FIRMA_ADI: "FIRMA_NAME",
+	FIRMA_ADRESI: "FIRMA_ADRESSE",
+	POSTA_KODU: "FIRMA_PLZ",
+	SEHIR: "FIRMA_ORT",
+	TARIH: "BEWERBUNGSDATUM",
+	STELLE: "STELLENBEZEICHNUNG",
+	REFERENZNUMMER: "STELLENNUMMER",
+	ANSCHREIBEN_METNI: "HAUPTTEXT",
+	EK_PARAGRAF: "ZUSATZABSATZ",
+	KAPANIS: "SCHLUSSTEXT"
+};
+var elegantStaticPlaceholderKeys = [
+	"VORNAME",
+	"NACHNAME",
+	"BERUFSBEZEICHNUNG",
+	"FACHGEBIET_1",
+	"FACHGEBIET_2",
+	"FACHGEBIETE",
+	"TELEFON",
+	"EMAIL",
+	"WEBSITE",
+	"LINKEDIN",
+	"ORT",
+	"GEBURTSDATUM",
+	"GEBURTSORT",
+	"GEBURTSZEILE",
+	"GITHUB",
+	"KONTAKTDATEN_TITEL",
+	"KONTAKT_ZEILE_1",
+	"KONTAKT_ZEILE_2",
+	"KONTAKT_ZEILE_3",
+	"KONTAKTE_TITEL",
+	"HEADER_KONTAKT_1",
+	"HEADER_KONTAKT_2",
+	"HEADER_KONTAKT_3",
+	"HEADER_KONTAKT_4",
+	"HEADER_KONTAKT_5",
+	"HEADER_KONTAKT_6",
+	"TELEFON_ZEILE",
+	"EMAIL_ZEILE",
+	"WEBSITE_ZEILE",
+	"LINKEDIN_ZEILE",
+	"ORT_ZEILE",
+	"PROFILFOTO",
+	"ZUSAMMENFASSUNG_TITEL",
+	"ZUSAMMENFASSUNG",
+	"STAERKEN_TITEL",
+	"STAERKEN_ATS",
+	"ERFOLGE_TITEL",
+	"ERFOLGE_ATS",
+	"ERFOLG_HIGHLIGHT_1_TITEL",
+	"ERFOLG_HIGHLIGHT_1_BESCHREIBUNG",
+	"ERFOLG_HIGHLIGHT_2_TITEL",
+	"ERFOLG_HIGHLIGHT_2_BESCHREIBUNG",
+	"KENNTNISSE_TITEL",
+	"SPRACHEN_TITEL",
+	"SPRACHEN_ATS",
+	"BERUFSERFAHRUNG_TITEL",
+	"ERFAHRUNG_TITEL",
+	"AUSBILDUNG_TITEL",
+	"PROJEKTE_TITEL",
+	"PROJEKTE",
+	"WEITERBILDUNGEN_TITEL",
+	"WEITERBILDUNGEN",
+	"ZERTIFIKATE_TITEL",
+	"ZERTIFIKATE",
+	"VEROEFFENTLICHUNGEN_TITEL",
+	"VEROEFFENTLICHUNGEN",
+	"EHRENAMT_TITEL",
+	"EHRENAMT",
+	"SOFTWARE_TITEL",
+	"SOFTWARE",
+	"ZUSATZANGABEN_TITEL",
+	"ZUSATZANGABEN",
+	"FUEHRERSCHEIN_TITEL",
+	"FUEHRERSCHEIN",
+	"INTERESSEN_TITEL",
+	"INTERESSEN",
+	"LEBENSLAUF_ORT",
+	"LEBENSLAUF_DATUM",
+	"LEBENSLAUF_UNTERSCHRIFT",
+	"ATS_MODUS"
+];
+var numberedPlaceholderKeys = (count, fields) => Array.from({ length: count }, (_, offset) => fields.map((field) => `${field}_${offset + 1}`)).flat();
+var elegantTemplatePlaceholderKeys = [
+	...elegantStaticPlaceholderKeys,
+	...numberedPlaceholderKeys(8, [
+		"POSITION",
+		"UNTERNEHMEN",
+		"STARTDATUM",
+		"DATUM_TRENNER",
+		"ENDDATUM",
+		"ARBEITSORT",
+		"BESCHREIBUNG",
+		"METADATA_TRENNER",
+		"TECHNOLOGIEN",
+		"ERFAHRUNG_TRENNER"
+	]),
+	...Array.from({ length: 8 }, (_, experienceOffset) => Array.from({ length: 5 }, (_, achievementOffset) => `ERFOLG_${experienceOffset + 1}_${achievementOffset + 1}`)).flat(),
+	...numberedPlaceholderKeys(3, [
+		"ABSCHLUSS",
+		"FACHRICHTUNG",
+		"HOCHSCHULE",
+		"AUSBILDUNG_START",
+		"AUSBILDUNG_DATUM_TRENNER",
+		"AUSBILDUNG_ENDE",
+		"AUSBILDUNG_ORT",
+		"AUSBILDUNG_METADATA_TRENNER"
+	]),
+	...numberedPlaceholderKeys(3, ["SPRACHE", "SPRACHNIVEAU"]),
+	...Array.from({ length: 3 }, (_, offset) => `SPRACHE_${offset + 1}_PUNKTE`),
+	...Array.from({ length: 4 }, (_, offset) => [`STAERKE_${offset + 1}_TITEL`, `STAERKE_${offset + 1}_BESCHREIBUNG`]).flat(),
+	...numberedPlaceholderKeys(6, ["KENNTNIS_KATEGORIE", "KENNTNIS_EINTRAEGE"])
+];
+var templatePlaceholderKeys = [...coreTemplatePlaceholderKeys, ...elegantTemplatePlaceholderKeys];
+//#endregion
 //#region src/features/templates/template.errors.ts
 var TemplateError = class extends Error {
 	code;
@@ -10250,6 +10471,7 @@ var toTemplateError = (error) => {
 //#endregion
 //#region electron/templates/template-filename.service.ts
 var sanitizeTemplateFileName = (value) => value.replaceAll("Ä", "Ae").replaceAll("Ö", "Oe").replaceAll("Ü", "Ue").replaceAll("ä", "ae").replaceAll("ö", "oe").replaceAll("ü", "ue").replaceAll("ß", "ss").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-").replace(/\s+/g, "_").replace(/[. ]+$/g, "").slice(0, 100) || "Vorlage";
+var sanitizeSynchronizedDocumentFileName = (value) => value.normalize("NFC").replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-").replace(/\s+/g, "_").replace(/[. ]+$/g, "").slice(0, 100) || "Dokument";
 var templateTimestamp = (date = /* @__PURE__ */ new Date()) => {
 	const pad = (value) => String(value).padStart(2, "0");
 	return [
@@ -27004,6 +27226,15 @@ var import_docxtemplater = /* @__PURE__ */ __toESM(require_docxtemplater(), 1);
 var import_js = /* @__PURE__ */ __toESM(require_js(), 1);
 var profilePhotoDataUrl = /^data:image\/png;base64,([a-z0-9+/=\s]+)$/i;
 var decodeXmlText = (value) => value.replaceAll("&amp;", "&").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&quot;", "\"").replaceAll("&apos;", "'");
+var escapeXmlText = (value) => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;");
+var appendCoverLetterAttachments = (zip, attachmentNote, accentColor) => {
+	const documentPart = zip.file("word/document.xml");
+	if (!documentPart || !attachmentNote.trim()) return;
+	const lines = attachmentNote.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+	if (!lines.length) return;
+	const paragraphs = lines.map((line, index) => `<w:p><w:pPr><w:spacing w:before="${index === 0 ? 180 : 0}" w:after="0" w:line="230" w:lineRule="auto"/><w:keepNext/></w:pPr><w:r><w:rPr>${index === 0 ? `<w:b/><w:color w:val="${accentColor}"/>` : ""}<w:sz w:val="18"/></w:rPr><w:t xml:space="preserve">${escapeXmlText(line)}</w:t></w:r></w:p>`).join("");
+	zip.file("word/document.xml", documentPart.asText().replace("<w:sectPr", `${paragraphs}<w:sectPr`));
+};
 var removeEmptyParagraphs = (documentXml) => documentXml.replace(/<w:p\b[\s\S]*?<\/w:p>/g, (paragraph) => {
 	if (paragraph.includes("w:pStyle w:val=\"CellTerminator\"") || paragraph.includes("<w:drawing")) return paragraph;
 	return Array.from(paragraph.matchAll(/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g), (match) => decodeXmlText(match[1]).trim()).join("") ? paragraph : "";
@@ -27065,7 +27296,7 @@ var cleanKlassischDocumentXml = (documentXml) => {
 	}).filter((range) => Boolean(range));
 	return [...emptyTables, ...emptyParagraphs].filter((candidate, _, all) => !all.some((other) => other.start < candidate.start && other.end > candidate.end)).sort((left, right) => right.start - left.start).reduce((xml, range) => xml.slice(0, range.start) + xml.slice(range.end), documentXml);
 };
-var centeredSquareCrop = (bytes) => {
+var centeredSquareCrop$1 = (bytes) => {
 	if (bytes.length < 24 || bytes.toString("ascii", 1, 4) !== "PNG") return {
 		left: 0,
 		top: 0,
@@ -27221,7 +27452,7 @@ var replaceProfilePhoto = (zip, dataUrl, cleanEmptyParagraphs = true) => {
 	}
 	const photoBytes = Buffer.from(encodedPhoto.replace(/\s/g, ""), "base64");
 	zip.file(path.posix.join("word", target), photoBytes);
-	const crop = centeredSquareCrop(photoBytes);
+	const crop = centeredSquareCrop$1(photoBytes);
 	const cropElement = `<a:srcRect l="${crop.left}" t="${crop.top}" r="${crop.right}" b="${crop.bottom}"/>`;
 	const updatedDrawing = drawing.replace(/(<a:blip\b[^>]*\/>)(?:<a:srcRect\b[^>]*\/>)?/, `$1${cropElement}`);
 	documentXml = documentXml.replace(drawing, updatedDrawing);
@@ -27286,6 +27517,7 @@ var TemplatePlaceholderService = class {
 			const replacedPlaceholders = [...templatePlaceholderKeys, ...aliasKeys].filter((key) => fullText.includes(`{{${key}}}`));
 			document.render(normalizedData);
 			const renderedZip = document.getZip();
+			if (template.documentType === "anschreiben" && !fullText.includes("{{ANLAGENHINWEIS}}")) appendCoverLetterAttachments(renderedZip, normalizedData.ANLAGENHINWEIS ?? "", normalizedHex(data.DESIGN_PRIMARY, "0B3D86"));
 			if (template.id === zeitgenoessischLebenslaufTemplateConfig.id || template.id === kreativLebenslaufTemplateConfig.id || template.id === ivyLeagueLebenslaufTemplateConfig.id || template.id === kompaktLebenslaufTemplateConfig.id || template.id === stilvollLebenslaufTemplateConfig.id || template.id === einspaltigLebenslaufTemplateConfig.id || template.id === klassischLebenslaufTemplateConfig.id || template.id === gepflegtLebenslaufTemplateConfig.id) applyManagedResumeDesignTokens(template.id, renderedZip, data);
 			if (template.id === kompaktLebenslaufTemplateConfig.id) applyKompaktDocumentOptions(renderedZip, data);
 			if (!replaceProfilePhoto(renderedZip, data.PROFILFOTO ?? "", template.id !== klassischLebenslaufTemplateConfig.id).found && template.documentType === "lebenslauf" && template.id !== klassischLebenslaufTemplateConfig.id) {
@@ -27319,7 +27551,7 @@ var TemplatePlaceholderService = class {
 };
 //#endregion
 //#region electron/templates/template-preview.service.ts
-var escapeXml = (value) => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;");
+var escapeXml$2 = (value) => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;");
 var TemplatePreviewService = class {
 	constructor(paths) {
 		this.paths = paths;
@@ -27351,14 +27583,14 @@ var TemplatePreviewService = class {
       <text x="34" y="76" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#2b579a">${typeLabel}</text>
       <rect x="34" y="92" width="44" height="50" rx="4" fill="#2b579a"/>
       <text x="48" y="126" font-family="Arial,sans-serif" font-size="26" font-weight="700" fill="#fff">W</text>
-      <text x="92" y="116" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#1d2927">${escapeXml(template.name.slice(0, 23))}</text>
-      <text x="92" y="138" font-family="Arial,sans-serif" font-size="11" fill="#71807c">${escapeXml(template.format.toUpperCase())} &#183; ${escapeXml(sourceLabel)}</text>
+      <text x="92" y="116" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#1d2927">${escapeXml$2(template.name.slice(0, 23))}</text>
+      <text x="92" y="138" font-family="Arial,sans-serif" font-size="11" fill="#71807c">${escapeXml$2(template.format.toUpperCase())} &#183; ${escapeXml$2(sourceLabel)}</text>
       <rect x="34" y="160" width="330" height="6" rx="3" fill="#e5ebe9"/>
       <rect x="34" y="174" width="310" height="6" rx="3" fill="#e5ebe9"/>
       <rect x="34" y="218" width="170" height="9" rx="4" fill="#9aaba6"/>
       ${Array.from({ length: 12 }, (_, index) => `<rect x="34" y="${246 + index * 20}" width="${index % 3 === 0 ? 330 : 300}" height="6" rx="3" fill="#e5ebe9"/>`).join("")}
-      <text x="34" y="540" font-family="Arial,sans-serif" font-size="12" fill="#71807c">Geändert: ${escapeXml(modifiedLabel)}</text>
-      <text x="34" y="560" font-family="Arial,sans-serif" font-size="12" fill="#71807c">${escapeXml(template.format.toUpperCase())} &#183; ${escapeXml(sourceLabel)}</text>
+      <text x="34" y="540" font-family="Arial,sans-serif" font-size="12" fill="#71807c">Geändert: ${escapeXml$2(modifiedLabel)}</text>
+      <text x="34" y="560" font-family="Arial,sans-serif" font-size="12" fill="#71807c">${escapeXml$2(template.format.toUpperCase())} &#183; ${escapeXml$2(sourceLabel)}</text>
     </svg>`;
 		try {
 			await readFile(previewPath);
@@ -28084,7 +28316,7 @@ var TemplateService = class {
 		await validateTemplateFile(this.paths, template.filePath);
 		await mkdir(targetDirectory, { recursive: true });
 		const outputExtension = template.extension === ".doc" ? ".doc" : ".docx";
-		const targetPath = path.join(targetDirectory, `${sanitizeTemplateFileName(requestedBaseName)}${outputExtension}`);
+		const targetPath = path.join(targetDirectory, `${sanitizeSynchronizedDocumentFileName(requestedBaseName)}${outputExtension}`);
 		return withOneDriveRetry(() => this.placeholderService.createDocument(template, targetPath, data));
 	}
 	async toggleTemplateFavorite(templateId) {
@@ -28109,6 +28341,357 @@ var TemplateService = class {
 		if (!template) throw new TemplateError("Vorlage wurde nicht gefunden.", "NOT_FOUND");
 		return template;
 	}
+};
+//#endregion
+//#region electron/templates/default-cover-letter.ts
+var pngDataUrl$1 = /^data:image\/png;base64,([a-z0-9+/=\s]+)$/i;
+var escapeXml$1 = (value = "") => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+var color = (value, fallback) => /^#[0-9a-f]{6}$/i.test(value ?? "") ? value.slice(1).toUpperCase() : fallback;
+var lines$1 = (...values) => values.flatMap((value) => (value ?? "").split(/\r?\n/)).map((value) => value.trim()).filter(Boolean);
+var imageSize = (bytes) => {
+	if (bytes.length >= 24 && bytes.toString("ascii", 1, 4) === "PNG") return {
+		width: bytes.readUInt32BE(16),
+		height: bytes.readUInt32BE(20)
+	};
+	return {
+		width: 4,
+		height: 1
+	};
+};
+var signatureDrawing = (bytes) => {
+	const { width, height } = imageSize(bytes);
+	const scale = Math.min(1728e3 / width, 504e3 / height);
+	const cx = Math.max(1, Math.round(width * scale));
+	const cy = Math.max(1, Math.round(height * scale));
+	return `<w:p><w:pPr><w:spacing w:before="40" w:after="20"/><w:keepNext/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="1" name="Unterschrift" descr="UNTERSCHRIFT_GRAFIK"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="1" name="unterschrift.png"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rIdSignature" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:ln><a:noFill/></a:ln></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+};
+var createDefaultCoverLetterDocument = async (targetDirectory, requestedBaseName, data) => {
+	const font = data.DESIGN_FONT || "Arial";
+	const accent = color(data.DESIGN_PRIMARY, "123F8C");
+	const secondary = color(data.DESIGN_ACCENT, "244766");
+	const signatureMatch = data.UNTERSCHRIFT_GRAFIK?.match(pngDataUrl$1);
+	const signatureBytes = signatureMatch ? Buffer.from(signatureMatch[1].replace(/\s/g, ""), "base64") : void 0;
+	const bodyValues = lines$1(data.EINLEITUNG, data.HAUPTTEXT || data.FACHLICHE_EIGNUNG, data.UNTERNEHMENSBEZUG, data.ZUSATZABSATZ, data.SCHLUSSTEXT);
+	const dense = bodyValues.join(" ").length > 2250 || bodyValues.length > 6;
+	const bodySize = 22;
+	const bodyLine = 276;
+	const paragraphAfter = dense ? 105 : 145;
+	const run = (value, size, options = {}) => `<w:r><w:rPr><w:rFonts w:ascii="${escapeXml$1(font)}" w:hAnsi="${escapeXml$1(font)}"/>${options.bold ? "<w:b/>" : ""}<w:color w:val="${options.color ?? "172026"}"/><w:sz w:val="${size}"/></w:rPr><w:t xml:space="preserve">${escapeXml$1(value)}</w:t></w:r>`;
+	const paragraph = (value, size = bodySize, options = {}) => `<w:p><w:pPr>${options.style ? `<w:pStyle w:val="${options.style}"/>` : ""}<w:spacing w:before="${options.before ?? 0}" w:after="${options.after ?? paragraphAfter}" w:line="${options.line ?? bodyLine}" w:lineRule="auto"/>${options.align ? `<w:jc w:val="${options.align}"/>` : ""}${options.bottomBorder ? `<w:pBdr><w:bottom w:val="single" w:sz="18" w:space="1" w:color="${options.bottomBorder}"/></w:pBdr>` : ""}${options.keepNext ? "<w:keepNext/>" : ""}</w:pPr>${run(value, size, options)}</w:p>`;
+	const senderContactLine = lines$1(data.BEWERBER_ADRESSE, `${data.BEWERBER_PLZ ?? ""} ${data.BEWERBER_ORT ?? ""}`.trim(), data.BEWERBER_EMAIL, data.BEWERBER_TELEFON).join(" | ");
+	const sender = [
+		paragraph(data.BEWERBER_NAME, 32, {
+			bold: true,
+			color: "000000",
+			after: 0,
+			line: 320,
+			align: "center",
+			style: "ApplicationSender"
+		}),
+		paragraph(data.BERUFSBEZEICHNUNG || data.STELLENBEZEICHNUNG, 22, {
+			bold: true,
+			color: accent,
+			after: 0,
+			line: 240,
+			align: "center",
+			style: "ApplicationSender"
+		}),
+		paragraph(senderContactLine, 20, {
+			color: "000000",
+			after: 0,
+			line: 230,
+			align: "center",
+			style: "ApplicationSender",
+			bottomBorder: accent
+		})
+	].join("");
+	const recipient = lines$1(data.FIRMA_NAME, data.ANSPRECHPARTNER, data.FIRMA_ABTEILUNG, data.FIRMA_ADRESSE, `${data.FIRMA_PLZ ?? ""} ${data.FIRMA_ORT ?? ""}`.trim()).map((value) => paragraph(value, 20, {
+		after: 0,
+		line: 235,
+		style: "ApplicationRecipient"
+	})).join("");
+	const placeAndDate = [data.BEWERBER_ORT, data.BEWERBUNGSDATUM_LANG ? `den ${data.BEWERBUNGSDATUM_LANG}` : data.BEWERBUNGSDATUM].filter(Boolean).join(", ");
+	const subjectBase = data.BETREFF || `Bewerbung als ${data.STELLENBEZEICHNUNG}`;
+	const subject = data.STELLENNUMMER && !subjectBase.includes(data.STELLENNUMMER) ? `${subjectBase} - Referenz ${data.STELLENNUMMER}` : subjectBase;
+	const greeting = paragraph(data.ANREDE, bodySize, {
+		before: 0,
+		after: paragraphAfter,
+		keepNext: true,
+		style: "ApplicationSalutation"
+	});
+	const body = [
+		data.EINLEITUNG ? paragraph(data.EINLEITUNG, bodySize, {
+			after: dense ? 115 : 180,
+			align: "both",
+			style: "ApplicationBody"
+		}) : "",
+		...lines$1(data.HAUPTTEXT || data.FACHLICHE_EIGNUNG, data.ZUSATZABSATZ).map((value) => paragraph(value, bodySize, {
+			align: "both",
+			style: "ApplicationBody"
+		})),
+		data.UNTERNEHMENSBEZUG ? paragraph(data.UNTERNEHMENSBEZUG, bodySize, {
+			before: 20,
+			after: dense ? 120 : 180,
+			align: "both",
+			style: "ApplicationBody"
+		}) : "",
+		data.SCHLUSSTEXT ? paragraph(data.SCHLUSSTEXT, bodySize, {
+			before: 20,
+			after: 0,
+			align: "both",
+			keepNext: true,
+			style: "ApplicationClosing"
+		}) : ""
+	].join("");
+	const closing = paragraph((data.GRUSSFORMEL || "Mit freundlichen Grüßen").replace(/,\s*$/, ""), bodySize, {
+		before: dense ? 180 : 240,
+		after: signatureBytes ? 0 : 360,
+		keepNext: true,
+		style: "ApplicationGreeting"
+	});
+	const signature = signatureBytes ? signatureDrawing(signatureBytes) : "";
+	const name = paragraph(data.UNTERSCHRIFT || data.BEWERBER_NAME, bodySize, {
+		after: data.ANLAGENHINWEIS ? 230 : 0,
+		keepNext: Boolean(data.ANLAGENHINWEIS),
+		style: "ApplicationSignatureName"
+	});
+	const attachments = lines$1(data.ANLAGENHINWEIS).map((value, index) => paragraph(value, 18, {
+		bold: index === 0,
+		color: index === 0 ? secondary : "172026",
+		after: 0,
+		style: "ApplicationAttachments"
+	})).join("");
+	const zip = new import_js.default();
+	zip.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>${signatureBytes ? "<Default Extension=\"png\" ContentType=\"image/png\"/>" : ""}<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`);
+	zip.file("_rels/.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
+	zip.file("word/document.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body><w:tbl><w:tblPr><w:tblW w:w="9355" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblBorders><w:bottom w:val="single" w:sz="18" w:color="${accent}"/></w:tblBorders><w:tblCellMar><w:top w:w="80" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid><w:gridCol w:w="9355"/></w:tblGrid><w:tr><w:trPr><w:trHeight w:val="1260" w:hRule="atLeast"/></w:trPr><w:tc><w:tcPr><w:tcW w:w="9355" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>${sender}</w:tc></w:tr></w:tbl><w:tbl><w:tblPr><w:tblW w:w="9355" w:type="dxa"/><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="9355"/></w:tblGrid><w:tr><w:trPr><w:trHeight w:val="1800" w:hRule="atLeast"/></w:trPr><w:tc><w:tcPr><w:tcW w:w="9355" w:type="dxa"/><w:vAlign w:val="bottom"/><w:tcMar><w:top w:w="520" w:type="dxa"/></w:tcMar></w:tcPr>${recipient}</w:tc></w:tr></w:tbl>${paragraph(placeAndDate, 20, {
+		align: "right",
+		after: 520,
+		style: "ApplicationDate"
+	})}${paragraph(subject, 28, {
+		bold: true,
+		color: accent,
+		after: 280,
+		keepNext: true,
+		style: "ApplicationSubject"
+	})}${greeting}${body}${closing}${signature}${name}${attachments}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="680" w:right="1134" w:bottom="1417" w:left="1134" w:header="425" w:footer="425" w:gutter="0"/></w:sectPr></w:body></w:document>`);
+	zip.file("word/_rels/document.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdSettings" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/><Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>${signatureBytes ? "<Relationship Id=\"rIdSignature\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/image\" Target=\"media/unterschrift.png\"/>" : ""}</Relationships>`);
+	zip.file("word/styles.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="${escapeXml$1(font)}" w:hAnsi="${escapeXml$1(font)}"/><w:sz w:val="22"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style>${[
+		["ApplicationSender", "Application Sender"],
+		["ApplicationReturnAddress", "Application Return Address"],
+		["ApplicationRecipient", "Application Recipient"],
+		["ApplicationDate", "Application Date"],
+		["ApplicationSubject", "Application Subject"],
+		["ApplicationReference", "Application Reference"],
+		["ApplicationSalutation", "Application Salutation"],
+		["ApplicationBody", "Application Body"],
+		["ApplicationClosing", "Application Closing"],
+		["ApplicationGreeting", "Application Greeting"],
+		["ApplicationSignatureName", "Application Signature Name"],
+		["ApplicationAttachments", "Application Attachments"]
+	].map(([id, name]) => `<w:style w:type="paragraph" w:customStyle="1" w:styleId="${id}"><w:name w:val="${name}"/><w:basedOn w:val="Normal"/><w:qFormat/></w:style>`).join("")}</w:styles>`);
+	zip.file("word/settings.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>`);
+	if (signatureBytes) zip.file("word/media/unterschrift.png", signatureBytes);
+	await mkdir(targetDirectory, { recursive: true });
+	const fileName = `${sanitizeTemplateFileName(requestedBaseName)}.docx`;
+	const filePath = path.join(targetDirectory, fileName);
+	await writeFile(filePath, zip.generate({
+		type: "nodebuffer",
+		compression: "DEFLATE"
+	}));
+	return {
+		templateId: wordMusterTemplateConfig.id,
+		fileName,
+		filePath,
+		extension: ".docx",
+		replacedPlaceholders: [
+			"BEWERBER_NAME",
+			"BEWERBER_ADRESSE",
+			"BEWERBER_PLZ",
+			"BEWERBER_ORT",
+			"BEWERBER_TELEFON",
+			"BEWERBER_EMAIL",
+			"BEWERBER_WEBSITE",
+			"FIRMA_NAME",
+			"ANSPRECHPARTNER",
+			"FIRMA_ABTEILUNG",
+			"FIRMA_ADRESSE",
+			"FIRMA_PLZ",
+			"FIRMA_ORT",
+			"BEWERBUNGSDATUM",
+			"BEWERBUNGSDATUM_LANG",
+			"BETREFF",
+			"STELLENNUMMER",
+			"ANREDE",
+			"UNTERSCHRIFT_GRAFIK",
+			"ANLAGENHINWEIS"
+		]
+	};
+};
+//#endregion
+//#region electron/templates/default-deckblatt.ts
+var templateId = "system-default-deckblatt";
+var pngDataUrl = /^data:image\/png;base64,([a-z0-9+/=\s]+)$/i;
+var escapeXml = (value = "") => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+var normalizeColor = (value, fallback) => /^#[0-9a-f]{6}$/i.test(value ?? "") ? value.slice(1).toUpperCase() : fallback;
+var run = (value, font, size, color = "172026", bold = false) => `<w:r><w:rPr><w:rFonts w:ascii="${escapeXml(font)}" w:hAnsi="${escapeXml(font)}"/>${bold ? "<w:b/>" : ""}<w:color w:val="${color}"/><w:sz w:val="${size}"/></w:rPr><w:t xml:space="preserve">${escapeXml(value)}</w:t></w:r>`;
+var paragraph = (value, font, size = 20, options = {}) => `<w:p><w:pPr><w:spacing w:before="${options.before ?? 0}" w:after="${options.after ?? 80}"/>${options.align ? `<w:jc w:val="${options.align}"/>` : ""}${options.keepNext ? "<w:keepNext/>" : ""}</w:pPr>${run(value, font, size, options.color, options.bold)}</w:p>`;
+var tableCell = (content, width, options = "") => `<w:tc><w:tcPr><w:tcW w:w="${width}" w:type="dxa"/>${options}</w:tcPr>${content}</w:tc>`;
+var centeredSquareCrop = (bytes) => {
+	if (bytes.length < 24 || bytes[0] !== 137 || bytes.subarray(1, 4).toString("ascii") !== "PNG") return {
+		left: 0,
+		top: 0,
+		right: 0,
+		bottom: 0
+	};
+	const width = bytes.readUInt32BE(16);
+	const height = bytes.readUInt32BE(20);
+	if (!width || !height || width === height) return {
+		left: 0,
+		top: 0,
+		right: 0,
+		bottom: 0
+	};
+	if (width > height) {
+		const crop = Math.round((width - height) / width / 2 * 1e5);
+		return {
+			left: crop,
+			top: 0,
+			right: crop,
+			bottom: 0
+		};
+	}
+	const crop = Math.round((height - width) / height / 2 * 1e5);
+	return {
+		left: 0,
+		top: crop,
+		right: 0,
+		bottom: crop
+	};
+};
+var photoDrawing = (bytes) => {
+	const crop = centeredSquareCrop(bytes);
+	return `<w:p><w:pPr><w:jc w:val="right"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><wp:extent cx="1296000" cy="1296000"/><wp:docPr id="1" name="Bewerbungsfoto" descr="PROFILFOTO"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="1" name="profilfoto.png"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rIdPhoto" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/><a:srcRect l="${crop.left}" t="${crop.top}" r="${crop.right}" b="${crop.bottom}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="1296000" cy="1296000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:ln w="19050"><a:solidFill><a:srgbClr val="D9E0E3"/></a:solidFill></a:ln></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+};
+var lines = (value) => (value ?? "").split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+var createDefaultDeckblattDocument = async (targetDirectory, requestedBaseName, data) => {
+	const applicantName = data.BEWERBER_NAME?.trim();
+	const company = data.FIRMA_NAME?.trim();
+	const position = data.STELLENBEZEICHNUNG?.trim();
+	const missing = [
+		!applicantName ? "Name der Bewerberin oder des Bewerbers" : "",
+		!company ? "Unternehmen" : "",
+		!position ? "Stellenbezeichnung" : ""
+	].filter(Boolean);
+	if (missing.length) throw new Error(`Deckblatt kann nicht erstellt werden. Bitte ergänzen Sie: ${missing.join(", ")}.`);
+	const font = data.DESIGN_FONT || "Arial";
+	const accent = normalizeColor(data.DESIGN_PRIMARY, "123F8C");
+	const secondary = normalizeColor(data.DESIGN_ACCENT, "244766");
+	const photoMatch = data.PROFILFOTO?.match(pngDataUrl);
+	const photoBytes = photoMatch ? Buffer.from(photoMatch[1].replace(/\s/g, ""), "base64") : void 0;
+	const documents = lines(data.DECKBLATT_DOKUMENTE);
+	const competencies = lines(data.DECKBLATT_KOMPETENZEN);
+	const contacts = lines(data.DECKBLATT_KONTAKT);
+	const leftDetails = [paragraph("BEWERBUNGSUNTERLAGEN", font, 18, {
+		color: accent,
+		bold: true,
+		after: 150,
+		keepNext: true
+	}), ...documents.map((item) => paragraph(`•  ${item}`, font, 18, { after: 55 }))].join("");
+	const rightDetails = [...competencies.length ? [paragraph("KERNKOMPETENZEN", font, 18, {
+		color: accent,
+		bold: true,
+		after: 150,
+		keepNext: true
+	}), paragraph(competencies.join(" · "), font, 18, { after: 260 })] : [], ...contacts.length ? [paragraph("KONTAKT", font, 18, {
+		color: accent,
+		bold: true,
+		after: 150,
+		keepNext: true
+	}), ...contacts.map((item) => paragraph(item, font, 18, { after: 55 }))] : []].join("");
+	const heroText = [
+		paragraph("BEWERBUNG", font, 20, {
+			color: accent,
+			bold: true,
+			after: 190,
+			keepNext: true
+		}),
+		paragraph(`Bewerbung als ${position}`, font, 44, {
+			color: "172026",
+			bold: true,
+			after: 130,
+			keepNext: true
+		}),
+		paragraph(`bei ${company}`, font, 25, {
+			color: secondary,
+			after: 80
+		}),
+		...data.DECKBLATT_STANDORT ? [paragraph(`Standort: ${data.DECKBLATT_STANDORT}`, font, 18, {
+			color: "5C6870",
+			after: 40
+		})] : [],
+		...data.STELLENNUMMER ? [paragraph(`Referenz: ${data.STELLENNUMMER}`, font, 18, {
+			color: "5C6870",
+			after: 40
+		})] : [],
+		paragraph(data.BEWERBUNGSDATUM, font, 18, {
+			color: "5C6870",
+			after: 0
+		})
+	].join("");
+	const hero = photoBytes ? `<w:tbl><w:tblPr><w:tblW w:w="9360" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblBorders><w:bottom w:val="single" w:sz="6" w:color="D9E0E3"/></w:tblBorders></w:tblPr><w:tblGrid><w:gridCol w:w="7200"/><w:gridCol w:w="2160"/></w:tblGrid><w:tr>${tableCell(heroText, 7200, "<w:tcMar><w:right w:w=\"360\" w:type=\"dxa\"/></w:tcMar>")}${tableCell(photoDrawing(photoBytes), 2160, "<w:vAlign w:val=\"top\"/>")}</w:tr></w:tbl>` : `<w:tbl><w:tblPr><w:tblW w:w="9360" w:type="dxa"/><w:tblBorders><w:bottom w:val="single" w:sz="6" w:color="D9E0E3"/></w:tblBorders></w:tblPr><w:tblGrid><w:gridCol w:w="9360"/></w:tblGrid><w:tr>${tableCell(heroText, 9360)}</w:tr></w:tbl>`;
+	const identity = [
+		paragraph(applicantName, font, 34, {
+			color: accent,
+			bold: true,
+			before: 650,
+			after: 80,
+			keepNext: Boolean(data.BERUFSBEZEICHNUNG || data.DECKBLATT_KURZPROFIL)
+		}),
+		...data.BERUFSBEZEICHNUNG ? [paragraph(data.BERUFSBEZEICHNUNG, font, 21, {
+			color: secondary,
+			after: 140
+		})] : [],
+		...data.DECKBLATT_KURZPROFIL ? [paragraph(data.DECKBLATT_KURZPROFIL, font, 19, {
+			color: "455159",
+			after: 0,
+			align: "both"
+		})] : []
+	].join("");
+	const details = `<w:tbl><w:tblPr><w:tblW w:w="9360" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblBorders><w:top w:val="single" w:sz="6" w:color="D9E0E3"/></w:tblBorders><w:tblCellMar><w:top w:w="300" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid><w:gridCol w:w="3180"/><w:gridCol w:w="6180"/></w:tblGrid><w:tr>${tableCell(leftDetails, 3180, "<w:tcMar><w:right w:w=\"240\" w:type=\"dxa\"/></w:tcMar>")}${tableCell(rightDetails || paragraph("", font, 18), 6180, "<w:tcMar><w:left w:w=\"240\" w:type=\"dxa\"/></w:tcMar>")}</w:tr></w:tbl>`;
+	const zip = new import_js.default();
+	zip.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>${photoBytes ? "<Default Extension=\"png\" ContentType=\"image/png\"/>" : ""}<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/></Types>`);
+	zip.file("_rels/.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
+	zip.file("word/document.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body><w:tbl><w:tblPr><w:tblW w:w="9360" w:type="dxa"/><w:tblBorders><w:top w:val="single" w:sz="30" w:color="${accent}"/></w:tblBorders></w:tblPr><w:tblGrid><w:gridCol w:w="9360"/></w:tblGrid><w:tr><w:tc><w:tcPr><w:tcW w:w="9360" w:type="dxa"/></w:tcPr>${paragraph("", font, 2, { after: 260 })}</w:tc></w:tr></w:tbl>${hero}${identity}${paragraph("", font, 2, {
+		before: 420,
+		after: 0
+	})}${details}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1020" w:right="1275" w:bottom="1020" w:left="1275" w:header="600" w:footer="600" w:gutter="0"/></w:sectPr></w:body></w:document>`);
+	zip.file("word/_rels/document.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdSettings" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>${photoBytes ? "<Relationship Id=\"rIdPhoto\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/image\" Target=\"media/profilfoto.png\"/>" : ""}</Relationships>`);
+	zip.file("word/settings.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>`);
+	if (photoBytes) zip.file("word/media/profilfoto.png", photoBytes);
+	await mkdir(targetDirectory, { recursive: true });
+	const fileName = `${sanitizeTemplateFileName(requestedBaseName)}.docx`;
+	const filePath = path.join(targetDirectory, fileName);
+	await writeFile(filePath, zip.generate({
+		type: "nodebuffer",
+		compression: "DEFLATE"
+	}));
+	return {
+		templateId,
+		fileName,
+		filePath,
+		extension: ".docx",
+		replacedPlaceholders: [
+			"BEWERBER_NAME",
+			"FIRMA_NAME",
+			"STELLENBEZEICHNUNG",
+			"BEWERBUNGSDATUM",
+			"DECKBLATT_DOKUMENTE",
+			"DECKBLATT_KOMPETENZEN",
+			"DECKBLATT_KONTAKT",
+			...photoBytes ? ["PROFILFOTO"] : []
+		]
+	};
 };
 var execFileAsync = promisify(execFile);
 var powershellScript = `param(
@@ -28213,7 +28796,7 @@ var inferApplicationGitChange = (relativePath) => {
 	const folder = knownRootIndex >= 0 ? parts[knownRootIndex + 1] : void 0;
 	if (!folder) return void 0;
 	return {
-		companyName: folder.replace(/_(?:\d{4}-\d{2}-\d{2}|Termin_offen)$/, "").replace(/_/g, " "),
+		companyName: folder.replace(/_(?:\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2}|Termin_offen)$/, "").replace(/_/g, " "),
 		action: category === "Anschreiben" ? "anschreiben" : category === "Absagen" ? "absage" : category === "Vorstellungsgespräch" ? "vorstellungsgespraech" : "update"
 	};
 };
@@ -28360,15 +28943,53 @@ var createMainWindow = async () => {
 	if (isDevelopment) await mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
 	else await mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
 };
+var synchronizeApplicationCoverLetter = async (applicationId) => {
+	const context = store.getTemplateDocumentContext(applicationId);
+	const data = { ...context.data };
+	if (data.UNTERSCHRIFT_GRAFIK) {
+		const signature = nativeImage.createFromDataURL(data.UNTERSCHRIFT_GRAFIK);
+		data.UNTERSCHRIFT_GRAFIK = signature.isEmpty() ? "" : `data:image/png;base64,${signature.toPNG().toString("base64")}`;
+	}
+	const personalTemplate = await templateService.getTemplateById(wordMusterTemplateConfig.id);
+	if (personalTemplate) return templateService.synchronizeDocumentFromTemplate(personalTemplate.id, context.targetDirectories.anschreiben, context.requestedBaseName, data);
+	return createDefaultCoverLetterDocument(context.targetDirectories.anschreiben, context.requestedBaseName, data);
+};
+var synchronizeApplicationDeckblatt = async (applicationId) => {
+	const context = store.getTemplateDocumentContext(applicationId);
+	const data = { ...context.data };
+	if (data.PROFILFOTO) {
+		const photo = nativeImage.createFromDataURL(data.PROFILFOTO);
+		data.PROFILFOTO = photo.isEmpty() ? "" : `data:image/png;base64,${photo.toPNG().toString("base64")}`;
+	}
+	return createDefaultDeckblattDocument(context.targetDirectories.deckblatt, context.requestedBaseNames.deckblatt, data);
+};
+var createMissingExistingDeckblatts = async () => {
+	for (const application of store.getWorkspace().applications) {
+		const context = store.getTemplateDocumentContext(application.id);
+		const targetPath = path.join(context.targetDirectories.deckblatt, `${sanitizeTemplateFileName(context.requestedBaseNames.deckblatt)}.docx`);
+		try {
+			await access(targetPath);
+		} catch {
+			if (store.getProfileForApplication(application)) await synchronizeApplicationDeckblatt(application.id);
+		}
+	}
+};
 var registerIpc = () => {
 	ipcMain.handle("workspace:get", () => store.getWorkspace());
 	ipcMain.handle("application-draft:get", () => store.getApplicationDraft());
 	ipcMain.handle("application-draft:save", (_event, value) => store.saveApplicationDraft(applicationDraftSchema.parse(value)));
 	ipcMain.handle("application-draft:clear", () => store.clearApplicationDraft());
-	ipcMain.handle("applications:create", (_event, value) => store.createApplication(applicationInputSchema.parse(value)));
+	ipcMain.handle("applications:create", async (_event, value) => {
+		const workspace = await store.createApplication(applicationInputSchema.parse(value));
+		await Promise.all([synchronizeApplicationCoverLetter(workspace.applications[0].id), synchronizeApplicationDeckblatt(workspace.applications[0].id)]);
+		return workspace;
+	});
 	ipcMain.handle("applications:save", async (_event, value) => {
 		try {
-			return await store.saveApplication(applicationSchema.parse(value));
+			const next = applicationSchema.parse(value);
+			const workspace = await store.saveApplication(next);
+			await Promise.all([synchronizeApplicationDeckblatt(next.id), synchronizeApplicationCoverLetter(next.id)]);
+			return workspace;
 		} catch (error) {
 			if (error instanceof ApplicationFolderLockedError && mainWindow) await dialog.showMessageBox(mainWindow, {
 				type: "warning",
@@ -28382,7 +29003,11 @@ var registerIpc = () => {
 		}
 	});
 	ipcMain.handle("applications:remove", (_event, id) => store.removeApplication(String(id)));
-	ipcMain.handle("applications:duplicate", (_event, id) => store.duplicateApplication(String(id)));
+	ipcMain.handle("applications:duplicate", async (_event, id) => {
+		const workspace = await store.duplicateApplication(String(id));
+		await Promise.all([synchronizeApplicationCoverLetter(workspace.applications[0].id), synchronizeApplicationDeckblatt(workspace.applications[0].id)]);
+		return workspace;
+	});
 	ipcMain.handle("applications:change-status", (_event, id, status, reason) => {
 		const validStatus = applicationStatuses.find((item) => item === status);
 		const validReason = rejectionReasons.find((item) => item === reason);
@@ -28393,8 +29018,17 @@ var registerIpc = () => {
 		const error = await shell.openPath(store.getApplicationAnschreibenPath(String(id)));
 		if (error) throw new Error(error);
 	});
-	ipcMain.handle("profiles:save", (_event, value) => store.saveProfile(profileSchema.parse(value)));
-	ipcMain.handle("profiles:remove", (_event, id) => store.removeProfile(String(id)));
+	ipcMain.handle("profiles:save", async (_event, value) => {
+		const profile = profileSchema.parse(value);
+		const workspace = await store.saveProfile(profile);
+		await Promise.all(workspace.applications.filter((application) => store.getProfileForApplication(application)?.id === profile.id).flatMap((application) => [synchronizeApplicationDeckblatt(application.id), synchronizeApplicationCoverLetter(application.id)]));
+		return workspace;
+	});
+	ipcMain.handle("profiles:remove", async (_event, id) => {
+		const workspace = await store.removeProfile(String(id));
+		await Promise.all(workspace.applications.filter((application) => store.getProfileForApplication(application)).flatMap((application) => [synchronizeApplicationDeckblatt(application.id), synchronizeApplicationCoverLetter(application.id)]));
+		return workspace;
+	});
 	ipcMain.handle("templates:scan", () => templateService.scanAllTemplates());
 	ipcMain.handle("templates:add", async (_event, rawInput) => {
 		const value = rawInput ?? {};
@@ -28425,7 +29059,7 @@ var registerIpc = () => {
 			const photo = nativeImage.createFromDataURL(context.data["PROFILFOTO"]);
 			context.data["PROFILFOTO"] = photo.isEmpty() ? "" : `data:image/png;base64,${photo.toPNG().toString("base64")}`;
 		}
-		const result = await templateService.createDocumentFromTemplate(template.id, context.targetDirectories[template.documentType], context.requestedBaseName, context.data, { atsMode: value.atsMode === true });
+		const result = await templateService.createDocumentFromTemplate(template.id, context.targetDirectories[template.documentType], context.requestedBaseNames[template.documentType], context.data, { atsMode: value.atsMode === true });
 		store.queueGitCommit(value.applicationId, template.documentType === "anschreiben" ? "anschreiben" : "update");
 		const openError = await shell.openPath(result.filePath);
 		if (openError) throw new Error(openError);
@@ -28433,11 +29067,7 @@ var registerIpc = () => {
 	});
 	ipcMain.handle("templates:sync-anschreiben", async (_event, applicationId) => {
 		const id = String(applicationId);
-		const template = await templateService.getTemplateById(wordMusterTemplateConfig.id);
-		if (!template) throw new Error("Die Anschreiben-Word-Vorlage wurde nicht gefunden.");
-		const context = store.getTemplateDocumentContext(id);
-		const applicantName = [context.data.BEWERBER_VORNAME, context.data.BEWERBER_NACHNAME].filter(Boolean).join("_");
-		const result = await templateService.synchronizeDocumentFromTemplate(template.id, context.targetDirectories.anschreiben, applicantName ? `Anschreiben_${applicantName}` : "Anschreiben", context.data);
+		const result = await synchronizeApplicationCoverLetter(id);
 		store.queueGitCommit(id, "anschreiben");
 		return result;
 	});
@@ -28497,15 +29127,30 @@ var registerIpc = () => {
 			}]
 		});
 		if (selection.canceled || !selection.filePaths[0]) return store.getWorkspace();
-		return store.addAttachment(String(applicationId), category, selection.filePaths[0]);
+		const workspace = await store.addAttachment(String(applicationId), category, selection.filePaths[0]);
+		await synchronizeApplicationDeckblatt(String(applicationId));
+		return workspace;
 	});
-	ipcMain.handle("attachments:save", (_event, value) => store.saveAttachment(attachmentSchema.parse(value)));
-	ipcMain.handle("attachments:move", (_event, id, rawDirection) => {
+	ipcMain.handle("attachments:save", async (_event, value) => {
+		const attachment = attachmentSchema.parse(value);
+		const workspace = await store.saveAttachment(attachment);
+		await synchronizeApplicationDeckblatt(attachment.applicationId);
+		return workspace;
+	});
+	ipcMain.handle("attachments:move", async (_event, id, rawDirection) => {
 		const direction = Number(rawDirection);
 		if (direction !== -1 && direction !== 1) throw new Error("Ungültige Sortierrichtung.");
-		return store.moveAttachment(String(id), direction);
+		const attachment = store.getWorkspace().attachments.find((item) => item.id === String(id));
+		const workspace = await store.moveAttachment(String(id), direction);
+		if (attachment) await synchronizeApplicationDeckblatt(attachment.applicationId);
+		return workspace;
 	});
-	ipcMain.handle("attachments:remove", (_event, id) => store.removeAttachment(String(id)));
+	ipcMain.handle("attachments:remove", async (_event, id) => {
+		const attachment = store.getWorkspace().attachments.find((item) => item.id === String(id));
+		const workspace = await store.removeAttachment(String(id));
+		if (attachment) await synchronizeApplicationDeckblatt(attachment.applicationId);
+		return workspace;
+	});
 	ipcMain.handle("attachments:open", async (_event, id) => {
 		const error = await shell.openPath(store.getAttachmentPathById(String(id)));
 		if (error) throw new Error(error);
@@ -28673,6 +29318,7 @@ app.whenReady().then(async () => {
 	await gitAutomation.initialize();
 	templateService = new TemplateService(applicationPaths);
 	await templateService.initialize();
+	await createMissingExistingDeckblatts();
 	registerIpc();
 	await createMainWindow();
 	notifyDueEvents();

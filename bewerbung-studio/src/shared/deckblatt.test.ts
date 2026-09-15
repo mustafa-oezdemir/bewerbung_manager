@@ -20,7 +20,12 @@ const profile = profileSchema.parse({
   linkedin: "linkedin.com/in/mina-kaya",
   github: "github.com/minakaya",
   portfolio: "mina.example.com",
-  skills: ["TypeScript – Sehr gute Kenntnisse", "React", "TypeScript"],
+  skills: [
+    "TypeScript – Sehr gute Kenntnisse",
+    "React",
+    "Node.js",
+    "TypeScript",
+  ],
   updatedAt: "2026-09-03T18:00:00.000Z",
 });
 
@@ -41,7 +46,33 @@ describe("Deckblatt data", () => {
         },
       ]),
     );
-    expect(getDeckblattCompetencies(profile)).toEqual(["TypeScript", "React"]);
+    expect(getDeckblattCompetencies(profile)).toEqual([
+      "TypeScript",
+      "React",
+      "Node.js",
+    ]);
+  });
+
+  it("shows only a compact block of three to five available competencies", () => {
+    const shortProfile = profileSchema.parse({
+      ...profile,
+      skills: ["TypeScript", "React"],
+    });
+    expect(getDeckblattCompetencies(shortProfile)).toEqual([]);
+    expect(
+      getDeckblattCompetencies(profile, {
+        job: {
+          title: "Node.js Entwickler",
+          reference: "",
+          fullText: "Gesucht werden Node.js und React Kenntnisse.",
+          source: "",
+          url: "",
+          workModel: "Hybrid",
+          contractType: "Unbefristet",
+          salaryExpectation: "",
+        },
+      }),
+    ).toEqual(["React", "Node.js", "TypeScript"]);
   });
 
   it("lists only attachments selected for the application in package order", () => {
@@ -84,6 +115,11 @@ describe("Deckblatt data", () => {
         ],
         "2c0d9a5b-7e4f-4d20-9e9d-0b0e6e7d1010",
       ),
-    ).toEqual(["Lebenslauf", "Arbeitszeugnis.pdf", "AWS-Zertifikat.pdf"]);
+    ).toEqual([
+      "Anschreiben",
+      "Lebenslauf",
+      "Arbeitszeugnis.pdf",
+      "AWS-Zertifikat.pdf",
+    ]);
   });
 });

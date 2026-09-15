@@ -3,6 +3,11 @@ import { access, mkdir, readdir, rename, rm, rmdir } from "node:fs/promises";
 import path from "node:path";
 import type { Application, ApplicationStatus } from "../src/shared/schema";
 import type { ApplicationPaths } from "../src/config/application-paths";
+import {
+  formatApplicationDate,
+  formatApplicationDateFolder,
+  getApplicationDate,
+} from "../src/shared/applicationDate";
 
 const reservedWindowsNames =
   /^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)/i;
@@ -67,10 +72,27 @@ type DocumentDirectories = {
   anschreiben: string;
   lebenslauf: string;
   deckblatt: string;
+  email: string;
 };
+
+export const applicationFileBaseName = (
+  application: Pick<Application, "company" | "createdAt" | "sentAt">,
+) =>
+  `${sanitizeFileName(application.company.name)}_${formatApplicationDate(application)}`;
 
 export class FileManagementService {
   constructor(readonly paths: ApplicationPaths) {}
+
+  private async withRenameRetry<T>(operation: () => Promise<T>): Promise<T> {
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        return await operation();
+      } catch (error) {
+        if (attempt >= 2 || !isApplicationFolderLockError(error)) throw error;
+        await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
+      }
+    }
+  }
 
   async initialize() {
     const directories = [
@@ -157,6 +179,7 @@ export class FileManagementService {
         anschreiben: rejectionRoot,
         lebenslauf: path.join(rejectionRoot, "Lebenslauf"),
         deckblatt: path.join(applicationData, "Deckblatt"),
+        email: path.join(applicationData, "Email"),
       };
     }
     return {
@@ -169,6 +192,7 @@ export class FileManagementService {
         application.folderName,
       ),
       deckblatt: path.join(applicationData, "Deckblatt"),
+      email: path.join(applicationData, "Email"),
     };
   }
 
@@ -177,7 +201,7 @@ export class FileManagementService {
     positionName: string,
     date = new Date(),
   ) {
-    const companyDateFolder = `${sanitizeFileName(companyName)}_${formatLocalDate(date)}`;
+    const companyDateFolder = `${sanitizeFileName(companyName)}_${formatApplicationDateFolder(date)}`;
     const positionFolder = sanitizeFileName(positionName);
     for (let suffix = 1; suffix < 10_000; suffix += 1) {
       const uniquePositionFolder =
@@ -272,7 +296,7 @@ export class FileManagementService {
   }
 
   async relocateApplicationFolders(application: Application, date: Date) {
-    const companyDateFolder = `${sanitizeFileName(application.company.name)}_${formatLocalDate(date)}`;
+    const companyDateFolder = `${sanitizeFileName(application.company.name)}_${formatApplicationDateFolder(date)}`;
     const positionFolder = sanitizeFileName(application.job.title);
     let targetFolderName = "";
     for (let suffix = 1; suffix < 10_000; suffix += 1) {
@@ -307,10 +331,12 @@ export class FileManagementService {
         if (await pathExists(move.target.path)) {
           throw new Error(`Der Zielordner existiert bereits: ${move.target.path}`);
         }
-        await this.renameApplicationArtifact(
-          move.source.root,
-          move.source.path,
-          move.target.path,
+        await this.withRenameRetry(() =>
+          this.renameApplicationArtifact(
+            move.source.root,
+            move.source.path,
+            move.target.path,
+          ),
         );
         completed.push(move);
       }
@@ -403,8 +429,109 @@ export class FileManagementService {
 
   async ensureApplicationDataDirectories(application: Application) {
     const dataRoot = this.applicationDataPath(application.folderName);
-    await mkdir(path.join(dataRoot, "Stellenanzeige"), { recursive: true });
+    await Promise.all([
+      mkdir(path.join(dataRoot, "Stellenanzeige"), { recursive: true }),
+      mkdir(path.join(dataRoot, "Email"), { recursive: true }),
+    ]);
     return { dataRoot };
+  }
+
+  async synchronizeApplicationArtifactNames(
+    previous: Application,
+    next: Application,
+  ) {
+    const previousDate = getApplicationDate(previous);
+    const nextDate = getApplicationDate(next);
+    const replacements = [
+      [
+        previous.folderName.split(/[\\/]/)[0],
+        next.folderName.split(/[\\/]/)[0],
+      ],
+      [sanitizeFileName(previous.company.name), sanitizeFileName(next.company.name)],
+      [formatApplicationDate(previous), formatApplicationDate(next)],
+      [formatLocalDate(previousDate), formatLocalDate(nextDate)],
+    ].filter(([from, to]) => from !== to);
+    const documentDirectories = this.documentDirectories(next);
+    const directoryCandidates = [
+      this.applicationDataPath(next.folderName),
+      documentDirectories.anschreiben,
+      documentDirectories.lebenslauf,
+    ];
+    const directories = directoryCandidates.filter(
+      (candidate, index) =>
+        !directoryCandidates.some(
+          (parent, parentIndex) =>
+            parentIndex !== index &&
+            parent !== candidate &&
+            isPathInside(parent, candidate),
+        ),
+    );
+    const moves: Array<{ source: string; target: string }> = [];
+    for (const directory of directories) {
+      let entries;
+      try {
+        entries = await readdir(directory, { withFileTypes: true, recursive: true });
+      } catch (error) {
+        const code =
+          typeof error === "object" && error && "code" in error
+            ? String(error.code)
+            : "";
+        if (code === "ENOENT") continue;
+        throw error;
+      }
+      for (const entry of entries) {
+        if (!entry.isFile()) continue;
+        const source = path.join(entry.parentPath, entry.name);
+        let targetName = entry.name;
+        for (const [from, to] of replacements) {
+          targetName = targetName.split(from).join(to);
+        }
+        if (
+          path.resolve(entry.parentPath) ===
+            path.resolve(documentDirectories.anschreiben) &&
+          /^Anschreiben(?:_[^\d._]+){0,4}\.docx$/i.test(entry.name)
+        ) {
+          targetName = `${applicationFileBaseName(next)}_Anschreiben.docx`;
+        }
+        if (targetName === entry.name) continue;
+        moves.push({ source, target: path.join(entry.parentPath, targetName) });
+      }
+    }
+
+    const reservedTargets = new Set<string>();
+    for (const move of moves) {
+      const normalizedTarget = path.resolve(move.target).toLocaleLowerCase();
+      if (reservedTargets.has(normalizedTarget)) {
+        throw new Error(
+          `Mehrere Dateien würden denselben aktuellen Bewerbungsnamen erhalten: ${move.target}`,
+        );
+      }
+      reservedTargets.add(normalizedTarget);
+      if (await pathExists(move.target)) {
+        throw new Error(
+          `Die Datei kann nicht auf den aktuellen Bewerbungsnamen umgestellt werden, weil das Ziel bereits existiert: ${move.target}`,
+        );
+      }
+    }
+    const completed: typeof moves = [];
+    try {
+      for (const move of moves) {
+        await this.withRenameRetry(() => rename(move.source, move.target));
+        completed.push(move);
+      }
+    } catch (error) {
+      for (const move of completed.reverse()) {
+        try {
+          await rename(move.target, move.source);
+        } catch {
+          // Preserve the original rename error.
+        }
+      }
+      if (isApplicationFolderLockError(error)) {
+        throw new ApplicationFolderLockedError();
+      }
+      throw error;
+    }
   }
 
   archiveRootForCategory(category: "Zeugnisse" | "Zertifikate") {

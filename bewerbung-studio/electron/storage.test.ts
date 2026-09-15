@@ -36,6 +36,7 @@ const applicationInput = (company: string): ApplicationInput => ({
   },
   job: {
     title: "Softwareentwickler",
+    reference: "",
     source: "",
     url: "",
     fullText: "",
@@ -146,7 +147,7 @@ describe("DataStore backups", () => {
     const firstApplication = first.applications[0];
     const companyDateFolder = path.dirname(firstApplication.folderName);
     expect(companyDateFolder).toMatch(
-      /^Siemens_\d{4}-\d{2}-\d{2}$/,
+      /^Siemens_\d{2}\.\d{2}\.\d{4}$/,
     );
     expect(path.basename(firstApplication.folderName)).toBe(
       "Softwareentwickler",
@@ -225,6 +226,38 @@ describe("DataStore backups", () => {
         ),
       ),
     ).rejects.toThrow();
+  });
+
+  it("creates a dated application with its email area and cover-letter name", async () => {
+    const created = await store.createApplication({
+      ...applicationInput("Muster GmbH"),
+      sentAt: "2026-09-08T09:00:00.000Z",
+    });
+    const application = created.applications[0];
+    const dataDirectory = store.files.applicationDataPath(application.folderName);
+    const emailMarkdown = await readFile(
+      path.join(dataDirectory, "Email", "Email.md"),
+      "utf8",
+    );
+    const context = store.getTemplateDocumentContext(application.id);
+
+    expect(path.dirname(application.folderName)).toBe(
+      "Muster_GmbH_08.09.2026",
+    );
+    expect(context.requestedBaseName).toBe(
+      "Anschreiben_Muster_GmbH",
+    );
+    expect(context.requestedBaseNames.deckblatt).toBe(
+      "Muster_GmbH_08.09.2026_Deckblatt",
+    );
+    expect(store.getExportDefaultName(application.id, "deckblatt")).toBe(
+      "Muster_GmbH_08.09.2026_Deckblatt.pdf",
+    );
+    expect(context.data.BEWERBUNGSDATUM).toBe("08.09.2026");
+    expect(context.data.DECKBLATT_DOKUMENTE).toBe("Anschreiben\nLebenslauf");
+    expect(emailMarkdown).toContain("- Firma: Muster GmbH");
+    expect(emailMarkdown).toContain("- Stellenbezeichnung: Softwareentwickler");
+    expect(emailMarkdown).toContain("- Bewerbungsdatum: 08.09.2026");
   });
 
   it("does not rewrite user-authored application documents", async () => {
@@ -321,11 +354,14 @@ describe("DataStore backups", () => {
     const updated = saved.applications.find((item) => item.id === application.id)!;
     const newAnschreiben = store.files.documentDirectories(updated).anschreiben;
 
-    expect(path.dirname(updated.folderName)).toBe("Datum_GmbH_2026-08-22");
+    expect(path.dirname(updated.folderName)).toBe("Datum_GmbH_22.08.2026");
     expect(updated.folderName).not.toBe(oldFolderName);
     await expect(access(oldAnschreiben)).rejects.toThrow();
     await expect(
-      readFile(path.join(newAnschreiben, "Anschreiben.docx"), "utf8"),
+      readFile(
+        path.join(newAnschreiben, "Datum_GmbH_22.08.2026_Anschreiben.docx"),
+        "utf8",
+      ),
     ).resolves.toBe("letter");
     await expect(
       readFile(
@@ -357,12 +393,18 @@ describe("DataStore backups", () => {
     const newAnschreiben = store.files.documentDirectories(updated).anschreiben;
 
     expect(updated.folderName).toBe(
-      path.join("YKK_Produktion_GmbH_2026-08-25", "Maschinenbediener"),
+      path.join("YKK_Produktion_GmbH_25.08.2026", "Maschinenbediener"),
     );
     expect(updated.folderName).not.toBe(oldFolderName);
     await expect(access(oldAnschreiben)).rejects.toThrow();
     await expect(
-      readFile(path.join(newAnschreiben, "Anschreiben.docx"), "utf8"),
+      readFile(
+        path.join(
+          newAnschreiben,
+          "YKK_Produktion_GmbH_25.08.2026_Anschreiben.docx",
+        ),
+        "utf8",
+      ),
     ).resolves.toBe("letter");
     await expect(
       readFile(
@@ -376,8 +418,10 @@ describe("DataStore backups", () => {
   });
 
   it("maps the current cover-letter fields to Word placeholders", async () => {
+    const input = applicationInput("Beispiel GmbH");
+    input.job.reference = "REF-4711";
     const created = await store.createApplication({
-      ...applicationInput("Beispiel GmbH"),
+      ...input,
       sentAt: "2024-05-17T09:00:00.000Z",
       contact: {
         salutation: "Herr",
@@ -416,16 +460,22 @@ describe("DataStore backups", () => {
       ),
     );
     expect(path.dirname(application.folderName)).toBe(
-      "Beispiel_GmbH_2024-05-17",
+      "Beispiel_GmbH_17.05.2024",
     );
     expect(context.data).toMatchObject({
       ANSPRECHPARTNER: "Herrn Andreas Steck\nFrau Erika Musterfrau",
       ANREDE: "Sehr geehrter Herr Steck, sehr geehrte Frau Musterfrau,",
-      BEWERBUNGSDATUM: "17. Mai 2024",
-      MOTIVATION: "Motivation aus dem Editor.",
-      FACHLICHE_EIGNUNG: "Fachliche Eignung aus dem Editor.",
+      BEWERBUNGSDATUM: "17.05.2024",
+      BEWERBUNGSDATUM_LANG: "17. Mai 2024",
+      MOTIVATION: "",
+      FACHLICHE_EIGNUNG: "Motivation aus dem Editor.\n\nFachliche Eignung aus dem Editor.",
       UNTERNEHMENSBEZUG: "Unternehmensbezug aus dem Editor.",
       ZUSATZABSATZ: "",
+      FIRMA_ABTEILUNG: "Recruiting",
+      STELLENNUMMER: "REF-4711",
+      BEWERBER_WEBSITE: "",
+      UNTERSCHRIFT_GRAFIK: "",
+      ANLAGENHINWEIS: "Anlagen:\nLebenslauf",
     });
   });
 

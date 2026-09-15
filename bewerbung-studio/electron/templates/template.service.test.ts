@@ -999,9 +999,9 @@ describe("Musterverwaltung", () => {
     const outputZip = new PizZip(await readFile(second.filePath));
 
     expect(second.filePath).toBe(first.filePath);
-    expect(second.fileName).toBe("Anschreiben_Mustafa_Oezdemir.docx");
+    expect(second.fileName).toBe("Anschreiben_Mustafa_Özdemir.docx");
     expect(await readdir(targetDirectory)).toEqual([
-      "Anschreiben_Mustafa_Oezdemir.docx",
+      "Anschreiben_Mustafa_Özdemir.docx",
     ]);
     expect(outputZip.file("word/document.xml")!.asText()).toContain(
       "Robert Bosch GmbH",
@@ -1038,6 +1038,42 @@ describe("Musterverwaltung", () => {
     expect(documentXml).toContain("Abschließender Absatz.");
     expect(documentXml.indexOf("Optionaler Zusatzabsatz.")).toBeLessThan(
       documentXml.indexOf("Abschließender Absatz."),
+    );
+  });
+
+  it("appends the Anlagen section when a cover-letter template has no placeholder for it", async () => {
+    const templatePath = path.join(
+      paths.anschreibenTemplates,
+      "Anlagen-ohne-Platzhalter.docx",
+    );
+    await createDocx(
+      templatePath,
+      `<w:p><w:r><w:t>{{SCHLUSSTEXT}}</w:t></w:r></w:p>`,
+    );
+    const result = await service.scanAllTemplates();
+    const template = result.templates.find(
+      (item) => item.fileName === "Anlagen-ohne-Platzhalter.docx",
+    )!;
+    const created = await service.synchronizeDocumentFromTemplate(
+      template.id,
+      path.join(paths.anschreibenDocuments, "Beispiel", "Verkauf"),
+      "Anschreiben_Mustafa_Özdemir",
+      {
+        SCHLUSSTEXT: "Abschließender Absatz.",
+        ANLAGENHINWEIS: "Anlagen:\nLebenslauf\nArbeitszeugnisse",
+        DESIGN_PRIMARY: "#0B3D86",
+      },
+    );
+    const documentXml = new PizZip(await readFile(created.filePath))
+      .file("word/document.xml")!
+      .asText();
+
+    expect(created.fileName).toBe("Anschreiben_Mustafa_Özdemir.docx");
+    expect(documentXml).toContain("Anlagen:");
+    expect(documentXml).toContain("Lebenslauf");
+    expect(documentXml).toContain("Arbeitszeugnisse");
+    expect(documentXml.indexOf("Abschließender Absatz.")).toBeLessThan(
+      documentXml.indexOf("Anlagen:"),
     );
   });
 

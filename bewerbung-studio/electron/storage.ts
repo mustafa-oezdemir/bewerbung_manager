@@ -37,11 +37,30 @@ import {
   type Workspace,
 } from "../src/shared/schema";
 import { templates } from "../src/shared/templates";
-import { formatApplicationDateLong } from "../src/shared/applicationDate";
 import {
+  formatApplicationDate,
+  formatApplicationDateLong,
+} from "../src/shared/applicationDate";
+import {
+  buildApplicationEmailMarkdown,
+  getApplicationEmail,
+} from "../src/shared/applicationEmail";
+import {
+  applicationContactDepartmentLines,
   applicationGreeting,
   applicationPostalContactLines,
 } from "../src/shared/applicationContacts";
+import {
+  getDeckblattCompetencies,
+  getDeckblattContacts,
+  getDeckblattDocuments,
+} from "../src/shared/deckblatt";
+import {
+  coverLetterApplicantFileName,
+  createCoverSubject,
+  getCoverLetterAttachments,
+  getCoverLetterMainBody,
+} from "../src/shared/coverLetter";
 import {
   compactWordMarginLevelToMm,
   getDocumentFont,
@@ -53,6 +72,7 @@ import { formatKnowledgeSectionAsText } from "../src/features/knowledge/knowledg
 import { buildDocumentHtml } from "./documents";
 import {
   FileManagementService,
+  applicationFileBaseName,
   isPathInside,
   sanitizeFileName,
 } from "./file-management";
@@ -468,6 +488,8 @@ export class DataStore {
     await mkdir(documents.anschreiben, { recursive: true });
     const { dataRoot } =
       await this.ensureApplicationDataDirectories(application);
+    const profile = this.getProfileForApplication(application);
+    const email = getApplicationEmail(application, profile);
     await Promise.all([
       this.atomicWrite(
         path.join(dataRoot, "bewerbung.json"),
@@ -480,6 +502,14 @@ export class DataStore {
       this.atomicWrite(
         path.join(dataRoot, "Stellenanzeige", "stellenanzeige.txt"),
         application.job.fullText,
+      ),
+      this.atomicWrite(
+        path.join(documents.email, "Email.md"),
+        buildApplicationEmailMarkdown(application, profile),
+      ),
+      this.atomicWrite(
+        path.join(documents.email, "email.json"),
+        JSON.stringify(email, null, 2),
       ),
     ]);
   }
@@ -654,8 +684,9 @@ export class DataStore {
       additionalContacts: input.additionalContacts ?? [],
       status: input.sentAt ? "Beworben" : "Entwurf",
       documents: {
-        coverSubject: `Bewerbung als ${input.job.title}`,
+        coverSubject: createCoverSubject(input.job.title),
         coverIntroduction: `die Position als ${input.job.title} bei ${input.company.name} verbindet genau die Aufgaben, in denen ich meine Erfahrung gezielt einbringen möchte.`,
+        coverMainBody: "",
         coverMotivation: "",
         coverQualification: "",
         coverCompanyFit: "",
@@ -664,6 +695,9 @@ export class DataStore {
           "Gerne überzeuge ich Sie in einem persönlichen Gespräch von meiner Motivation und Eignung. Auf Ihren Terminvorschlag freue ich mich.",
         resumeProfile: "",
         deckblattStatement: "",
+        emailSubject: "",
+        emailMessage: "",
+        emailAttachmentNote: "",
       },
       attachmentIds: [],
       statusHistory: [
@@ -701,6 +735,15 @@ export class DataStore {
       },
       new Date(application.sentAt ?? current.createdAt),
     );
+    try {
+      await this.files.synchronizeApplicationArtifactNames(current, application);
+    } catch (error) {
+      await this.files.relocateApplicationFolders(
+        { ...current, folderName: application.folderName },
+        new Date(current.sentAt ?? current.createdAt),
+      );
+      throw error;
+    }
     await this.files.syncInterviewFolder(current, application);
     application.updatedAt = nowIso();
     this.workspace.applications[index] = application;
@@ -1058,6 +1101,12 @@ export class DataStore {
       knowledgeSection,
       false,
     );
+    const deckblattContacts = getDeckblattContacts(profile);
+    const deckblattCompetencies = getDeckblattCompetencies(profile, application);
+    const deckblattDocuments = getDeckblattDocuments(
+      this.workspace.attachments,
+      application.id,
+    );
     const strengthItems = profile?.strengths.length
       ? profile.strengths
       : (profile?.skills ?? []).map((value) => {
@@ -1183,6 +1232,14 @@ export class DataStore {
       HEADER_KONTAKT_6:
         profile?.portfolio || profile?.github || extraOnlineProfiles[0] || "",
       PROFILFOTO: profile?.photoPath ?? "",
+      DECKBLATT_STANDORT: application.company.city,
+      DECKBLATT_KURZPROFIL:
+        application.documents.deckblattStatement || profile?.summary || "",
+      DECKBLATT_DOKUMENTE: deckblattDocuments.join("\n"),
+      DECKBLATT_KOMPETENZEN: deckblattCompetencies.join("\n"),
+      DECKBLATT_KONTAKT: deckblattContacts
+        .map((contact) => `${contact.label}: ${contact.value}`)
+        .join("\n"),
       ZUSAMMENFASSUNG_TITEL:
         application.documents.resumeProfile || profile?.summary
           ? getResumeSectionTitle(profile, "summary").toLocaleUpperCase("de-DE")
@@ -1417,37 +1474,44 @@ export class DataStore {
       BEWERBER_ORT: profile?.city ?? "",
       BEWERBER_TELEFON: profile?.phone ?? "",
       BEWERBER_EMAIL: profile?.email ?? "",
+      BEWERBER_WEBSITE: profile?.portfolio ?? "",
       FIRMA_NAME: application.company.name,
       FIRMA_ADRESSE: application.company.street,
       FIRMA_PLZ: application.company.postalCode,
       FIRMA_ORT: application.company.city,
       ANSPRECHPARTNER: postalContactName,
+      FIRMA_ABTEILUNG: applicationContactDepartmentLines(application).join("\n"),
       STELLENBEZEICHNUNG: application.job.title,
-      STELLENNUMMER: "",
-      BEWERBUNGSDATUM: formatApplicationDateLong(application),
-      BETREFF:
-        application.documents.coverSubject ||
-        `Bewerbung als ${application.job.title}`,
+      STELLENNUMMER: application.job.reference,
+      BEWERBUNGSDATUM: formatApplicationDate(application),
+      BEWERBUNGSDATUM_LANG: formatApplicationDateLong(application),
+      BETREFF: createCoverSubject(
+        application.job.title,
+        application.documents.coverSubject,
+      ),
       ANREDE: greeting,
       EINLEITUNG: application.documents.coverIntroduction,
-      MOTIVATION: application.documents.coverMotivation,
-      FACHLICHE_EIGNUNG: application.documents.coverQualification,
+      MOTIVATION: "",
+      FACHLICHE_EIGNUNG: getCoverLetterMainBody(application.documents),
       UNTERNEHMENSBEZUG: application.documents.coverCompanyFit,
       ZUSATZABSATZ: application.documents.coverExtraParagraph,
-      HAUPTTEXT: [
-        application.documents.coverMotivation,
-        application.documents.coverQualification,
-        application.documents.coverCompanyFit,
-      ]
-        .filter(Boolean)
-        .join("\n\n"),
+      HAUPTTEXT: getCoverLetterMainBody(application.documents),
       SCHLUSSTEXT: application.documents.coverClosing,
       GRUSSFORMEL: "Mit freundlichen Grüßen",
       UNTERSCHRIFT: applicantName,
+      UNTERSCHRIFT_GRAFIK: profile?.signaturePath ?? "",
+      ANLAGENHINWEIS: [
+        "Anlagen:",
+        ...getCoverLetterAttachments(
+          this.workspace.attachments,
+          application.id,
+        ),
+      ].join("\n"),
       KENNTNISSE: knowledgeText,
       ...elegantData,
     };
     const documentDirectories = this.files.documentDirectories(application);
+    const applicationBaseName = applicationFileBaseName(application);
     return {
       application,
       targetDirectories: {
@@ -1455,7 +1519,18 @@ export class DataStore {
         deckblatt: documentDirectories.deckblatt,
         lebenslauf: documentDirectories.lebenslauf,
       },
-      requestedBaseName: application.company.name,
+      requestedBaseName: coverLetterApplicantFileName(
+        application,
+        applicantName,
+      ),
+      requestedBaseNames: {
+        anschreiben: coverLetterApplicantFileName(
+          application,
+          applicantName,
+        ),
+        deckblatt: `${applicationBaseName}_Deckblatt`,
+        lebenslauf: `${applicationBaseName}_${sanitizeFileName(application.job.title)}_Lebenslauf`,
+      },
       data: templateData,
     };
   }
@@ -1483,7 +1558,10 @@ export class DataStore {
 
   getExportDefaultName(id: string, target: string) {
     const application = this.getApplication(id);
-    return `${sanitizeFileName(application.company.name)}_${sanitizeFileName(application.job.title)}_${target}.pdf`;
+    if (target === "deckblatt") {
+      return `${applicationFileBaseName(application)}_Deckblatt.pdf`;
+    }
+    return `${applicationFileBaseName(application)}_${sanitizeFileName(application.job.title)}_${target}.pdf`;
   }
 
   async writeBackup(filePath: string) {

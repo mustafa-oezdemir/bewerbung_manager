@@ -4,6 +4,7 @@ import type {
 } from "./schema";
 import { ensureKnowledgeSection } from "../features/knowledge/knowledge.service";
 import { flattenKnowledgeNames } from "../features/knowledge/knowledge.utils";
+import { getCoverLetterMainBody } from "./coverLetter";
 
 export type ResumePageItem =
   | { kind: "experience"; id: string; weight: number }
@@ -243,8 +244,7 @@ export const getLetterPageStatus = (
   const characterCount = [
     documents.coverSubject,
     documents.coverIntroduction,
-    documents.coverMotivation,
-    documents.coverQualification,
+    getCoverLetterMainBody(documents),
     documents.coverCompanyFit,
     documents.coverExtraParagraph,
     documents.coverClosing,

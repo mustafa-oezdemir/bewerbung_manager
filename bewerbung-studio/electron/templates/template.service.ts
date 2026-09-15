@@ -27,6 +27,7 @@ import type {
 import { TemplateError } from "../../src/features/templates/template.errors";
 import {
   createUniqueFilePath,
+  sanitizeSynchronizedDocumentFileName,
   sanitizeTemplateFileName,
   templateTimestamp,
 } from "./template-filename.service";
@@ -367,7 +368,7 @@ export class TemplateService {
     const outputExtension = template.extension === ".doc" ? ".doc" : ".docx";
     const targetPath = path.join(
       targetDirectory,
-      `${sanitizeTemplateFileName(requestedBaseName)}${outputExtension}`,
+      `${sanitizeSynchronizedDocumentFileName(requestedBaseName)}${outputExtension}`,
     );
     return withOneDriveRetry(() =>
       this.placeholderService.createDocument(

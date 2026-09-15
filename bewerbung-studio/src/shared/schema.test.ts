@@ -36,6 +36,7 @@ describe("BewerbungsManager schemas", () => {
       },
       job: {
         title: "Softwareentwickler",
+        reference: "DEV-2026-17",
         source: "Karriereseite",
         url: "",
         fullText: "",
@@ -53,6 +54,7 @@ describe("BewerbungsManager schemas", () => {
       expect(result.data.designSettings.columnLayout).toBe("template");
       expect(result.data.designSettings.resumeOutputMode).toBe("visual");
       expect(result.data.designSettings.marginLevel).toBe(3);
+      expect(result.data.job.reference).toBe("DEV-2026-17");
     }
   });
 
