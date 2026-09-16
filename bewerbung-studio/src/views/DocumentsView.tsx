@@ -992,32 +992,31 @@ export function DocumentsView({
               </div>
             )}
             {tab === "email" && (
-              <>
-                <section className="page-limit-status ok">
-                  <strong>Empfänger</strong>
-                  <span>{email.recipientName || "Kein Ansprechpartner angegeben"}</span>
-                  <small>
-                    {email.recipientEmail ||
-                      "Keine E-Mail-Adresse angegeben. Bitte unter Ansprechpartner ergänzen."}
-                  </small>
+              <div className="email-editor-sections">
+                <section className="cover-letter-editor-section is-generated">
+                  <header><b>Automatische E-Mail-Daten</b><small>Anrede, Betreff und Absender werden aus Bewerbung und Profil übernommen</small></header>
+                  <dl className="email-editor-metadata">
+                    <div><dt>Betreff</dt><dd>{email.subject}</dd></div>
+                    <div><dt>Anrede</dt><dd>{email.salutation}</dd></div>
+                    <div><dt>Empfänger</dt><dd>{email.recipientName || "Nicht angegeben"}</dd></div>
+                    <div><dt>E-Mail</dt><dd>{email.recipientEmail || "Nicht angegeben"}</dd></div>
+                    <div><dt>Absender</dt><dd>{email.senderName || "Nicht angegeben"}</dd></div>
+                    <div><dt>Absender-E-Mail</dt><dd>{email.senderEmail || "Nicht angegeben"}</dd></div>
+                  </dl>
                 </section>
                 <label className="field">
-                  <span>Betreff</span>
-                  <input name="emailSubject" defaultValue={email.subject} />
-                </label>
-                <label className="field">
-                  <span>Kurze Bewerbungsnachricht</span>
+                  <span>Nachricht</span>
                   <textarea
                     name="emailMessage"
-                    rows={10}
+                    rows={8}
                     defaultValue={email.message}
                   />
                 </label>
                 <label className="field">
-                  <span>Hinweis auf Anlagen</span>
+                  <span>Anhangsatz</span>
                   <textarea
                     name="emailAttachmentNote"
-                    rows={4}
+                    rows={3}
                     defaultValue={email.attachmentNote}
                   />
                 </label>
@@ -1025,7 +1024,7 @@ export function DocumentsView({
                   Beim Speichern werden Email/Email.md und email.json im
                   Bewerbungsordner aktualisiert.
                 </p>
-              </>
+              </div>
             )}
             {tab === "lebenslauf" && (
               <>
@@ -1701,14 +1700,14 @@ export function DocumentsView({
                   <div><dt>Stelle</dt><dd>{email.jobTitle}</dd></div>
                   <div><dt>Empfänger</dt><dd>{email.recipientName || "Nicht angegeben"}</dd></div>
                   <div><dt>E-Mail</dt><dd>{email.recipientEmail || "Nicht angegeben"}</dd></div>
+                  <div><dt>Absender</dt><dd>{email.senderName || "Nicht angegeben"}</dd></div>
                 </dl>
-                <section>
-                  <h3>Nachricht</h3>
-                  <p>{email.message}</p>
-                </section>
-                <section>
-                  <h3>Anlagen</h3>
-                  <p>{email.attachmentNote}</p>
+                <section className="email-message-preview">
+                  <p>{email.salutation}</p>
+                  <p>{email.body}</p>
+                  <p>{email.closing}</p>
+                  <p>{email.greeting}</p>
+                  <p>{email.senderName || "Absender im Profil ergänzen"}</p>
                 </section>
               </div>
             </div>

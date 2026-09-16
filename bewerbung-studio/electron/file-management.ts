@@ -489,7 +489,7 @@ export class FileManagementService {
         if (
           path.resolve(entry.parentPath) ===
             path.resolve(documentDirectories.anschreiben) &&
-          /^Anschreiben(?:_[^\d._]+){0,4}\.docx$/i.test(entry.name)
+          /^Anschreiben\.docx$/i.test(entry.name)
         ) {
           targetName = `${applicationFileBaseName(next)}_Anschreiben.docx`;
         }

@@ -35,6 +35,9 @@ export const getApplicationEmail = (
     (contact) =>
       Boolean(contact.email || contact.firstName || contact.lastName),
   ) ?? application.contact;
+  const message = application.documents.emailMessage || defaults.emailMessage;
+  const attachmentNote =
+    application.documents.emailAttachmentNote || defaults.emailAttachmentNote;
   return {
     applicationDate: formatApplicationDate(application),
     companyName: application.company.name,
@@ -52,9 +55,9 @@ export const getApplicationEmail = (
       application.job.title,
       application.documents.emailSubject || defaults.emailSubject,
     ),
-    message: application.documents.emailMessage || defaults.emailMessage,
-    attachmentNote:
-      application.documents.emailAttachmentNote || defaults.emailAttachmentNote,
+    message,
+    attachmentNote,
+    body: `${message.trim()}${attachmentNote.trim() ? ` ${attachmentNote.trim()}` : ""}`,
   };
 };
 
@@ -79,9 +82,7 @@ export const buildApplicationEmailMarkdown = (
     "",
     email.salutation,
     "",
-    email.message,
-    "",
-    email.attachmentNote,
+    email.body,
     "",
     email.closing,
     "",

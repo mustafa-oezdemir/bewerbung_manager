@@ -374,6 +374,18 @@ describe("DataStore backups", () => {
     ).resolves.toContain('"sentAt": "2026-08-22T09:00:00.000Z"');
   });
 
+  it("preserves the applicant-named synchronized cover letter while saving editor changes", async () => {
+    const created = await store.createApplication(applicationInput("Muster GmbH"));
+    const application = created.applications[0];
+    const anschreiben = store.files.documentDirectories(application).anschreiben;
+    const personalFile = path.join(anschreiben, "Anschreiben_Mustafa_Özdemir.docx");
+    await writeFile(personalFile, "personal letter");
+    application.documents.emailMessage = "Aktualisierte E-Mail.";
+
+    await expect(store.saveApplication(application)).resolves.toBeDefined();
+    await expect(readFile(personalFile, "utf8")).resolves.toBe("personal letter");
+  });
+
   it("renames application folders immediately when company and position change", async () => {
     const input = applicationInput("YKK DEUTSCHLAND GmbH");
     input.job.title = "Bewerbung als Maschinenbediener";

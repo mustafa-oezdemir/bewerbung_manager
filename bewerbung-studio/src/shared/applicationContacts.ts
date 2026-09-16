@@ -47,7 +47,9 @@ const greetingForContact = (contact: Contact) => {
   return `Guten Tag ${name}`;
 };
 
-export const applicationGreeting = (application: Application) => {
+export const applicationGreeting = (
+  application: Pick<Application, "contact" | "additionalContacts">,
+) => {
   const greetings = [application.contact, ...application.additionalContacts]
     .map(greetingForContact)
     .filter(Boolean)

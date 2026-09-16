@@ -61,15 +61,90 @@ const application = applicationSchema.parse({
 
 describe("application email", () => {
   it("derives recipient, company, role, and central date without inventing data", () => {
-    expect(getApplicationEmail(application)).toMatchObject({
+    expect(getApplicationEmail(application, {
+      firstName: "Mustafa",
+      lastName: "Özdemir",
+      email: "mustafa@example.com",
+    })).toMatchObject({
       applicationDate: "08.09.2026",
       companyName: "Muster GmbH",
       jobTitle: "Softwareentwickler",
       recipientName: "Frau Erika Musterfrau",
       recipientEmail: "erika@example.com",
+      senderName: "Mustafa Özdemir",
+      senderEmail: "mustafa@example.com",
+      salutation: "Sehr geehrte Frau Musterfrau,",
+      greeting: "Mit freundlichen Grüßen",
     });
     expect(buildApplicationEmailMarkdown(application)).toContain(
       "- Bewerbungsdatum: 08.09.2026",
+    );
+  });
+
+  it("builds an automatic subject, salutation and signature without duplicating Bewerbung als", () => {
+    const automatic = {
+      ...application,
+      job: {
+        ...application.job,
+        title: "Bewerbung als Tankstellenverkäufer - Teilzeit",
+      },
+      documents: {
+        ...application.documents,
+        emailSubject: "",
+        emailMessage: "",
+        emailAttachmentNote: "",
+      },
+    };
+    const profile = {
+      firstName: "Mustafa",
+      lastName: "Özdemir",
+      email: "mustafa@example.com",
+    };
+    const email = getApplicationEmail(automatic, profile);
+    const markdown = buildApplicationEmailMarkdown(automatic, profile);
+
+    expect(email.subject).toBe("Bewerbung als Tankstellenverkäufer - Teilzeit");
+    expect(email.subject).not.toContain("Bewerbung als Bewerbung als");
+    expect(markdown).toContain("Sehr geehrte Frau Musterfrau,");
+    expect(markdown).toContain("Mit freundlichen Grüßen\n\nMustafa Özdemir");
+  });
+
+  it("renders the requested ARAL email in the final sending order", () => {
+    const aral = {
+      ...application,
+      company: { ...application.company, name: "ARAL-Tankstelle Daniela Moter", city: "Marburg" },
+      contact: {
+        ...application.contact,
+        firstName: "Daniela",
+        lastName: "Moter",
+        email: "daniela.moter@tankstelle.de",
+      },
+      job: { ...application.job, title: "Bewerbung als Tankstellenverkäufer - Teilzeit" },
+      documents: {
+        ...application.documents,
+        emailSubject: "",
+        emailMessage: [
+          "anbei übersende ich Ihnen meine Bewerbung für die ausgeschriebene Teilzeitstelle als Tankstellenverkäufer/in (m/w/d) an Ihrer ARAL-Tankstelle in Marburg.",
+          "Als Quereinsteiger bringe ich eine nachweislich strukturierte und verantwortungsbewusste Arbeitsweise mit und kann ab sofort beginnen.",
+        ].join("\n\n"),
+        emailAttachmentNote:
+          "Mein Anschreiben und meinen Lebenslauf finden Sie im Anhang.",
+      },
+    };
+    const markdown = buildApplicationEmailMarkdown(aral, {
+      firstName: "Mustafa",
+      lastName: "Özdemir",
+      email: "mustafa@example.com",
+    });
+
+    expect(markdown).toContain(
+      "Sehr geehrte Frau Moter,\n\nanbei übersende ich Ihnen meine Bewerbung",
+    );
+    expect(markdown).toContain(
+      "kann ab sofort beginnen. Mein Anschreiben und meinen Lebenslauf finden Sie im Anhang.",
+    );
+    expect(markdown).toContain(
+      "Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.\n\nMit freundlichen Grüßen\n\nMustafa Özdemir",
     );
   });
 
