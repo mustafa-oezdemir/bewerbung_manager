@@ -1,4 +1,6 @@
 import type { ApplicantProfile, Application, Attachment } from "./schema";
+import type { DocumentDraft } from "./schema";
+import { getVisibleApplicationDocumentLabels } from "./applicationDocuments";
 
 export type DeckblattContact = {
   label: string;
@@ -101,22 +103,5 @@ export const validateDeckblattData = (
 export const getDeckblattDocuments = (
   attachments: readonly Attachment[],
   applicationId: string,
-) => [
-  "Anschreiben",
-  "Lebenslauf",
-  ...attachments
-    .filter(
-      (attachment) =>
-        attachment.applicationId === applicationId &&
-        attachment.includedInPackage,
-    )
-    .sort(
-      (left, right) =>
-        (left.category === right.category
-          ? 0
-          : left.category === "Zeugnisse"
-            ? -1
-            : 1) || left.order - right.order,
-    )
-    .map((attachment) => attachment.fileName),
-];
+  settings: DocumentDraft["documentListSettings"] = [],
+) => getVisibleApplicationDocumentLabels(attachments, applicationId, settings);

@@ -2,17 +2,35 @@ import { describe, expect, it } from "vitest";
 import { getTechnologyBrandIconMarkup } from "./technologyBrand";
 
 describe("technology brand icons", () => {
-  it("renders distinct marks for Go, PHP, and C#", () => {
-    const go = getTechnologyBrandIconMarkup("Go");
+  it("renders branded marks for Go, JavaScript, and PHP", () => {
+    const go = getTechnologyBrandIconMarkup("Golang");
+    const javascript = getTechnologyBrandIconMarkup("JavaScript");
     const php = getTechnologyBrandIconMarkup("PHP");
-    const csharp = getTechnologyBrandIconMarkup("C#");
 
-    expect(go).toContain(">GO<");
-    expect(php).toContain(">php<");
+    expect(go).toContain('data-brand="go"');
+    expect(go).toContain("#00add8");
+    expect(javascript).toContain('data-brand="javascript"');
+    expect(javascript).toContain("#ffd92f");
+    expect(php).toContain('data-brand="php"');
     expect(php).toContain("<ellipse");
-    expect(csharp).toContain(">C#<");
-    expect(csharp).toContain("<path");
-    expect(new Set([go, php, csharp]).size).toBe(3);
+    expect(new Set([go, javascript, php]).size).toBe(3);
+  });
+
+  it("uses dedicated icons for requested web technologies and frameworks", () => {
+    const expectedBrands = {
+      HTML: "html",
+      CSS: "css",
+      React: "react",
+      TypeScript: "typescript",
+      Java: "java",
+      Framework: "framework",
+    };
+
+    for (const [technology, brand] of Object.entries(expectedBrands)) {
+      expect(getTechnologyBrandIconMarkup(technology)).toContain(
+        `data-brand="${brand}"`,
+      );
+    }
   });
 
   it("provides stable SVG marks for common programming languages", () => {

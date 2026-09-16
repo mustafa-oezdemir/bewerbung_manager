@@ -2,9 +2,11 @@ import { getTechnologyBrandIconMarkup } from "../../shared/technologyBrand";
 
 export function TechnologyBrandIcon({
   technology,
+  iconId = "",
   className = "",
 }: {
   technology: string;
+  iconId?: string;
   className?: string;
 }) {
   return (
@@ -13,7 +15,7 @@ export function TechnologyBrandIcon({
       data-technology={technology}
       aria-hidden="true"
       dangerouslySetInnerHTML={{
-        __html: getTechnologyBrandIconMarkup(technology),
+        __html: getTechnologyBrandIconMarkup(technology, iconId),
       }}
     />
   );

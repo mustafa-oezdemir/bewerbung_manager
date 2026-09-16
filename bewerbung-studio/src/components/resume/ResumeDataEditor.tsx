@@ -18,6 +18,7 @@ import {
   CertificateListEditor,
   EntryListEditor,
 } from "../profile/EntryListEditor";
+import { TechnologyIconPicker } from "../profile/TechnologyIconPicker";
 
 type Props = {
   profile: ApplicantProfile;
@@ -58,6 +59,7 @@ export const normalizeResumeDataDraft = (
       ...strength,
       title: strength.title.trim(),
       description: strength.description.trim(),
+      iconId: strength.iconId.trim(),
     }))
     .filter((strength) => strength.title),
   experiences: draft.experiences.map((item) => ({
@@ -260,6 +262,7 @@ export function ResumeDataEditor({
                       id: crypto.randomUUID(),
                       title: "Neue Stärke",
                       description: "",
+                      iconId: "",
                     },
                   ],
                 }))
@@ -296,6 +299,18 @@ export function ResumeDataEditor({
                         ...current,
                         strengths: current.strengths.map((item) =>
                           item.id === strength.id ? { ...item, title } : item,
+                        ),
+                      }))
+                    }
+                  />
+                  <TechnologyIconPicker
+                    technologyTitle={strength.title}
+                    value={strength.iconId}
+                    onChange={(iconId) =>
+                      setDraft((current) => ({
+                        ...current,
+                        strengths: current.strengths.map((item) =>
+                          item.id === strength.id ? { ...item, iconId } : item,
                         ),
                       }))
                     }

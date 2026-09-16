@@ -349,6 +349,8 @@ describe("A4 document pagination", () => {
       emailSubject: "",
       emailMessage: "",
       emailAttachmentNote: "",
+      showCoverLetterAttachments: true,
+      documentListSettings: [],
     });
 
     expect(status.density).toBe("dense");

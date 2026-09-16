@@ -1,4 +1,5 @@
 import type { Application, Attachment, DocumentDraft } from "./schema";
+import { getApplicationDocumentItems } from "./applicationDocuments";
 
 export const getCoverLetterMainBody = (
   documents: Pick<
@@ -24,24 +25,11 @@ export const createCoverSubject = (jobTitle: string, current = "") => {
 export const getCoverLetterAttachments = (
   attachments: readonly Attachment[],
   applicationId: string,
-) => [
-  "Lebenslauf",
-  ...attachments
-    .filter(
-      (attachment) =>
-        attachment.applicationId === applicationId &&
-        attachment.includedInPackage,
-    )
-    .sort(
-      (left, right) =>
-        (left.category === right.category
-          ? 0
-          : left.category === "Zeugnisse"
-            ? -1
-            : 1) || left.order - right.order,
-    )
-    .map((attachment) => attachment.fileName),
-];
+  settings: DocumentDraft["documentListSettings"] = [],
+) =>
+  getApplicationDocumentItems(attachments, applicationId, settings)
+    .filter((item) => item.key !== "anschreiben" && item.isVisible)
+    .map((item) => item.label);
 
 export const coverLetterApplicantFileName = (
   application: Pick<Application, "company" | "createdAt" | "sentAt">,

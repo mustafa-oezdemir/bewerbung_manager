@@ -7,7 +7,7 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "noEmit": true,
-    "types": ["node", "electron"]
+    "types": ["node", "electron", "vite/client"]
   },
   "include": [
     "electron",

@@ -1,6 +1,8 @@
 import {
   ArrowLeft,
   Download,
+  Eye,
+  EyeOff,
   FileDown,
   FileText,
   FolderOpen,
@@ -9,6 +11,7 @@ import {
   Palette,
   PenLine,
   Save,
+  Trash2,
   UserRound,
   X,
 } from "lucide-react";
@@ -46,6 +49,10 @@ import {
   formatApplicationDate,
   formatApplicationDateLong,
 } from "../shared/applicationDate";
+import {
+  getApplicationDocumentItems,
+  type ApplicationDocumentItem,
+} from "../shared/applicationDocuments";
 import { getApplicationEmail } from "../shared/applicationEmail";
 import {
   createCoverSubject,
@@ -104,6 +111,51 @@ import {
 } from "../store/useAppStore";
 
 type Tab = "deckblatt" | "anschreiben" | "email" | "lebenslauf";
+
+function DocumentListEditor({
+  items,
+  onChange,
+}: {
+  items: ApplicationDocumentItem[];
+  onChange: (
+    key: string,
+    change: Partial<Pick<ApplicationDocumentItem, "label" | "isVisible">> & {
+      isDeleted?: boolean;
+    },
+  ) => void;
+}) {
+  if (!items.length) {
+    return <p className="document-list-empty">Keine Unterlagen ausgewählt.</p>;
+  }
+
+  return (
+    <div className="document-list-editor">
+      {items.map((item) => (
+        <div className={item.isVisible ? "" : "is-hidden"} key={item.key}>
+          <input
+            aria-label={`Anzeigename für ${item.label}`}
+            value={item.label}
+            onChange={(event) => onChange(item.key, { label: event.target.value })}
+          />
+          <button
+            aria-label={item.isVisible ? `${item.label} ausblenden` : `${item.label} anzeigen`}
+            className="icon-button"
+            type="button"
+            onClick={() => onChange(item.key, { isVisible: !item.isVisible })}>
+            {item.isVisible ? <Eye size={15} /> : <EyeOff size={15} />}
+          </button>
+          <button
+            aria-label={`${item.label} aus der Liste entfernen`}
+            className="icon-button danger"
+            type="button"
+            onClick={() => onChange(item.key, { isDeleted: true })}>
+            <Trash2 size={15} />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 type ResumePreviewPageProps = {
   application: Application;
@@ -523,12 +575,26 @@ export function DocumentsView({
   );
   const photoSource = getProfileMediaSource(profile?.photoPath);
   const signatureSource = getProfileMediaSource(profile?.signaturePath);
+  const docs =
+    documentPreview?.applicationId === application.id
+      ? documentPreview.documents
+      : application.documents;
   const deckblattContacts = getDeckblattContacts(profile);
   const deckblattCompetencies = getDeckblattCompetencies(profile, application);
-  const deckblattDocuments = getDeckblattDocuments(attachments, application.id);
+  const deckblattDocuments = getDeckblattDocuments(
+    attachments,
+    application.id,
+    docs.documentListSettings,
+  );
   const coverLetterAttachments = getCoverLetterAttachments(
     attachments,
     application.id,
+    docs.documentListSettings,
+  );
+  const applicationDocumentItems = getApplicationDocumentItems(
+    attachments,
+    application.id,
+    docs.documentListSettings,
   );
   const template = getTemplate(design.templateId);
   const renderProfile =
@@ -536,10 +602,6 @@ export function DocumentsView({
     resumeSectionPreview.profile.id === profile?.id
       ? resumeSectionPreview.profile
       : profile;
-  const docs =
-    documentPreview?.applicationId === application.id
-      ? documentPreview.documents
-      : application.documents;
   const email = getApplicationEmail(
     { ...application, documents: docs },
     profile,
@@ -636,6 +698,44 @@ export function DocumentsView({
         [key]: value,
       },
     }));
+  };
+
+  const updateDocumentListItem = (
+    key: string,
+    change: Partial<Pick<ApplicationDocumentItem, "label" | "isVisible">> & {
+      isDeleted?: boolean;
+    },
+  ) => {
+    const item = applicationDocumentItems.find((candidate) => candidate.key === key);
+    if (!item) return;
+    const current = docs.documentListSettings.find((setting) => setting.key === key);
+    const nextSetting = {
+      key,
+      label: current?.label || item.label,
+      isVisible: current?.isVisible ?? item.isVisible,
+      isDeleted: current?.isDeleted ?? false,
+      ...change,
+    };
+    setDocumentPreview({
+      applicationId: application.id,
+      documents: {
+        ...docs,
+        documentListSettings: [
+          ...docs.documentListSettings.filter((setting) => setting.key !== key),
+          nextSetting,
+        ],
+      },
+    });
+  };
+
+  const setCoverLetterAttachmentsVisible = (isVisible: boolean) => {
+    setDocumentPreview({
+      applicationId: application.id,
+      documents: {
+        ...docs,
+        showCoverLetterAttachments: isVisible,
+      },
+    });
   };
 
   const saveResumeData = async (changedProfile: ApplicantProfile) => {
@@ -738,6 +838,8 @@ export function DocumentsView({
           "emailAttachmentNote",
           docs.emailAttachmentNote,
         ),
+        showCoverLetterAttachments: docs.showCoverLetterAttachments,
+        documentListSettings: docs.documentListSettings,
       },
     };
   };
@@ -883,15 +985,21 @@ export function DocumentsView({
               </label>
             ) : null}
             {tab === "deckblatt" && (
-              <label className="field">
-                <span>Kurzprofil auf dem Deckblatt</span>
-                <textarea
-                  name="deckblattStatement"
-                  rows={8}
-                  defaultValue={docs.deckblattStatement}
-                  placeholder="Prägnante Positionierung in zwei bis drei Sätzen …"
-                />
-              </label>
+              <div className="cover-letter-editor-sections">
+                <label className="field">
+                  <span>Kurzprofil auf dem Deckblatt</span>
+                  <textarea
+                    name="deckblattStatement"
+                    rows={8}
+                    defaultValue={docs.deckblattStatement}
+                    placeholder="Prägnante Positionierung in zwei bis drei Sätzen …"
+                  />
+                </label>
+                <section className="cover-letter-editor-section">
+                  <header><b>Bewerbungsunterlagen</b><small>Nur ausgewählte, sichtbare Dokumente erscheinen auf dem Deckblatt.</small></header>
+                  <DocumentListEditor items={applicationDocumentItems} onChange={updateDocumentListItem} />
+                </section>
+              </div>
             )}
             {tab === "anschreiben" && (
               <div className="cover-letter-editor-sections">
@@ -967,8 +1075,23 @@ export function DocumentsView({
                   </div>
                 </section>
                 <section className="cover-letter-editor-section is-generated">
-                  <header><b>9. Anlagen</b><small>Automatisch aus den Bewerbungsunterlagen</small></header>
-                  <ul>{coverLetterAttachments.map((item) => <li key={item}>{item}</li>)}</ul>
+                  <header><b>9. Anlagen</b><small>Namen ändern, Einträge ausblenden oder entfernen</small></header>
+                  <label className="checkbox-field">
+                    <input
+                      type="checkbox"
+                      checked={docs.showCoverLetterAttachments}
+                      onChange={(event) => setCoverLetterAttachmentsVisible(event.target.checked)}
+                    />
+                    <span>Abschnitt „9. Anlagen“ im Anschreiben anzeigen</span>
+                  </label>
+                  {docs.showCoverLetterAttachments ? (
+                    <DocumentListEditor
+                      items={applicationDocumentItems.filter((item) => item.key !== "anschreiben")}
+                      onChange={updateDocumentListItem}
+                    />
+                  ) : (
+                    <p className="document-list-empty">Der komplette Anlagenabschnitt ist ausgeblendet.</p>
+                  )}
                 </section>
                 <section
                   className={`page-limit-status ${letterStatus.isOverRecommendedLength ? "warning" : "ok"}`}>
@@ -1532,9 +1655,8 @@ export function DocumentsView({
                 backgroundId={design.settings.backgroundId}
                 atsMode={isAtsMode}
               />
-              <i className="paper-rule" />
               <div className="deckblatt-preview">
-                <p className="paper-kicker">Bewerbung</p>
+                <i className="paper-rule" />
                 <section className="deckblatt-preview__hero">
                   <div>
                     <h1>Bewerbung als {application.job.title}</h1>
@@ -1629,6 +1751,7 @@ export function DocumentsView({
                     </span>
                   </p>
                 </div>
+                <i className="paper-rule letter-rule" />
                 <address>
                   {recipientLines.map((line, index) => (
                     <span key={`${index}-${line}`}>
@@ -1675,12 +1798,14 @@ export function DocumentsView({
                   ) : null}
                   <span className="signature-name">{name}</span>
                 </p>
-                <div className="letter-attachments">
-                  <strong>Anlagen</strong>
-                  {coverLetterAttachments.map((item) => (
-                    <span key={item}>{item}</span>
-                  ))}
-                </div>
+                {docs.showCoverLetterAttachments ? (
+                  <div className="letter-attachments">
+                    <strong>Anlagen</strong>
+                    {coverLetterAttachments.map((item) => (
+                      <span key={item}>{item}</span>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </div>
           )}

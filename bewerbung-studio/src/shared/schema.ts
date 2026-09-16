@@ -133,6 +133,7 @@ const profileStrengthSchema = z.object({
   id: z.uuid(),
   title: z.string().trim().min(1),
   description: optionalText,
+  iconId: optionalText,
 });
 
 const resumeSectionTitlesSchema = z
@@ -196,6 +197,17 @@ export const documentDraftSchema = z.object({
   emailSubject: optionalText,
   emailMessage: optionalText,
   emailAttachmentNote: optionalText,
+  showCoverLetterAttachments: z.boolean().default(true),
+  documentListSettings: z
+    .array(
+      z.object({
+        key: z.string().trim().min(1),
+        label: optionalText,
+        isVisible: z.boolean().default(true),
+        isDeleted: z.boolean().default(false),
+      }),
+    )
+    .default([]),
 });
 
 const designLevelSchema = z.union([
@@ -501,6 +513,7 @@ export type Company = z.infer<typeof companySchema>;
 export type ContactPerson = z.infer<typeof contactPersonSchema>;
 export type JobAdvertisement = z.infer<typeof jobAdvertisementSchema>;
 export type DocumentDraft = z.infer<typeof documentDraftSchema>;
+export type DocumentListSetting = DocumentDraft["documentListSettings"][number];
 export type DocumentDesign = z.infer<typeof documentDesignSchema>;
 export type Application = z.infer<typeof applicationSchema>;
 export type ApplicationInput = z.infer<typeof applicationInputSchema>;

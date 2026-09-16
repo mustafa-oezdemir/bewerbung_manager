@@ -79,6 +79,7 @@ describe("Lebenslauf-Dokumente", () => {
     ]);
 
     expect(html).toContain("Bewerbung als Senior Softwareentwickler");
+    expect(html).not.toContain('<p class="kicker">Bewerbung</p>');
     expect(html).toContain("Standort: Berlin");
     expect(html).toContain("19.07.2026");
     expect(html).toContain("Musterstraße 1, 10115 Berlin");
@@ -129,6 +130,20 @@ describe("Lebenslauf-Dokumente", () => {
       html.indexOf('<div class="signature">'),
     );
     expect(html).toContain('class="attachments-note"');
+  });
+
+  it("can hide the complete attachments section in the cover letter", () => {
+    const withoutAttachments = applicationSchema.parse({
+      ...application,
+      documents: {
+        ...application.documents,
+        showCoverLetterAttachments: false,
+      },
+    });
+    const html = buildDocumentHtml(withoutAttachments, profile, "anschreiben");
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).not.toContain('class="attachments-note"');
   });
 
   it("exports long LinkedIn contacts in two columns for every requested template", () => {
@@ -371,8 +386,10 @@ describe("Lebenslauf-Dokumente", () => {
       ".sender-contact{margin-top:.5mm;color:#000;font-size:10pt;line-height:1.2}",
     );
     expect(html).toContain(
-      ".letter-header{display:flex;min-height:24mm;align-items:flex-start;justify-content:center;border-bottom:.65mm solid var(--accent)}",
+      ".letter-header{display:flex;min-height:24mm;align-items:flex-start;justify-content:center}",
     );
+    expect(html).toContain(".letter-rule{height:4px;margin:0;background:var(--accent)}");
+    expect(html).toContain('<div class="rule letter-rule"></div>');
     expect(html).toContain(".letter-header{min-height:0;padding-bottom:1mm}");
     expect(html.indexOf('<div class="sender">')).toBeLessThan(
       html.indexOf('<div class="recipient">'),
@@ -392,7 +409,7 @@ describe("Lebenslauf-Dokumente", () => {
     );
     expect(html).toContain('data-resume-template="modern-sidebar"');
     expect(html).toContain(
-      ".letter-content{padding:10mm 20mm 25mm;border-top:0}",
+      ".letter-content{padding:var(--doc-margin);border-top:0}",
     );
     expect(html).toContain(
       ".subject{margin:0 0 6mm;color:var(--accent);font-size:14pt;font-weight:800;line-height:1.2}",
@@ -402,7 +419,7 @@ describe("Lebenslauf-Dokumente", () => {
     );
     expect(splitCleanHtml).toContain("layout-split-clean");
     expect(splitCleanHtml).toContain(
-      ".letter-content{padding:10mm 20mm 25mm;border-top:0}",
+      ".letter-content{padding:var(--doc-margin);border-top:0}",
     );
   });
 
@@ -485,7 +502,7 @@ describe("Lebenslauf-Dokumente", () => {
     expect(html).toContain("programming-languages-layer");
     expect(html).toContain(">TypeScript<");
     expect(html).toContain(">Electron<");
-    expect(html).toContain(">GO<");
+    expect(html).toContain('data-brand="go"');
     expect(html).toContain(">php<");
     expect(html).toContain("print-background");
   });

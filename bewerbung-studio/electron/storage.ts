@@ -698,6 +698,8 @@ export class DataStore {
         emailSubject: "",
         emailMessage: "",
         emailAttachmentNote: "",
+        showCoverLetterAttachments: true,
+        documentListSettings: [],
       },
       attachmentIds: [],
       statusHistory: [
@@ -1106,6 +1108,7 @@ export class DataStore {
     const deckblattDocuments = getDeckblattDocuments(
       this.workspace.attachments,
       application.id,
+      application.documents.documentListSettings,
     );
     const strengthItems = profile?.strengths.length
       ? profile.strengths
@@ -1500,13 +1503,16 @@ export class DataStore {
       GRUSSFORMEL: "Mit freundlichen Grüßen",
       UNTERSCHRIFT: applicantName,
       UNTERSCHRIFT_GRAFIK: profile?.signaturePath ?? "",
-      ANLAGENHINWEIS: [
-        "Anlagen:",
-        ...getCoverLetterAttachments(
-          this.workspace.attachments,
-          application.id,
-        ),
-      ].join("\n"),
+      ANLAGENHINWEIS: application.documents.showCoverLetterAttachments
+        ? [
+            "Anlagen:",
+            ...getCoverLetterAttachments(
+              this.workspace.attachments,
+              application.id,
+              application.documents.documentListSettings,
+            ),
+          ].join("\n")
+        : "",
       KENNTNISSE: knowledgeText,
       ...elegantData,
     };

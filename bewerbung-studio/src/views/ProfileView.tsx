@@ -21,6 +21,7 @@ import {
   CertificateListEditor,
   EntryListEditor,
 } from "../components/profile/EntryListEditor";
+import { TechnologyIconPicker } from "../components/profile/TechnologyIconPicker";
 import { defaultKnowledgeSection } from "../features/knowledge/knowledge.constants";
 import {
   defaultEditableResumeSectionTitles,
@@ -781,6 +782,7 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                         id: crypto.randomUUID(),
                         title: "Neue Stärke",
                         description: "",
+                        iconId: "",
                       },
                     ],
                   }))
@@ -824,6 +826,18 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
                           ...current,
                           strengths: current.strengths.map((item) =>
                             item.id === strength.id ? { ...item, title } : item,
+                          ),
+                        }))
+                      }
+                    />
+                    <TechnologyIconPicker
+                      technologyTitle={strength.title}
+                      value={strength.iconId}
+                      onChange={(iconId) =>
+                        setDraft((current) => ({
+                          ...current,
+                          strengths: current.strengths.map((item) =>
+                            item.id === strength.id ? { ...item, iconId } : item,
                           ),
                         }))
                       }

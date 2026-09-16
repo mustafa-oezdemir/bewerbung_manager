@@ -30,6 +30,7 @@ export type TemplateLanguage = {
 export type TemplateStrength = {
   title: string;
   description: string;
+  iconId: string;
 };
 
 const selectedIds = (
@@ -110,6 +111,7 @@ export const parseTemplateStrengths = (
     .map((strength) => ({
       title: strength.title.trim(),
       description: strength.description.trim(),
+      iconId: strength.iconId.trim(),
     }))
     .filter((strength) => strength.title);
   if (explicitStrengths.length) return explicitStrengths.slice(0, maximum);
@@ -121,6 +123,7 @@ export const parseTemplateStrengths = (
       return {
         title: title.trim(),
         description: description.join(" – ").trim(),
+        iconId: "",
       };
     });
 };

@@ -226,6 +226,8 @@
   color: var(--tabellarisch-text);
   font-size: var(--tabellarisch-body-size);
   line-height: var(--tabellarisch-line-height);
+  text-align: justify;
+  text-justify: inter-word;
   hyphens: auto;
   overflow-wrap: break-word;
 }

@@ -2317,6 +2317,10 @@ h3 {
   border-top: 1px solid #dfe2dd;
 }
 
+.document-paper.document-deckblatt {
+  padding: 0;
+}
+
 .cover-letter-editor-sections {
   display: grid;
   gap: 12px;
@@ -2347,6 +2351,41 @@ h3 {
   color: var(--muted);
   font-size: 0.66rem;
   line-height: 1.45;
+}
+
+.document-list-editor {
+  display: grid;
+  gap: 7px;
+}
+
+.document-list-editor > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.document-list-editor > div.is-hidden input {
+  color: var(--muted);
+  text-decoration: line-through;
+  opacity: 0.72;
+}
+
+.document-list-editor input {
+  min-width: 0;
+  padding: 8px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--surface);
+  font: inherit;
+  font-size: 0.7rem;
+}
+
+.document-list-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.7rem;
 }
 
 .email-editor-sections {
@@ -2763,7 +2802,7 @@ h3 {
   .letter-preview,
 .document-anschreiben[data-resume-template="stilvoll"] .letter-preview,
 .document-anschreiben[data-resume-template="kompakt"] .letter-preview {
-  padding: 10mm 20mm 25mm;
+  padding: var(--doc-margin);
   border-top: 0;
   border-right: 0;
   border-left: 0;
@@ -2774,7 +2813,12 @@ h3 {
   align-items: flex-start;
   justify-content: center;
   padding-bottom: 1mm;
-  border-bottom: 0.65mm solid var(--letter-accent);
+}
+
+.letter-preview .letter-rule {
+  height: 4px;
+  margin: 0;
+  background: var(--letter-accent);
 }
 
 .letter-preview .sender-line {
@@ -6963,6 +7007,33 @@ h3 {
   width: 100%;
   height: 100%;
   overflow: visible;
+}
+
+.technology-icon-picker {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.technology-icon-picker__preview {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-muted);
+}
+
+.technology-icon-picker__preview .technology-brand-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.technology-icon-picker .field small {
+  color: var(--muted);
+  font-size: 0.65rem;
 }
 
 .gepflegt-strength > .technology-brand-icon {
