@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import type { Application } from "./schema";
 import {
+  coverLetterApplicantFileName,
   createCoverSubject,
   getCoverLetterAttachments,
   getCoverLetterMainBody,
@@ -66,5 +68,26 @@ describe("cover-letter helpers", () => {
         applicationId,
       ),
     ).toEqual(["Lebenslauf", "Zeugnis.pdf", "Zertifikat.pdf"]);
+  });
+});
+
+const application = (companyName: string) =>
+  ({
+    company: { name: companyName },
+    createdAt: "2026-09-16T09:00:00.000Z",
+    sentAt: "2026-09-16T09:00:00.000Z",
+  }) as Pick<Application, "company" | "createdAt" | "sentAt">;
+
+describe("coverLetterApplicantFileName", () => {
+  it("uses applicant and company in the application-standard file name", () => {
+    expect(
+      coverLetterApplicantFileName(application("Aagon GmbH"), "Mustafa Özdemir"),
+    ).toBe("Anschreiben_Mustafa_Özdemir_Aagon_GmbH");
+  });
+
+  it("falls back to the company when no applicant name is available", () => {
+    expect(coverLetterApplicantFileName(application("Muster GmbH"), "")).toBe(
+      "Anschreiben_Muster_GmbH",
+    );
   });
 });

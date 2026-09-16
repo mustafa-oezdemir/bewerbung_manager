@@ -54,7 +54,8 @@ export const coverLetterApplicantFileName = (
       .replace(/\s+/g, "_")
       .replace(/_+/g, "_");
   const safeApplicantName = sanitize(applicantName);
-  return safeApplicantName
-    ? `Anschreiben_${safeApplicantName}`
-    : `Anschreiben_${sanitize(application.company.name)}`;
+  const safeCompanyName = sanitize(application.company.name);
+  return ["Anschreiben", safeApplicantName, safeCompanyName]
+    .filter(Boolean)
+    .join("_");
 };

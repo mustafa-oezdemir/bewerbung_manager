@@ -374,11 +374,14 @@ describe("DataStore backups", () => {
     ).resolves.toContain('"sentAt": "2026-08-22T09:00:00.000Z"');
   });
 
-  it("preserves the applicant-named synchronized cover letter while saving editor changes", async () => {
+  it("preserves the application-standard synchronized cover letter while saving editor changes", async () => {
     const created = await store.createApplication(applicationInput("Muster GmbH"));
     const application = created.applications[0];
     const anschreiben = store.files.documentDirectories(application).anschreiben;
-    const personalFile = path.join(anschreiben, "Anschreiben_Mustafa_Özdemir.docx");
+    const personalFile = path.join(
+      anschreiben,
+      "Anschreiben_Mustafa_Özdemir_Muster_GmbH.docx",
+    );
     await writeFile(personalFile, "personal letter");
     application.documents.emailMessage = "Aktualisierte E-Mail.";
 
