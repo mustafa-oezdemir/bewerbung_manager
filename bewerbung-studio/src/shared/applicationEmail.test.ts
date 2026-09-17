@@ -101,11 +101,15 @@ describe("application email", () => {
       email: "mustafa@example.com",
     };
     const email = getApplicationEmail(automatic, profile);
-    const markdown = buildApplicationEmailMarkdown(automatic, profile);
+    const markdown = buildApplicationEmailMarkdown(automatic, profile, [
+      "Anschreiben",
+      "Lebenslauf",
+    ]);
 
     expect(email.subject).toBe("Bewerbung als Tankstellenverkäufer - Teilzeit");
     expect(email.subject).not.toContain("Bewerbung als Bewerbung als");
     expect(markdown).toContain("Sehr geehrte Frau Musterfrau,");
+    expect(markdown).toContain("## Anlagen\n\n- Anschreiben\n- Lebenslauf");
     expect(markdown).toContain("Mit freundlichen Grüßen\n\nMustafa Özdemir");
   });
 
@@ -131,17 +135,21 @@ describe("application email", () => {
           "Mein Anschreiben und meinen Lebenslauf finden Sie im Anhang.",
       },
     };
-    const markdown = buildApplicationEmailMarkdown(aral, {
-      firstName: "Mustafa",
-      lastName: "Özdemir",
-      email: "mustafa@example.com",
-    });
+    const markdown = buildApplicationEmailMarkdown(
+      aral,
+      {
+        firstName: "Mustafa",
+        lastName: "Özdemir",
+        email: "mustafa@example.com",
+      },
+      ["Anschreiben", "Lebenslauf"],
+    );
 
     expect(markdown).toContain(
       "Sehr geehrte Frau Moter,\n\nanbei übersende ich Ihnen meine Bewerbung",
     );
     expect(markdown).toContain(
-      "kann ab sofort beginnen. Mein Anschreiben und meinen Lebenslauf finden Sie im Anhang.",
+      "kann ab sofort beginnen.\n\n## Anlagen\n\n- Anschreiben\n- Lebenslauf",
     );
     expect(markdown).toContain(
       "Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.\n\nMit freundlichen Grüßen\n\nMustafa Özdemir",

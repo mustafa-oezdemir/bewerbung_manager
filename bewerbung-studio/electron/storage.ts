@@ -489,7 +489,12 @@ export class DataStore {
     const { dataRoot } =
       await this.ensureApplicationDataDirectories(application);
     const profile = this.getProfileForApplication(application);
-    const email = getApplicationEmail(application, profile);
+    const emailAttachments = getDeckblattDocuments(
+      this.workspace.attachments,
+      application.id,
+      application.documents.documentListSettings,
+    );
+    const email = getApplicationEmail(application, profile, emailAttachments);
     await Promise.all([
       this.atomicWrite(
         path.join(dataRoot, "bewerbung.json"),
@@ -505,7 +510,7 @@ export class DataStore {
       ),
       this.atomicWrite(
         path.join(documents.email, "Email.md"),
-        buildApplicationEmailMarkdown(application, profile),
+        buildApplicationEmailMarkdown(application, profile, emailAttachments),
       ),
       this.atomicWrite(
         path.join(documents.email, "email.json"),

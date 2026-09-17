@@ -605,6 +605,7 @@ export function DocumentsView({
   const email = getApplicationEmail(
     { ...application, documents: docs },
     profile,
+    deckblattDocuments,
   );
   const sections = renderProfile?.resumeSections ?? {
     profile: true,
@@ -836,7 +837,7 @@ export function DocumentsView({
         emailMessage: value("emailMessage", docs.emailMessage),
         emailAttachmentNote: value(
           "emailAttachmentNote",
-          docs.emailAttachmentNote,
+          "",
         ),
         showCoverLetterAttachments: docs.showCoverLetterAttachments,
         documentListSettings: docs.documentListSettings,
@@ -1135,14 +1136,13 @@ export function DocumentsView({
                     defaultValue={email.message}
                   />
                 </label>
-                <label className="field">
-                  <span>Anhangsatz</span>
-                  <textarea
-                    name="emailAttachmentNote"
-                    rows={3}
-                    defaultValue={email.attachmentNote}
+                <section className="cover-letter-editor-section">
+                  <header><b>Anlagen</b><small>Namen ändern, Einträge ausblenden oder entfernen</small></header>
+                  <DocumentListEditor
+                    items={applicationDocumentItems}
+                    onChange={updateDocumentListItem}
                   />
-                </label>
+                </section>
                 <p className="word-sync-note">
                   Beim Speichern werden Email/Email.md und email.json im
                   Bewerbungsordner aktualisiert.
@@ -1830,6 +1830,16 @@ export function DocumentsView({
                 <section className="email-message-preview">
                   <p>{email.salutation}</p>
                   <p>{email.body}</p>
+                  {email.attachments.length ? (
+                    <div className="email-attachments-preview">
+                      <strong>Anlagen</strong>
+                      <ul>
+                        {email.attachments.map((attachment) => (
+                          <li key={attachment}>{attachment}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
                   <p>{email.closing}</p>
                   <p>{email.greeting}</p>
                   <p>{email.senderName || "Absender im Profil ergänzen"}</p>

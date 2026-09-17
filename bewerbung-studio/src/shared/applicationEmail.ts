@@ -13,8 +13,6 @@ export const defaultApplicationEmail = (
 ) => ({
   emailSubject: createCoverSubject(application.job.title),
   emailMessage: `anbei übersende ich Ihnen meine Bewerbung für die ausgeschriebene Position als ${application.job.title.replace(/^Bewerbung\s+als\s+/i, "")} bei ${application.company.name}.`,
-  emailAttachmentNote:
-    "Mein Anschreiben und meinen Lebenslauf finden Sie im Anhang.",
 });
 
 export const getApplicationEmail = (
@@ -29,6 +27,7 @@ export const getApplicationEmail = (
     | "sentAt"
   >,
   profile?: Pick<ApplicantProfile, "firstName" | "lastName" | "email">,
+  attachments: readonly string[] = [],
 ) => {
   const defaults = defaultApplicationEmail(application);
   const recipient = [application.contact, ...application.additionalContacts].find(
@@ -36,8 +35,6 @@ export const getApplicationEmail = (
       Boolean(contact.email || contact.firstName || contact.lastName),
   ) ?? application.contact;
   const message = application.documents.emailMessage || defaults.emailMessage;
-  const attachmentNote =
-    application.documents.emailAttachmentNote || defaults.emailAttachmentNote;
   return {
     applicationDate: formatApplicationDate(application),
     companyName: application.company.name,
@@ -56,16 +53,17 @@ export const getApplicationEmail = (
       application.documents.emailSubject || defaults.emailSubject,
     ),
     message,
-    attachmentNote,
-    body: `${message.trim()}${attachmentNote.trim() ? ` ${attachmentNote.trim()}` : ""}`,
+    attachments: Array.from(new Set(attachments.map((item) => item.trim()).filter(Boolean))),
+    body: message.trim(),
   };
 };
 
 export const buildApplicationEmailMarkdown = (
   application: Parameters<typeof getApplicationEmail>[0],
   profile?: Parameters<typeof getApplicationEmail>[1],
+  attachments: Parameters<typeof getApplicationEmail>[2] = [],
 ) => {
-  const email = getApplicationEmail(application, profile);
+  const email = getApplicationEmail(application, profile, attachments);
   return [
     "# Bewerbungs-E-Mail",
     "",
@@ -84,6 +82,9 @@ export const buildApplicationEmailMarkdown = (
     "",
     email.body,
     "",
+    ...(email.attachments.length
+      ? ["## Anlagen", "", ...email.attachments.map((attachment) => `- ${attachment}`), ""]
+      : []),
     email.closing,
     "",
     email.greeting,

@@ -2536,6 +2536,28 @@ h3 {
   margin-top: 24px;
 }
 
+.email-attachments-preview {
+  margin: 18px 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--doc-accent);
+  background: color-mix(in srgb, var(--doc-accent), white 94%);
+}
+
+.email-attachments-preview strong {
+  display: block;
+  color: var(--doc-accent);
+  font-size: 0.86em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.email-attachments-preview ul {
+  display: grid;
+  gap: 3px;
+  margin: 7px 0 0;
+  padding-left: 18px;
+}
+
 .email-preview section h3 {
   margin: 0 0 8px;
   color: #000;
