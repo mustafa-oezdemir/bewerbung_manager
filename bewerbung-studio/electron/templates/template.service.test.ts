@@ -1077,6 +1077,40 @@ describe("Musterverwaltung", () => {
     );
   });
 
+  it("places Anlagen after the signature even when a legacy placeholder is in the body", async () => {
+    const templatePath = path.join(
+      paths.anschreibenTemplates,
+      "Anlagen-im-Text.docx",
+    );
+    await createDocx(
+      templatePath,
+      `<w:p><w:r><w:t>{{SCHLUSSTEXT}}</w:t></w:r></w:p><w:p><w:r><w:t>{{ANLAGENHINWEIS}}</w:t></w:r></w:p><w:p><w:r><w:t>{{GRUSSFORMEL}}</w:t></w:r></w:p><w:p><w:r><w:t>{{UNTERSCHRIFT}}</w:t></w:r></w:p>`,
+    );
+    const result = await service.scanAllTemplates();
+    const template = result.templates.find(
+      (item) => item.fileName === "Anlagen-im-Text.docx",
+    )!;
+    const created = await service.synchronizeDocumentFromTemplate(
+      template.id,
+      path.join(paths.anschreibenDocuments, "Beispiel", "Verkauf"),
+      "Anschreiben_Mustafa_Özdemir",
+      {
+        SCHLUSSTEXT: "Abschließender Absatz.",
+        GRUSSFORMEL: "Mit freundlichen Grüßen",
+        UNTERSCHRIFT: "Mustafa Özdemir",
+        ANLAGENHINWEIS: "Anlagen:\nLebenslauf",
+        DESIGN_PRIMARY: "#0B3D86",
+      },
+    );
+    const documentXml = new PizZip(await readFile(created.filePath))
+      .file("word/document.xml")!
+      .asText();
+
+    expect(documentXml.indexOf("Mustafa Özdemir")).toBeLessThan(
+      documentXml.indexOf("Anlagen:"),
+    );
+  });
+
   it("does not list unsupported extensions and reports corrupt DOCX files without crashing", async () => {
     await writeFile(path.join(paths.anschreibenTemplates, "Notiz.txt"), "x");
     await writeFile(

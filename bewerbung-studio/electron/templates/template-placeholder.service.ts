@@ -655,6 +655,15 @@ export class TemplatePlaceholderService {
           .filter((value) => value?.trim())
           .join("\n\n");
       }
+      // Anlagen always belong after the signature.  Clear a legacy placeholder
+      // in the document body and append the generated list at the end instead.
+      const coverLetterAttachmentNote =
+        template.documentType === "anschreiben"
+          ? normalizedData.ANLAGENHINWEIS ?? ""
+          : "";
+      if (template.documentType === "anschreiben") {
+        normalizedData.ANLAGENHINWEIS = "";
+      }
       if (template.id === klassischLebenslaufTemplateConfig.id) {
         for (const [titleKey, contentKeys] of [
           ["KENNTNISSE_TITEL", ["KENNTNISSE"]],
@@ -686,13 +695,10 @@ export class TemplatePlaceholderService {
       ].filter((key) => fullText.includes(`{{${key}}}`));
       document.render(normalizedData);
       const renderedZip = document.getZip();
-      if (
-        template.documentType === "anschreiben" &&
-        !fullText.includes("{{ANLAGENHINWEIS}}")
-      ) {
+      if (template.documentType === "anschreiben") {
         appendCoverLetterAttachments(
           renderedZip,
-          normalizedData.ANLAGENHINWEIS ?? "",
+          coverLetterAttachmentNote,
           normalizedHex(data.DESIGN_PRIMARY, "0B3D86"),
         );
       }
