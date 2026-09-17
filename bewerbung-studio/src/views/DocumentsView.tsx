@@ -1659,7 +1659,7 @@ export function DocumentsView({
                 <i className="paper-rule" />
                 <section className="deckblatt-preview__hero">
                   <div>
-                    <h1>Bewerbung als {application.job.title}</h1>
+                    <h1>{createCoverSubject(application.job.title)}</h1>
                     <p className="paper-muted">
                       bei {application.company.name}
                     </p>

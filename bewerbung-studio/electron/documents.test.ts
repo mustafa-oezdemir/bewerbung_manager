@@ -105,6 +105,20 @@ describe("Lebenslauf-Dokumente", () => {
     expect(html).toContain("<li>Arbeitszeugnis.pdf</li>");
   });
 
+  it("does not repeat the Bewerbung-als prefix on the Deckblatt", () => {
+    const alreadyPrefixed = applicationSchema.parse({
+      ...application,
+      job: {
+        ...application.job,
+        title: "Bewerbung als Sachbearbeiter im Verkaufsinnendienst",
+      },
+    });
+    const html = buildDocumentHtml(alreadyPrefixed, profile, "deckblatt");
+
+    expect(html).toContain("Bewerbung als Sachbearbeiter im Verkaufsinnendienst");
+    expect(html).not.toContain("Bewerbung als Bewerbung als");
+  });
+
   it("keeps the package order Anschreiben, Deckblatt, Lebenslauf", () => {
     const html = buildDocumentHtml(application, profile, "mappe");
     const body = html.slice(html.indexOf("<body>"));
