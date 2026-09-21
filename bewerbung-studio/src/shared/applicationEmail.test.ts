@@ -154,11 +154,17 @@ describe("application email", () => {
       "Sehr geehrte Frau Moter,\n\nanbei übersende ich Ihnen meine Bewerbung",
     );
     expect(markdown).toContain(
-      "kann ab sofort beginnen.\n\n## Anlagen\n\n- Anschreiben\n- Lebenslauf",
+      "kann ab sofort beginnen.\n\nFür Rückfragen stehe ich Ihnen gerne zur Verfügung.",
     );
     expect(markdown).toContain(
-      "Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.\n\nMit freundlichen Grüßen\n\nMustafa Özdemir",
+      "Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.",
     );
+    expect(markdown).toContain("Mit freundlichen Grüßen");
+    expect(markdown).toContain("Mustafa Özdemir");
+    expect(markdown.indexOf("Mustafa Özdemir")).toBeLessThan(
+      markdown.indexOf("## Anlagen"),
+    );
+    expect(markdown).toContain("## Anlagen\n\n- Anschreiben\n- Lebenslauf");
   });
 
   it("leaves missing recipient details explicitly unfilled", () => {

@@ -2331,12 +2331,10 @@ export function DocumentsView({
 
                   <p>{email.body}</p>
 
-                  {/* <p>{email.closing}</p> */}
-
+                  <p>{email.closing}</p>
                   <p>{email.greeting}</p>
 
                   <p>{email.senderName || "Absender im Profil ergänzen"}</p>
-
                   {email.attachments.length > 0 && (
                     <div className="email-attachments-preview">
                       <strong>Anlagen</strong>
