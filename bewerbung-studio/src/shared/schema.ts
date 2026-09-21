@@ -13,6 +13,10 @@ import {
   resumePersonalFieldKeys,
   resumeSemanticTypes,
 } from "../features/resume-sections/resume-section-system";
+import {
+  resumeBlockRendererTypes,
+  resumeKnowledgeSlots,
+} from "../features/resume-sections/knowledge-block-registry";
 import { defaultKnowledgeSection } from "../features/knowledge/knowledge.constants";
 import { knowledgeSectionSchema } from "../features/knowledge/knowledge.validation";
 import {
@@ -503,11 +507,47 @@ export const profileSchema = z.object({
         semanticType: z.string().trim().min(1),
         visible: z.boolean().default(true),
         order: z.number().int().nonnegative(),
-        items: z.array(z.string()).default([]),
-        rendererType: z.enum(["list", "icon-list", "tags"]).default("list"),
+        items: z
+          .array(
+            z.union([
+              z.string(),
+              z.object({
+                id: z.string().min(1),
+                text: optionalText,
+                description: optionalText,
+                icon: optionalText,
+                level: optionalText,
+                order: z.number().int().nonnegative(),
+                visible: z.boolean().default(true),
+              }),
+            ]),
+          )
+          .transform((items) => items.map((item, order) => typeof item === "string"
+            ? {
+                id: `legacy-${order}-${item.toLocaleLowerCase("de-DE").replace(/[^a-z0-9]+/g, "-")}`,
+                text: item,
+                description: "",
+                icon: "",
+                level: "",
+                order,
+                visible: true,
+              }
+            : item))
+          .default([]),
+        rendererType: z.preprocess(
+          (value) => value === "list" ? "bullet-list" : value === "tags" ? "tag-list" : value,
+          z.enum(resumeBlockRendererTypes),
+        ).default("bullet-list"),
+        slot: z.enum(resumeKnowledgeSlots).default("sidebar"),
+        slotOverrides: z.record(z.string(), z.enum(resumeKnowledgeSlots)).default({}),
+        pageBreakBefore: z.boolean().default(false),
       }),
     )
     .default([]),
+  resumeKnowledgeContainer: z
+    .object({ showTitle: z.boolean().default(false) })
+    .default({ showTitle: false }),
+  resumeColumnRatio: z.union([z.literal(25), z.literal(30), z.literal(35), z.literal(40)]).default(30),
   resumeClosing: z
     .object({
       showPlace: z.boolean().default(true),

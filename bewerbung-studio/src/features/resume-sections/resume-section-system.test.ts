@@ -5,6 +5,13 @@ import {
   resumeSectionDefinitions,
   validateRequiredResumeSections,
 } from "./resume-section-system";
+import {
+  createKnowledgeBlock,
+  getResumeBlockDefinition,
+  getTemplateKnowledgeSlots,
+  resolveKnowledgeSlot,
+  resumeBlockRegistry,
+} from "./knowledge-block-registry";
 
 describe("resume section system", () => {
   it("provides all nine semantic sections", () => {
@@ -24,9 +31,47 @@ describe("resume section system", () => {
   });
 
   it("maps Pehlione knowledge groups", () => {
-    expect(getDefaultKnowledgeGroups("pehlione_white_blue").map((item) => item.title)).toEqual([
+    const groups = getDefaultKnowledgeGroups("pehlione_white_blue");
+    expect(groups.map((item) => item.title)).toEqual([
       "Kernkompetenzen",
       "Technische Schwerpunkte",
     ]);
+    expect(groups.every((item) => item.slot === "sidebar")).toBe(true);
+  });
+
+  it("offers the central extendable block registry", () => {
+    expect(resumeBlockRegistry.length).toBeGreaterThanOrEqual(22);
+    expect(resumeBlockRegistry.map((item) => item.title)).toEqual(
+      expect.arrayContaining([
+        "Kernkompetenzen",
+        "Technische Schwerpunkte",
+        "Stärken",
+        "Zertifikate",
+        "Weiterbildungen",
+        "Projekt-Highlight",
+      ]),
+    );
+  });
+
+  it("maps unsupported slots without deleting content", () => {
+    expect(getTemplateKnowledgeSlots("pehlione_white_blue").map((slot) => slot.id)).toEqual([
+      "sidebar",
+      "main",
+      "full",
+    ]);
+    expect(getTemplateKnowledgeSlots("klassisch").map((slot) => slot.id)).toEqual(["main"]);
+    expect(resolveKnowledgeSlot("klassisch", "core-competencies", "sidebar")).toBe("main");
+    expect(resolveKnowledgeSlot("pehlione_white_blue", "project-highlight", "sidebar")).toBe("main");
+  });
+
+  it("creates project blocks in a supported main slot", () => {
+    const definition = getResumeBlockDefinition("project-highlight")!;
+    expect(createKnowledgeBlock("pehlione_white_blue", definition, 3)).toMatchObject({
+      semanticType: "project-highlight",
+      rendererType: "project-highlight",
+      slot: "main",
+      visible: true,
+      order: 3,
+    });
   });
 });

@@ -1,3 +1,11 @@
+import {
+  getResumeBlockDefinition,
+  resolveKnowledgeSlot,
+  type ResumeBlockItem,
+  type ResumeBlockRendererType,
+  type ResumeKnowledgeSlot,
+} from "./knowledge-block-registry";
+
 export const resumeSemanticTypes = [
   "heading",
   "personalData",
@@ -143,8 +151,11 @@ export type ResumeKnowledgeGroup = {
   semanticType: string;
   visible: boolean;
   order: number;
-  items: string[];
-  rendererType: "list" | "icon-list" | "tags";
+  items: ResumeBlockItem[];
+  rendererType: ResumeBlockRendererType;
+  slot: ResumeKnowledgeSlot;
+  slotOverrides: Record<string, ResumeKnowledgeSlot>;
+  pageBreakBefore: boolean;
 };
 
 export const getDefaultKnowledgeGroups = (templateId: string): ResumeKnowledgeGroup[] => {
@@ -153,21 +164,52 @@ export const getDefaultKnowledgeGroups = (templateId: string): ResumeKnowledgeGr
     : templateId === "stilvoll"
       ? ["Kenntnisse", "Sprachen", "Stärken"]
       : ["Kenntnisse", "Sprachen"];
-  return titles.map((title, order) => ({
-    id: `default-${templateId}-${order}`,
-    title,
-    semanticType: title.toLocaleLowerCase("de-DE").replace(/\s+/g, "-"),
-    visible: true,
-    order,
-    items: [],
-    rendererType: order === 1 && templateId === "pehlione_white_blue" ? "icon-list" : "list",
-  }));
+  return titles.map((title, order) => {
+    const semanticType = title === "Kernkompetenzen"
+      ? "core-competencies"
+      : title === "Technische Schwerpunkte"
+        ? "technical-focus"
+        : title.toLocaleLowerCase("de-DE").replace(/\s+/g, "-");
+    return {
+      id: `default-${templateId}-${order}`,
+      title,
+      semanticType,
+      visible: true,
+      order,
+      items: [],
+      rendererType: order === 1 && templateId === "pehlione_white_blue" ? "icon-list" : "bullet-list",
+    slot: resolveKnowledgeSlot(
+        templateId,
+        semanticType,
+        templateId === "pehlione_white_blue" ? "sidebar" : undefined,
+    ),
+    slotOverrides: {},
+    pageBreakBefore: false,
+    };
+  });
 };
 
 export const resolveKnowledgeGroups = (
   templateId: string,
   saved: readonly ResumeKnowledgeGroup[] | undefined,
 ) => {
-  if (saved?.length) return [...saved].sort((left, right) => left.order - right.order);
+  if (saved?.length) return [...saved]
+    .map((group) => {
+      const definition = getResumeBlockDefinition(group.semanticType);
+      return {
+        ...group,
+        rendererType: definition?.allowedRenderers.includes(group.rendererType)
+          ? group.rendererType
+          : (definition?.defaultRenderer ?? group.rendererType),
+        slot: resolveKnowledgeSlot(
+          templateId,
+          group.semanticType,
+          group.slotOverrides?.[templateId] ?? group.slot,
+        ),
+        items: [...group.items]
+          .sort((left, right) => left.order - right.order),
+      };
+    })
+    .sort((left, right) => left.order - right.order);
   return getDefaultKnowledgeGroups(templateId);
 };

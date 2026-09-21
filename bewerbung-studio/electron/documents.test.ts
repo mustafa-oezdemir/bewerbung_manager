@@ -442,6 +442,25 @@ describe("Lebenslauf-Dokumente", () => {
       ...profile,
       phone: "+4917693153406",
       linkedin: "https://www.linkedin.com/in/mina-kaya/",
+      resumeColumnRatio: 35,
+      resumeKnowledgeGroups: [{
+        id: "custom-tools",
+        title: "IT & Technik",
+        semanticType: "tools",
+        visible: true,
+        order: 0,
+        rendererType: "tag-list",
+        slot: "main",
+        items: [{
+          id: "docker",
+          text: "Docker",
+          description: "Containerisierung",
+          icon: "",
+          level: "",
+          order: 0,
+          visible: true,
+        }],
+      }],
     });
     const pehlioneApplication = applicationSchema.parse({
       ...application,
@@ -458,6 +477,9 @@ describe("Lebenslauf-Dokumente", () => {
     expect(html).toContain("+49 176 93153406");
     expect(html).toContain('href="https://www.linkedin.com/in/mina-kaya/"');
     expect(html).toContain("pehlione-pdf-continuation .pehlione-pdf-main{padding:0}");
+    expect(html).toContain("IT &amp; Technik");
+    expect(html).toContain("Containerisierung");
+    expect(html).toContain("grid-template-columns:73.5mm minmax(0,1fr)");
   });
 
   it("reduces the date-to-subject gap in the PDF with each requested step", () => {

@@ -7213,12 +7213,11 @@ h3 {
 
 .resume-knowledge-group-list > article {
   display: grid;
-  grid-template-columns: minmax(145px, 0.7fr) minmax(180px, 1fr) auto;
   gap: 0.65rem;
-  align-items: start;
-  padding: 0.7rem;
+  padding: 0.85rem;
   border: 1px solid var(--border);
   border-radius: 10px;
+  background: var(--surface);
 }
 
 .resume-knowledge-group-list > article.is-hidden {
@@ -7229,11 +7228,87 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem;
+  align-items: center;
 }
+
+.resume-knowledge-container-settings,
+.resume-block-add-actions,
+.resume-block-title-row,
+.resume-block-config-grid,
+.resume-block-items,
+.resume-block-picker {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.resume-knowledge-container-settings {
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.45fr);
+  align-items: end;
+}
+
+.compact-field { margin: 0; }
+
+.resume-block-title-row {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+}
+
+.resume-block-title-row > svg { color: var(--muted); cursor: grab; }
+
+.resume-block-config-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.resume-block-config-grid label {
+  display: grid;
+  gap: 0.3rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.resume-block-item {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.8fr) minmax(150px, 1fr) repeat(4, 34px);
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.resume-block-item.is-hidden { opacity: 0.55; }
+
+.compact-button { justify-self: start; padding: 0.42rem 0.65rem; }
+
+.resume-block-add-actions {
+  grid-template-columns: repeat(2, max-content);
+}
+
+.resume-block-picker {
+  padding: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-strong);
+}
+
+.resume-block-picker > div { display: grid; gap: 0.35rem; }
+.resume-block-picker > div > div { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.resume-block-picker button {
+  display: inline-flex;
+  gap: 0.25rem;
+  align-items: center;
+  padding: 0.38rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  background: var(--surface);
+}
+.resume-block-picker button.active { border-color: var(--accent); color: var(--accent); }
 
 @media (max-width: 980px) {
   .resume-semantic-card,
-  .resume-knowledge-group-list > article {
+  .resume-knowledge-group-list > article,
+  .resume-knowledge-container-settings,
+  .resume-block-config-grid,
+  .resume-block-item,
+  .resume-block-add-actions {
     grid-template-columns: 1fr;
   }
 }

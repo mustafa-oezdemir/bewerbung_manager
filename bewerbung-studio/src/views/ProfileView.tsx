@@ -97,6 +97,8 @@ const newProfile = (): ApplicantProfile => ({
   resumeSemanticSections: defaultResumeSectionInstances(),
   resumePersonalFieldVisibility: { ...defaultResumePersonalFieldVisibility },
   resumeKnowledgeGroups: [],
+  resumeKnowledgeContainer: { showTitle: false },
+  resumeColumnRatio: 30,
   resumeClosing: { showPlace: true, showDate: true, showSignature: true },
   updatedAt: new Date().toISOString(),
 });

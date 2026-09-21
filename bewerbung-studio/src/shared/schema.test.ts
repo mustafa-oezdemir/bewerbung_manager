@@ -223,11 +223,38 @@ describe("BewerbungsManager schemas", () => {
     expect(profile.resumePersonalFieldVisibility.email).toBe(true);
     expect(profile.resumePersonalFieldVisibility.birthDate).toBe(false);
     expect(profile.resumeKnowledgeGroups).toEqual([]);
+    expect(profile.resumeKnowledgeContainer).toEqual({ showTitle: false });
+    expect(profile.resumeColumnRatio).toBe(30);
     expect(profile.resumeClosing).toEqual({
       showPlace: true,
       showDate: true,
       showSignature: true,
     });
+  });
+
+  it("migrates legacy knowledge block strings into editable block items", () => {
+    const profile = profileSchema.parse({
+      id: crypto.randomUUID(),
+      isDefault: true,
+      firstName: "Mina",
+      lastName: "Kaya",
+      resumeKnowledgeGroups: [{
+        id: "legacy-group",
+        title: "Tools",
+        semanticType: "tools",
+        visible: true,
+        order: 0,
+        items: ["Git", "Docker"],
+        rendererType: "tags",
+      }],
+      updatedAt: new Date().toISOString(),
+    });
+
+    expect(profile.resumeKnowledgeGroups[0].rendererType).toBe("tag-list");
+    expect(profile.resumeKnowledgeGroups[0].items).toMatchObject([
+      { text: "Git", visible: true, order: 0 },
+      { text: "Docker", visible: true, order: 1 },
+    ]);
   });
 
   it("keeps independent strengths and editable resume section titles", () => {

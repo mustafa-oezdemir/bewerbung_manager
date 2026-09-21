@@ -1,5 +1,7 @@
 import {
   ArrowDown,
+  ArrowLeft,
+  ArrowRight,
   ArrowUp,
   Eye,
   EyeOff,
@@ -29,6 +31,16 @@ import {
   resumeSectionDefinitions,
   type ResumeSemanticType,
 } from "../../features/resume-sections/resume-section-system";
+import {
+  createKnowledgeBlock,
+  createResumeBlockItem,
+  getResumeBlockDefinition,
+  getTemplateKnowledgeSlots,
+  rendererTypeLabels,
+  resumeBlockRegistry,
+  type ResumeBlockRendererType,
+  type ResumeKnowledgeSlot,
+} from "../../features/resume-sections/knowledge-block-registry";
 import type { ApplicantProfile } from "../../shared/schema";
 
 type ResumeSectionsPanelProps = {
@@ -113,6 +125,9 @@ export function ResumeSectionsPanel({
   );
   const [draftProfile, setDraftProfile] = useState(profile);
   const [draggedType, setDraggedType] = useState<ResumeSectionType | null>(null);
+  const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null);
+  const [blockPickerOpen, setBlockPickerOpen] = useState(false);
+  const [blockSearch, setBlockSearch] = useState("");
 
   useEffect(() => {
     setDraftLayout(getProfileResumeSectionLayout(profile, templateId));
@@ -159,6 +174,8 @@ export function ResumeSectionsPanel({
       resumeSemanticSections: resolveResumeSectionInstances([]),
       resumePersonalFieldVisibility: defaultResumePersonalFieldVisibility,
       resumeKnowledgeGroups: resolveKnowledgeGroups(templateId, []),
+      resumeKnowledgeContainer: { showTitle: false },
+      resumeColumnRatio: 30,
       resumeClosing: { showPlace: true, showDate: true, showSignature: true },
     });
   };
@@ -186,6 +203,81 @@ export function ResumeSectionsPanel({
     templateId,
     draftProfile.resumeKnowledgeGroups,
   );
+  const knowledgeSlots = getTemplateKnowledgeSlots(templateId);
+  const filteredBlockRegistry = resumeBlockRegistry.filter((definition) =>
+    `${definition.title} ${definition.category}`
+      .toLocaleLowerCase("de-DE")
+      .includes(blockSearch.trim().toLocaleLowerCase("de-DE")),
+  );
+
+  const updateKnowledgeGroups = (
+    update: (groups: typeof knowledgeGroups) => typeof knowledgeGroups,
+  ) => setDraftProfile((current) => ({
+    ...current,
+    resumeKnowledgeGroups: update(
+      resolveKnowledgeGroups(templateId, current.resumeKnowledgeGroups),
+    ).map((group, order) => ({ ...group, order })),
+  }));
+
+  const updateKnowledgeGroup = (
+    id: string,
+    change: Partial<(typeof knowledgeGroups)[number]>,
+  ) => updateKnowledgeGroups((groups) => groups.map((group) =>
+    group.id === id ? { ...group, ...change } : group,
+  ));
+
+  const moveKnowledgeGroup = (id: string, direction: -1 | 1) =>
+    updateKnowledgeGroups((groups) => {
+      const index = groups.findIndex((group) => group.id === id);
+      const target = index + direction;
+      if (index < 0 || target < 0 || target >= groups.length) return groups;
+      const next = [...groups];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+
+  const changeKnowledgeSlot = (id: string, slot: ResumeKnowledgeSlot) => {
+    const group = knowledgeGroups.find((item) => item.id === id);
+    const definition = group ? getResumeBlockDefinition(group.semanticType) : undefined;
+    if (definition?.requiresMainColumn && slot === "sidebar") return;
+    if (!knowledgeSlots.some((item) => item.id === slot)) return;
+    updateKnowledgeGroup(id, {
+      slot,
+      slotOverrides: { ...group?.slotOverrides, [templateId]: slot },
+    });
+  };
+
+  const addRegistryBlock = (semanticType: string) => {
+    const definition = getResumeBlockDefinition(semanticType);
+    if (!definition) return;
+    if (!definition.allowMultiple && knowledgeGroups.some((group) => group.semanticType === semanticType)) {
+      updateKnowledgeGroup(
+        knowledgeGroups.find((group) => group.semanticType === semanticType)!.id,
+        { visible: true },
+      );
+      return;
+    }
+    updateKnowledgeGroups((groups) => [
+      ...groups,
+      createKnowledgeBlock(templateId, definition, groups.length),
+    ]);
+  };
+
+  const addCustomBlock = () => updateKnowledgeGroups((groups) => [
+    ...groups,
+    {
+      id: crypto.randomUUID(),
+      title: "Eigener Bereich",
+      semanticType: `custom-${crypto.randomUUID()}`,
+      visible: true,
+      order: groups.length,
+      items: [],
+      rendererType: "bullet-list" as const,
+      slot: knowledgeSlots[0]?.id ?? "main",
+      slotOverrides: {},
+      pageBreakBefore: false,
+    },
+  ]);
 
   const updateSemanticSection = (
     semanticType: ResumeSemanticType,
@@ -301,40 +393,125 @@ export function ResumeSectionsPanel({
 
       <div className="resume-knowledge-groups-panel">
         <header>
-          <strong>Besondere Kenntnisse</strong>
-          <small>Bereiche umbenennen, bearbeiten, sortieren oder ausblenden.</small>
+          <strong>Besondere Kenntnisse · Bausteine</strong>
+          <small>Bereiche, Inhalte, Darstellung und Position bleiben beim Vorlagenwechsel erhalten.</small>
         </header>
-        <div className="resume-knowledge-group-list">
-          {knowledgeGroups.map((group, index) => (
-            <article className={group.visible ? "" : "is-hidden"} key={group.id}>
-              <input
-                aria-label={`${group.title} Titel`}
-                value={group.title}
+        <div className="resume-knowledge-container-settings">
+          <label className="checkbox-field compact">
+            <input
+              type="checkbox"
+              checked={draftProfile.resumeKnowledgeContainer?.showTitle ?? false}
+              onChange={(event) => setDraftProfile((current) => ({
+                ...current,
+                resumeKnowledgeContainer: { showTitle: event.target.checked },
+              }))}
+            />
+            <span>Übergeordneten Titel „Besondere Kenntnisse“ anzeigen</span>
+          </label>
+          {knowledgeSlots.length > 1 ? (
+            <label className="field compact-field">
+              <span>Breite der linken Spalte</span>
+              <select
+                value={draftProfile.resumeColumnRatio ?? 30}
                 onChange={(event) => setDraftProfile((current) => ({
                   ...current,
-                  resumeKnowledgeGroups: resolveKnowledgeGroups(templateId, current.resumeKnowledgeGroups).map((item) => item.id === group.id ? { ...item, title: event.target.value } : item),
-                }))}
-              />
-              <textarea
-                aria-label={`${group.title} Inhalte`}
-                rows={3}
-                placeholder="Ein Eintrag pro Zeile"
-                value={group.items.join("\n")}
-                onChange={(event) => setDraftProfile((current) => ({
-                  ...current,
-                  resumeKnowledgeGroups: resolveKnowledgeGroups(templateId, current.resumeKnowledgeGroups).map((item) => item.id === group.id ? { ...item, items: event.target.value.split(/\r?\n/).map((value) => value.trim()).filter(Boolean) } : item),
-                }))}
-              />
-              <div className="resume-knowledge-group-actions">
-                <button className="icon-button" type="button" aria-label={`${group.title} ${group.visible ? "ausblenden" : "anzeigen"}`} onClick={() => setDraftProfile((current) => ({ ...current, resumeKnowledgeGroups: resolveKnowledgeGroups(templateId, current.resumeKnowledgeGroups).map((item) => item.id === group.id ? { ...item, visible: !item.visible } : item) }))}>{group.visible ? <Eye size={15} /> : <EyeOff size={15} />}</button>
-                <button className="icon-button" type="button" disabled={index === 0} aria-label={`${group.title} nach oben`} onClick={() => setDraftProfile((current) => { const next = [...resolveKnowledgeGroups(templateId, current.resumeKnowledgeGroups)]; [next[index - 1], next[index]] = [next[index], next[index - 1]]; return { ...current, resumeKnowledgeGroups: next.map((item, order) => ({ ...item, order })) }; })}><ArrowUp size={15} /></button>
-                <button className="icon-button" type="button" disabled={index === knowledgeGroups.length - 1} aria-label={`${group.title} nach unten`} onClick={() => setDraftProfile((current) => { const next = [...resolveKnowledgeGroups(templateId, current.resumeKnowledgeGroups)]; [next[index], next[index + 1]] = [next[index + 1], next[index]]; return { ...current, resumeKnowledgeGroups: next.map((item, order) => ({ ...item, order })) }; })}><ArrowDown size={15} /></button>
-                <button className="icon-button danger" type="button" aria-label={`${group.title} löschen`} onClick={() => setDraftProfile((current) => ({ ...current, resumeKnowledgeGroups: resolveKnowledgeGroups(templateId, current.resumeKnowledgeGroups).filter((item) => item.id !== group.id).map((item, order) => ({ ...item, order })) }))}><Trash2 size={15} /></button>
-              </div>
-            </article>
-          ))}
+                  resumeColumnRatio: Number(event.target.value) as 25 | 30 | 35 | 40,
+                }))}>
+                {[25, 30, 35, 40].map((ratio) => <option key={ratio} value={ratio}>{ratio}% / {100 - ratio}%</option>)}
+              </select>
+            </label>
+          ) : null}
         </div>
-        <button className="button secondary" type="button" onClick={() => setDraftProfile((current) => { const groups = resolveKnowledgeGroups(templateId, current.resumeKnowledgeGroups); return { ...current, resumeKnowledgeGroups: [...groups, { id: crypto.randomUUID(), title: "Eigener Bereich", semanticType: "custom", visible: true, order: groups.length, items: [], rendererType: "list" }] }; })}><Plus size={15} /> Eigenen Bereich hinzufügen</button>
+        <div className="resume-knowledge-group-list">
+          {knowledgeGroups.map((group, index) => {
+            const definition = getResumeBlockDefinition(group.semanticType);
+            const renderers = definition?.allowedRenderers ?? Object.keys(rendererTypeLabels) as ResumeBlockRendererType[];
+            const slotIndex = knowledgeSlots.findIndex((slot) => slot.id === group.slot);
+            return (
+              <article
+                className={group.visible ? "" : "is-hidden"}
+                draggable
+                key={group.id}
+                onDragStart={() => setDraggedBlockId(group.id)}
+                onDragEnd={() => setDraggedBlockId(null)}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  if (!draggedBlockId || draggedBlockId === group.id) return;
+                  updateKnowledgeGroups((groups) => {
+                    const source = groups.findIndex((item) => item.id === draggedBlockId);
+                    const target = groups.findIndex((item) => item.id === group.id);
+                    if (source < 0 || target < 0) return groups;
+                    const next = [...groups];
+                    const [moved] = next.splice(source, 1);
+                    next.splice(target, 0, moved);
+                    return next;
+                  });
+                  setDraggedBlockId(null);
+                }}>
+                <div className="resume-block-title-row">
+                  <GripVertical aria-hidden="true" size={16} />
+                  <input aria-label={`${group.title} Titel`} value={group.title} onChange={(event) => updateKnowledgeGroup(group.id, { title: event.target.value })} />
+                  <button className="icon-button" type="button" aria-label={`${group.title} ${group.visible ? "ausblenden" : "anzeigen"}`} onClick={() => updateKnowledgeGroup(group.id, { visible: !group.visible })}>{group.visible ? <Eye size={15} /> : <EyeOff size={15} />}</button>
+                  <button className="icon-button danger" type="button" aria-label={`${group.title} löschen`} onClick={() => updateKnowledgeGroups((groups) => groups.filter((item) => item.id !== group.id))}><Trash2 size={15} /></button>
+                </div>
+
+                <div className="resume-block-config-grid">
+                  <label><span>Position</span><select value={group.slot} onChange={(event) => changeKnowledgeSlot(group.id, event.target.value as ResumeKnowledgeSlot)}>{knowledgeSlots.map((slot) => <option disabled={definition?.requiresMainColumn && slot.id === "sidebar"} key={slot.id} value={slot.id}>{slot.label}</option>)}</select></label>
+                  <label><span>Darstellung</span><select value={group.rendererType} onChange={(event) => updateKnowledgeGroup(group.id, { rendererType: event.target.value as ResumeBlockRendererType })}>{renderers.map((renderer) => <option key={renderer} value={renderer}>{rendererTypeLabels[renderer]}</option>)}</select></label>
+                </div>
+
+                <div className="resume-block-items">
+                  {group.items.map((item, itemIndex) => (
+                    <div className={item.visible ? "resume-block-item" : "resume-block-item is-hidden"} key={item.id}>
+                      <input
+                        aria-label={`${group.title} Punkt ${itemIndex + 1}`}
+                        placeholder="Inhalt"
+                        value={item.text}
+                        onChange={(event) => updateKnowledgeGroup(group.id, { items: group.items.map((candidate) => candidate.id === item.id ? { ...candidate, text: event.target.value } : candidate) })}
+                        onKeyDown={(event) => {
+                          if (event.key !== "Enter") return;
+                          event.preventDefault();
+                          updateKnowledgeGroup(group.id, { items: [...group.items, createResumeBlockItem(group.items.length)] });
+                        }}
+                      />
+                      <input aria-label={`${group.title} Punkt ${itemIndex + 1} Beschreibung`} placeholder="Beschreibung (optional)" value={item.description} onChange={(event) => updateKnowledgeGroup(group.id, { items: group.items.map((candidate) => candidate.id === item.id ? { ...candidate, description: event.target.value } : candidate) })} />
+                      <button className="icon-button" type="button" aria-label={`Punkt ${item.visible ? "ausblenden" : "anzeigen"}`} onClick={() => updateKnowledgeGroup(group.id, { items: group.items.map((candidate) => candidate.id === item.id ? { ...candidate, visible: !candidate.visible } : candidate) })}>{item.visible ? <Eye size={14} /> : <EyeOff size={14} />}</button>
+                      <button className="icon-button" disabled={itemIndex === 0} type="button" aria-label="Punkt nach oben" onClick={() => { const items = [...group.items]; [items[itemIndex - 1], items[itemIndex]] = [items[itemIndex], items[itemIndex - 1]]; updateKnowledgeGroup(group.id, { items: items.map((entry, order) => ({ ...entry, order })) }); }}><ArrowUp size={14} /></button>
+                      <button className="icon-button" disabled={itemIndex === group.items.length - 1} type="button" aria-label="Punkt nach unten" onClick={() => { const items = [...group.items]; [items[itemIndex], items[itemIndex + 1]] = [items[itemIndex + 1], items[itemIndex]]; updateKnowledgeGroup(group.id, { items: items.map((entry, order) => ({ ...entry, order })) }); }}><ArrowDown size={14} /></button>
+                      <button className="icon-button danger" type="button" aria-label="Punkt löschen" onClick={() => updateKnowledgeGroup(group.id, { items: group.items.filter((candidate) => candidate.id !== item.id).map((entry, order) => ({ ...entry, order })) })}><Trash2 size={14} /></button>
+                    </div>
+                  ))}
+                  <button className="button tertiary compact-button" type="button" onClick={() => updateKnowledgeGroup(group.id, { items: [...group.items, createResumeBlockItem(group.items.length)] })}><Plus size={14} /> Punkt hinzufügen</button>
+                </div>
+
+                <div className="resume-knowledge-group-actions">
+                  <button className="icon-button" title="In vorherige Spalte verschieben" type="button" disabled={slotIndex <= 0 || (definition?.requiresMainColumn && knowledgeSlots[slotIndex - 1]?.id === "sidebar")} onClick={() => changeKnowledgeSlot(group.id, knowledgeSlots[slotIndex - 1]?.id ?? group.slot)}><ArrowLeft size={15} /></button>
+                  <button className="icon-button" title="Nach oben" type="button" disabled={index === 0} onClick={() => moveKnowledgeGroup(group.id, -1)}><ArrowUp size={15} /></button>
+                  <button className="icon-button" title="Nach unten" type="button" disabled={index === knowledgeGroups.length - 1} onClick={() => moveKnowledgeGroup(group.id, 1)}><ArrowDown size={15} /></button>
+                  <button className="icon-button" title="In nächste Spalte verschieben" type="button" disabled={slotIndex < 0 || slotIndex >= knowledgeSlots.length - 1} onClick={() => changeKnowledgeSlot(group.id, knowledgeSlots[slotIndex + 1]?.id ?? group.slot)}><ArrowRight size={15} /></button>
+                  <label className="checkbox-field compact"><input type="checkbox" checked={group.pageBreakBefore} onChange={(event) => updateKnowledgeGroup(group.id, { pageBreakBefore: event.target.checked })} /><span>Seitenumbruch davor</span></label>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+        <div className="resume-block-add-actions">
+          <button className="button secondary" type="button" onClick={() => setBlockPickerOpen((open) => !open)}><Plus size={15} /> Bereiche hinzufügen</button>
+          <button className="button tertiary" type="button" onClick={addCustomBlock}><Plus size={15} /> Eigenen Bereich hinzufügen</button>
+        </div>
+        {blockPickerOpen ? (
+          <section className="resume-block-picker" aria-label="Bereich hinzufügen">
+            <input aria-label="Bereiche suchen" placeholder="Bereiche suchen …" value={blockSearch} onChange={(event) => setBlockSearch(event.target.value)} />
+            {(["Empfohlen", "Fachlich", "Karriere", "Persönlich"] as const).map((category) => {
+              const definitions = filteredBlockRegistry.filter((definition) => definition.category === category);
+              return definitions.length ? <div key={category}><strong>{category}</strong><div>{definitions.map((definition) => {
+                const active = knowledgeGroups.some((group) => group.semanticType === definition.id);
+                return <button className={active ? "active" : ""} key={definition.id} type="button" onClick={() => addRegistryBlock(definition.id)}><Plus size={13} /> {definition.title}{active && !definition.allowMultiple ? " · aktiv" : ""}</button>;
+              })}</div></div> : null;
+            })}
+          </section>
+        ) : null}
       </div>
 
       <div className="resume-closing-panel">

@@ -34,6 +34,7 @@ import {
 } from "../../../../features/resume-sections/resume-section-system";
 import { getProfileMediaSource } from "../../../../shared/profileMedia";
 import "./pehlione.css";
+import "./pehlione-blocks.css";
 
 type Props = {
   profile?: ApplicantProfile;
@@ -99,14 +100,36 @@ export function PehlioneResume({
   const closingSection = getResumeSemanticSection(semanticSections, "closing");
   const knowledgeGroups = resolveKnowledgeGroups("pehlione_white_blue", profile?.resumeKnowledgeGroups);
   const visibleKnowledgeGroups = knowledgeGroups.filter((group) => group.visible);
-  const coreGroup = visibleKnowledgeGroups[0];
-  const focusGroup = visibleKnowledgeGroups[1];
+  const coreGroup = visibleKnowledgeGroups.find((group) => group.semanticType === "core-competencies");
+  const focusGroup = visibleKnowledgeGroups.find((group) => group.semanticType === "technical-focus");
+  const sidebarKnowledgeGroups = visibleKnowledgeGroups.filter((group) =>
+    group.slot === "sidebar" && group.id !== coreGroup?.id && group.id !== focusGroup?.id,
+  );
+  const mainKnowledgeGroups = visibleKnowledgeGroups.filter((group) => group.slot !== "sidebar");
   const closing = profile?.resumeClosing ?? { showPlace: true, showDate: true, showSignature: true };
   const signatureSource = getProfileMediaSource(profile?.signaturePath);
   const style = {
     "--pehlione-primary": accentColor,
     "--pehlione-accent": secondaryColor,
+    "--pehlione-column-width": `${(profile?.resumeColumnRatio ?? 30) * 2.1}mm`,
   } as CSSProperties;
+  const visibleBlockItems = (group: (typeof knowledgeGroups)[number]) =>
+    group.items.filter((item) => item.visible && item.text.trim());
+  const blockContent = (group: (typeof knowledgeGroups)[number], sidebar = false) => {
+    const items = visibleBlockItems(group);
+    if (!items.length) return null;
+    const className = `pehlione-block-list renderer-${group.rendererType}${sidebar ? " is-sidebar" : ""}`;
+    return (
+      <ul className={className}>
+        {items.map((item, index) => (
+          <li key={item.id}>
+            {group.rendererType === "icon-list" ? <span>{index % 2 ? <Database /> : <Code2 />}</span> : null}
+            <div><b>{item.text}</b>{item.description ? <small>{item.description}</small> : null}{item.level ? <em>{item.level}</em> : null}</div>
+          </li>
+        ))}
+      </ul>
+    );
+  };
   const career = (
     items: Array<
       ApplicantProfile["experiences"][number] | ApplicantProfile["education"][number]
@@ -149,11 +172,12 @@ export function PehlioneResume({
               {contactItems(profile).map((item) => <li key={item.key}><span>{item.icon}</span>{item.href ? <a href={item.href}>{item.value}</a> : item.value}</li>)}
             </ul>
           </section>
+          {knowledgeSection.visible && profile?.resumeKnowledgeContainer?.showTitle && visibleKnowledgeGroups.some((group) => group.slot === "sidebar") ? <h3 className="pehlione-container-title">{getResumeSemanticTitle(semanticSections, "knowledge")}</h3> : null}
           {knowledgeSection.visible && sections.strengths && (coreGroup?.items.length || coreCompetencies.length || competencyGroups.length) ? (
             <section className="pehlione-sidebar-section">
               {heading(<Lightbulb />, coreGroup?.title || "Kernkompetenzen")}
-              <ul className="pehlione-bullet-list">{coreGroup?.items.length
-                ? coreGroup.items.map((item) => <li key={item}>{item}</li>)
+              <ul className="pehlione-bullet-list">{coreGroup && visibleBlockItems(coreGroup).length
+                ? visibleBlockItems(coreGroup).map((item) => <li key={item.id}>{item.text}{item.description ? <small>{item.description}</small> : null}</li>)
                 : coreCompetencies.length
                 ? coreCompetencies.map((item) => <li key={item}>{item}</li>)
                 : competencyGroups.map((group) => <li key={group.title}><strong>{group.title}:</strong> {group.values.join(" · ")}</li>)}</ul>
@@ -162,13 +186,13 @@ export function PehlioneResume({
           {knowledgeSection.visible && (focusGroup?.items.length || technicalFocus.length || (sections.skills && knowledge.length)) ? (
             <section className="pehlione-sidebar-section">
               {heading(<Wrench />, focusGroup?.title || "Technische Schwerpunkte")}
-              <ul className="pehlione-focus-list">{(focusGroup?.items.length ? focusGroup.items : technicalFocus.length ? technicalFocus : knowledge).map((item, index) => <li key={item}><span>{index % 2 ? <Database /> : <Code2 />}</span>{item}</li>)}</ul>
+              {focusGroup && visibleBlockItems(focusGroup).length ? blockContent(focusGroup, true) : <ul className="pehlione-focus-list">{(technicalFocus.length ? technicalFocus : knowledge).map((item, index) => <li key={item}><span>{index % 2 ? <Database /> : <Code2 />}</span>{item}</li>)}</ul>}
             </section>
           ) : null}
-          {knowledgeSection.visible && visibleKnowledgeGroups.slice(2).map((group) => group.items.length ? (
+          {knowledgeSection.visible && sidebarKnowledgeGroups.map((group) => visibleBlockItems(group).length ? (
             <section className="pehlione-sidebar-section" key={group.id}>
               {heading(<Lightbulb />, group.title)}
-              <ul className="pehlione-bullet-list">{group.items.map((item) => <li key={item}>{item}</li>)}</ul>
+              {blockContent(group, true)}
             </section>
           ) : null)}
           {sections.languages && profile?.languages.filter(Boolean).length ? (
@@ -190,8 +214,10 @@ export function PehlioneResume({
         {!continuation && summarySection.visible && sections.profile && summary ? <section className="pehlione-main-section">{heading(<UserRound />, getResumeSemanticTitle(semanticSections, "summary"))}<p className="pehlione-summary">{summary}</p></section> : null}
         {sections.experience && experiences.length ? <section className="pehlione-main-section">{heading(<BriefcaseBusiness />, `${getResumeSemanticTitle(semanticSections, "career")}${continuation ? " · Fortsetzung" : ""}`)}{career(experiences, "experience")}</section> : null}
         {sections.education && education.length ? <section className="pehlione-main-section">{heading(<GraduationCap />, getResumeSemanticTitle(semanticSections, "education"))}{career(education, "education")}</section> : null}
-        {!continuation && project ? <section className="pehlione-main-section pehlione-project">{heading(<Lightbulb />, "Projekt-Highlight")}<h3>{project.title}</h3><p>{[project.company, ...project.technologies].filter(Boolean).join(" · ")}</p>{project.achievements.length ? <ul>{project.achievements.map((entry) => <li key={entry}>{entry}</li>)}</ul> : null}</section> : null}
-        {lastPage && sections.certifications && profile?.certifications.length ? <section className="pehlione-main-section pehlione-training">{heading(<GraduationCap />, "Weiterbildungen")}<ul>{profile.certifications.map((item) => <li key={item}>{item}</li>)}</ul></section> : null}
+        {!continuation && project && !mainKnowledgeGroups.some((group) => group.semanticType === "project-highlight" && visibleBlockItems(group).length) ? <section className="pehlione-main-section pehlione-project">{heading(<Lightbulb />, "Projekt-Highlight")}<h3>{project.title}</h3><p>{[project.company, ...project.technologies].filter(Boolean).join(" · ")}</p>{project.achievements.length ? <ul>{project.achievements.map((entry) => <li key={entry}>{entry}</li>)}</ul> : null}</section> : null}
+        {lastPage && knowledgeSection.visible && profile?.resumeKnowledgeContainer?.showTitle && mainKnowledgeGroups.some((group) => visibleBlockItems(group).length) ? <section className="pehlione-main-section pehlione-knowledge-container-title">{heading(<Lightbulb />, getResumeSemanticTitle(semanticSections, "knowledge"))}</section> : null}
+        {lastPage && knowledgeSection.visible && mainKnowledgeGroups.map((group) => visibleBlockItems(group).length ? <section className={`pehlione-main-section pehlione-flex-block renderer-${group.rendererType}`} key={group.id} style={{ breakBefore: group.pageBreakBefore ? "page" : "auto" }}>{heading(group.semanticType === "training" || group.semanticType === "certificates" ? <GraduationCap /> : <Lightbulb />, group.title)}{blockContent(group)}</section> : null)}
+        {lastPage && sections.certifications && profile?.certifications.length && !mainKnowledgeGroups.some((group) => ["training", "certificates"].includes(group.semanticType)) ? <section className="pehlione-main-section pehlione-training">{heading(<GraduationCap />, "Weiterbildungen")}<ul>{profile.certifications.map((item) => <li key={item}>{item}</li>)}</ul></section> : null}
         {lastPage && interestsSection.visible && profile?.specialSections.filter((section) => section.kind === "interests" && section.isVisible).map((section) => (
           <section className="pehlione-main-section pehlione-training" key={section.id}>{heading(<Lightbulb />, section.title)}<ul>{section.entries.map((entry) => <li key={entry.id}>{entry.title || entry.description}</li>)}</ul></section>
         ))}

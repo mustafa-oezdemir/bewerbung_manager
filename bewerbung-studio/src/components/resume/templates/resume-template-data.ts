@@ -146,7 +146,7 @@ export const getTemplateKnowledge = (
     profile?.skills ?? [],
   );
   if (!knowledge.isVisible) return [];
-  return uniqueTemplateValues(
+  const legacyKnowledge = uniqueTemplateValues(
     knowledge.categories
       .filter((category) => category.isVisible)
       .sort((left, right) => left.sortOrder - right.sortOrder)
@@ -174,4 +174,14 @@ export const getTemplateKnowledge = (
           ),
       ]),
   );
+  const flexibleKnowledge = (profile?.resumeKnowledgeGroups ?? [])
+    .filter((group) => group.visible)
+    .sort((left, right) => left.order - right.order)
+    .flatMap((group) => group.items
+      .filter((item) => item.visible && item.text.trim())
+      .sort((left, right) => left.order - right.order)
+      .map((item) => item.description
+        ? `${item.text} – ${item.description}`
+        : item.text));
+  return uniqueTemplateValues([...flexibleKnowledge, ...legacyKnowledge]);
 };

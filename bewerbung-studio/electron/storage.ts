@@ -69,6 +69,7 @@ import {
 import { ensureKnowledgeSection } from "../src/features/knowledge/knowledge.service";
 import { getLanguageLevelScore } from "../src/features/languages/language-levels";
 import { getResumeSectionTitle } from "../src/features/resume-sections/resume-sections";
+import { resolveKnowledgeGroups } from "../src/features/resume-sections/resume-section-system";
 import { formatKnowledgeSectionAsText } from "../src/features/knowledge/knowledge.utils";
 import { buildDocumentHtml } from "./documents";
 import {
@@ -1130,6 +1131,25 @@ export class DataStore {
       knowledgeSection,
       false,
     );
+    const flexibleKnowledgeBlocks = resolveKnowledgeGroups(
+      application.templateId,
+      profile?.resumeKnowledgeGroups,
+    )
+      .filter((group) => group.visible)
+      .map((group) => ({
+        title: group.title,
+        slot: group.slot,
+        rendererType: group.rendererType,
+        items: group.items
+          .filter((item) => item.visible && item.text.trim())
+          .map((item) => item.description
+            ? `${item.text} – ${item.description}`
+            : item.text),
+      }))
+      .filter((group) => group.items.length);
+    const flexibleKnowledgeText = flexibleKnowledgeBlocks
+      .map((group) => `${group.title}\n${group.items.join("\n")}`)
+      .join("\n\n");
     const deckblattContacts = getDeckblattContacts(
       profile,
       application.documents.coverSheetContactVisibility,
@@ -1301,6 +1321,8 @@ export class DataStore {
         ? getResumeSectionTitle(profile, "knowledge").toLocaleUpperCase("de-DE")
         : "",
       KENNTNISSE: knowledgeText,
+      BESONDERE_KENNTNISSE_BAUSTEINE: flexibleKnowledgeText,
+      BESONDERE_KENNTNISSE_BAUSTEINE_JSON: JSON.stringify(flexibleKnowledgeBlocks),
       SPRACHEN_TITEL: profile?.languages.length
         ? getResumeSectionTitle(profile, "languages").toLocaleUpperCase("de-DE")
         : "",
