@@ -11,6 +11,7 @@ import {
   kompaktPaginationOptions,
   kreativPaginationOptions,
   modernPaginationOptions,
+  pehlionePaginationOptions,
   stilvollPaginationOptions,
   tabellarischPaginationOptions,
   zeitgenoessischPaginationOptions,
@@ -334,9 +335,53 @@ describe("A4 document pagination", () => {
     ]);
   });
 
+  it("keeps a complete Pehlione career timeline on one compact page", () => {
+    const profile = profileSchema.parse({
+      id: crypto.randomUUID(),
+      isDefault: true,
+      firstName: "Mina",
+      lastName: "Kaya",
+      experiences: Array.from({ length: 3 }, (_, index) => ({
+        id: crypto.randomUUID(),
+        from: `${2014 + index}`,
+        to: `${2015 + index}`,
+        role: `Position ${index + 1}`,
+        company: `Unternehmen ${index + 1}`,
+        achievements: Array.from(
+          { length: 3 },
+          () => "Strukturiert dokumentierte und koordinierte Arbeitsabläufe.",
+        ),
+      })),
+      education: [{
+        id: crypto.randomUUID(),
+        from: "2010",
+        to: "2014",
+        degree: "Abschluss",
+        institution: "Hochschule",
+      }],
+      updatedAt: now,
+    });
+
+    const plan = createResumePagePlan(profile, "", pehlionePaginationOptions);
+
+    expect(plan).toHaveLength(1);
+    expect(plan.flatMap((page) => page.items.map((item) => item.kind))).toEqual([
+      "experience",
+      "experience",
+      "experience",
+      "education",
+    ]);
+  });
+
   it("marks long cover letters for dense one-page rendering", () => {
     const status = getLetterPageStatus({
+      coverSenderName: "",
+      coverSenderTitle: "",
+      coverSenderContact: "",
+      coverRecipientAddress: "",
       coverSubject: "Bewerbung",
+      coverSubjectGapReduction: 0,
+      coverGreeting: "",
       coverIntroduction: "A".repeat(900),
       coverMainBody: "",
       coverMotivation: "B".repeat(900),

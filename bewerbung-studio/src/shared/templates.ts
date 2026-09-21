@@ -26,6 +26,8 @@ export type TemplateDesignDefaults = Partial<DocumentDesignSettings>;
 export type TemplateDefinition = {
   id: string;
   name: string;
+  family?: string;
+  variant?: string;
   description: string;
   accent: string;
   secondary: string;
@@ -43,6 +45,38 @@ export type TemplateDefinition = {
 };
 
 const allTemplates: TemplateDefinition[] = [
+  {
+    id: "pehlione_white_blue",
+    name: "Pehlione White Blue",
+    family: "Pehlione",
+    variant: "White Blue",
+    description:
+      "Technisches Premium-Layout mit Blueprint-Sidebar, klarer Informationshierarchie und Corporate Blue.",
+    accent: "#0B3D86",
+    secondary: "#1F66B3",
+    font: "IBM Plex Sans",
+    layout: "sidebar-left",
+    features: ["Pehlione", "Blueprint-Sidebar", "Technische Icons", "Projekt-Highlight"],
+    category: "modern-professional",
+    supportsAtsMode: true,
+    supportsPhoto: false,
+    supportsFreeform: true,
+    supportsMultiplePages: true,
+    sidebarWidthRatio: 0.3,
+    atsInfo:
+      "Der ATS-Modus entfernt die dekorative Sidebar und gibt alle Inhalte in klarer Textreihenfolge aus.",
+    designDefaults: {
+      marginLevel: 3,
+      sectionSpacingLevel: 3,
+      fontSize: "medium",
+      lineHeightLevel: 3,
+      columnLayout: "left-sidebar",
+      resumeOutputMode: "visual",
+      backgroundId: "white",
+      fontId: "source-sans",
+      headingFontId: "source-sans",
+    },
+  },
   {
     id: "classic-professional",
     name: "Klar & Zentriert",
@@ -507,6 +541,7 @@ const allTemplates: TemplateDefinition[] = [
 ];
 
 const enabledTemplateIds = new Set([
+  "pehlione_white_blue",
   "zweispaltig",
   "gepflegt",
   "tabellarisch",

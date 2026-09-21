@@ -184,7 +184,13 @@ export const statusHistorySchema = z.object({
 });
 
 export const documentDraftSchema = z.object({
+  coverSenderName: optionalText,
+  coverSenderTitle: optionalText,
+  coverSenderContact: optionalText,
+  coverRecipientAddress: optionalText,
   coverSubject: optionalText,
+  coverSubjectGapReduction: z.number().int().min(0).max(4).default(0),
+  coverGreeting: optionalText,
   coverIntroduction: optionalText,
   coverMainBody: optionalText,
   coverMotivation: optionalText,

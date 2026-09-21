@@ -1,5 +1,6 @@
 import {
   ArrowLeft,
+  ChevronUp,
   Download,
   Eye,
   EyeOff,
@@ -36,6 +37,7 @@ import { KompaktResume } from "../components/resume/templates/kompakt";
 import { KreativResume } from "../components/resume/templates/kreativ";
 import { IvyLeagueResume } from "../components/resume/templates/ivy-league";
 import { ModernResume } from "../components/resume/templates/modern";
+import { PehlioneResume } from "../components/resume/templates/pehlione";
 import { StilvollResume } from "../components/resume/templates/stilvoll";
 import { TabellarischResume } from "../components/resume/templates/tabellarisch";
 import { ZeitgenoessischResume } from "../components/resume/templates/zeitgenoessisch";
@@ -70,6 +72,7 @@ import {
   kreativPaginationOptions,
   gepflegtPaginationOptions,
   modernPaginationOptions,
+  pehlionePaginationOptions,
   stilvollPaginationOptions,
   tabellarischPaginationOptions,
   type ResumePagePlan,
@@ -630,7 +633,22 @@ export function DocumentsView({
         .filter(Boolean)
         .join(" | ")
     : "Adresse | E-Mail | Telefon";
-  const recipientLines = applicationRecipientLines(application);
+  const recipientLines = docs.coverRecipientAddress.trim()
+    ? docs.coverRecipientAddress
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+    : applicationRecipientLines(application);
+  const coverSenderName = docs.coverSenderName || name;
+  const coverSenderTitle =
+    docs.coverSenderTitle || renderProfile?.title || application.job.title;
+  const coverSenderContact = docs.coverSenderContact || senderContactDetails;
+  const coverGreeting = docs.coverGreeting || applicationGreeting(application);
+  const pehlioneResumeProfile =
+    docs.resumeProfile ||
+    (/kundenservice|sachbearbeit/i.test(application.job.title)
+      ? docs.deckblattStatement
+      : "");
   const paginatedProfile = renderProfile
     ? {
         ...renderProfile,
@@ -640,7 +658,9 @@ export function DocumentsView({
     : undefined;
   const resumePlan = createResumePagePlan(
     paginatedProfile,
-    docs.resumeProfile,
+    template.id === "pehlione_white_blue"
+      ? pehlioneResumeProfile
+      : docs.resumeProfile,
     template.id === "elegant"
       ? elegantPaginationOptions
       : template.id === "zweispaltig"
@@ -664,7 +684,9 @@ export function DocumentsView({
                         : template.id === "tabellarisch"
                           ? tabellarischPaginationOptions
                           : template.id === "modern"
-                            ? modernPaginationOptions
+                          ? modernPaginationOptions
+                          : template.id === "pehlione_white_blue"
+                            ? pehlionePaginationOptions
                             : undefined,
   );
   const letterStatus = getLetterPageStatus(docs);
@@ -739,6 +761,26 @@ export function DocumentsView({
     });
   };
 
+  const reduceCoverSubjectGap = () => {
+    setDocumentPreview({
+      applicationId: application.id,
+      documents: {
+        ...docs,
+        coverSubjectGapReduction: Math.min(
+          4,
+          docs.coverSubjectGapReduction + 1,
+        ),
+      },
+    });
+  };
+
+  const resetCoverSubjectGap = () => {
+    setDocumentPreview({
+      applicationId: application.id,
+      documents: { ...docs, coverSubjectGapReduction: 0 },
+    });
+  };
+
   const saveResumeData = async (changedProfile: ApplicantProfile) => {
     const preview =
       resumeSectionPreview?.profile.id === changedProfile.id
@@ -808,7 +850,19 @@ export function DocumentsView({
       secondaryColor: design.secondaryColor,
       designSettings: design.settings,
       documents: {
+        coverSenderName: value("coverSenderName", docs.coverSenderName),
+        coverSenderTitle: value("coverSenderTitle", docs.coverSenderTitle),
+        coverSenderContact: value(
+          "coverSenderContact",
+          docs.coverSenderContact,
+        ),
+        coverRecipientAddress: value(
+          "coverRecipientAddress",
+          docs.coverRecipientAddress,
+        ),
         coverSubject: value("coverSubject", docs.coverSubject),
+        coverSubjectGapReduction: docs.coverSubjectGapReduction,
+        coverGreeting: value("coverGreeting", docs.coverGreeting),
         coverIntroduction: value(
           "coverIntroduction",
           docs.coverIntroduction,
@@ -1004,10 +1058,28 @@ export function DocumentsView({
             )}
             {tab === "anschreiben" && (
               <div className="cover-letter-editor-sections">
-                <section className="cover-letter-editor-section is-generated">
-                  <header><b>1. Briefkopf</b><small>Automatisch aus Profil und Unternehmensdaten</small></header>
-                  <p>{name} · {profile?.title || application.job.title}</p>
-                  <p>{recipientLines.join(" · ")}</p>
+                <section className="cover-letter-editor-section">
+                  <header><b>1. Briefkopf</b><small>Automatisch ausgefüllt – bei Bedarf direkt anpassen</small></header>
+                  <label className="field">
+                    <span>Name</span>
+                    <input name="coverSenderName" defaultValue={coverSenderName} />
+                  </label>
+                  <label className="field">
+                    <span>Berufsbezeichnung</span>
+                    <input name="coverSenderTitle" defaultValue={coverSenderTitle} />
+                  </label>
+                  <label className="field">
+                    <span>Kontaktzeile</span>
+                    <input name="coverSenderContact" defaultValue={coverSenderContact} />
+                  </label>
+                  <label className="field">
+                    <span>Empfängeradresse</span>
+                    <textarea
+                      name="coverRecipientAddress"
+                      rows={5}
+                      defaultValue={recipientLines.join("\n")}
+                    />
+                  </label>
                 </section>
                 <section className="cover-letter-editor-section">
                   <header><b>2. Betreffzeile</b><small>Stelle und Referenz eindeutig benennen</small></header>
@@ -1018,10 +1090,37 @@ export function DocumentsView({
                       defaultValue={createCoverSubject(application.job.title, docs.coverSubject)}
                     />
                   </label>
+                  <div className="cover-subject-spacing-control">
+                    <div>
+                      <b>Abstand vor Betreff</b>
+                      <small>
+                        {docs.coverSubjectGapReduction
+                          ? `${docs.coverSubjectGapReduction} Zeile${docs.coverSubjectGapReduction === 1 ? "" : "n"} nach oben verschoben`
+                          : "Standardabstand"}
+                      </small>
+                    </div>
+                    <div>
+                      <button
+                        type="button"
+                        disabled={docs.coverSubjectGapReduction === 4}
+                        onClick={reduceCoverSubjectGap}>
+                        <ChevronUp size={15} />
+                        Betreff höher
+                      </button>
+                      {docs.coverSubjectGapReduction ? (
+                        <button type="button" onClick={resetCoverSubjectGap}>
+                          Standard
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
                 </section>
-                <section className="cover-letter-editor-section is-generated">
-                  <header><b>3. Anrede</b><small>Automatisch aus der Ansprechperson</small></header>
-                  <p>{applicationGreeting(application)}</p>
+                <section className="cover-letter-editor-section">
+                  <header><b>3. Anrede</b><small>Automatisch ausgefüllt – bei Bedarf direkt anpassen</small></header>
+                  <label className="field">
+                    <span>Anrede</span>
+                    <input name="coverGreeting" defaultValue={coverGreeting} />
+                  </label>
                 </section>
                 <section className="cover-letter-editor-section">
                   <header><b>4. Einleitung</b><small>2–3 prägnante Sätze mit direktem Stellenbezug</small></header>
@@ -1731,7 +1830,7 @@ export function DocumentsView({
           )}
           {tab === "anschreiben" && (
             <div
-              className={`document-paper document-anschreiben letter-${letterStatus.density} layout-${template.layout} ${designClassName}`}
+              className={`document-paper document-anschreiben letter-${letterStatus.density} letter-gap-${docs.coverSubjectGapReduction} layout-${template.layout} ${designClassName}`}
               data-resume-template={template.id}
               ref={letterPaperRef}
               style={paperStyle}>
@@ -1742,12 +1841,12 @@ export function DocumentsView({
               <div className="letter-preview">
                 <div className="letter-header">
                   <p className="sender-line">
-                    <span className="sender-name">{name}</span>
+                    <span className="sender-name">{coverSenderName}</span>
                     <span className="sender-title">
-                      {profile?.title || application.job.title}
+                      {coverSenderTitle}
                     </span>
                     <span className="sender-contact">
-                      {senderContactDetails}
+                      {coverSenderContact}
                     </span>
                   </p>
                 </div>
@@ -1772,7 +1871,7 @@ export function DocumentsView({
                     : ""}
                 </h3>
                 <p className="letter-salutation">
-                  {applicationGreeting(application)}
+                  {coverGreeting}
                 </p>
                 <p className="letter-body">{docs.coverIntroduction}</p>
                 <p className="letter-body">
@@ -2001,6 +2100,18 @@ export function DocumentsView({
                     secondaryColor={design.secondaryColor}
                     photoSource={getProfileMediaSource(renderProfile?.photoPath)}
                     resumeProfile={docs.resumeProfile}
+                    sections={sections}
+                  />
+                ) : template.id === "pehlione_white_blue" ? (
+                  <PehlioneResume
+                    profile={renderProfile}
+                    name={name}
+                    atsMode={isAtsMode}
+                    plan={plan}
+                    totalPages={resumePlan.length}
+                    accentColor={design.accentColor}
+                    secondaryColor={design.secondaryColor}
+                    resumeProfile={pehlioneResumeProfile}
                     sections={sections}
                   />
                 ) : template.id === "modern" ? (

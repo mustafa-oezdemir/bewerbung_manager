@@ -26,6 +26,13 @@ export function TemplateThumbnail({
         } as CSSProperties
       }
     >
+      {template.id === "pehlione_white_blue" ? (
+        <>
+          <span className="pehlione-thumbnail-hero" />
+          <span className="pehlione-thumbnail-sidebar" />
+          <span className="pehlione-thumbnail-content" />
+        </>
+      ) : null}
       <span className="thumbnail-header">
         <b />
         <i />

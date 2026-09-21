@@ -159,6 +159,7 @@ export const templateSectionCapabilities: Record<
   string,
   TemplateSectionCapabilities
 > = {
+  pehlione_white_blue: twoColumnCapabilities("pehlione_white_blue"),
   "ivy-league": {
     ...mainOnlyCapabilities("ivy-league"),
     defaultSectionOrder: [

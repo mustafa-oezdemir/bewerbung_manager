@@ -69,6 +69,14 @@ export const modernPaginationOptions: ResumePaginationOptions = {
   preserveItemOrder: true,
 };
 
+// Keep the career timeline together instead of putting later education entries
+// on page one while an earlier role continues on page two.
+export const pehlionePaginationOptions: ResumePaginationOptions = {
+  firstPageCapacity: 50,
+  secondPageCapacity: 54,
+  preserveItemOrder: true,
+};
+
 export const gepflegtPaginationOptions: ResumePaginationOptions = {
   firstPageCapacity: 50,
   secondPageCapacity: 54,

@@ -419,7 +419,7 @@ describe("Lebenslauf-Dokumente", () => {
     );
 
     expect(html).toContain(
-      'class="page letter-page letter-standard layout-sidebar-right',
+      'class="page letter-page letter-standard letter-gap-0 layout-sidebar-right',
     );
     expect(html).toContain('data-resume-template="modern-sidebar"');
     expect(html).toContain(
@@ -435,6 +435,63 @@ describe("Lebenslauf-Dokumente", () => {
     expect(splitCleanHtml).toContain(
       ".letter-content{padding:var(--doc-margin);border-top:0}",
     );
+  });
+
+  it("renders Pehlione White Blue with a technical sidebar in PDF output", () => {
+    const pehlioneProfile = profileSchema.parse({
+      ...profile,
+      phone: "+4917693153406",
+      linkedin: "https://www.linkedin.com/in/mina-kaya/",
+    });
+    const pehlioneApplication = applicationSchema.parse({
+      ...application,
+      templateId: "pehlione_white_blue",
+      accentColor: "#0B3D86",
+      secondaryColor: "#1F66B3",
+    });
+    const html = buildDocumentHtml(pehlioneApplication, pehlioneProfile, "lebenslauf");
+
+    expect(html).toContain('data-template="pehlione_white_blue"');
+    expect(html).toContain("pehlione-pdf-sidebar");
+    expect(html).toContain("Technische Schwerpunkte");
+    expect(html).toContain(".pehlione-pdf");
+    expect(html).toContain("+49 176 93153406");
+    expect(html).toContain('href="https://www.linkedin.com/in/mina-kaya/"');
+    expect(html).toContain("pehlione-pdf-continuation .pehlione-pdf-main{padding:0}");
+  });
+
+  it("reduces the date-to-subject gap in the PDF with each requested step", () => {
+    const compactGapApplication = applicationSchema.parse({
+      ...application,
+      documents: {
+        ...application.documents,
+        coverSubjectGapReduction: 2,
+      },
+    });
+    const html = buildDocumentHtml(compactGapApplication, profile, "anschreiben");
+
+    expect(html).toContain("letter-gap-2");
+    expect(html).toContain(".letter-gap-2 .date{margin-bottom:12mm}");
+  });
+
+  it("uses manually adjusted letterhead, recipient and salutation in the PDF", () => {
+    const customizedApplication = applicationSchema.parse({
+      ...application,
+      documents: {
+        ...application.documents,
+        coverSenderName: "Mina Beispiel",
+        coverSenderTitle: "Frontend Developer",
+        coverSenderContact: "mina@example.com | +49 30 123456",
+        coverRecipientAddress: "Beispiel AG\nPersonalabteilung\n10115 Berlin",
+        coverGreeting: "Guten Tag liebes Recruiting-Team,",
+      },
+    });
+    const html = buildDocumentHtml(customizedApplication, profile, "anschreiben");
+
+    expect(html).toContain("Mina Beispiel");
+    expect(html).toContain("Frontend Developer");
+    expect(html).toContain("Personalabteilung<br>10115 Berlin");
+    expect(html).toContain("Guten Tag liebes Recruiting-Team,");
   });
 
   it("limits a long resume to two complete A4 sheets", () => {

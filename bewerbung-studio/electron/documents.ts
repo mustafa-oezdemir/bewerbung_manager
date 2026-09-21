@@ -18,6 +18,7 @@ import {
   kompaktPaginationOptions,
   kreativPaginationOptions,
   modernPaginationOptions,
+  pehlionePaginationOptions,
   stilvollPaginationOptions,
   tabellarischPaginationOptions,
   type ResumePagePlan,
@@ -71,6 +72,17 @@ import {
   getResumeSectionTitle,
   hasSavedTemplateSectionLayout,
 } from "../src/features/resume-sections/resume-sections";
+import {
+  externalUrl,
+  formatPhoneForDisplay,
+  formatUrlForDisplay,
+} from "../src/shared/contactPresentation";
+import { groupPehlioneCompetencies } from "../src/shared/pehlioneCompetencies";
+import {
+  getPehlioneCoreCompetencies,
+  getPehlioneProjectHighlight,
+  getPehlioneTechnicalFocus,
+} from "../src/shared/pehlioneContent";
 
 const escapeHtml = (value = "") =>
   value
@@ -202,35 +214,47 @@ const renderKnowledgeSection = (
 const fullName = (profile?: ApplicantProfile) =>
   profile ? `${profile.firstName} ${profile.lastName}`.trim() : "Vorname Nachname";
 
-const addressBlock = (application: Application) =>
-  applicationRecipientLines(application)
+const addressBlock = (
+  application: Application,
+  docs: Application["documents"],
+) =>
+  (docs.coverRecipientAddress.trim()
+    ? docs.coverRecipientAddress
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+    : applicationRecipientLines(application))
     .filter(Boolean)
     .map(escapeHtml)
     .join("<br>");
 
-const senderHeader = (profile?: ApplicantProfile) => {
+const senderHeader = (
+  profile: ApplicantProfile | undefined,
+  docs: Application["documents"],
+) => {
+  const name = docs.coverSenderName || fullName(profile);
+  const title = docs.coverSenderTitle || profile?.title?.trim();
+  const contact = docs.coverSenderContact || (profile
+    ? [
+        profile.street,
+        `${profile.postalCode} ${profile.city}`.trim(),
+        profile.email,
+        profile.phone,
+      ].filter(Boolean).join(" | ")
+    : "E-Mail · Telefon");
   if (!profile) {
     return (
-      '<span class="sender-name">Vorname Nachname</span>' +
-      '<span class="sender-contact">E-Mail · Telefon</span>'
+      `<span class="sender-name">${escapeHtml(name || "Vorname Nachname")}</span>` +
+      (title ? `<span class="sender-title">${escapeHtml(title)}</span>` : "") +
+      `<span class="sender-contact">${escapeHtml(contact)}</span>`
     );
   }
-  const details = [
-    profile.street,
-    `${profile.postalCode} ${profile.city}`.trim(),
-    profile.email,
-    profile.phone,
-  ]
-    .filter(Boolean)
-    .map(escapeHtml)
-    .join(" | ");
-  const title = profile.title?.trim();
   return (
-    `<span class="sender-name">${escapeHtml(fullName(profile))}</span>` +
+    `<span class="sender-name">${escapeHtml(name)}</span>` +
     (title
       ? `<span class="sender-title">${escapeHtml(title)}</span>`
       : "") +
-    `<span class="sender-contact">${details}</span>`
+    `<span class="sender-contact">${escapeHtml(contact)}</span>`
   );
 };
 
@@ -260,7 +284,7 @@ const documentCss = (
   h1,h2,h3{font-family:var(--heading-font);font-weight:var(--heading-weight)}h1{font-size:29pt;line-height:1.05;margin:8mm 0 4mm}h2{font-size:14pt;color:var(--accent);margin:8mm 0 3mm}
   h3{font-size:11pt;margin:0 0 1mm}.muted{color:var(--muted)}p,li{font-size:var(--body-size);line-height:var(--body-line)}
   .cover-content{padding:var(--doc-margin)}.cover-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:12mm;padding-bottom:11mm;border-bottom:1px solid var(--line)}.cover-content h1{max-width:125mm;margin:4mm 0 2mm;font-size:28pt}.cover-location{margin:3mm 0 0;color:var(--muted);font-size:9pt}.cover-photo{width:36mm;height:36mm;flex:0 0 auto;border-radius:50%;object-fit:cover}.cover-identity{width:100%;max-width:none;margin-top:21mm}.cover-identity h2{margin:0 0 2mm;font-size:19pt}.cover-identity>p{margin:0}.cover-statement{width:100%;margin-top:5mm!important;line-height:1.45;text-align:justify;text-justify:inter-word;hyphens:auto}.cover-details{display:grid;grid-template-columns:34% minmax(0,1fr);gap:0;margin-top:23mm;padding-top:6mm;border-top:1px solid var(--line)}.cover-details>div:nth-child(2){padding-left:4mm}.cover-details h3{margin:0 0 3mm;color:var(--accent);font-size:10pt;letter-spacing:.08em;text-transform:uppercase}.cover-details h3:not(:first-child){margin-top:7mm}.cover-details ul{display:grid;gap:1.5mm;margin:0;padding:0;list-style:none}.cover-details li{overflow-wrap:anywhere}.cover-details strong{display:inline-block;min-width:18mm}.cover-details a{color:inherit;text-decoration:none}.cover-competencies{margin:0;line-height:1.55}
-  .contact{padding-top:8mm;border-top:1px solid var(--line)}.letter-content{padding:var(--doc-margin);border-top:0}.letter-header{display:flex;min-height:24mm;align-items:flex-start;justify-content:center}.letter-rule{height:4px;margin:0;background:var(--accent)}.sender{width:100%;color:var(--ink);text-align:center}.sender-name,.sender-title,.sender-contact{display:block}.sender-name{color:#000;font-size:16pt;font-weight:800;line-height:1.12}.sender-title{margin-top:.4mm;color:var(--accent);font-size:11pt;font-weight:800;line-height:1.15}.sender-contact{margin-top:.5mm;color:#000;font-size:10pt;line-height:1.2}.recipient{min-height:20mm;margin-top:20mm;font-size:10pt;line-height:1.28}.date{margin:0 0 20mm;text-align:right;font-size:10pt}.subject{margin:0 0 6mm;color:var(--accent);font-size:14pt;font-weight:800;line-height:1.2}.letter-content>p:not(.subject,.date){margin:0 0 3.2mm;font-size:11pt;line-height:1.28}.letter-body{text-align:justify;text-justify:inter-word;hyphens:auto;overflow-wrap:break-word}.letter-content>.letter-closing{margin-bottom:0}.signature{display:flex;flex-direction:column;align-items:flex-start;margin-top:3.2mm}.signature p{margin:0;font-size:11pt;line-height:1.28}.signature-image{display:block;width:auto;max-width:48mm;height:auto;max-height:14mm;margin:1mm 0 .5mm;object-fit:contain;object-position:left center}.signature-name{font-size:11pt;font-weight:400;line-height:1.2}.attachments-note{margin-top:4mm!important;color:var(--muted);font-size:9pt!important;font-weight:700}.letter-compact .letter-content>p:not(.subject,.date),.letter-compact .signature{line-height:1.24}.letter-compact .letter-content>p:not(.subject,.date){margin-bottom:2.7mm}.letter-dense .recipient{min-height:18mm;margin-top:17mm}.letter-dense .date{margin-bottom:15mm}.letter-dense .letter-content>p:not(.subject,.date),.letter-dense .signature{font-size:11pt;line-height:1.15}.letter-dense .letter-content>p:not(.subject,.date){margin-bottom:2.2mm}
+  .contact{padding-top:8mm;border-top:1px solid var(--line)}.letter-content{padding:var(--doc-margin);border-top:0}.letter-header{display:flex;min-height:24mm;align-items:flex-start;justify-content:center}.letter-rule{height:4px;margin:0;background:var(--accent)}.sender{width:100%;color:var(--ink);text-align:center}.sender-name,.sender-title,.sender-contact{display:block}.sender-name{color:#000;font-size:16pt;font-weight:800;line-height:1.12}.sender-title{margin-top:.4mm;color:var(--accent);font-size:11pt;font-weight:800;line-height:1.15}.sender-contact{margin-top:.5mm;color:#000;font-size:10pt;line-height:1.2}.recipient{min-height:20mm;margin-top:20mm;font-size:10pt;line-height:1.28}.date{margin:0 0 20mm;text-align:right;font-size:10pt}.letter-gap-1 .date{margin-bottom:16mm}.letter-gap-2 .date{margin-bottom:12mm}.letter-gap-3 .date{margin-bottom:8mm}.letter-gap-4 .date{margin-bottom:4mm}.subject{margin:0 0 6mm;color:var(--accent);font-size:14pt;font-weight:800;line-height:1.2}.letter-content>p:not(.subject,.date){margin:0 0 3.2mm;font-size:11pt;line-height:1.28}.letter-body{text-align:justify;text-justify:inter-word;hyphens:auto;overflow-wrap:break-word}.letter-content>.letter-closing{margin-bottom:0}.signature{display:flex;flex-direction:column;align-items:flex-start;margin-top:3.2mm}.signature p{margin:0;font-size:11pt;line-height:1.28}.signature-image{display:block;width:auto;max-width:48mm;height:auto;max-height:14mm;margin:1mm 0 .5mm;object-fit:contain;object-position:left center}.signature-name{font-size:11pt;font-weight:400;line-height:1.2}.attachments-note{margin-top:4mm!important;color:var(--muted);font-size:9pt!important;font-weight:700}.letter-compact .letter-content>p:not(.subject,.date),.letter-compact .signature{line-height:1.24}.letter-compact .letter-content>p:not(.subject,.date){margin-bottom:2.7mm}.letter-dense .recipient{min-height:18mm;margin-top:17mm}.letter-dense .date{margin-bottom:15mm}.letter-dense.letter-gap-1 .date{margin-bottom:11mm}.letter-dense.letter-gap-2 .date{margin-bottom:7mm}.letter-dense.letter-gap-3 .date{margin-bottom:3mm}.letter-dense.letter-gap-4 .date{margin-bottom:0}.letter-dense .letter-content>p:not(.subject,.date),.letter-dense .signature{font-size:11pt;line-height:1.15}.letter-dense .letter-content>p:not(.subject,.date){margin-bottom:2.2mm}
   .letter-header{min-height:0;padding-bottom:1mm}
   .cv-page{padding:0;display:grid;grid-template:"header header" auto "main side" 1fr/64% 36%;overflow:hidden}
   .cv-header{grid-area:header;display:flex;align-items:center;justify-content:space-between;gap:9mm;padding:var(--doc-margin) var(--doc-margin) calc(var(--doc-margin) * .6)}
@@ -583,6 +607,16 @@ const modernDocumentCss = `
   @media print{.no-print-background .modern-pdf-background{display:none!important}}
 `;
 
+const pehlioneDocumentCss = `
+  .pehlione-pdf{--pehlione-primary:var(--accent);--pehlione-accent:var(--secondary);display:grid;grid-template-columns:62mm minmax(0,1fr);width:100%;height:100%;overflow:hidden;color:#142235;background:#fff;font-family:var(--body-font);font-size:8.8pt;line-height:1.3}.pehlione-pdf *{box-sizing:border-box}.pehlione-pdf-sidebar{padding:0 7mm 11mm;color:#fff;background:linear-gradient(155deg,#062e64,#0b3d86 58%,#041f45)}.pehlione-pdf-hero{position:relative;height:46mm;margin:0 -7mm 8mm;overflow:hidden;background-color:#062b5a;background-image:radial-gradient(circle at 50% 50%,transparent 24%,#d7eaff 25% 27%,transparent 28% 43%,#d7eaff 44% 45%,transparent 46%),linear-gradient(#fff2 1px,transparent 1px),linear-gradient(90deg,#fff2 1px,transparent 1px);background-size:auto,4mm 4mm,4mm 4mm}.pehlione-pdf-hero:after{position:absolute;top:22mm;left:8mm;width:37mm;border-top:.3mm solid #d7eaff;content:"";transform:rotate(-24deg)}.pehlione-pdf-sidebar section{margin:0 0 7mm}.pehlione-pdf-sidebar h3{margin:0 0 3mm;padding-bottom:2mm;border-bottom:.3mm solid #b8d2f4;color:#fff;font-size:10.5pt;line-height:1.1;text-transform:uppercase}.pehlione-pdf-sidebar ul{display:grid;gap:2mm;margin:0;padding-left:4mm}.pehlione-pdf-sidebar li{line-height:1.25}.pehlione-pdf-main{min-width:0;padding:10mm 10mm 12mm}.pehlione-pdf-header{margin:0 0 7mm;padding-bottom:4mm;border-bottom:.7mm solid var(--pehlione-primary)}.pehlione-pdf-header h1{margin:0;color:var(--pehlione-primary);font-size:29pt;font-weight:800;letter-spacing:-.035em;line-height:1}.pehlione-pdf-header h2{margin:2mm 0 0;color:#12294e;font-size:13pt;line-height:1.18}.pehlione-pdf-header p{margin:0 0 1mm;color:var(--pehlione-primary);font-size:8pt;font-weight:700;text-transform:uppercase}.pehlione-pdf-section{margin:0 0 6mm}.pehlione-pdf-section h3{display:grid;grid-template-columns:9mm minmax(0,1fr);gap:3mm;align-items:center;margin:0 0 3mm;color:var(--pehlione-primary);font-size:13pt;line-height:1.1;text-transform:uppercase}.pehlione-pdf-section h3:before{display:grid;width:9mm;height:9mm;place-items:center;border-radius:1mm;color:#fff;background:var(--pehlione-primary);content:"◆";font-size:5pt}.pehlione-pdf-section h3 span{padding-bottom:1.2mm;border-bottom:.3mm solid var(--pehlione-primary)}.pehlione-pdf-summary{margin:0;text-align:justify;hyphens:auto}.pehlione-pdf-entry{display:grid;grid-template-columns:29mm minmax(0,1fr);gap:4mm;padding-bottom:4mm;border-bottom:.25mm solid #b8c3d0}.pehlione-pdf-entry+.pehlione-pdf-entry{padding-top:4mm}.pehlione-pdf-entry:last-child{padding-bottom:0;border-bottom:0}.pehlione-pdf-entry>p{margin:0;color:#1e3150;font-weight:700;line-height:1.25}.pehlione-pdf-entry h4{margin:0;color:var(--pehlione-primary);font-size:10.4pt;line-height:1.2}.pehlione-pdf-entry strong{display:block;margin:1mm 0 1.5mm;color:#173f82;font-size:9.2pt}.pehlione-pdf-entry ul,.pehlione-pdf-project ul,.pehlione-pdf-training ul{margin:0;padding-left:4mm}.pehlione-pdf-entry li,.pehlione-pdf-project li,.pehlione-pdf-training li{margin:.5mm 0;hyphens:auto}.pehlione-pdf-project{padding:3mm 3.5mm;border-left:1.2mm solid var(--pehlione-primary);background:#f1f6fc}.pehlione-pdf-project h4{margin:0;color:var(--pehlione-primary);font-size:10.4pt}.pehlione-pdf-project p{margin:1mm 0 1.5mm;color:#173f82;font-weight:700}.pehlione-pdf[data-density="compact"] .pehlione-pdf-section{margin-bottom:4mm}.pehlione-pdf[data-density="dense"] .pehlione-pdf-main{padding-top:7mm;padding-bottom:8mm}.pehlione-pdf[data-density="dense"] .pehlione-pdf-header{margin-bottom:4mm}.pehlione-pdf[data-density="dense"] .pehlione-pdf-header h1{font-size:24pt}.pehlione-pdf[data-density="dense"] .pehlione-pdf-section{margin-bottom:3.5mm}.pehlione-pdf[data-density="dense"] .pehlione-pdf-entry{padding-bottom:2.5mm}.pehlione-pdf-ats{display:block;padding:14mm 16mm;background:#fff;font-family:Arial,sans-serif}.pehlione-pdf-ats .pehlione-pdf-main{padding:0}.pehlione-pdf-ats .pehlione-pdf-header h1{font-size:20pt}.pehlione-pdf-ats .pehlione-pdf-section h3:before{display:none}.pehlione-pdf-ats .pehlione-pdf-section h3{display:block;font-size:10.5pt}.pehlione-pdf-ats .pehlione-pdf-section h3 span{display:block}.pehlione-pdf-ats-contact{margin:0 0 5mm}.pehlione-pdf-continuation{display:block;padding:14mm 16mm;background:#fff;font-family:Arial,sans-serif}
+`;
+
+// Shared with the preview rules: continuation pages use a compact header and
+// no nested page padding, so page two does not start with an artificial void.
+const pehlionePdfLayoutFixes = `
+  .pehlione-pdf-sidebar a{color:inherit;text-decoration:none;overflow-wrap:normal;word-break:normal}.pehlione-pdf-sidebar li{break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-sidebar section{margin-bottom:4.5mm}.pehlione-pdf-sidebar h3{margin-bottom:2mm;padding-bottom:1.5mm;font-size:9.7pt}.pehlione-pdf-sidebar ul{gap:1.35mm;font-size:7.8pt;line-height:1.2}.pehlione-pdf-contact-section ul{padding:0;list-style:none}.pehlione-pdf-contact-section li{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;align-items:start}.pehlione-pdf-contact-section svg{width:4.2mm;height:4.2mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2}.pehlione-pdf-contact-section li>span{display:grid;gap:.25mm;min-width:0}.pehlione-pdf-contact-section strong{display:block;color:#fff;font-size:7.8pt}.pehlione-pdf-contact-section a{font-size:7.4pt}.pehlione-pdf-section{break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-section h3{break-after:avoid;page-break-after:avoid}.pehlione-pdf-section h3:before{display:none}.pehlione-pdf-section-icon{display:grid;width:9mm;height:9mm;place-items:center;border-radius:1mm;color:#fff;background:var(--pehlione-primary);font-style:normal}.pehlione-pdf-section-icon svg{width:5.5mm;height:5.5mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.9}.pehlione-pdf-entry{break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-entry ul{break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-project{padding:0;border-left:0;background:transparent}.pehlione-pdf-continuation{padding:10mm 16mm 16mm}.pehlione-pdf-continuation .pehlione-pdf-main{padding:0}.pehlione-pdf-header.continuation{margin-bottom:5mm;padding-bottom:2.5mm}.pehlione-pdf-header.continuation h1{font-size:18pt}.pehlione-pdf-header.continuation h2{margin-top:1mm;font-size:9.5pt}.pehlione-pdf[data-density="compact"]{font-size:8.1pt;line-height:1.23}.pehlione-pdf[data-density="compact"] .pehlione-pdf-main{padding:7mm 9mm 8mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-header{margin-bottom:4mm;padding-bottom:3mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-header h1{font-size:30pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-header h2{margin-top:1.2mm;font-size:10.3pt;white-space:nowrap}.pehlione-pdf[data-density="compact"] .pehlione-pdf-section{margin-bottom:3.1mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-section h3{margin-bottom:2mm;font-size:11.2pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-section h3 span{padding-bottom:.8mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-summary{font-size:8.1pt;line-height:1.24}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry{grid-template-columns:27mm minmax(0,1fr);gap:3mm;padding-bottom:2.1mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry+.pehlione-pdf-entry{padding-top:2.1mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry>p{font-size:7.7pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry h4{font-size:9.3pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry strong{margin:.6mm 0 1mm;font-size:8.2pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry ul,.pehlione-pdf[data-density="compact"] .pehlione-pdf-project ul,.pehlione-pdf[data-density="compact"] .pehlione-pdf-training ul{font-size:7.8pt;line-height:1.2}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry li,.pehlione-pdf[data-density="compact"] .pehlione-pdf-project li,.pehlione-pdf[data-density="compact"] .pehlione-pdf-training li{margin:.15mm 0}.pehlione-pdf[data-density="compact"] .pehlione-pdf-project h4{font-size:9.3pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-project p{margin:.6mm 0 1mm;font-size:8pt}
+`;
+
 const gepflegtDocumentCss = `
   .gepflegt-pdf{--gepflegt-sidebar:var(--secondary);--gepflegt-accent:var(--accent);--gepflegt-heading:#354147;--gepflegt-text:#3f494e;--gepflegt-muted:#657075;--gepflegt-divider:#c7ced1;--gepflegt-sidebar-text:#fff;--gepflegt-sidebar-muted:#d8f0ef;--gepflegt-sidebar-width:72mm;--gepflegt-section-gap:7mm;--gepflegt-entry-gap:4.5mm;position:relative;display:grid;grid-template-columns:var(--gepflegt-sidebar-width) minmax(0,1fr);width:100%;height:100%;overflow:hidden;color:var(--gepflegt-text);background:#fff;font-family:var(--body-font);font-size:8.8pt;line-height:1.28}
   .gepflegt-pdf *{box-sizing:border-box}.gepflegt-pdf a{color:inherit;text-decoration:none}.gepflegt-pdf:before{position:absolute;top:0;right:0;left:0;z-index:4;height:3.5mm;background:color-mix(in srgb,var(--gepflegt-sidebar),#003f3e 32%);content:""}
@@ -734,15 +768,15 @@ export const buildDocumentHtml = (
       </div>
     </section>`;
   const letter = `
-    <section class="page letter-page letter-${letterStatus.density} ${letterTemplateClass} ${designClasses}" data-resume-template="${escapeHtml(template.id)}">
+    <section class="page letter-page letter-${letterStatus.density} letter-gap-${docs.coverSubjectGapReduction} ${letterTemplateClass} ${designClasses}" data-resume-template="${escapeHtml(template.id)}">
       ${backgroundLayer}
       <div class="page-content letter-content">
-        <div class="letter-header"><div class="sender">${senderHeader(profile)}</div></div>
+        <div class="letter-header"><div class="sender">${senderHeader(profile, docs)}</div></div>
         <div class="rule letter-rule"></div>
-        <div class="recipient">${addressBlock(application)}</div>
+        <div class="recipient">${addressBlock(application, docs)}</div>
         <p class="date">${escapeHtml(longApplicationDate)}</p>
         <p class="subject">${escapeHtml(`${createCoverSubject(role, docs.coverSubject)}${application.job.reference && !createCoverSubject(role, docs.coverSubject).includes(application.job.reference) ? ` - Referenz ${application.job.reference}` : ""}`)}</p>
-        <p class="letter-salutation">${escapeHtml(applicationGreeting(application))}</p>
+        <p class="letter-salutation">${escapeHtml(docs.coverGreeting || applicationGreeting(application))}</p>
         <p class="letter-body">${escapeHtml(docs.coverIntroduction || `die ausgeschriebene Position als ${role} bei ${company} spricht mich besonders an, weil sie fachliche Verantwortung mit konkretem Gestaltungsspielraum verbindet.`)}</p>
         <p class="letter-body">${escapeHtml(getCoverLetterMainBody(docs) || profile?.summary || "Hauptteil im Dokumenteditor ergänzen.")}</p>
         ${docs.coverExtraParagraph ? `<p class="letter-body">${escapeHtml(docs.coverExtraParagraph)}</p>` : ""}
@@ -787,7 +821,14 @@ export const buildDocumentHtml = (
     : undefined;
   const resumePlan = createResumePagePlan(
     paginatedProfile,
-    docs.resumeProfile,
+    template.id === "pehlione_white_blue"
+      ? docs.resumeProfile ||
+        (/kundenservice|sachbearbeit/i.test(role)
+          ? docs.deckblattStatement
+          : "") ||
+        profile?.summary ||
+        ""
+      : docs.resumeProfile,
     template.id === "elegant"
       ? elegantPaginationOptions
       : template.id === "zweispaltig"
@@ -812,6 +853,8 @@ export const buildDocumentHtml = (
                         ? tabellarischPaginationOptions
                         : template.id === "modern"
                           ? modernPaginationOptions
+                          : template.id === "pehlione_white_blue"
+                            ? pehlionePaginationOptions
                           : undefined,
   );
 
@@ -2369,6 +2412,9 @@ export const buildDocumentHtml = (
 
   const managedSummary =
     docs.resumeProfile ||
+    (/kundenservice|sachbearbeit/i.test(role)
+      ? docs.deckblattStatement
+      : "") ||
     profile?.summary ||
     "Kurzprofil im Dokumenteditor ergänzen.";
   const managedPortfolio =
@@ -3091,6 +3137,76 @@ export const buildDocumentHtml = (
     return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="modern" data-no-fit="true"><div class="page-content modern-pdf" data-density="${plan.density}"><div class="modern-pdf-content">${renderModernHeader(isContinuation)}<div class="modern-pdf-columns${isContinuation ? " continuation" : ""}"><main class="modern-pdf-left">${main}${!experiences && !education && plan.pageNumber === 1 ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}</main>${right}</div></div>${modernFooter(plan)}</div></section>`;
   };
 
+  const renderPehlioneResumePage = (plan: ResumePagePlan) => {
+    const continuation = plan.pageNumber > 1;
+    const lastPage = plan.pageNumber === resumePlan.length;
+    const sectionIcon = (
+      kind: "profile" | "experience" | "education" | "project" | "training",
+    ) => {
+      const paths = {
+        profile: '<circle cx="12" cy="7" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+        experience: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V4h8v3M3 12h18M10 12v2h4v-2"/>',
+        education: '<path d="m2 10 10-5 10 5-10 5L2 10Z"/><path d="M6 12v5c3 2 9 2 12 0v-5M22 10v6"/>',
+        project: '<path d="M9 18h6M10 22h4M8.5 14.5A7 7 0 1 1 15.5 14.5C14.5 15.4 14 16.2 14 18h-4c0-1.8-.5-2.6-1.5-3.5Z"/>',
+        training: '<path d="M3 5h7a2 2 0 0 1 2 2v14a3 3 0 0 0-3-3H3V5ZM21 5h-7a2 2 0 0 0-2 2v14a3 3 0 0 1 3-3h6V5Z"/>',
+      } as const;
+      return `<i class="pehlione-pdf-section-icon"><svg viewBox="0 0 24 24" aria-hidden="true">${paths[kind]}</svg></i>`;
+    };
+    const sectionHeading = (
+      title: string,
+      kind: "profile" | "experience" | "education" | "project" | "training",
+    ) => `<h3>${sectionIcon(kind)}<span>${escapeHtml(title)}</span></h3>`;
+    const entries = (kind: "experience" | "education") =>
+      plan.items
+        .filter((item) => item.kind === kind)
+        .map((item) => {
+          if (kind === "experience") {
+            const source = experienceById.get(item.id);
+            if (!source) return "";
+            const achievements = source.achievements.filter(Boolean);
+            return `<article class="pehlione-pdf-entry"><p>${escapeHtml(formatDateRange(source.from, source.to))}</p><div><h4>${escapeHtml(source.role)}</h4><strong>${escapeHtml(source.company)}${source.city ? ` · ${escapeHtml(source.city)}` : ""}</strong>${achievements.length ? `<ul>${achievements.slice(0, 5).map((value: string) => `<li>${escapeHtml(value)}</li>`).join("")}</ul>` : ""}</div></article>`;
+          }
+          const source = educationById.get(item.id);
+          if (!source) return "";
+          return `<article class="pehlione-pdf-entry"><p>${escapeHtml(formatDateRange(source.from, source.to))}</p><div><h4>${escapeHtml(source.degree)}</h4><strong>${escapeHtml(source.institution)}${source.city ? ` · ${escapeHtml(source.city)}` : ""}</strong></div></article>`;
+        })
+        .join("");
+    const experience = entries("experience");
+    const education = entries("education");
+    const contactItems = [
+      { kind: "location" as const, label: "Ort", value: [profile?.city, profile?.country].filter(Boolean).join(", "), href: "" },
+      { kind: "phone" as const, label: "Telefon", value: formatPhoneForDisplay(profile?.phone), href: profile?.phone ? `tel:${profile.phone.replace(/[^\d+]/g, "")}` : "" },
+      { kind: "mail" as const, label: "E-Mail", value: profile?.email || "", href: profile?.email ? `mailto:${profile.email}` : "" },
+      { kind: "linkedin" as const, label: "LinkedIn", value: formatUrlForDisplay(profile?.linkedin || profile?.github || profile?.portfolio || ""), href: externalUrl(profile?.linkedin || profile?.github || profile?.portfolio || "") },
+    ].filter((contact) => contact.value);
+    const contacts = contactItems.map((contact) => {
+      const value = contact.href ? `<a href="${escapeHtml(contact.href)}">${escapeHtml(contact.value)}</a>` : escapeHtml(contact.value);
+      return `<li>${kreativIconMarkup(contact.kind)}<span><strong>${escapeHtml(contact.label)}</strong>${value}</span></li>`;
+    }).join("");
+    const coreCompetencies = getPehlioneCoreCompetencies(profile);
+    const groupedCompetencies = groupPehlioneCompetencies(managedStrengths.slice(0, 8));
+    const competence = (coreCompetencies.length
+      ? coreCompetencies.map((item) => `<li>${escapeHtml(item)}</li>`)
+      : groupedCompetencies.map((group) => `<li><strong>${escapeHtml(group.title)}:</strong> ${escapeHtml(group.values.join(" · "))}</li>`))
+      .join("");
+    const derivedFocus = getPehlioneTechnicalFocus(profile);
+    const focus = (derivedFocus.length ? derivedFocus : kreativSkillValues.slice(0, 8))
+      .map((item) => `<li>${escapeHtml(item)}</li>`)
+      .join("");
+    const project = getPehlioneProjectHighlight(profile);
+    const header = `<header class="pehlione-pdf-header${continuation ? " continuation" : ""}"><h1>${escapeHtml(name)}</h1><h2>${escapeHtml(profile?.title || role)}</h2></header>`;
+    const main = `${!continuation && sections.profile && managedSummary ? `<section class="pehlione-pdf-section pehlione-pdf-summary-section">${sectionHeading("Kurzprofil", "profile")}<p class="pehlione-pdf-summary">${escapeHtml(managedSummary)}</p></section>` : ""}${sections.experience && experience ? `<section class="pehlione-pdf-section pehlione-pdf-experience">${sectionHeading(`Berufserfahrung${continuation ? " · Fortsetzung" : ""}`, "experience")}${experience}</section>` : ""}${sections.education && education ? `<section class="pehlione-pdf-section pehlione-pdf-education">${sectionHeading("Ausbildung", "education")}${education}</section>` : ""}${!continuation && project ? `<section class="pehlione-pdf-section pehlione-pdf-project">${sectionHeading("Projekt-Highlight", "project")}<h4>${escapeHtml(project.title)}</h4><p>${[project.company, ...project.technologies].filter(Boolean).map(escapeHtml).join(" · ")}</p>${project.achievements.length ? `<ul>${project.achievements.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul>` : ""}</section>` : ""}${lastPage && sections.certifications && kreativCertifications.length ? `<section class="pehlione-pdf-section pehlione-pdf-training">${sectionHeading("Weiterbildungen", "training")}<ul>${kreativCertifications.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></section>` : ""}${!experience && !education ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}`;
+    const density = plan.items.length >= 5 ? "compact" : plan.density;
+    if (atsMode || continuation) {
+      return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="pehlione_white_blue" data-no-fit="true"><div class="page-content pehlione-pdf ${continuation ? "pehlione-pdf-continuation" : "pehlione-pdf-ats"}" data-density="${density}"><main class="pehlione-pdf-main">${header}${!continuation ? `<p class="pehlione-pdf-ats-contact"><strong>Kontakt:</strong> ${contacts.replace(/<[^>]+>/g, " ")}</p>` : ""}${main}</main></div></section>`;
+    }
+    const languages = sections.languages
+      ? (profile?.languages ?? []).filter(Boolean).map((item) => `<li>${escapeHtml(item)}</li>`).join("")
+      : "";
+    const sidebar = `<aside class="pehlione-pdf-sidebar"><div class="pehlione-pdf-hero"></div>${contacts ? `<section class="pehlione-pdf-contact-section"><h3>Kontakt</h3><ul>${contacts}</ul></section>` : ""}${sections.strengths && competence ? `<section><h3>Kernkompetenzen</h3><ul>${competence}</ul></section>` : ""}${focus ? `<section><h3>Technische Schwerpunkte</h3><ul>${focus}</ul></section>` : ""}${languages ? `<section><h3>Sprachen</h3><ul>${languages}</ul></section>` : ""}</aside>`;
+    return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="pehlione_white_blue" data-no-fit="true"><div class="page-content pehlione-pdf" data-density="${density}">${sidebar}<main class="pehlione-pdf-main">${header}${main}</main></div></section>`;
+  };
+
   const tabellarischExtraIcon = (kind: "profile" | "flag" | "trophy") => {
     const paths = {
       profile:
@@ -3593,7 +3709,9 @@ export const buildDocumentHtml = (
   };
   const resume = resumePlan
     .map(
-      template.id === "modern"
+      template.id === "pehlione_white_blue"
+        ? renderPehlioneResumePage
+        : template.id === "modern"
         ? renderModernResumePage
         : template.id === "stilvoll"
           ? renderStilvollResumePage
@@ -3621,7 +3739,7 @@ export const buildDocumentHtml = (
     )
     .join("");
   const selected = target === "mappe" ? [letter, cover, resume] : target === "deckblatt" ? [cover] : target === "anschreiben" ? [letter] : [resume];
-  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}${ivyLeagueDocumentCss}${extendedResumeDocumentCss}${klassischDocumentCss}${modernDocumentCss}${gepflegtDocumentCss}${tabellarischDocumentCss}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}${ivyLeagueDocumentCss}${extendedResumeDocumentCss}${klassischDocumentCss}${modernDocumentCss}${pehlioneDocumentCss}${pehlionePdfLayoutFixes}${gepflegtDocumentCss}${tabellarischDocumentCss}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
 };
 
 export const buildCoverLetterMarkdown = (
@@ -3631,7 +3749,7 @@ export const buildCoverLetterMarkdown = (
   const docs = application.documents;
   return `# ${createCoverSubject(application.job.title, docs.coverSubject)}
 
-${applicationGreeting(application)}
+${docs.coverGreeting || applicationGreeting(application)}
 
 ${docs.coverIntroduction}
 

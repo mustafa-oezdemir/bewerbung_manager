@@ -2423,6 +2423,65 @@ h3 {
   background: var(--surface-muted);
 }
 
+.cover-subject-spacing-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface-muted);
+}
+
+.cover-subject-spacing-control > div:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.cover-subject-spacing-control b {
+  color: var(--ink);
+  font-size: 0.66rem;
+}
+
+.cover-subject-spacing-control small {
+  color: var(--muted);
+  font-size: 0.58rem;
+}
+
+.cover-subject-spacing-control > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.cover-subject-spacing-control button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--ink);
+  background: var(--surface);
+  font: inherit;
+  font-size: 0.61rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cover-subject-spacing-control button:hover:not(:disabled) {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.cover-subject-spacing-control button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
 .cover-letter-editor-section > ul {
   margin: 0;
   padding-left: 18px;
@@ -2888,6 +2947,22 @@ h3 {
   line-height: 1.2;
 }
 
+.document-anschreiben.letter-gap-1 .letter-preview .paper-date {
+  margin-bottom: 16mm;
+}
+
+.document-anschreiben.letter-gap-2 .letter-preview .paper-date {
+  margin-bottom: 12mm;
+}
+
+.document-anschreiben.letter-gap-3 .letter-preview .paper-date {
+  margin-bottom: 8mm;
+}
+
+.document-anschreiben.letter-gap-4 .letter-preview .paper-date {
+  margin-bottom: 4mm;
+}
+
 .letter-preview h3,
 .document-anschreiben.layout-timeline .letter-preview h3,
 .letter-compact .letter-preview h3,
@@ -2945,6 +3020,22 @@ h3 {
 
 .letter-dense .letter-preview .paper-date {
   margin-bottom: 15mm;
+}
+
+.document-anschreiben.letter-dense.letter-gap-1 .letter-preview .paper-date {
+  margin-bottom: 11mm;
+}
+
+.document-anschreiben.letter-dense.letter-gap-2 .letter-preview .paper-date {
+  margin-bottom: 7mm;
+}
+
+.document-anschreiben.letter-dense.letter-gap-3 .letter-preview .paper-date {
+  margin-bottom: 3mm;
+}
+
+.document-anschreiben.letter-dense.letter-gap-4 .letter-preview .paper-date {
+  margin-bottom: 0;
 }
 
 .letter-dense .letter-preview .letter-body {
@@ -7029,6 +7120,42 @@ h3 {
   width: 100%;
   height: 100%;
   overflow: visible;
+}
+
+.template-thumbnail:has(.pehlione-thumbnail-hero) {
+  position: relative;
+  display: grid;
+  grid-template: "side content" 1fr / 31% 69%;
+  background: #fff;
+}
+
+.template-thumbnail:has(.pehlione-thumbnail-hero) .thumbnail-header,
+.template-thumbnail:has(.pehlione-thumbnail-hero) .thumbnail-main,
+.template-thumbnail:has(.pehlione-thumbnail-hero) .thumbnail-side {
+  display: none;
+}
+
+.pehlione-thumbnail-sidebar {
+  grid-area: side;
+  background: linear-gradient(155deg, #062e64, #0b3d86 65%, #041f45);
+}
+
+.pehlione-thumbnail-hero {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  width: 31%;
+  height: 28%;
+  background-color: #082e5e;
+  background-image: radial-gradient(circle at center, transparent 24%, #d7eaff 25% 27%, transparent 28% 43%, #d7eaff 44% 45%, transparent 46%), linear-gradient(#ffffff26 1px, transparent 1px), linear-gradient(90deg, #ffffff26 1px, transparent 1px);
+  background-size: auto, 8px 8px, 8px 8px;
+}
+
+.pehlione-thumbnail-content {
+  grid-area: content;
+  margin: 12% 9% 9%;
+  background: repeating-linear-gradient(to bottom, #0b3d86 0 3px, transparent 3px 14px, #d4dbe5 14px 15px, transparent 15px 29px);
 }
 
 .technology-icon-picker {
