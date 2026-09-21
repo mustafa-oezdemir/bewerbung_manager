@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildApplicationEmailMarkdown, getApplicationEmail } from "./applicationEmail";
+import {
+  buildApplicationEmailMarkdown,
+  getApplicationEmail,
+  resolveApplicationEmailAttachments,
+  validateEmailClosingDuplication,
+} from "./applicationEmail";
 import { applicationSchema } from "./schema";
 import { defaultDocumentDesign } from "./documentDesign";
 
@@ -164,5 +169,34 @@ describe("application email", () => {
     const markdown = buildApplicationEmailMarkdown(withoutContact);
     expect(markdown).toContain("- Empfänger: Nicht angegeben");
     expect(markdown).toContain("- E-Mail-Adresse: Nicht angegeben");
+  });
+
+  it("switches between one package PDF and individual visible PDFs", () => {
+    expect(resolveApplicationEmailAttachments({
+      emailAttachmentMode: "package",
+      emailPackageFileName: "Mina_Kaya_Bewerbung.pdf",
+    }, ["Anschreiben", "Lebenslauf", "Zeugnis.pdf"])).toEqual([
+      "Mina_Kaya_Bewerbung.pdf",
+    ]);
+
+    expect(resolveApplicationEmailAttachments({
+      emailAttachmentMode: "separate",
+      emailPackageFileName: "",
+    }, ["Anschreiben", "Lebenslauf", "Zeugnis.pdf"])).toEqual([
+      "Anschreiben.pdf",
+      "Lebenslauf.pdf",
+      "Zeugnis.pdf",
+    ]);
+  });
+
+  it("warns when the editable message duplicates the fixed closing", () => {
+    expect(validateEmailClosingDuplication(
+      "Ich freue mich auf ein persönliches Gespräch.",
+      "Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.",
+    )).toHaveLength(1);
+    expect(validateEmailClosingDuplication(
+      "Die Unterlagen finden Sie im Anhang.",
+      "Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.",
+    )).toEqual([]);
   });
 });

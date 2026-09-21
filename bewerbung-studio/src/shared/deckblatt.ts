@@ -13,6 +13,14 @@ const externalHref = (value: string) =>
 
 export const getDeckblattContacts = (
   profile: ApplicantProfile | undefined,
+  visibility: DocumentDraft["coverSheetContactVisibility"] = {
+    address: true,
+    phone: true,
+    email: true,
+    linkedin: true,
+    github: true,
+    website: true,
+  },
 ): DeckblattContact[] => {
   if (!profile) return [];
 
@@ -20,28 +28,28 @@ export const getDeckblattContacts = (
     .filter(Boolean)
     .join(", ");
   return [
-    address ? { label: "Adresse", value: address } : undefined,
-    profile.phone
+    visibility.address && address ? { label: "Adresse", value: address } : undefined,
+    visibility.phone && profile.phone
       ? {
           label: "Telefon",
           value: profile.phone,
           href: `tel:${profile.phone.replace(/[^\d+]/g, "")}`,
         }
       : undefined,
-    profile.email
+    visibility.email && profile.email
       ? { label: "E-Mail", value: profile.email, href: `mailto:${profile.email}` }
       : undefined,
-    profile.linkedin
+    visibility.linkedin && profile.linkedin
       ? {
           label: "LinkedIn",
           value: profile.linkedin,
           href: externalHref(profile.linkedin),
         }
       : undefined,
-    profile.github
+    visibility.github && profile.github
       ? { label: "GitHub", value: profile.github, href: externalHref(profile.github) }
       : undefined,
-    profile.portfolio
+    visibility.website && profile.portfolio
       ? {
           label: "Website",
           value: profile.portfolio,

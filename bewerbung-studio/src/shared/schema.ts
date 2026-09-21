@@ -2,11 +2,17 @@ import { z } from "zod";
 import {
   columnLayoutIds,
   defaultDocumentDesign,
+  documentBackgroundScopes,
   documentBackgroundIds,
   documentFontIds,
   fontSizeIds,
   resumeOutputModes,
 } from "./documentDesign";
+import {
+  defaultResumePersonalFieldVisibility,
+  resumePersonalFieldKeys,
+  resumeSemanticTypes,
+} from "../features/resume-sections/resume-section-system";
 import { defaultKnowledgeSection } from "../features/knowledge/knowledge.constants";
 import { knowledgeSectionSchema } from "../features/knowledge/knowledge.validation";
 import {
@@ -187,6 +193,17 @@ export const documentDraftSchema = z.object({
   coverSenderName: optionalText,
   coverSenderTitle: optionalText,
   coverSenderContact: optionalText,
+  coverSheetProfessionalTitle: optionalText,
+  coverSheetContactVisibility: z
+    .record(z.enum(["address", "phone", "email", "linkedin", "github", "website"]), z.boolean())
+    .default({
+      address: true,
+      phone: true,
+      email: true,
+      linkedin: true,
+      github: true,
+      website: true,
+    }),
   coverRecipientAddress: optionalText,
   coverSubject: optionalText,
   coverSubjectGapReduction: z.number().int().min(0).max(4).default(0),
@@ -203,6 +220,8 @@ export const documentDraftSchema = z.object({
   emailSubject: optionalText,
   emailMessage: optionalText,
   emailAttachmentNote: optionalText,
+  emailAttachmentMode: z.enum(["package", "separate"]).default("package"),
+  emailPackageFileName: z.string().trim().min(1).default("Bewerbungsunterlagen.pdf"),
   showCoverLetterAttachments: z.boolean().default(true),
   documentListSettings: z
     .array(
@@ -222,13 +241,22 @@ const designLevelSchema = z.union([
   z.literal(3),
   z.literal(4),
   z.literal(5),
+  z.literal(6),
+  z.literal(7),
+  z.literal(8),
+  z.literal(9),
+  z.literal(10),
 ]);
 
+const hexColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+
 export const documentDesignSchema = z.object({
-  marginLevel: designLevelSchema,
-  sectionSpacingLevel: designLevelSchema,
+  marginLevel: designLevelSchema.default(defaultDocumentDesign.marginLevel),
+  paddingLevel: designLevelSchema.default(defaultDocumentDesign.paddingLevel),
+  sectionSpacingLevel: designLevelSchema.default(defaultDocumentDesign.sectionSpacingLevel),
   fontSize: z.enum(fontSizeIds),
-  lineHeightLevel: designLevelSchema,
+  lineHeightLevel: designLevelSchema.default(defaultDocumentDesign.lineHeightLevel),
+  backgroundShadeLevel: designLevelSchema.default(defaultDocumentDesign.backgroundShadeLevel),
   fontId: z.enum(documentFontIds),
   headingFontId: z.enum(documentFontIds),
   columnLayout: z.enum(columnLayoutIds),
@@ -236,7 +264,13 @@ export const documentDesignSchema = z.object({
     .enum(resumeOutputModes)
     .default(defaultDocumentDesign.resumeOutputMode),
   backgroundId: z.enum(documentBackgroundIds),
+  backgroundScope: z.enum(documentBackgroundScopes).default(defaultDocumentDesign.backgroundScope),
+  textColor: hexColorSchema.default(defaultDocumentDesign.textColor),
+  headingColor: hexColorSchema.default(defaultDocumentDesign.headingColor),
+  lineColor: hexColorSchema.default(defaultDocumentDesign.lineColor),
+  backgroundColor: hexColorSchema.default(defaultDocumentDesign.backgroundColor),
   showBackgroundInPrint: z.boolean(),
+  syncAcrossDocuments: z.boolean().default(true),
 });
 
 export const applicationSchema = z.object({
@@ -447,6 +481,40 @@ export const profileSchema = z.object({
       ),
     )
     .default({}),
+  resumeSemanticSections: z
+    .array(
+      z.object({
+        semanticType: z.enum(resumeSemanticTypes),
+        customTitle: optionalText,
+        visible: z.boolean().default(true),
+        enabled: z.boolean().default(true),
+        order: z.number().int().nonnegative(),
+      }),
+    )
+    .default([]),
+  resumePersonalFieldVisibility: z
+    .record(z.enum(resumePersonalFieldKeys), z.boolean())
+    .default(defaultResumePersonalFieldVisibility),
+  resumeKnowledgeGroups: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        title: z.string().trim().min(1),
+        semanticType: z.string().trim().min(1),
+        visible: z.boolean().default(true),
+        order: z.number().int().nonnegative(),
+        items: z.array(z.string()).default([]),
+        rendererType: z.enum(["list", "icon-list", "tags"]).default("list"),
+      }),
+    )
+    .default([]),
+  resumeClosing: z
+    .object({
+      showPlace: z.boolean().default(true),
+      showDate: z.boolean().default(true),
+      showSignature: z.boolean().default(true),
+    })
+    .default({ showPlace: true, showDate: true, showSignature: true }),
   updatedAt: z.iso.datetime(),
 });
 

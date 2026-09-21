@@ -2191,6 +2191,11 @@ h3 {
   --doc-line-height: 1.4;
   --doc-font: "Source Sans 3", "Segoe UI", Arial, sans-serif;
   --doc-heading-font: "Source Sans 3", "Segoe UI", Arial, sans-serif;
+  --doc-text-color: #222b2a;
+  --doc-heading-color: #202827;
+  --doc-line-color: #b8c3d0;
+  --doc-background-color: #ffffff;
+  --doc-padding: 3.5mm;
   width: 210mm;
   height: 297mm;
   min-height: 297mm;
@@ -2201,8 +2206,8 @@ h3 {
   position: relative;
   padding: var(--doc-margin);
   font-family: var(--doc-font);
-  color: #222b2a;
-  background: white;
+  color: var(--doc-text-color);
+  background: var(--doc-background-color);
   box-shadow: 0 22px 60px rgba(23, 32, 30, 0.13);
 }
 
@@ -2225,7 +2230,7 @@ h3 {
 .document-paper h1,
 .document-paper h2,
 .document-paper h3 {
-  color: #202827;
+  color: var(--doc-heading-color);
   font-family: var(--doc-heading-font);
 }
 
@@ -2315,6 +2320,17 @@ h3 {
   margin-top: 23mm;
   padding-top: 6mm;
   border-top: 1px solid #dfe2dd;
+}
+
+.document-paper .paper-rule,
+.document-paper .letter-rule {
+  background: var(--doc-line-color, var(--doc-accent));
+}
+
+.document-paper.background-scope-sections section {
+  padding: var(--doc-padding);
+  border-radius: 2mm;
+  background: color-mix(in srgb, var(--doc-background-color) var(--doc-background-shade), transparent);
 }
 
 .document-paper.document-deckblatt {
@@ -7121,6 +7137,137 @@ h3 {
   height: 100%;
   overflow: visible;
 }
+
+.resume-semantic-system,
+.resume-personal-fields-panel,
+.resume-knowledge-groups-panel,
+.resume-closing-panel {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface) 92%, var(--accent) 8%);
+}
+
+.resume-semantic-system > header,
+.resume-personal-fields-panel > header,
+.resume-knowledge-groups-panel > header,
+.resume-closing-panel > header {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.resume-semantic-system header small,
+.resume-personal-fields-panel header small,
+.resume-knowledge-groups-panel header small,
+.resume-closing-panel header small {
+  color: var(--muted);
+}
+
+.resume-semantic-list,
+.resume-knowledge-group-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.resume-semantic-card {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.85fr) minmax(170px, 1fr) auto;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.resume-semantic-card > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.requirement-badge {
+  padding: 0.12rem 0.42rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.requirement-required { color: #ffd7d7; background: #7d2929; }
+.requirement-recommended { color: #d9f3ff; background: #22546e; }
+.requirement-optional { color: var(--muted); background: var(--surface-strong); }
+
+.visibility-checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 0.55rem;
+}
+
+.checkbox-field.compact {
+  margin: 0;
+  padding: 0.45rem 0.55rem;
+}
+
+.resume-knowledge-group-list > article {
+  display: grid;
+  grid-template-columns: minmax(145px, 0.7fr) minmax(180px, 1fr) auto;
+  gap: 0.65rem;
+  align-items: start;
+  padding: 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.resume-knowledge-group-list > article.is-hidden {
+  opacity: 0.62;
+}
+
+.resume-knowledge-group-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+@media (max-width: 980px) {
+  .resume-semantic-card,
+  .resume-knowledge-group-list > article {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pehlione-resume {
+  color: var(--doc-text-color, #142235);
+  background: var(--doc-background-color, #fff);
+  font-family: var(--doc-font, "Source Sans 3", Arial, sans-serif);
+}
+
+.pehlione-header h1,
+.pehlione-header h2,
+.pehlione-section-heading,
+.pehlione-career-entry h3,
+.pehlione-project h3 {
+  font-family: var(--doc-heading-font, inherit);
+}
+
+.pehlione-career-entry { border-color: var(--doc-line-color, #b8c3d0); }
+
+.pehlione-closing {
+  display: flex;
+  min-height: 10mm;
+  align-items: flex-end;
+  gap: 3mm;
+  margin-top: 3mm;
+  padding-top: 2mm;
+  border-top: 0.25mm solid var(--doc-line-color, #b8c3d0);
+  font-size: 8pt;
+}
+
+.pehlione-closing p { margin: 0 auto 0 0; }
+.pehlione-closing img { width: auto; max-width: 34mm; height: auto; max-height: 10mm; }
+.pehlione-closing strong { white-space: nowrap; }
 
 .template-thumbnail:has(.pehlione-thumbnail-hero) {
   position: relative;

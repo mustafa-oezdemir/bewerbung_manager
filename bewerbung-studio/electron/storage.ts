@@ -44,6 +44,7 @@ import {
 import {
   buildApplicationEmailMarkdown,
   getApplicationEmail,
+  resolveApplicationEmailAttachments,
 } from "../src/shared/applicationEmail";
 import {
   applicationContactDepartmentLines,
@@ -489,10 +490,14 @@ export class DataStore {
     const { dataRoot } =
       await this.ensureApplicationDataDirectories(application);
     const profile = this.getProfileForApplication(application);
-    const emailAttachments = getDeckblattDocuments(
+    const visibleEmailDocuments = getDeckblattDocuments(
       this.workspace.attachments,
       application.id,
       application.documents.documentListSettings,
+    );
+    const emailAttachments = resolveApplicationEmailAttachments(
+      application.documents,
+      visibleEmailDocuments,
     );
     const email = getApplicationEmail(application, profile, emailAttachments);
     await Promise.all([
@@ -692,6 +697,15 @@ export class DataStore {
         coverSenderName: "",
         coverSenderTitle: "",
         coverSenderContact: "",
+        coverSheetProfessionalTitle: "",
+        coverSheetContactVisibility: {
+          address: true,
+          phone: true,
+          email: true,
+          linkedin: true,
+          github: true,
+          website: true,
+        },
         coverRecipientAddress: "",
         coverSubject: createCoverSubject(input.job.title),
         coverSubjectGapReduction: 0,
@@ -709,6 +723,8 @@ export class DataStore {
         emailSubject: "",
         emailMessage: "",
         emailAttachmentNote: "",
+        emailAttachmentMode: "package",
+        emailPackageFileName: "Bewerbungsunterlagen.pdf",
         showCoverLetterAttachments: true,
         documentListSettings: [],
       },
@@ -1114,7 +1130,10 @@ export class DataStore {
       knowledgeSection,
       false,
     );
-    const deckblattContacts = getDeckblattContacts(profile);
+    const deckblattContacts = getDeckblattContacts(
+      profile,
+      application.documents.coverSheetContactVisibility,
+    );
     const deckblattCompetencies = getDeckblattCompetencies(profile, application);
     const deckblattDocuments = getDeckblattDocuments(
       this.workspace.attachments,
@@ -1164,7 +1183,9 @@ export class DataStore {
       VORNAME: profile?.firstName ?? "",
       NACHNAME: profile?.lastName ?? "",
       BERUFSBEZEICHNUNG:
-        profile?.title || application.job.title,
+        application.documents.coverSheetProfessionalTitle ||
+        profile?.title ||
+        application.job.title,
       FACHGEBIET_1: profile?.skills[0] ?? "",
       FACHGEBIET_2: profile?.skills[1] ?? "",
       FACHGEBIETE: (profile?.skills ?? []).slice(0, 3).join(" | "),

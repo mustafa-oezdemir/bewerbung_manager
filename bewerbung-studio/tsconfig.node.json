@@ -24,6 +24,7 @@
     "src/features/knowledge/knowledge.presets.ts",
     "src/features/languages/language-levels.ts",
     "src/features/resume-sections/resume-sections.ts",
+    "src/features/resume-sections/resume-section-system.ts",
     "vite.config.ts"
   ]
 }

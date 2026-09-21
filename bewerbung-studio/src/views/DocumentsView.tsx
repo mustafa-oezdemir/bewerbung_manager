@@ -55,7 +55,10 @@ import {
   getApplicationDocumentItems,
   type ApplicationDocumentItem,
 } from "../shared/applicationDocuments";
-import { getApplicationEmail } from "../shared/applicationEmail";
+import {
+  getApplicationEmail,
+  resolveApplicationEmailAttachments,
+} from "../shared/applicationEmail";
 import {
   createCoverSubject,
   getCoverLetterAttachments,
@@ -85,6 +88,7 @@ import {
   documentBackgrounds,
   documentFonts,
   getDocumentDesignVariables,
+  hasReadableColorContrast,
   programmingLanguageBackgroundTokens,
   type DocumentDesignSettings,
 } from "../shared/documentDesign";
@@ -96,6 +100,10 @@ import {
 } from "../shared/deckblatt";
 import type { ProfileMediaKind } from "../shared/ipc";
 import { getProfileMediaSource } from "../shared/profileMedia";
+import {
+  defaultResumePersonalFieldVisibility,
+  getResumeSemanticSection,
+} from "../features/resume-sections/resume-section-system";
 import { resolveSelectedProfile } from "../shared/profileSelection";
 import type {
   ApplicantProfile,
@@ -582,7 +590,10 @@ export function DocumentsView({
     documentPreview?.applicationId === application.id
       ? documentPreview.documents
       : application.documents;
-  const deckblattContacts = getDeckblattContacts(profile);
+  const deckblattContacts = getDeckblattContacts(
+    profile,
+    docs.coverSheetContactVisibility,
+  );
   const deckblattCompetencies = getDeckblattCompetencies(profile, application);
   const deckblattDocuments = getDeckblattDocuments(
     attachments,
@@ -605,19 +616,59 @@ export function DocumentsView({
     resumeSectionPreview.profile.id === profile?.id
       ? resumeSectionPreview.profile
       : profile;
+  const resumeRenderProfile = renderProfile
+    ? (() => {
+        const visibility = {
+          ...defaultResumePersonalFieldVisibility,
+          ...renderProfile.resumePersonalFieldVisibility,
+        };
+        const photoIsVisible = getResumeSemanticSection(
+          renderProfile.resumeSemanticSections,
+          "photo",
+        ).visible;
+
+        return {
+          ...renderProfile,
+          street: visibility.address ? renderProfile.street : "",
+          postalCode: visibility.address ? renderProfile.postalCode : "",
+          city: visibility.address ? renderProfile.city : "",
+          country: visibility.address ? renderProfile.country : "",
+          phone: visibility.phone ? renderProfile.phone : "",
+          email: visibility.email ? renderProfile.email : "",
+          linkedin: visibility.linkedin ? renderProfile.linkedin : "",
+          github: visibility.github ? renderProfile.github : "",
+          portfolio: visibility.website ? renderProfile.portfolio : "",
+          onlineProfiles: renderProfile.onlineProfiles.filter((entry) =>
+            /xing/i.test(entry.label) ? visibility.xing : visibility.website,
+          ),
+          birthDate: visibility.birthDate ? renderProfile.birthDate : "",
+          birthPlace: visibility.birthPlace ? renderProfile.birthPlace : "",
+          nationality: visibility.nationality ? renderProfile.nationality : "",
+          photoPath: photoIsVisible ? renderProfile.photoPath : "",
+        };
+      })()
+    : undefined;
+  const emailAttachments = resolveApplicationEmailAttachments(
+    docs,
+    deckblattDocuments,
+  );
   const email = getApplicationEmail(
     { ...application, documents: docs },
     profile,
-    deckblattDocuments,
+    emailAttachments,
   );
-  const sections = renderProfile?.resumeSections ?? {
-    profile: true,
-    strengths: true,
+  const sections = {
+    ...(renderProfile?.resumeSections ?? {
+      profile: true,
+      strengths: true,
+      experience: true,
+      education: true,
+      skills: true,
+      languages: true,
+      certifications: true,
+    }),
     experience: true,
     education: true,
-    skills: true,
-    languages: true,
-    certifications: true,
   };
   const keywordMatch = analyzeKeywordMatch(application, renderProfile);
   const name = renderProfile
@@ -642,6 +693,8 @@ export function DocumentsView({
   const coverSenderName = docs.coverSenderName || name;
   const coverSenderTitle =
     docs.coverSenderTitle || renderProfile?.title || application.job.title;
+  const coverSheetProfessionalTitle =
+    docs.coverSheetProfessionalTitle || renderProfile?.title || application.job.title;
   const coverSenderContact = docs.coverSenderContact || senderContactDetails;
   const coverGreeting = docs.coverGreeting || applicationGreeting(application);
   const pehlioneResumeProfile =
@@ -649,11 +702,11 @@ export function DocumentsView({
     (/kundenservice|sachbearbeit/i.test(application.job.title)
       ? docs.deckblattStatement
       : "");
-  const paginatedProfile = renderProfile
+  const paginatedProfile = resumeRenderProfile
     ? {
-        ...renderProfile,
-        experiences: sections.experience ? renderProfile.experiences : [],
-        education: sections.education ? renderProfile.education : [],
+        ...resumeRenderProfile,
+        experiences: sections.experience ? resumeRenderProfile.experiences : [],
+        education: sections.education ? resumeRenderProfile.education : [],
       }
     : undefined;
   const resumePlan = createResumePagePlan(
@@ -702,11 +755,15 @@ export function DocumentsView({
     "--doc-on-secondary": getReadableTextColor(design.secondaryColor),
     ...getDocumentDesignVariables(design.settings),
   } as CSSProperties;
-  const designClassName = `column-${effectiveColumnLayout} background-${design.settings.backgroundId} ${
+  const designClassName = `column-${effectiveColumnLayout} background-${design.settings.backgroundId} background-scope-${design.settings.backgroundScope} ${
     design.settings.showBackgroundInPrint
       ? "print-background"
       : "no-print-background"
   }`;
+  const textContrastIsReadable = hasReadableColorContrast(
+    design.settings.textColor,
+    design.settings.backgroundColor,
+  );
 
   const updateDesignSetting = <
     Key extends keyof DocumentDesignSettings,
@@ -856,6 +913,11 @@ export function DocumentsView({
           "coverSenderContact",
           docs.coverSenderContact,
         ),
+        coverSheetProfessionalTitle: value(
+          "coverSheetProfessionalTitle",
+          docs.coverSheetProfessionalTitle,
+        ),
+        coverSheetContactVisibility: docs.coverSheetContactVisibility,
         coverRecipientAddress: value(
           "coverRecipientAddress",
           docs.coverRecipientAddress,
@@ -892,6 +954,11 @@ export function DocumentsView({
         emailAttachmentNote: value(
           "emailAttachmentNote",
           "",
+        ),
+        emailAttachmentMode: docs.emailAttachmentMode,
+        emailPackageFileName: value(
+          "emailPackageFileName",
+          docs.emailPackageFileName,
         ),
         showCoverLetterAttachments: docs.showCoverLetterAttachments,
         documentListSettings: docs.documentListSettings,
@@ -1042,6 +1109,15 @@ export function DocumentsView({
             {tab === "deckblatt" && (
               <div className="cover-letter-editor-sections">
                 <label className="field">
+                  <span>Berufsbezeichnung auf dem Deckblatt</span>
+                  <input
+                    name="coverSheetProfessionalTitle"
+                    defaultValue={coverSheetProfessionalTitle}
+                    placeholder="z. B. Sachbearbeitung / Kundenservice"
+                  />
+                  <small>Nur diese Bewerbung wird geändert; das Masterprofil bleibt unverändert.</small>
+                </label>
+                <label className="field">
                   <span>Kurzprofil auf dem Deckblatt</span>
                   <textarea
                     name="deckblattStatement"
@@ -1053,6 +1129,37 @@ export function DocumentsView({
                 <section className="cover-letter-editor-section">
                   <header><b>Bewerbungsunterlagen</b><small>Nur ausgewählte, sichtbare Dokumente erscheinen auf dem Deckblatt.</small></header>
                   <DocumentListEditor items={applicationDocumentItems} onChange={updateDocumentListItem} />
+                </section>
+                <section className="cover-letter-editor-section">
+                  <header><b>Kontakt auf dem Deckblatt</b><small>Felder unabhängig vom Lebenslauf ein- oder ausblenden.</small></header>
+                  <div className="visibility-checkbox-grid">
+                    {([
+                      ["address", "Adresse"],
+                      ["phone", "Telefon"],
+                      ["email", "E-Mail"],
+                      ["linkedin", "LinkedIn"],
+                      ["github", "GitHub"],
+                      ["website", "Website"],
+                    ] as const).map(([key, label]) => (
+                      <label className="checkbox-field compact" key={key}>
+                        <input
+                          type="checkbox"
+                          checked={docs.coverSheetContactVisibility[key]}
+                          onChange={(event) => setDocumentPreview({
+                            applicationId: application.id,
+                            documents: {
+                              ...docs,
+                              coverSheetContactVisibility: {
+                                ...docs.coverSheetContactVisibility,
+                                [key]: event.target.checked,
+                              },
+                            },
+                          })}
+                        />
+                        <span>{label}</span>
+                      </label>
+                    ))}
+                  </div>
                 </section>
               </div>
             )}
@@ -1236,12 +1343,23 @@ export function DocumentsView({
                   />
                 </label>
                 <section className="cover-letter-editor-section">
-                  <header><b>Anlagen</b><small>Namen ändern, Einträge ausblenden oder entfernen</small></header>
-                  <DocumentListEditor
-                    items={applicationDocumentItems}
-                    onChange={updateDocumentListItem}
-                  />
+                  <header><b>Anlagen</b><small>Die Liste wird aus dem tatsächlichen Versandmodus erzeugt.</small></header>
+                  <div className="segmented-design-control">
+                    <button className={docs.emailAttachmentMode === "package" ? "selected" : ""} type="button" onClick={() => setDocumentPreview({ applicationId: application.id, documents: { ...docs, emailAttachmentMode: "package" } })}>Gesamt-PDF</button>
+                    <button className={docs.emailAttachmentMode === "separate" ? "selected" : ""} type="button" onClick={() => setDocumentPreview({ applicationId: application.id, documents: { ...docs, emailAttachmentMode: "separate" } })}>Einzeldateien</button>
+                  </div>
+                  {docs.emailAttachmentMode === "package" ? (
+                    <label className="field">
+                      <span>Dateiname</span>
+                      <input name="emailPackageFileName" defaultValue={docs.emailPackageFileName} />
+                    </label>
+                  ) : (
+                    <DocumentListEditor items={applicationDocumentItems} onChange={updateDocumentListItem} />
+                  )}
                 </section>
+                {email.warnings.length ? (
+                  <p className="resume-sections-warning" role="status">{email.warnings.join(" ")}</p>
+                ) : null}
                 <p className="word-sync-note">
                   Beim Speichern werden Email/Email.md und email.json im
                   Bewerbungsordner aktualisiert.
@@ -1404,7 +1522,7 @@ export function DocumentsView({
                         aria-label="Seitenränder"
                         type="range"
                         min="1"
-                        max="5"
+                        max="10"
                         step="1"
                         value={design.settings.marginLevel}
                         onChange={(event) =>
@@ -1423,6 +1541,22 @@ export function DocumentsView({
                     </label>
                     <label className="design-range">
                       <span>
+                        Innenabstand
+                        <b>{design.settings.paddingLevel}</b>
+                      </span>
+                      <input
+                        aria-label="Innenabstand"
+                        type="range"
+                        min="1"
+                        max="10"
+                        step="1"
+                        value={design.settings.paddingLevel}
+                        onChange={(event) => updateDesignSetting("paddingLevel", Number(event.target.value) as DocumentDesignSettings["paddingLevel"])}
+                      />
+                      <small><i>kompakt</i><i>luftig</i></small>
+                    </label>
+                    <label className="design-range">
+                      <span>
                         Abschnittsabstand
                         <b>{design.settings.sectionSpacingLevel}</b>
                       </span>
@@ -1430,7 +1564,7 @@ export function DocumentsView({
                         aria-label="Abschnittsabstand"
                         type="range"
                         min="1"
-                        max="5"
+                        max="10"
                         step="1"
                         value={design.settings.sectionSpacingLevel}
                         onChange={(event) =>
@@ -1456,7 +1590,7 @@ export function DocumentsView({
                         aria-label="Zeilenhöhe"
                         type="range"
                         min="1"
-                        max="5"
+                        max="10"
                         step="1"
                         value={design.settings.lineHeightLevel}
                         onChange={(event) =>
@@ -1474,6 +1608,42 @@ export function DocumentsView({
                       </small>
                     </label>
                   </div>
+                  <div className="document-color-controls extended">
+                    {([
+                      ["textColor", "Lesetext"],
+                      ["headingColor", "Überschriften"],
+                      ["lineColor", "Linien"],
+                      ["backgroundColor", "Hintergrund"],
+                    ] as const).map(([key, label]) => (
+                      <label key={key}>
+                        <span>{label}</span>
+                        <input type="color" value={design.settings[key]} onChange={(event) => updateDesignSetting(key, event.target.value)} />
+                      </label>
+                    ))}
+                  </div>
+                  {!textContrastIsReadable ? (
+                    <p className="resume-sections-warning" role="status">Der Kontrast zwischen Lesetext und Hintergrund ist zu niedrig. Für professionelle Lesbarkeit bitte eine hellere oder dunklere Textfarbe wählen.</p>
+                  ) : null}
+                  <div className="advanced-design-grid">
+                    <label className="design-range">
+                      <span>Hintergrundintensität <b>{design.settings.backgroundShadeLevel}</b></span>
+                      <input aria-label="Hintergrundintensität" type="range" min="1" max="10" step="1" value={design.settings.backgroundShadeLevel} onChange={(event) => updateDesignSetting("backgroundShadeLevel", Number(event.target.value) as DocumentDesignSettings["backgroundShadeLevel"])} />
+                      <small><i>sehr hell</i><i>dunkel</i></small>
+                    </label>
+                    <label className="field">
+                      <span>Hintergrund anwenden auf</span>
+                      <select value={design.settings.backgroundScope} onChange={(event) => updateDesignSetting("backgroundScope", event.target.value as DocumentDesignSettings["backgroundScope"])}>
+                        <option value="page">Komplette Seite</option>
+                        <option value="sidebar">Sidebar</option>
+                        <option value="header">Header</option>
+                        <option value="sections">Abschnitte</option>
+                      </select>
+                    </label>
+                  </div>
+                  <label className="design-print-toggle">
+                    <input type="checkbox" checked={design.settings.syncAcrossDocuments} onChange={(event) => updateDesignSetting("syncAcrossDocuments", event.target.checked)} />
+                    <span>Auf alle Bewerbungsunterlagen anwenden</span>
+                  </label>
                   <div className="design-option-group">
                     <span>Schriftgröße</span>
                     <div className="segmented-design-control">
@@ -1664,10 +1834,13 @@ export function DocumentsView({
                     onClick={() =>
                       setDesign((current) => ({
                         ...current,
-                        settings: defaultDocumentDesign,
+                        settings: {
+                          ...defaultDocumentDesign,
+                          ...(template.designDefaults ?? {}),
+                        },
                       }))
                     }>
-                    Designwerte zurücksetzen
+                    Auf Standard zurücksetzen
                   </button>
                 </section>
                 <label className="field">
@@ -1781,7 +1954,7 @@ export function DocumentsView({
                 </section>
                 <section className="deckblatt-preview__identity">
                   <h2>{name}</h2>
-                  {profile?.title ? <p>{profile.title}</p> : null}
+                  {coverSheetProfessionalTitle ? <p>{coverSheetProfessionalTitle}</p> : null}
                   {docs.deckblattStatement || profile?.summary ? (
                     <p className="deckblatt-preview__statement">
                       {docs.deckblattStatement || profile?.summary}
@@ -1947,7 +2120,7 @@ export function DocumentsView({
             </div>
           )}
           {tab === "lebenslauf" &&
-            resumePlan.map((plan) => (
+            ((renderProfile) => resumePlan.map((plan) => (
               <div
                 className={`document-paper document-lebenslauf layout-${template.layout} ${designClassName}`}
                 key={plan.pageNumber}
@@ -2140,7 +2313,7 @@ export function DocumentsView({
                   />
                 )}
               </div>
-            ))}
+            )))(resumeRenderProfile)}
         </main>
       </section>
     </div>

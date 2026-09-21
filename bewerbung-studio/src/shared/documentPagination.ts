@@ -246,9 +246,17 @@ export const createResumePagePlan = (
   ];
 };
 
-export const getLetterPageStatus = (
-  documents: DocumentDraft,
-): LetterPageStatus => {
+export const getLetterPageStatus = <T extends Pick<
+    DocumentDraft,
+    | "coverSubject"
+    | "coverIntroduction"
+    | "coverMainBody"
+    | "coverMotivation"
+    | "coverQualification"
+    | "coverCompanyFit"
+    | "coverExtraParagraph"
+    | "coverClosing"
+  >>(documents: T): LetterPageStatus => {
   const characterCount = [
     documents.coverSubject,
     documents.coverIntroduction,

@@ -28,6 +28,10 @@ import {
   type EditableResumeSectionTitle,
 } from "../features/resume-sections/resume-sections";
 import {
+  defaultResumePersonalFieldVisibility,
+  defaultResumeSectionInstances,
+} from "../features/resume-sections/resume-section-system";
+import {
   cloneKnowledgeCategory,
   ensureKnowledgeSection,
   syncLegacySkills,
@@ -90,6 +94,10 @@ const newProfile = (): ApplicantProfile => ({
   resumeSections: defaultSections,
   resumeSectionLayout: [],
   resumeSectionLayouts: {},
+  resumeSemanticSections: defaultResumeSectionInstances(),
+  resumePersonalFieldVisibility: { ...defaultResumePersonalFieldVisibility },
+  resumeKnowledgeGroups: [],
+  resumeClosing: { showPlace: true, showDate: true, showSignature: true },
   updatedAt: new Date().toISOString(),
 });
 

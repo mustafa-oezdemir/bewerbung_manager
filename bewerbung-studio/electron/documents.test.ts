@@ -546,8 +546,8 @@ describe("Lebenslauf-Dokumente", () => {
       "lebenslauf",
     );
 
-    expect(html).toContain("--doc-margin:23mm");
-    expect(html).toContain("--section-gap:3.5mm");
+    expect(html).toContain("--doc-margin:17mm");
+    expect(html).toContain("--section-gap:2.5mm");
     expect(html).toContain("--body-size:10pt");
     expect(html).toContain("column-timeline");
     expect(html).toContain("background-dots");

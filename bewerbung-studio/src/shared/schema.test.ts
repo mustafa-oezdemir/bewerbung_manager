@@ -53,7 +53,9 @@ describe("BewerbungsManager schemas", () => {
       expect(result.data.secondaryColor).toBe("#244766");
       expect(result.data.designSettings.columnLayout).toBe("template");
       expect(result.data.designSettings.resumeOutputMode).toBe("visual");
-      expect(result.data.designSettings.marginLevel).toBe(3);
+      expect(result.data.designSettings.marginLevel).toBe(5);
+      expect(result.data.designSettings.paddingLevel).toBe(5);
+      expect(result.data.designSettings.syncAcrossDocuments).toBe(true);
       expect(result.data.job.reference).toBe("DEV-2026-17");
     }
   });
@@ -217,6 +219,15 @@ describe("BewerbungsManager schemas", () => {
     });
     expect(profile.applicationPlace).toBe("");
     expect(profile.applicationDate).toBe("");
+    expect(profile.resumeSemanticSections).toEqual([]);
+    expect(profile.resumePersonalFieldVisibility.email).toBe(true);
+    expect(profile.resumePersonalFieldVisibility.birthDate).toBe(false);
+    expect(profile.resumeKnowledgeGroups).toEqual([]);
+    expect(profile.resumeClosing).toEqual({
+      showPlace: true,
+      showDate: true,
+      showSignature: true,
+    });
   });
 
   it("keeps independent strengths and editable resume section titles", () => {

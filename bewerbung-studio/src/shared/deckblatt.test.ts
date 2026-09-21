@@ -75,6 +75,18 @@ describe("Deckblatt data", () => {
     ).toEqual(["React", "Node.js", "TypeScript"]);
   });
 
+  it("hides only the contact fields disabled for the cover sheet", () => {
+    const contacts = getDeckblattContacts(profile, {
+      address: false,
+      phone: true,
+      email: true,
+      linkedin: false,
+      github: false,
+      website: false,
+    });
+    expect(contacts.map((contact) => contact.label)).toEqual(["Telefon", "E-Mail"]);
+  });
+
   it("lists only attachments selected for the application in package order", () => {
     expect(
       getDeckblattDocuments(

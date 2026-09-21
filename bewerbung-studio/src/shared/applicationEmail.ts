@@ -1,7 +1,7 @@
 import { formatApplicationDate } from "./applicationDate";
 import { applicationGreeting } from "./applicationContacts";
 import { createCoverSubject } from "./coverLetter";
-import type { ApplicantProfile, Application } from "./schema";
+import type { ApplicantProfile, Application, DocumentDraft } from "./schema";
 
 const contactName = (contact: Application["contact"]) =>
   [contact.salutation, contact.firstName, contact.lastName]
@@ -12,8 +12,29 @@ export const defaultApplicationEmail = (
   application: Pick<Application, "company" | "job">,
 ) => ({
   emailSubject: createCoverSubject(application.job.title),
-  emailMessage: `anbei übersende ich Ihnen meine Bewerbung für die ausgeschriebene Position als ${application.job.title.replace(/^Bewerbung\s+als\s+/i, "")} bei ${application.company.name}.`,
+  emailMessage: `anbei übersende ich Ihnen meine Bewerbung für die ausgeschriebene Position als ${application.job.title.replace(/^Bewerbung\s+als\s+/i, "")} bei ${application.company.name}.\n\nMeine vollständigen Bewerbungsunterlagen finden Sie im beigefügten PDF.`,
 });
+
+export const resolveApplicationEmailAttachments = (
+  documents: Pick<DocumentDraft, "emailAttachmentMode" | "emailPackageFileName">,
+  visibleDocuments: readonly string[],
+) => documents.emailAttachmentMode === "package"
+  ? [documents.emailPackageFileName.trim() || "Bewerbungsunterlagen.pdf"]
+  : visibleDocuments.map((item) => /\.pdf$/i.test(item) ? item : `${item}.pdf`);
+
+export const validateEmailClosingDuplication = (message: string, closing: string) => {
+  const combined = `${message} ${closing}`.toLocaleLowerCase("de-DE");
+  const personalPhrase = "persönlich(?:e|en|es|em|er)?";
+  const hasExchange = new RegExp(`${personalPhrase}\\s+austausch`).test(combined);
+  const conversationMatches = combined.match(
+    new RegExp(`${personalPhrase}\\s+gespräch`, "g"),
+  )?.length ?? 0;
+  return hasExchange && conversationMatches
+    ? ["Die Abschlussformulierung wiederholt den Wunsch nach einem persönlichen Austausch/Gespräch."]
+    : conversationMatches > 1
+      ? ["Die Formulierung zum persönlichen Gespräch kommt mehrfach vor."]
+      : [];
+};
 
 export const getApplicationEmail = (
   application: Pick<
@@ -46,7 +67,7 @@ export const getApplicationEmail = (
       : "",
     senderEmail: profile?.email ?? "",
     salutation: applicationGreeting(application),
-    closing: "Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.",
+    closing: "Für Rückfragen stehe ich Ihnen gerne zur Verfügung. Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.",
     greeting: "Mit freundlichen Grüßen",
     subject: createCoverSubject(
       application.job.title,
@@ -55,6 +76,10 @@ export const getApplicationEmail = (
     message,
     attachments: Array.from(new Set(attachments.map((item) => item.trim()).filter(Boolean))),
     body: message.trim(),
+    warnings: validateEmailClosingDuplication(
+      message,
+      "Für Rückfragen stehe ich Ihnen gerne zur Verfügung. Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.",
+    ),
   };
 };
 
