@@ -6557,8 +6557,8 @@ var defaultApplicationEmail = (application) => ({
 	emailGreeting: "Mit freundlichen Grüßen"
 });
 var resolveApplicationEmailAttachments = (documents, visibleDocuments) => documents.emailAttachmentMode === "package" ? [documents.emailPackageFileName.trim() || "Bewerbungsunterlagen.pdf"] : visibleDocuments.map((item) => /\.pdf$/i.test(item) ? item : `${item}.pdf`);
-var validateEmailClosingDuplication = (message) => {
-	const combined = message.toLocaleLowerCase("de-DE");
+var validateEmailClosingDuplication = (message, closing = "Für Rückfragen stehe ich Ihnen gerne zur Verfügung. Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.") => {
+	const combined = `${message} ${closing}`.toLocaleLowerCase("de-DE");
 	const personalPhrase = "persönlich(?:e|en|es|em|er)?";
 	const hasExchange = new RegExp(`${personalPhrase}\\s+austausch`).test(combined);
 	const conversationMatches = combined.match(new RegExp(`${personalPhrase}\\s+gespräch`, "g"))?.length ?? 0;
@@ -6571,6 +6571,7 @@ var getApplicationEmail = (application, profile, attachments = []) => {
 	const recipient = [application.contact, ...application.additionalContacts].find((contact) => Boolean(contact.email || contact.firstName || contact.lastName)) ?? application.contact;
 	const message = application.documents.emailMessage?.trim() || defaults.emailMessage;
 	const greeting = defaults.emailGreeting;
+	const closing = "Für Rückfragen stehe ich Ihnen gerne zur Verfügung. Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.";
 	const resolvedAttachments = Array.from(new Set(attachments.map((item) => item.trim()).filter(Boolean)));
 	return {
 		applicationDate: formatApplicationDate(application),
@@ -6585,8 +6586,9 @@ var getApplicationEmail = (application, profile, attachments = []) => {
 		message,
 		body: message,
 		greeting,
+		closing,
 		attachments: resolvedAttachments,
-		warnings: validateEmailClosingDuplication(message)
+		warnings: validateEmailClosingDuplication(message, closing)
 	};
 };
 var buildApplicationEmailMarkdown = (application, profile, attachments = []) => {
@@ -6611,12 +6613,13 @@ var buildApplicationEmailMarkdown = (application, profile, attachments = []) => 
 		"",
 		email.body,
 		"",
+		email.closing,
+		"",
 		email.greeting,
 		"",
 		email.senderName
 	];
 	const attachmentSection = email.attachments.length ? [
-		"",
 		"## Anlagen",
 		"",
 		...email.attachments.map((attachment) => `- ${attachment}`)

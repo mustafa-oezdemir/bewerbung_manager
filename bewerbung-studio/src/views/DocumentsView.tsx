@@ -27,6 +27,7 @@ import {
 import { TemplateThumbnail } from "../components/TemplateThumbnail";
 import { KnowledgeSectionRenderer } from "../components/document/KnowledgeSectionRenderer";
 import { DocumentBackgroundLayer } from "../components/document/DocumentBackgroundLayer";
+import { ResizableSplitView } from "../components/layout/ResizableSplitView";
 import { ResumeDataEditor } from "../components/resume/ResumeDataEditor";
 import { ResumeSectionsPanel } from "../components/resume/ResumeSectionsPanel";
 import { ElegantResume } from "../components/resume/templates/elegant";
@@ -1049,8 +1050,13 @@ export function DocumentsView({
           </button>
         </div>
       </section>
-      <section className="document-layout">
-        <aside className="document-editor surface">
+      <ResizableSplitView
+        className="document-layout"
+        minPrimary={500}
+        minSecondary={450}
+        persistKey="resume-editor-layout"
+        primary={
+          <aside className="document-editor surface">
           <div className="document-tabs">
             <button
               className={tab === "deckblatt" ? "active" : ""}
@@ -2121,8 +2127,10 @@ export function DocumentsView({
                 : "Texte speichern"}
             </button>
           </form>
-        </aside>
-        <main
+          </aside>
+        }
+        secondary={
+          <main
           className="paper-stage"
           ref={paperStageRef}
           style={
@@ -2566,8 +2574,9 @@ export function DocumentsView({
                   )}
                 </div>
               )))(resumeRenderProfile)}
-        </main>
-      </section>
+          </main>
+        }
+      />
     </div>
   );
 }
