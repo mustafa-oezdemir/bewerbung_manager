@@ -192,11 +192,9 @@ describe("application email", () => {
   it("warns when the editable message duplicates the fixed closing", () => {
     expect(validateEmailClosingDuplication(
       "Ich freue mich auf ein persönliches Gespräch.",
-      "Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.",
     )).toHaveLength(1);
     expect(validateEmailClosingDuplication(
       "Die Unterlagen finden Sie im Anhang.",
-      "Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.",
     )).toEqual([]);
   });
 });

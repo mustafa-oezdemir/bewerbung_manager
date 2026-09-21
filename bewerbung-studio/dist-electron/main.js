@@ -2224,6 +2224,9 @@ function handlePipeResult(left, next, ctx) {
 		fallback: left.fallback
 	}, ctx);
 }
+var $ZodPreprocess = /*@__PURE__*/ $constructor("$ZodPreprocess", (inst, def) => {
+	$ZodPipe.init(inst, def);
+});
 var $ZodReadonly = /*@__PURE__*/ $constructor("$ZodReadonly", (inst, def) => {
 	$ZodType.init(inst, def);
 	defineLazy(inst._zod, "propValues", () => def.innerType._zod.propValues);
@@ -4219,6 +4222,10 @@ function pipe(in_, out) {
 		out
 	});
 }
+var ZodPreprocess = /*@__PURE__*/ $constructor("ZodPreprocess", (inst, def) => {
+	ZodPipe.init(inst, def);
+	$ZodPreprocess.init(inst, def);
+});
 var ZodReadonly = /*@__PURE__*/ $constructor("ZodReadonly", (inst, def) => {
 	$ZodReadonly.init(inst, def);
 	ZodType.init(inst, def);
@@ -4241,6 +4248,13 @@ function refine(fn, _params = {}) {
 }
 function superRefine(fn, params) {
 	return /* @__PURE__ */ _superRefine(fn, params);
+}
+function preprocess(fn, schema) {
+	return new ZodPreprocess({
+		type: "pipe",
+		in: transform(fn),
+		out: schema
+	});
 }
 //#endregion
 //#region src/shared/documentDesign.ts
@@ -4270,6 +4284,12 @@ var fontSizeIds = [
 	"large"
 ];
 var resumeOutputModes = ["visual", "ats"];
+var documentBackgroundScopes = [
+	"page",
+	"sidebar",
+	"header",
+	"sections"
+];
 var columnLayoutIds = [
 	"template",
 	"single",
@@ -4299,16 +4319,24 @@ var documentBackgroundIds = [
 	"classic-soft-blue-waves"
 ];
 var defaultDocumentDesign = {
-	marginLevel: 3,
-	sectionSpacingLevel: 3,
+	marginLevel: 5,
+	paddingLevel: 5,
+	sectionSpacingLevel: 5,
 	fontSize: "medium",
-	lineHeightLevel: 3,
+	lineHeightLevel: 5,
+	backgroundShadeLevel: 1,
 	fontId: "source-sans",
 	headingFontId: "source-sans",
 	columnLayout: "template",
 	resumeOutputMode: "visual",
 	backgroundId: "white",
-	showBackgroundInPrint: true
+	backgroundScope: "page",
+	textColor: "#142235",
+	headingColor: "#0b3d86",
+	lineColor: "#b8c3d0",
+	backgroundColor: "#ffffff",
+	showBackgroundInPrint: true,
+	syncAcrossDocuments: true
 };
 var documentFonts = [
 	{
@@ -4473,47 +4501,94 @@ var programmingLanguageBackgroundTokens = [
 	"PHP"
 ];
 var marginLevelToMm = {
-	1: 11,
-	2: 14,
-	3: 17,
-	4: 20,
-	5: 23
+	1: 9,
+	2: 11,
+	3: 13,
+	4: 15,
+	5: 17,
+	6: 18.5,
+	7: 20,
+	8: 21.5,
+	9: 23,
+	10: 25
+};
+var paddingLevelToMm = {
+	1: 1.5,
+	2: 2,
+	3: 2.5,
+	4: 3,
+	5: 3.5,
+	6: 4,
+	7: 4.5,
+	8: 5,
+	9: 5.5,
+	10: 6
 };
 var compactWordMarginLevelToMm = {
 	1: {
-		vertical: 10,
-		horizontal: 13
+		vertical: 8,
+		horizontal: 10
 	},
 	2: {
+		vertical: 9,
+		horizontal: 11
+	},
+	3: {
+		vertical: 10,
+		horizontal: 12
+	},
+	4: {
 		vertical: 11,
 		horizontal: 14
 	},
-	3: {
+	5: {
 		vertical: 12,
 		horizontal: 15
 	},
-	4: {
+	6: {
+		vertical: 13,
+		horizontal: 16
+	},
+	7: {
+		vertical: 14,
+		horizontal: 17
+	},
+	8: {
 		vertical: 15,
 		horizontal: 18
 	},
-	5: {
-		vertical: 18,
-		horizontal: 21
+	9: {
+		vertical: 17,
+		horizontal: 20
+	},
+	10: {
+		vertical: 19,
+		horizontal: 22
 	}
 };
 var sectionSpacingLevelToMm = {
-	1: 3.5,
-	2: 4.5,
-	3: 5.5,
-	4: 7,
-	5: 8.5
+	1: 2.5,
+	2: 3.2,
+	3: 3.8,
+	4: 4.5,
+	5: 5.5,
+	6: 6.2,
+	7: 7,
+	8: 7.8,
+	9: 8.6,
+	10: 9.5
 };
 var lineHeightLevelToValue = {
-	1: 1.2,
-	2: 1.3,
-	3: 1.4,
-	4: 1.52,
-	5: 1.65
+	1: 1,
+	2: 1.05,
+	3: 1.1,
+	4: 1.15,
+	5: 1.2,
+	6: 1.26,
+	7: 1.32,
+	8: 1.38,
+	9: 1.44,
+	10: 1.5
 };
 var fontSizeToPt = {
 	small: 8.4,
@@ -4521,6 +4596,461 @@ var fontSizeToPt = {
 	large: 10
 };
 var getDocumentFont = (id) => documentFonts.find((font) => font.id === id) ?? documentFonts.find((font) => font.id === "source-sans") ?? documentFonts[0];
+//#endregion
+//#region src/features/resume-sections/knowledge-block-registry.ts
+var resumeBlockRendererTypes = [
+	"bullet-list",
+	"text-list",
+	"icon-list",
+	"skill-level",
+	"tag-list",
+	"timeline",
+	"certificate-list",
+	"project-highlight",
+	"language-level",
+	"two-column-list",
+	"compact-grid"
+];
+var resumeKnowledgeSlots = [
+	"sidebar",
+	"main",
+	"full"
+];
+var listRenderers = [
+	"bullet-list",
+	"text-list",
+	"icon-list",
+	"tag-list",
+	"two-column-list",
+	"compact-grid"
+];
+var resumeBlockRegistry = [
+	{
+		id: "core-competencies",
+		title: "Kernkompetenzen",
+		category: "Empfohlen",
+		defaultRenderer: "bullet-list",
+		allowedRenderers: listRenderers,
+		preferredSlot: "sidebar"
+	},
+	{
+		id: "technical-focus",
+		title: "Technische Schwerpunkte",
+		category: "Empfohlen",
+		defaultRenderer: "icon-list",
+		allowedRenderers: listRenderers,
+		preferredSlot: "sidebar"
+	},
+	{
+		id: "strengths",
+		title: "Stärken",
+		category: "Empfohlen",
+		defaultRenderer: "bullet-list",
+		allowedRenderers: listRenderers,
+		preferredSlot: "sidebar"
+	},
+	{
+		id: "professional-knowledge",
+		title: "Fachliche Kenntnisse",
+		category: "Fachlich",
+		defaultRenderer: "bullet-list",
+		allowedRenderers: listRenderers,
+		preferredSlot: "sidebar"
+	},
+	{
+		id: "it-knowledge",
+		title: "IT-Kenntnisse",
+		category: "Fachlich",
+		defaultRenderer: "icon-list",
+		allowedRenderers: listRenderers,
+		preferredSlot: "sidebar"
+	},
+	{
+		id: "software-knowledge",
+		title: "Softwarekenntnisse",
+		category: "Fachlich",
+		defaultRenderer: "skill-level",
+		allowedRenderers: resumeBlockRendererTypes,
+		preferredSlot: "sidebar"
+	},
+	{
+		id: "tools",
+		title: "Tools",
+		category: "Fachlich",
+		defaultRenderer: "tag-list",
+		allowedRenderers: listRenderers,
+		preferredSlot: "sidebar"
+	},
+	{
+		id: "technologies",
+		title: "Technologien",
+		category: "Fachlich",
+		defaultRenderer: "tag-list",
+		allowedRenderers: listRenderers,
+		preferredSlot: "sidebar"
+	},
+	{
+		id: "methods",
+		title: "Methoden",
+		category: "Fachlich",
+		defaultRenderer: "bullet-list",
+		allowedRenderers: listRenderers,
+		preferredSlot: "sidebar"
+	},
+	{
+		id: "languages",
+		title: "Sprachen",
+		category: "Empfohlen",
+		defaultRenderer: "language-level",
+		allowedRenderers: [
+			"language-level",
+			"text-list",
+			"skill-level"
+		],
+		preferredSlot: "sidebar"
+	},
+	{
+		id: "certificates",
+		title: "Zertifikate",
+		category: "Fachlich",
+		defaultRenderer: "certificate-list",
+		allowedRenderers: [
+			"certificate-list",
+			"text-list",
+			"compact-grid"
+		],
+		preferredSlot: "main"
+	},
+	{
+		id: "training",
+		title: "Weiterbildungen",
+		category: "Karriere",
+		defaultRenderer: "certificate-list",
+		allowedRenderers: [
+			"certificate-list",
+			"timeline",
+			"text-list",
+			"compact-grid"
+		],
+		preferredSlot: "main"
+	},
+	{
+		id: "project-highlight",
+		title: "Projekt-Highlight",
+		category: "Karriere",
+		defaultRenderer: "project-highlight",
+		allowedRenderers: [
+			"project-highlight",
+			"text-list",
+			"compact-grid"
+		],
+		preferredSlot: "main",
+		requiresMainColumn: true,
+		allowMultiple: true
+	},
+	{
+		id: "projects",
+		title: "Projekte",
+		category: "Karriere",
+		defaultRenderer: "project-highlight",
+		allowedRenderers: [
+			"project-highlight",
+			"timeline",
+			"text-list"
+		],
+		preferredSlot: "main",
+		requiresMainColumn: true
+	},
+	{
+		id: "soft-skills",
+		title: "Soft Skills",
+		category: "Persönlich",
+		defaultRenderer: "tag-list",
+		allowedRenderers: listRenderers,
+		preferredSlot: "sidebar"
+	},
+	{
+		id: "hard-skills",
+		title: "Hard Skills",
+		category: "Fachlich",
+		defaultRenderer: "tag-list",
+		allowedRenderers: listRenderers,
+		preferredSlot: "sidebar"
+	},
+	{
+		id: "industry-knowledge",
+		title: "Branchenkenntnisse",
+		category: "Fachlich",
+		defaultRenderer: "bullet-list",
+		allowedRenderers: listRenderers,
+		preferredSlot: "sidebar"
+	},
+	{
+		id: "driving-license",
+		title: "Führerschein",
+		category: "Persönlich",
+		defaultRenderer: "text-list",
+		allowedRenderers: ["text-list", "icon-list"],
+		preferredSlot: "sidebar"
+	},
+	{
+		id: "volunteering",
+		title: "Ehrenamt",
+		category: "Persönlich",
+		defaultRenderer: "timeline",
+		allowedRenderers: ["timeline", "text-list"],
+		preferredSlot: "main"
+	},
+	{
+		id: "publications",
+		title: "Publikationen",
+		category: "Karriere",
+		defaultRenderer: "text-list",
+		allowedRenderers: ["text-list", "certificate-list"],
+		preferredSlot: "main"
+	},
+	{
+		id: "awards",
+		title: "Auszeichnungen",
+		category: "Karriere",
+		defaultRenderer: "certificate-list",
+		allowedRenderers: ["certificate-list", "text-list"],
+		preferredSlot: "main"
+	},
+	{
+		id: "other-knowledge",
+		title: "Sonstige Kenntnisse",
+		category: "Persönlich",
+		defaultRenderer: "bullet-list",
+		allowedRenderers: listRenderers,
+		preferredSlot: "sidebar"
+	}
+];
+var oneColumnSlots = [{
+	id: "main",
+	label: "Hauptbereich",
+	supportsFullWidth: false
+}];
+var twoColumnSlots = [
+	{
+		id: "sidebar",
+		label: "Linke Spalte / Seitenleiste",
+		supportsFullWidth: false
+	},
+	{
+		id: "main",
+		label: "Rechte Spalte / Hauptbereich",
+		supportsFullWidth: false
+	},
+	{
+		id: "full",
+		label: "Volle Breite",
+		supportsFullWidth: true
+	}
+];
+var twoColumnTemplateIds = /* @__PURE__ */ new Set([
+	"pehlione_white_blue",
+	"zweispaltig",
+	"gepflegt",
+	"modern",
+	"elegant",
+	"zeitgenoessisch",
+	"kreativ"
+]);
+var getTemplateKnowledgeSlots = (templateId) => twoColumnTemplateIds.has(templateId) ? twoColumnSlots : oneColumnSlots;
+var getResumeBlockDefinition = (semanticType) => resumeBlockRegistry.find((definition) => definition.id === semanticType);
+var resolveKnowledgeSlot = (templateId, semanticType, slot) => {
+	const available = getTemplateKnowledgeSlots(templateId).map((item) => item.id);
+	const definition = getResumeBlockDefinition(semanticType);
+	if (definition?.requiresMainColumn && slot === "sidebar") return "main";
+	if (slot && available.includes(slot)) return slot;
+	if (definition && available.includes(definition.preferredSlot)) return definition.preferredSlot;
+	return available[0] ?? "main";
+};
+//#endregion
+//#region src/features/resume-sections/resume-section-system.ts
+var resumeSemanticTypes = [
+	"heading",
+	"personalData",
+	"photo",
+	"summary",
+	"career",
+	"education",
+	"knowledge",
+	"interests",
+	"closing"
+];
+var resumeSectionDefinitions = [
+	{
+		id: "heading",
+		semanticType: "heading",
+		defaultTitle: "Lebenslauf",
+		requirement: "required",
+		locked: true,
+		renamable: true,
+		hideable: false,
+		deletable: false
+	},
+	{
+		id: "personalData",
+		semanticType: "personalData",
+		defaultTitle: "Persönliche Daten",
+		requirement: "required",
+		locked: true,
+		renamable: true,
+		hideable: false,
+		deletable: false
+	},
+	{
+		id: "photo",
+		semanticType: "photo",
+		defaultTitle: "Bewerbungsfoto",
+		requirement: "optional",
+		locked: false,
+		renamable: false,
+		hideable: true,
+		deletable: true
+	},
+	{
+		id: "summary",
+		semanticType: "summary",
+		defaultTitle: "Kurzprofil",
+		requirement: "recommended",
+		locked: false,
+		renamable: true,
+		hideable: true,
+		deletable: false
+	},
+	{
+		id: "career",
+		semanticType: "career",
+		defaultTitle: "Beruflicher Werdegang",
+		requirement: "required",
+		locked: true,
+		renamable: true,
+		hideable: false,
+		deletable: false
+	},
+	{
+		id: "education",
+		semanticType: "education",
+		defaultTitle: "Bildungsweg",
+		requirement: "required",
+		locked: true,
+		renamable: true,
+		hideable: false,
+		deletable: false
+	},
+	{
+		id: "knowledge",
+		semanticType: "knowledge",
+		defaultTitle: "Besondere Kenntnisse",
+		requirement: "recommended",
+		locked: false,
+		renamable: true,
+		hideable: true,
+		deletable: false
+	},
+	{
+		id: "interests",
+		semanticType: "interests",
+		defaultTitle: "Interessen und Hobbys",
+		requirement: "optional",
+		locked: false,
+		renamable: true,
+		hideable: true,
+		deletable: true
+	},
+	{
+		id: "closing",
+		semanticType: "closing",
+		defaultTitle: "Ort, Datum und Unterschrift",
+		requirement: "recommended",
+		locked: false,
+		renamable: true,
+		hideable: true,
+		deletable: false
+	}
+];
+var defaultResumeSectionInstances = () => resumeSectionDefinitions.map((definition, order) => ({
+	semanticType: definition.semanticType,
+	customTitle: "",
+	visible: definition.requirement !== "optional",
+	enabled: definition.requirement !== "optional",
+	order
+}));
+var resolveResumeSectionInstances = (saved) => {
+	const byType = new Map(saved?.map((item) => [item.semanticType, item]));
+	return defaultResumeSectionInstances().map((fallback) => {
+		const definition = resumeSectionDefinitions.find((candidate) => candidate.semanticType === fallback.semanticType);
+		const current = byType.get(fallback.semanticType);
+		return {
+			...fallback,
+			...current,
+			visible: definition.requirement === "required" ? true : current?.visible ?? fallback.visible,
+			enabled: definition.requirement === "required" ? true : current?.enabled ?? fallback.enabled
+		};
+	}).sort((left, right) => left.order - right.order);
+};
+var getResumeSemanticSection = (saved, type) => resolveResumeSectionInstances(saved).find((item) => item.semanticType === type);
+var getResumeSemanticTitle = (saved, type) => {
+	const instance = getResumeSemanticSection(saved, type);
+	const definition = resumeSectionDefinitions.find((item) => item.semanticType === type);
+	return instance.customTitle.trim() || definition.defaultTitle;
+};
+var resumePersonalFieldKeys = [
+	"address",
+	"phone",
+	"email",
+	"linkedin",
+	"github",
+	"website",
+	"birthDate",
+	"birthPlace",
+	"nationality",
+	"drivingLicense",
+	"xing"
+];
+var defaultResumePersonalFieldVisibility = Object.fromEntries(resumePersonalFieldKeys.map((key) => [key, ![
+	"birthDate",
+	"birthPlace",
+	"nationality",
+	"drivingLicense",
+	"xing"
+].includes(key)]));
+var getDefaultKnowledgeGroups = (templateId) => {
+	return (templateId === "pehlione_white_blue" ? ["Kernkompetenzen", "Technische Schwerpunkte"] : templateId === "stilvoll" ? [
+		"Kenntnisse",
+		"Sprachen",
+		"Stärken"
+	] : ["Kenntnisse", "Sprachen"]).map((title, order) => {
+		const semanticType = title === "Kernkompetenzen" ? "core-competencies" : title === "Technische Schwerpunkte" ? "technical-focus" : title.toLocaleLowerCase("de-DE").replace(/\s+/g, "-");
+		return {
+			id: `default-${templateId}-${order}`,
+			title,
+			semanticType,
+			visible: true,
+			order,
+			items: [],
+			rendererType: order === 1 && templateId === "pehlione_white_blue" ? "icon-list" : "bullet-list",
+			slot: resolveKnowledgeSlot(templateId, semanticType, templateId === "pehlione_white_blue" ? "sidebar" : void 0),
+			slotOverrides: {},
+			pageBreakBefore: false
+		};
+	});
+};
+var resolveKnowledgeGroups = (templateId, saved) => {
+	if (saved?.length) return [...saved].map((group) => {
+		const definition = getResumeBlockDefinition(group.semanticType);
+		return {
+			...group,
+			rendererType: definition?.allowedRenderers.includes(group.rendererType) ? group.rendererType : definition?.defaultRenderer ?? group.rendererType,
+			slot: resolveKnowledgeSlot(templateId, group.semanticType, group.slotOverrides?.[templateId] ?? group.slot),
+			items: [...group.items].sort((left, right) => left.order - right.order)
+		};
+	}).sort((left, right) => left.order - right.order);
+	return getDefaultKnowledgeGroups(templateId);
+};
 //#endregion
 //#region src/features/knowledge/knowledge.constants.ts
 var knowledgeLevelLabels = {
@@ -4933,6 +5463,22 @@ var documentDraftSchema = object({
 	coverSenderName: optionalText,
 	coverSenderTitle: optionalText,
 	coverSenderContact: optionalText,
+	coverSheetProfessionalTitle: optionalText,
+	coverSheetContactVisibility: record(_enum([
+		"address",
+		"phone",
+		"email",
+		"linkedin",
+		"github",
+		"website"
+	]), boolean()).default({
+		address: true,
+		phone: true,
+		email: true,
+		linkedin: true,
+		github: true,
+		website: true
+	}),
 	coverRecipientAddress: optionalText,
 	coverSubject: optionalText,
 	coverSubjectGapReduction: number().int().min(0).max(4).default(0),
@@ -4949,6 +5495,8 @@ var documentDraftSchema = object({
 	emailSubject: optionalText,
 	emailMessage: optionalText,
 	emailAttachmentNote: optionalText,
+	emailAttachmentMode: _enum(["package", "separate"]).default("package"),
+	emailPackageFileName: string().trim().min(1).default("Bewerbungsunterlagen.pdf"),
 	showCoverLetterAttachments: boolean().default(true),
 	documentListSettings: array(object({
 		key: string().trim().min(1),
@@ -4962,19 +5510,33 @@ var designLevelSchema = union([
 	literal(2),
 	literal(3),
 	literal(4),
-	literal(5)
+	literal(5),
+	literal(6),
+	literal(7),
+	literal(8),
+	literal(9),
+	literal(10)
 ]);
+var hexColorSchema = string().regex(/^#[0-9a-fA-F]{6}$/);
 var documentDesignSchema = object({
-	marginLevel: designLevelSchema,
-	sectionSpacingLevel: designLevelSchema,
+	marginLevel: designLevelSchema.default(defaultDocumentDesign.marginLevel),
+	paddingLevel: designLevelSchema.default(defaultDocumentDesign.paddingLevel),
+	sectionSpacingLevel: designLevelSchema.default(defaultDocumentDesign.sectionSpacingLevel),
 	fontSize: _enum(fontSizeIds),
-	lineHeightLevel: designLevelSchema,
+	lineHeightLevel: designLevelSchema.default(defaultDocumentDesign.lineHeightLevel),
+	backgroundShadeLevel: designLevelSchema.default(defaultDocumentDesign.backgroundShadeLevel),
 	fontId: _enum(documentFontIds),
 	headingFontId: _enum(documentFontIds),
 	columnLayout: _enum(columnLayoutIds),
 	resumeOutputMode: _enum(resumeOutputModes).default(defaultDocumentDesign.resumeOutputMode),
 	backgroundId: _enum(documentBackgroundIds),
-	showBackgroundInPrint: boolean()
+	backgroundScope: _enum(documentBackgroundScopes).default(defaultDocumentDesign.backgroundScope),
+	textColor: hexColorSchema.default(defaultDocumentDesign.textColor),
+	headingColor: hexColorSchema.default(defaultDocumentDesign.headingColor),
+	lineColor: hexColorSchema.default(defaultDocumentDesign.lineColor),
+	backgroundColor: hexColorSchema.default(defaultDocumentDesign.backgroundColor),
+	showBackgroundInPrint: boolean(),
+	syncAcrossDocuments: boolean().default(true)
 });
 var applicationSchema = object({
 	schemaVersion: literal(1),
@@ -5159,6 +5721,58 @@ var profileSchema = object({
 		type: _enum(resumeSectionTypes),
 		zone: _enum(sectionZones)
 	}))).default({}),
+	resumeSemanticSections: array(object({
+		semanticType: _enum(resumeSemanticTypes),
+		customTitle: optionalText,
+		visible: boolean().default(true),
+		enabled: boolean().default(true),
+		order: number().int().nonnegative()
+	})).default([]),
+	resumePersonalFieldVisibility: record(_enum(resumePersonalFieldKeys), boolean()).default(defaultResumePersonalFieldVisibility),
+	resumeKnowledgeGroups: array(object({
+		id: string().min(1),
+		title: string().trim().min(1),
+		semanticType: string().trim().min(1),
+		visible: boolean().default(true),
+		order: number().int().nonnegative(),
+		items: array(union([string(), object({
+			id: string().min(1),
+			text: optionalText,
+			description: optionalText,
+			icon: optionalText,
+			level: optionalText,
+			order: number().int().nonnegative(),
+			visible: boolean().default(true)
+		})])).transform((items) => items.map((item, order) => typeof item === "string" ? {
+			id: `legacy-${order}-${item.toLocaleLowerCase("de-DE").replace(/[^a-z0-9]+/g, "-")}`,
+			text: item,
+			description: "",
+			icon: "",
+			level: "",
+			order,
+			visible: true
+		} : item)).default([]),
+		rendererType: preprocess((value) => value === "list" ? "bullet-list" : value === "tags" ? "tag-list" : value, _enum(resumeBlockRendererTypes)).default("bullet-list"),
+		slot: _enum(resumeKnowledgeSlots).default("sidebar"),
+		slotOverrides: record(string(), _enum(resumeKnowledgeSlots)).default({}),
+		pageBreakBefore: boolean().default(false)
+	})).default([]),
+	resumeKnowledgeContainer: object({ showTitle: boolean().default(false) }).default({ showTitle: false }),
+	resumeColumnRatio: union([
+		literal(25),
+		literal(30),
+		literal(35),
+		literal(40)
+	]).default(30),
+	resumeClosing: object({
+		showPlace: boolean().default(true),
+		showDate: boolean().default(true),
+		showSignature: boolean().default(true)
+	}).default({
+		showPlace: true,
+		showDate: true,
+		showSignature: true
+	}),
 	updatedAt: datetime()
 });
 var calendarEventSchema = object({
@@ -5290,13 +5904,21 @@ var allTemplates = [
 		sidebarWidthRatio: .3,
 		atsInfo: "Der ATS-Modus entfernt die dekorative Sidebar und gibt alle Inhalte in klarer Textreihenfolge aus.",
 		designDefaults: {
-			marginLevel: 3,
-			sectionSpacingLevel: 3,
+			marginLevel: 5,
+			paddingLevel: 5,
+			sectionSpacingLevel: 5,
 			fontSize: "medium",
-			lineHeightLevel: 3,
+			lineHeightLevel: 5,
+			backgroundShadeLevel: 1,
 			columnLayout: "left-sidebar",
 			resumeOutputMode: "visual",
 			backgroundId: "white",
+			backgroundScope: "page",
+			textColor: "#142235",
+			headingColor: "#0B3D86",
+			lineColor: "#B8C3D0",
+			backgroundColor: "#FFFFFF",
+			syncAcrossDocuments: true,
 			fontId: "source-sans",
 			headingFontId: "source-sans"
 		}
@@ -5931,12 +6553,25 @@ var contactName = (contact) => [
 ].filter(Boolean).join(" ");
 var defaultApplicationEmail = (application) => ({
 	emailSubject: createCoverSubject(application.job.title),
-	emailMessage: `anbei übersende ich Ihnen meine Bewerbung für die ausgeschriebene Position als ${application.job.title.replace(/^Bewerbung\s+als\s+/i, "")} bei ${application.company.name}.`
+	emailMessage: `anbei übersende ich Ihnen meine Bewerbung für die ausgeschriebene Position als ${application.job.title.replace(/^Bewerbung\s+als\s+/i, "")} bei ${application.company.name}.`,
+	emailGreeting: "Mit freundlichen Grüßen"
 });
+var resolveApplicationEmailAttachments = (documents, visibleDocuments) => documents.emailAttachmentMode === "package" ? [documents.emailPackageFileName.trim() || "Bewerbungsunterlagen.pdf"] : visibleDocuments.map((item) => /\.pdf$/i.test(item) ? item : `${item}.pdf`);
+var validateEmailClosingDuplication = (message) => {
+	const combined = message.toLocaleLowerCase("de-DE");
+	const personalPhrase = "persönlich(?:e|en|es|em|er)?";
+	const hasExchange = new RegExp(`${personalPhrase}\\s+austausch`).test(combined);
+	const conversationMatches = combined.match(new RegExp(`${personalPhrase}\\s+gespräch`, "g"))?.length ?? 0;
+	if (hasExchange && conversationMatches) return ["Die Abschlussformulierung wiederholt den Wunsch nach einem persönlichen Austausch/Gespräch."];
+	if (conversationMatches > 1) return ["Die Formulierung zum persönlichen Gespräch kommt mehrfach vor."];
+	return [];
+};
 var getApplicationEmail = (application, profile, attachments = []) => {
 	const defaults = defaultApplicationEmail(application);
 	const recipient = [application.contact, ...application.additionalContacts].find((contact) => Boolean(contact.email || contact.firstName || contact.lastName)) ?? application.contact;
-	const message = application.documents.emailMessage || defaults.emailMessage;
+	const message = application.documents.emailMessage?.trim() || defaults.emailMessage;
+	const greeting = defaults.emailGreeting;
+	const resolvedAttachments = Array.from(new Set(attachments.map((item) => item.trim()).filter(Boolean)));
 	return {
 		applicationDate: formatApplicationDate(application),
 		companyName: application.company.name,
@@ -5945,18 +6580,18 @@ var getApplicationEmail = (application, profile, attachments = []) => {
 		recipientEmail: recipient.email,
 		senderName: profile ? [profile.firstName, profile.lastName].filter(Boolean).join(" ") : "",
 		senderEmail: profile?.email ?? "",
-		salutation: applicationGreeting(application),
-		closing: "Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.",
-		greeting: "Mit freundlichen Grüßen",
 		subject: createCoverSubject(application.job.title, application.documents.emailSubject || defaults.emailSubject),
+		salutation: applicationGreeting(application),
 		message,
-		attachments: Array.from(new Set(attachments.map((item) => item.trim()).filter(Boolean))),
-		body: message.trim()
+		body: message,
+		greeting,
+		attachments: resolvedAttachments,
+		warnings: validateEmailClosingDuplication(message)
 	};
 };
 var buildApplicationEmailMarkdown = (application, profile, attachments = []) => {
 	const email = getApplicationEmail(application, profile, attachments);
-	return [
+	const header = [
 		"# Bewerbungs-E-Mail",
 		"",
 		`- Bewerbungsdatum: ${email.applicationDate}`,
@@ -5966,7 +6601,9 @@ var buildApplicationEmailMarkdown = (application, profile, attachments = []) => 
 		`- E-Mail-Adresse: ${email.recipientEmail || "Nicht angegeben"}`,
 		`- Absender: ${email.senderName || "Nicht angegeben"}`,
 		`- Absender-E-Mail: ${email.senderEmail || "Nicht angegeben"}`,
-		`- Betreff: ${email.subject}`,
+		`- Betreff: ${email.subject}`
+	];
+	const message = [
 		"",
 		"## Nachricht",
 		"",
@@ -5974,52 +6611,62 @@ var buildApplicationEmailMarkdown = (application, profile, attachments = []) => 
 		"",
 		email.body,
 		"",
-		...email.attachments.length ? [
-			"## Anlagen",
-			"",
-			...email.attachments.map((attachment) => `- ${attachment}`),
-			""
-		] : [],
-		email.closing,
-		"",
 		email.greeting,
 		"",
-		email.senderName,
+		email.senderName
+	];
+	const attachmentSection = email.attachments.length ? [
+		"",
+		"## Anlagen",
+		"",
+		...email.attachments.map((attachment) => `- ${attachment}`)
+	] : [];
+	return [
+		...header,
+		...message,
+		...attachmentSection,
 		""
 	].join("\n");
 };
 //#endregion
 //#region src/shared/deckblatt.ts
 var externalHref$1 = (value) => /^https?:\/\//i.test(value) ? value : `https://${value}`;
-var getDeckblattContacts = (profile) => {
+var getDeckblattContacts = (profile, visibility = {
+	address: true,
+	phone: true,
+	email: true,
+	linkedin: true,
+	github: true,
+	website: true
+}) => {
 	if (!profile) return [];
 	const address = [profile.street, `${profile.postalCode} ${profile.city}`.trim()].filter(Boolean).join(", ");
 	return [
-		address ? {
+		visibility.address && address ? {
 			label: "Adresse",
 			value: address
 		} : void 0,
-		profile.phone ? {
+		visibility.phone && profile.phone ? {
 			label: "Telefon",
 			value: profile.phone,
 			href: `tel:${profile.phone.replace(/[^\d+]/g, "")}`
 		} : void 0,
-		profile.email ? {
+		visibility.email && profile.email ? {
 			label: "E-Mail",
 			value: profile.email,
 			href: `mailto:${profile.email}`
 		} : void 0,
-		profile.linkedin ? {
+		visibility.linkedin && profile.linkedin ? {
 			label: "LinkedIn",
 			value: profile.linkedin,
 			href: externalHref$1(profile.linkedin)
 		} : void 0,
-		profile.github ? {
+		visibility.github && profile.github ? {
 			label: "GitHub",
 			value: profile.github,
 			href: externalHref$1(profile.github)
 		} : void 0,
-		profile.portfolio ? {
+		visibility.website && profile.portfolio ? {
 			label: "Website",
 			value: profile.portfolio,
 			href: externalHref$1(profile.portfolio)
@@ -10479,12 +11126,17 @@ var senderHeader = (profile, docs) => {
 var documentCss = (accent, secondary, onSecondary, settings) => {
 	const bodyFont = getDocumentFont(settings.fontId);
 	const headingFont = getDocumentFont(settings.headingFontId);
+	const margin = marginLevelToMm[settings.marginLevel];
+	const sectionGap = sectionSpacingLevelToMm[settings.sectionSpacingLevel];
+	const bodySize = fontSizeToPt[settings.fontSize];
+	const lineHeight = lineHeightLevelToValue[settings.lineHeightLevel];
+	const padding = paddingLevelToMm[settings.paddingLevel];
 	return `
-  :root{--accent:${accent};--secondary:${secondary};--on-secondary:${onSecondary};--ink:#172026;--muted:#5c6870;--line:#d9e0e3;--doc-margin:${marginLevelToMm[settings.marginLevel]}mm;--section-gap:${sectionSpacingLevelToMm[settings.sectionSpacingLevel]}mm;--body-size:${fontSizeToPt[settings.fontSize]}pt;--body-line:${lineHeightLevelToValue[settings.lineHeightLevel]};--body-font:${bodyFont.family};--heading-font:${headingFont.family};--heading-weight:${headingFont.headingWeight}}
+  :root{--accent:${accent};--secondary:${secondary};--on-secondary:${onSecondary};--ink:${settings.textColor};--heading:${settings.headingColor};--muted:#5c6870;--line:${settings.lineColor};--page-background:${settings.backgroundColor};--doc-margin:${margin}mm;--doc-padding:${padding}mm;--section-gap:${sectionGap}mm;--body-size:${bodySize}pt;--body-line:${lineHeight};--body-font:${bodyFont.family};--heading-font:${headingFont.family};--heading-weight:${headingFont.headingWeight}}
   @page{size:A4;margin:0}
   *{box-sizing:border-box}body{margin:0;background:#eef1f1;color:var(--ink);font-family:var(--body-font)}
   .technology-brand-svg{display:block;width:5.5mm;height:5.5mm;overflow:visible;color:var(--accent)}
-  .page{width:210mm;height:297mm;min-height:297mm;max-height:297mm;margin:0 auto 8mm;overflow:hidden;background:#fff;break-after:page;page-break-after:always;position:relative;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .page{width:210mm;height:297mm;min-height:297mm;max-height:297mm;margin:0 auto 8mm;overflow:hidden;background:var(--page-background);break-after:page;page-break-after:always;position:relative;print-color-adjust:exact;-webkit-print-color-adjust:exact}.page h1,.page h2,.page h3{font-family:var(--heading-font);color:var(--heading)}
   .page:last-child{break-after:auto;page-break-after:auto}.page-content{position:relative;z-index:1;width:100%;height:100%;transform-origin:top left}.standard-page-content{padding:var(--doc-margin)}
   .document-background-layer{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;user-select:none}.programming-languages-layer{color:color-mix(in srgb,var(--accent),#70808a 45%);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;opacity:.105}.programming-languages-layer:before,.programming-languages-layer:after{position:absolute;border:1px solid currentColor;border-radius:4mm;content:""}.programming-languages-layer:before{width:54mm;height:37mm;right:-15mm;top:-9mm}.programming-languages-layer:after{width:61mm;height:42mm;left:-20mm;bottom:-12mm}.programming-languages-layer span{position:absolute;display:flex;align-items:center;gap:1.3mm;padding:1.2mm 2.3mm;border:1px solid currentColor;border-radius:2.5mm;font-size:7.8pt;font-weight:650;letter-spacing:.025em;white-space:nowrap}.programming-languages-layer span>i{display:grid;width:5mm;height:5mm;flex:0 0 5mm;place-items:center;font-style:normal}.programming-languages-layer span>i svg{display:block;width:100%;height:100%}.programming-languages-layer span>b{font-weight:700}.programming-languages-layer span:nth-child(1){right:9mm;top:12mm}.programming-languages-layer span:nth-child(2){right:31mm;top:23mm}.programming-languages-layer span:nth-child(3){right:7mm;top:38mm}.programming-languages-layer span:nth-child(4){right:26mm;top:52mm}.programming-languages-layer span:nth-child(5){right:8mm;top:68mm}.programming-languages-layer span:nth-child(6){left:8mm;bottom:77mm}.programming-languages-layer span:nth-child(7){left:25mm;bottom:62mm}.programming-languages-layer span:nth-child(8){left:7mm;bottom:47mm}.programming-languages-layer span:nth-child(9){left:31mm;bottom:33mm}.programming-languages-layer span:nth-child(10){left:8mm;bottom:18mm}.programming-languages-layer span:nth-child(11){left:51mm;bottom:13mm}.programming-languages-layer span:nth-child(12){right:8mm;bottom:16mm}.programming-languages-layer span:nth-child(13){right:26mm;bottom:31mm}.programming-languages-layer span:nth-child(14){right:8mm;bottom:47mm}
   .rule{height:4px;background:var(--accent);margin-bottom:22mm}
@@ -10811,6 +11463,8 @@ var pehlioneDocumentCss = `
 `;
 var pehlionePdfLayoutFixes = `
   .pehlione-pdf-sidebar a{color:inherit;text-decoration:none;overflow-wrap:normal;word-break:normal}.pehlione-pdf-sidebar li{break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-sidebar section{margin-bottom:4.5mm}.pehlione-pdf-sidebar h3{margin-bottom:2mm;padding-bottom:1.5mm;font-size:9.7pt}.pehlione-pdf-sidebar ul{gap:1.35mm;font-size:7.8pt;line-height:1.2}.pehlione-pdf-contact-section ul{padding:0;list-style:none}.pehlione-pdf-contact-section li{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;align-items:start}.pehlione-pdf-contact-section svg{width:4.2mm;height:4.2mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2}.pehlione-pdf-contact-section li>span{display:grid;gap:.25mm;min-width:0}.pehlione-pdf-contact-section strong{display:block;color:#fff;font-size:7.8pt}.pehlione-pdf-contact-section a{font-size:7.4pt}.pehlione-pdf-section{break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-section h3{break-after:avoid;page-break-after:avoid}.pehlione-pdf-section h3:before{display:none}.pehlione-pdf-section-icon{display:grid;width:9mm;height:9mm;place-items:center;border-radius:1mm;color:#fff;background:var(--pehlione-primary);font-style:normal}.pehlione-pdf-section-icon svg{width:5.5mm;height:5.5mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.9}.pehlione-pdf-entry{break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-entry ul{break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-project{padding:0;border-left:0;background:transparent}.pehlione-pdf-continuation{padding:10mm 16mm 16mm}.pehlione-pdf-continuation .pehlione-pdf-main{padding:0}.pehlione-pdf-header.continuation{margin-bottom:5mm;padding-bottom:2.5mm}.pehlione-pdf-header.continuation h1{font-size:18pt}.pehlione-pdf-header.continuation h2{margin-top:1mm;font-size:9.5pt}.pehlione-pdf[data-density="compact"]{font-size:8.1pt;line-height:1.23}.pehlione-pdf[data-density="compact"] .pehlione-pdf-main{padding:7mm 9mm 8mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-header{margin-bottom:4mm;padding-bottom:3mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-header h1{font-size:30pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-header h2{margin-top:1.2mm;font-size:10.3pt;white-space:nowrap}.pehlione-pdf[data-density="compact"] .pehlione-pdf-section{margin-bottom:3.1mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-section h3{margin-bottom:2mm;font-size:11.2pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-section h3 span{padding-bottom:.8mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-summary{font-size:8.1pt;line-height:1.24}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry{grid-template-columns:27mm minmax(0,1fr);gap:3mm;padding-bottom:2.1mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry+.pehlione-pdf-entry{padding-top:2.1mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry>p{font-size:7.7pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry h4{font-size:9.3pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry strong{margin:.6mm 0 1mm;font-size:8.2pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry ul,.pehlione-pdf[data-density="compact"] .pehlione-pdf-project ul,.pehlione-pdf[data-density="compact"] .pehlione-pdf-training ul{font-size:7.8pt;line-height:1.2}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry li,.pehlione-pdf[data-density="compact"] .pehlione-pdf-project li,.pehlione-pdf[data-density="compact"] .pehlione-pdf-training li{margin:.15mm 0}.pehlione-pdf[data-density="compact"] .pehlione-pdf-project h4{font-size:9.3pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-project p{margin:.6mm 0 1mm;font-size:8pt}
+  .pehlione-pdf-closing{display:flex;min-height:9mm;align-items:flex-end;gap:3mm;margin-top:2mm;padding-top:2mm;border-top:.25mm solid var(--line);font-size:7.5pt}.pehlione-pdf-closing span{margin-right:auto}.pehlione-pdf-closing img{width:auto;max-width:30mm;height:auto;max-height:9mm}.pehlione-pdf-closing strong{white-space:nowrap}
+  .pehlione-pdf-container-title{margin:0 0 4mm;padding-bottom:2mm;border-bottom:.5mm solid #dcecff;color:#fff;font-size:8pt;letter-spacing:.08em;text-transform:uppercase}.pehlione-pdf-flex-block{margin:0 0 5mm;break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-flex-block.page-break-before{break-before:page;page-break-before:always}.pehlione-pdf-flex-block h3{margin:0 0 2mm;color:var(--pehlione-primary);font-size:11pt;text-transform:uppercase}.pehlione-pdf-sidebar .pehlione-pdf-flex-block h3{padding-bottom:1.5mm;border-bottom:.3mm solid #b8d2f4;color:#fff;font-size:9.7pt}.pehlione-pdf-flex-block ul{display:grid;gap:1mm;margin:0;padding-left:4mm}.pehlione-pdf-flex-block li strong,.pehlione-pdf-flex-block li small,.pehlione-pdf-flex-block li em{display:block}.pehlione-pdf-flex-block li small,.pehlione-pdf-flex-block li em{font-size:.88em;font-style:normal;opacity:.82}.pehlione-pdf-flex-block.renderer-tag-list ul,.pehlione-pdf-flex-block.renderer-compact-grid ul,.pehlione-pdf-flex-block.renderer-two-column-list ul{grid-template-columns:repeat(2,minmax(0,1fr));padding:0;list-style:none}.pehlione-pdf-flex-block.renderer-tag-list li{padding:1mm;border-radius:8mm;background:#eaf1f9;text-align:center}.pehlione-pdf-sidebar .pehlione-pdf-flex-block.renderer-tag-list li{color:#082c5d;background:#dcecff}
 `;
 var gepflegtDocumentCss = `
   .gepflegt-pdf{--gepflegt-sidebar:var(--secondary);--gepflegt-accent:var(--accent);--gepflegt-heading:#354147;--gepflegt-text:#3f494e;--gepflegt-muted:#657075;--gepflegt-divider:#c7ced1;--gepflegt-sidebar-text:#fff;--gepflegt-sidebar-muted:#d8f0ef;--gepflegt-sidebar-width:72mm;--gepflegt-section-gap:7mm;--gepflegt-entry-gap:4.5mm;position:relative;display:grid;grid-template-columns:var(--gepflegt-sidebar-width) minmax(0,1fr);width:100%;height:100%;overflow:hidden;color:var(--gepflegt-text);background:#fff;font-family:var(--body-font);font-size:8.8pt;line-height:1.28}
@@ -10873,17 +11527,21 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 	const designSettings = application.designSettings;
 	const atsMode = designSettings.resumeOutputMode === "ats" || designSettings.columnLayout === "compact-ats";
 	const effectiveColumnLayout = atsMode ? "compact-ats" : designSettings.columnLayout;
-	const designClasses = `background-${designSettings.backgroundId} ${designSettings.showBackgroundInPrint ? "print-background" : "no-print-background"}`;
+	const designClasses = `background-${designSettings.backgroundId} background-scope-${designSettings.backgroundScope} ${designSettings.showBackgroundInPrint ? "print-background" : "no-print-background"}`;
 	const backgroundLayer = programmingBackgroundMarkup(designSettings, atsMode);
 	const docs = application.documents;
-	const sections = profile?.resumeSections ?? {
-		profile: true,
-		strengths: true,
+	const sections = {
+		...profile?.resumeSections ?? {
+			profile: true,
+			strengths: true,
+			experience: true,
+			education: true,
+			skills: true,
+			languages: true,
+			certifications: true
+		},
 		experience: true,
-		education: true,
-		skills: true,
-		languages: true,
-		certifications: true
+		education: true
 	};
 	const name = fullName(profile);
 	const role = application.job.title;
@@ -10903,7 +11561,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 	const longApplicationDate = `${applicationPlace ? `${applicationPlace}, ` : ""}den ${formatApplicationDateLong(application)}`;
 	const letterStatus = getLetterPageStatus(docs);
 	const letterTemplateClass = `layout-${template.layout}`;
-	const deckblattContacts = getDeckblattContacts(profile);
+	const deckblattContacts = getDeckblattContacts(profile, docs.coverSheetContactVisibility);
 	const deckblattCompetencies = getDeckblattCompetencies(profile, application);
 	const deckblattDocuments = getDeckblattDocuments(attachments, application.id, docs.documentListSettings);
 	const coverLetterAttachments = getCoverLetterAttachments(attachments, application.id, docs.documentListSettings);
@@ -10917,7 +11575,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
       <div class="page-content cover-content">
         <div class="rule"></div>
         <section class="cover-hero"><div><h1>${escapeHtml(createCoverSubject(role))}</h1><p class="muted">bei ${escapeHtml(company)}</p>${application.company.city ? `<p class="cover-location">Standort: ${escapeHtml(application.company.city)}</p>` : ""}<p class="cover-location">${escapeHtml(applicationDate)}</p></div>${photoSource ? `<img class="cover-photo" src="${escapeHtml(photoSource)}" alt="">` : ""}</section>
-        <section class="cover-identity"><h2>${escapeHtml(name)}</h2>${profile?.title ? `<p>${escapeHtml(profile.title)}</p>` : ""}${docs.deckblattStatement || profile?.summary ? `<p class="cover-statement">${escapeHtml(docs.deckblattStatement || profile?.summary || "")}</p>` : ""}</section>
+        <section class="cover-identity"><h2>${escapeHtml(name)}</h2>${docs.coverSheetProfessionalTitle || profile?.title ? `<p>${escapeHtml(docs.coverSheetProfessionalTitle || profile?.title || "")}</p>` : ""}${docs.deckblattStatement || profile?.summary ? `<p class="cover-statement">${escapeHtml(docs.deckblattStatement || profile?.summary || "")}</p>` : ""}</section>
         <section class="cover-details"><div><h3>Bewerbungsunterlagen</h3><ul>${deckblattDocuments.map((document) => `<li>${escapeHtml(document)}</li>`).join("")}</ul></div><div>${deckblattCompetencies.length ? `<h3>Kernkompetenzen</h3><p class="cover-competencies">${deckblattCompetencies.map(escapeHtml).join(" · ")}</p>` : ""}${deckblattContacts.length ? `<h3>Kontakt</h3><ul>${deckblattContactMarkup}</ul>` : ""}</div></section>
       </div>
     </section>`;
@@ -11623,7 +12281,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 	const kreativStrengthItems = (kreativExplicitStrengthItems.length ? kreativExplicitStrengthItems : kreativKnowledgeStrengthItems).slice(0, 3);
 	const kreativVisualStrengths = kreativStrengthItems.length ? `<section><h3>Stärken</h3><div class="kreativ-pdf-strengths">${kreativStrengthItems.map((strength) => `<article class="kreativ-pdf-strength">${getTechnologyBrandIconMarkup(strength.name)}<div><h4>${escapeHtml(strength.name)}</h4>${strength.description?.trim() ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div></section>` : "";
 	const kreativAtsStrengths = kreativStrengthItems.length ? `<section><h3>Stärken</h3><ul>${kreativStrengthItems.map((strength) => `<li>${escapeHtml(strength.name)}</li>`).join("")}</ul></section>` : "";
-	const kreativSkillValues = uniqueValues((kreativKnowledge?.categories ?? []).filter((category) => category.isVisible).sort((left, right) => left.sortOrder - right.sortOrder).flatMap((category) => [...visibleKnowledgeItems(category.items).map((item) => formatKnowledgeItem(item, category.showLevels, category.showYearsOfExperience, "comma-separated")), ...category.subcategories.filter((subcategory) => subcategory.isVisible).sort((left, right) => left.sortOrder - right.sortOrder).flatMap((subcategory) => visibleKnowledgeItems(subcategory.items).map((item) => formatKnowledgeItem(item, category.showLevels, category.showYearsOfExperience, "comma-separated")))]));
+	const kreativSkillValues = uniqueValues([...resolveKnowledgeGroups(application.templateId, profile?.resumeKnowledgeGroups).filter((group) => group.visible).flatMap((group) => group.items.filter((item) => item.visible && item.text.trim()).map((item) => item.description ? `${item.text} – ${item.description}` : item.text)), ...(kreativKnowledge?.categories ?? []).filter((category) => category.isVisible).sort((left, right) => left.sortOrder - right.sortOrder).flatMap((category) => [...visibleKnowledgeItems(category.items).map((item) => formatKnowledgeItem(item, category.showLevels, category.showYearsOfExperience, "comma-separated")), ...category.subcategories.filter((subcategory) => subcategory.isVisible).sort((left, right) => left.sortOrder - right.sortOrder).flatMap((subcategory) => visibleKnowledgeItems(subcategory.items).map((item) => formatKnowledgeItem(item, category.showLevels, category.showYearsOfExperience, "comma-separated")))])]);
 	const kreativVisualSkills = kreativSkillValues.length ? `<section><h3>Fähigkeiten</h3><div class="kreativ-pdf-skills">${kreativSkillValues.map((skill) => `<span class="kreativ-pdf-skill">${escapeHtml(skill)}</span>`).join("")}</div></section>` : "";
 	const kreativCertifications = uniqueValues(profile?.certifications ?? []);
 	const kreativVisualCertifications = kreativCertifications.length ? `<section><h3>Zertifikate</h3><ul>${kreativCertifications.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>` : "";
@@ -12221,32 +12879,54 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 		}).join("");
 		const experience = entries("experience");
 		const education = entries("education");
+		const personalVisibility = {
+			...defaultResumePersonalFieldVisibility,
+			...profile?.resumePersonalFieldVisibility
+		};
 		const contacts = [
 			{
+				visibility: personalVisibility.address,
 				kind: "location",
 				label: "Ort",
 				value: [profile?.city, profile?.country].filter(Boolean).join(", "),
 				href: ""
 			},
 			{
+				visibility: personalVisibility.phone,
 				kind: "phone",
 				label: "Telefon",
 				value: formatPhoneForDisplay(profile?.phone),
 				href: profile?.phone ? `tel:${profile.phone.replace(/[^\d+]/g, "")}` : ""
 			},
 			{
+				visibility: personalVisibility.email,
 				kind: "mail",
 				label: "E-Mail",
 				value: profile?.email || "",
 				href: profile?.email ? `mailto:${profile.email}` : ""
 			},
 			{
+				visibility: personalVisibility.linkedin,
 				kind: "linkedin",
 				label: "LinkedIn",
-				value: formatUrlForDisplay(profile?.linkedin || profile?.github || profile?.portfolio || ""),
-				href: externalUrl(profile?.linkedin || profile?.github || profile?.portfolio || "")
+				value: formatUrlForDisplay(profile?.linkedin || ""),
+				href: externalUrl(profile?.linkedin || "")
+			},
+			{
+				visibility: personalVisibility.github,
+				kind: "linkedin",
+				label: "GitHub",
+				value: formatUrlForDisplay(profile?.github || ""),
+				href: externalUrl(profile?.github || "")
+			},
+			{
+				visibility: personalVisibility.website,
+				kind: "linkedin",
+				label: "Website",
+				value: formatUrlForDisplay(profile?.portfolio || ""),
+				href: externalUrl(profile?.portfolio || "")
 			}
-		].filter((contact) => contact.value).map((contact) => {
+		].filter((contact) => contact.visibility && contact.value).map((contact) => {
 			const value = contact.href ? `<a href="${escapeHtml(contact.href)}">${escapeHtml(contact.value)}</a>` : escapeHtml(contact.value);
 			return `<li>${kreativIconMarkup(contact.kind)}<span><strong>${escapeHtml(contact.label)}</strong>${value}</span></li>`;
 		}).join("");
@@ -12254,15 +12934,39 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 		const groupedCompetencies = groupPehlioneCompetencies(managedStrengths.slice(0, 8));
 		const competence = (coreCompetencies.length ? coreCompetencies.map((item) => `<li>${escapeHtml(item)}</li>`) : groupedCompetencies.map((group) => `<li><strong>${escapeHtml(group.title)}:</strong> ${escapeHtml(group.values.join(" · "))}</li>`)).join("");
 		const derivedFocus = getPehlioneTechnicalFocus(profile);
-		const focus = (derivedFocus.length ? derivedFocus : kreativSkillValues.slice(0, 8)).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+		const semanticSections = profile?.resumeSemanticSections;
+		const summarySection = getResumeSemanticSection(semanticSections, "summary");
+		const knowledgeSection = getResumeSemanticSection(semanticSections, "knowledge");
+		const closingSection = getResumeSemanticSection(semanticSections, "closing");
+		const knowledgeGroups = resolveKnowledgeGroups("pehlione_white_blue", profile?.resumeKnowledgeGroups).filter((group) => group.visible);
+		const coreGroup = knowledgeGroups.find((group) => group.semanticType === "core-competencies");
+		const focusGroup = knowledgeGroups.find((group) => group.semanticType === "technical-focus");
+		const visibleBlockItems = (group) => group.items.filter((item) => item.visible && item.text.trim());
+		const competenceMarkup = (coreGroup?.items.length ? visibleBlockItems(coreGroup).map((item) => `<li><strong>${escapeHtml(item.text)}</strong>${item.description ? `<small>${escapeHtml(item.description)}</small>` : ""}</li>`) : [competence]).join("");
+		const focus = (focusGroup && visibleBlockItems(focusGroup).length ? visibleBlockItems(focusGroup).map((item) => item.text) : derivedFocus.length ? derivedFocus : kreativSkillValues.slice(0, 8)).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+		const blockMarkup = (group, sidebar = false) => {
+			const items = visibleBlockItems(group);
+			if (!items.length) return "";
+			const entries = items.map((item) => `<li><strong>${escapeHtml(item.text)}</strong>${item.description ? `<small>${escapeHtml(item.description)}</small>` : ""}${item.level ? `<em>${escapeHtml(item.level)}</em>` : ""}</li>`).join("");
+			return `<section class="pehlione-pdf-flex-block renderer-${group.rendererType}${group.pageBreakBefore ? " page-break-before" : ""}"><h3>${escapeHtml(group.title)}</h3><ul class="${sidebar ? "is-sidebar" : ""}">${entries}</ul></section>`;
+		};
+		const sidebarKnowledge = knowledgeGroups.filter((group) => group.slot === "sidebar" && group.id !== coreGroup?.id && group.id !== focusGroup?.id).map((group) => blockMarkup(group, true)).join("");
+		const mainKnowledge = knowledgeGroups.filter((group) => group.slot !== "sidebar").map((group) => blockMarkup(group)).join("");
 		const project = getPehlioneProjectHighlight(profile);
 		const header = `<header class="pehlione-pdf-header${continuation ? " continuation" : ""}"><h1>${escapeHtml(name)}</h1><h2>${escapeHtml(profile?.title || role)}</h2></header>`;
-		const main = `${!continuation && sections.profile && managedSummary ? `<section class="pehlione-pdf-section pehlione-pdf-summary-section">${sectionHeading("Kurzprofil", "profile")}<p class="pehlione-pdf-summary">${escapeHtml(managedSummary)}</p></section>` : ""}${sections.experience && experience ? `<section class="pehlione-pdf-section pehlione-pdf-experience">${sectionHeading(`Berufserfahrung${continuation ? " · Fortsetzung" : ""}`, "experience")}${experience}</section>` : ""}${sections.education && education ? `<section class="pehlione-pdf-section pehlione-pdf-education">${sectionHeading("Ausbildung", "education")}${education}</section>` : ""}${!continuation && project ? `<section class="pehlione-pdf-section pehlione-pdf-project">${sectionHeading("Projekt-Highlight", "project")}<h4>${escapeHtml(project.title)}</h4><p>${[project.company, ...project.technologies].filter(Boolean).map(escapeHtml).join(" · ")}</p>${project.achievements.length ? `<ul>${project.achievements.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul>` : ""}</section>` : ""}${lastPage && sections.certifications && kreativCertifications.length ? `<section class="pehlione-pdf-section pehlione-pdf-training">${sectionHeading("Weiterbildungen", "training")}<ul>${kreativCertifications.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></section>` : ""}${!experience && !education ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}`;
+		const closing = profile?.resumeClosing ?? {
+			showPlace: true,
+			showDate: true,
+			showSignature: true
+		};
+		const closingMarkup = lastPage && closingSection.visible && (closing.showPlace || closing.showDate || closing.showSignature) ? `<footer class="pehlione-pdf-closing">${closing.showPlace || closing.showDate ? `<span>${escapeHtml([closing.showPlace ? profile?.applicationPlace || profile?.city : "", closing.showDate ? profile?.applicationDate : ""].filter(Boolean).join(", "))}</span>` : ""}${closing.showSignature && signatureSource ? `<img src="${escapeHtml(signatureSource)}" alt="">` : ""}${closing.showSignature ? `<strong>${escapeHtml(name)}</strong>` : ""}</footer>` : "";
+		const main = `${!continuation && summarySection.visible && sections.profile && managedSummary ? `<section class="pehlione-pdf-section pehlione-pdf-summary-section">${sectionHeading(getResumeSemanticTitle(semanticSections, "summary"), "profile")}<p class="pehlione-pdf-summary">${escapeHtml(managedSummary)}</p></section>` : ""}${sections.experience && experience ? `<section class="pehlione-pdf-section pehlione-pdf-experience">${sectionHeading(`${getResumeSemanticTitle(semanticSections, "career")}${continuation ? " · Fortsetzung" : ""}`, "experience")}${experience}</section>` : ""}${sections.education && education ? `<section class="pehlione-pdf-section pehlione-pdf-education">${sectionHeading(getResumeSemanticTitle(semanticSections, "education"), "education")}${education}</section>` : ""}${!continuation && project && !knowledgeGroups.some((group) => group.semanticType === "project-highlight" && visibleBlockItems(group).length) ? `<section class="pehlione-pdf-section pehlione-pdf-project">${sectionHeading("Projekt-Highlight", "project")}<h4>${escapeHtml(project.title)}</h4><p>${[project.company, ...project.technologies].filter(Boolean).map(escapeHtml).join(" · ")}</p>${project.achievements.length ? `<ul>${project.achievements.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul>` : ""}</section>` : ""}${lastPage && knowledgeSection.visible && profile?.resumeKnowledgeContainer?.showTitle && mainKnowledge ? `<section class="pehlione-pdf-section">${sectionHeading(getResumeSemanticTitle(semanticSections, "knowledge"), "profile")}</section>` : ""}${lastPage && knowledgeSection.visible ? mainKnowledge : ""}${lastPage && sections.certifications && kreativCertifications.length && !knowledgeGroups.some((group) => ["training", "certificates"].includes(group.semanticType)) ? `<section class="pehlione-pdf-section pehlione-pdf-training">${sectionHeading("Weiterbildungen", "training")}<ul>${kreativCertifications.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></section>` : ""}${closingMarkup}${!experience && !education ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}`;
 		const density = plan.items.length >= 5 ? "compact" : plan.density;
 		if (atsMode || continuation) return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="pehlione_white_blue" data-no-fit="true"><div class="page-content pehlione-pdf ${continuation ? "pehlione-pdf-continuation" : "pehlione-pdf-ats"}" data-density="${density}"><main class="pehlione-pdf-main">${header}${!continuation ? `<p class="pehlione-pdf-ats-contact"><strong>Kontakt:</strong> ${contacts.replace(/<[^>]+>/g, " ")}</p>` : ""}${main}</main></div></section>`;
 		const languages = sections.languages ? (profile?.languages ?? []).filter(Boolean).map((item) => `<li>${escapeHtml(item)}</li>`).join("") : "";
-		const sidebar = `<aside class="pehlione-pdf-sidebar"><div class="pehlione-pdf-hero"></div>${contacts ? `<section class="pehlione-pdf-contact-section"><h3>Kontakt</h3><ul>${contacts}</ul></section>` : ""}${sections.strengths && competence ? `<section><h3>Kernkompetenzen</h3><ul>${competence}</ul></section>` : ""}${focus ? `<section><h3>Technische Schwerpunkte</h3><ul>${focus}</ul></section>` : ""}${languages ? `<section><h3>Sprachen</h3><ul>${languages}</ul></section>` : ""}</aside>`;
-		return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="pehlione_white_blue" data-no-fit="true"><div class="page-content pehlione-pdf" data-density="${density}">${sidebar}<main class="pehlione-pdf-main">${header}${main}</main></div></section>`;
+		const sidebar = `<aside class="pehlione-pdf-sidebar"><div class="pehlione-pdf-hero"></div>${contacts ? `<section class="pehlione-pdf-contact-section"><h3>Kontakt</h3><ul>${contacts}</ul></section>` : ""}${knowledgeSection.visible && profile?.resumeKnowledgeContainer?.showTitle && knowledgeGroups.some((group) => group.slot === "sidebar") ? `<h3 class="pehlione-pdf-container-title">${escapeHtml(getResumeSemanticTitle(semanticSections, "knowledge"))}</h3>` : ""}${knowledgeSection.visible && sections.strengths && competenceMarkup ? `<section><h3>${escapeHtml(coreGroup?.title || "Kernkompetenzen")}</h3><ul>${competenceMarkup}</ul></section>` : ""}${knowledgeSection.visible && focus ? `<section><h3>${escapeHtml(focusGroup?.title || "Technische Schwerpunkte")}</h3><ul>${focus}</ul></section>` : ""}${knowledgeSection.visible ? sidebarKnowledge : ""}${languages ? `<section><h3>Sprachen</h3><ul>${languages}</ul></section>` : ""}</aside>`;
+		const sidebarWidth = (profile?.resumeColumnRatio ?? 30) * 2.1;
+		return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="pehlione_white_blue" data-no-fit="true"><div class="page-content pehlione-pdf" data-density="${density}" style="grid-template-columns:${sidebarWidth}mm minmax(0,1fr)">${sidebar}<main class="pehlione-pdf-main">${header}${main}</main></div></section>`;
 	};
 	const tabellarischExtraIcon = (kind) => {
 		return `<svg viewBox="0 0 24 24" aria-hidden="true">${{
@@ -13330,7 +14034,8 @@ var DataStore = class {
 		await mkdir(documents.anschreiben, { recursive: true });
 		const { dataRoot } = await this.ensureApplicationDataDirectories(application);
 		const profile = this.getProfileForApplication(application);
-		const emailAttachments = getDeckblattDocuments(this.workspace.attachments, application.id, application.documents.documentListSettings);
+		const visibleEmailDocuments = getDeckblattDocuments(this.workspace.attachments, application.id, application.documents.documentListSettings);
+		const emailAttachments = resolveApplicationEmailAttachments(application.documents, visibleEmailDocuments);
 		const email = getApplicationEmail(application, profile, emailAttachments);
 		await Promise.all([
 			this.atomicWrite(path.join(dataRoot, "bewerbung.json"), JSON.stringify(applicationSchema.parse(application), null, 2)),
@@ -13423,6 +14128,15 @@ var DataStore = class {
 				coverSenderName: "",
 				coverSenderTitle: "",
 				coverSenderContact: "",
+				coverSheetProfessionalTitle: "",
+				coverSheetContactVisibility: {
+					address: true,
+					phone: true,
+					email: true,
+					linkedin: true,
+					github: true,
+					website: true
+				},
 				coverRecipientAddress: "",
 				coverSubject: createCoverSubject(input.job.title),
 				coverSubjectGapReduction: 0,
@@ -13439,6 +14153,8 @@ var DataStore = class {
 				emailSubject: "",
 				emailMessage: "",
 				emailAttachmentNote: "",
+				emailAttachmentMode: "package",
+				emailPackageFileName: "Bewerbungsunterlagen.pdf",
 				showCoverLetterAttachments: true,
 				documentListSettings: []
 			},
@@ -13718,7 +14434,14 @@ var DataStore = class {
 		const greeting = applicationGreeting(application);
 		const knowledgeSection = ensureKnowledgeSection(profile?.knowledgeSection, profile?.skills ?? []);
 		const knowledgeText = formatKnowledgeSectionAsText(knowledgeSection, false);
-		const deckblattContacts = getDeckblattContacts(profile);
+		const flexibleKnowledgeBlocks = resolveKnowledgeGroups(application.templateId, profile?.resumeKnowledgeGroups).filter((group) => group.visible).map((group) => ({
+			title: group.title,
+			slot: group.slot,
+			rendererType: group.rendererType,
+			items: group.items.filter((item) => item.visible && item.text.trim()).map((item) => item.description ? `${item.text} – ${item.description}` : item.text)
+		})).filter((group) => group.items.length);
+		const flexibleKnowledgeText = flexibleKnowledgeBlocks.map((group) => `${group.title}\n${group.items.join("\n")}`).join("\n\n");
+		const deckblattContacts = getDeckblattContacts(profile, application.documents.coverSheetContactVisibility);
 		const deckblattCompetencies = getDeckblattCompetencies(profile, application);
 		const deckblattDocuments = getDeckblattDocuments(this.workspace.attachments, application.id, application.documents.documentListSettings);
 		const strengthItems = profile?.strengths.length ? profile.strengths : (profile?.skills ?? []).map((value) => {
@@ -13753,7 +14476,7 @@ var DataStore = class {
 		const elegantData = {
 			VORNAME: profile?.firstName ?? "",
 			NACHNAME: profile?.lastName ?? "",
-			BERUFSBEZEICHNUNG: profile?.title || application.job.title,
+			BERUFSBEZEICHNUNG: application.documents.coverSheetProfessionalTitle || profile?.title || application.job.title,
 			FACHGEBIET_1: profile?.skills[0] ?? "",
 			FACHGEBIET_2: profile?.skills[1] ?? "",
 			FACHGEBIETE: (profile?.skills ?? []).slice(0, 3).join(" | "),
@@ -13808,6 +14531,8 @@ var DataStore = class {
 			ERFOLG_HIGHLIGHT_2_BESCHREIBUNG: "",
 			KENNTNISSE_TITEL: knowledgeText ? getResumeSectionTitle(profile, "knowledge").toLocaleUpperCase("de-DE") : "",
 			KENNTNISSE: knowledgeText,
+			BESONDERE_KENNTNISSE_BAUSTEINE: flexibleKnowledgeText,
+			BESONDERE_KENNTNISSE_BAUSTEINE_JSON: JSON.stringify(flexibleKnowledgeBlocks),
 			SPRACHEN_TITEL: profile?.languages.length ? getResumeSectionTitle(profile, "languages").toLocaleUpperCase("de-DE") : "",
 			SPRACHEN_ATS: (profile?.languages ?? []).join("\n"),
 			BERUFSERFAHRUNG_TITEL: profile?.experiences.length ? getResumeSectionTitle(profile, "experience").toLocaleUpperCase("de-DE") : "",
