@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUp,
+  ChevronDown,
   Eye,
   EyeOff,
   GripVertical,
@@ -394,11 +395,15 @@ export function ResumeSectionsPanel({
         </div>
       </div>
 
-      <div className="resume-knowledge-groups-panel">
-        <header>
+      <details className="resume-knowledge-groups-panel">
+        <summary className="resume-data-editor-trigger">
+          <span>
           <strong>Besondere Kenntnisse · Bausteine</strong>
           <small>Bereiche, Inhalte, Darstellung und Position bleiben beim Vorlagenwechsel erhalten.</small>
-        </header>
+          </span>
+          <ChevronDown size={18} aria-hidden="true" />
+        </summary>
+        <div className="resume-knowledge-groups-body">
         <div className="resume-knowledge-container-settings">
           <label className="checkbox-field compact">
             <input
@@ -515,7 +520,8 @@ export function ResumeSectionsPanel({
             })}
           </section>
         ) : null}
-      </div>
+        </div>
+      </details>
 
       <div className="resume-closing-panel">
         <header><strong>Ort, Datum und Unterschrift</strong><small>Bestandteile einzeln auswählen.</small></header>

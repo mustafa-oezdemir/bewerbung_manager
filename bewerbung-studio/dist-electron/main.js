@@ -4889,7 +4889,7 @@ var resumeSectionDefinitions = [
 		requirement: "required",
 		locked: true,
 		renamable: true,
-		hideable: false,
+		hideable: true,
 		deletable: false
 	},
 	{
@@ -4899,7 +4899,7 @@ var resumeSectionDefinitions = [
 		requirement: "required",
 		locked: true,
 		renamable: true,
-		hideable: false,
+		hideable: true,
 		deletable: false
 	},
 	{
@@ -4929,7 +4929,7 @@ var resumeSectionDefinitions = [
 		requirement: "required",
 		locked: true,
 		renamable: true,
-		hideable: false,
+		hideable: true,
 		deletable: false
 	},
 	{
@@ -4939,7 +4939,7 @@ var resumeSectionDefinitions = [
 		requirement: "required",
 		locked: true,
 		renamable: true,
-		hideable: false,
+		hideable: true,
 		deletable: false
 	},
 	{
@@ -4983,13 +4983,12 @@ var defaultResumeSectionInstances = () => resumeSectionDefinitions.map((definiti
 var resolveResumeSectionInstances = (saved) => {
 	const byType = new Map(saved?.map((item) => [item.semanticType, item]));
 	return defaultResumeSectionInstances().map((fallback) => {
-		const definition = resumeSectionDefinitions.find((candidate) => candidate.semanticType === fallback.semanticType);
 		const current = byType.get(fallback.semanticType);
 		return {
 			...fallback,
 			...current,
-			visible: definition.requirement === "required" ? true : current?.visible ?? fallback.visible,
-			enabled: definition.requirement === "required" ? true : current?.enabled ?? fallback.enabled
+			visible: current?.visible ?? fallback.visible,
+			enabled: current?.enabled ?? fallback.enabled
 		};
 	}).sort((left, right) => left.order - right.order);
 };
@@ -6606,7 +6605,7 @@ var defaultApplicationEmail = (application) => ({
 	emailGreeting: "Mit freundlichen Grüßen"
 });
 var resolveApplicationEmailAttachments = (documents, visibleDocuments) => documents.emailAttachmentMode === "package" ? [documents.emailPackageFileName.trim() || "Bewerbungsunterlagen.pdf"] : visibleDocuments.map((item) => /\.pdf$/i.test(item) ? item : `${item}.pdf`);
-var validateEmailClosingDuplication = (message, closing = "Für Rückfragen stehe ich Ihnen gerne zur Verfügung. Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.") => {
+var validateEmailClosingDuplication = (message, closing = "") => {
 	const combined = `${message} ${closing}`.toLocaleLowerCase("de-DE");
 	const personalPhrase = "persönlich(?:e|en|es|em|er)?";
 	const hasExchange = new RegExp(`${personalPhrase}\\s+austausch`).test(combined);
@@ -6620,7 +6619,6 @@ var getApplicationEmail = (application, profile, attachments = []) => {
 	const recipient = [application.contact, ...application.additionalContacts].find((contact) => Boolean(contact.email || contact.firstName || contact.lastName)) ?? application.contact;
 	const message = application.documents.emailMessage?.trim() || defaults.emailMessage;
 	const greeting = defaults.emailGreeting;
-	const closing = "Für Rückfragen stehe ich Ihnen gerne zur Verfügung. Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.";
 	const resolvedAttachments = Array.from(new Set(attachments.map((item) => item.trim()).filter(Boolean)));
 	return {
 		applicationDate: formatApplicationDate(application),
@@ -6635,9 +6633,8 @@ var getApplicationEmail = (application, profile, attachments = []) => {
 		message,
 		body: message,
 		greeting,
-		closing,
 		attachments: resolvedAttachments,
-		warnings: validateEmailClosingDuplication(message, closing)
+		warnings: validateEmailClosingDuplication(message)
 	};
 };
 var buildApplicationEmailMarkdown = (application, profile, attachments = []) => {
@@ -6661,8 +6658,6 @@ var buildApplicationEmailMarkdown = (application, profile, attachments = []) => 
 		email.salutation,
 		"",
 		email.body,
-		"",
-		email.closing,
 		"",
 		email.greeting,
 		"",
@@ -6923,6 +6918,19 @@ var getCefrLanguageLevel = (level) => {
 };
 var getLanguageLevelScore = (level) => cefrLanguageLevels.findIndex((entry) => entry.value === getCefrLanguageLevel(level)) + 1;
 //#endregion
+//#region src/shared/resumeIdentityVisibility.ts
+var getResumeIdentityVisibilityCss = (sections) => {
+	const hidden = (type) => {
+		const section = getResumeSemanticSection(sections, type);
+		return !section.visible || !section.enabled;
+	};
+	const scope = ":is(.document-lebenslauf, .cv-sheet)";
+	const rules = [];
+	if (hidden("heading")) rules.push(`${scope} header:not([class*="section-heading"]) :is(h1,h2,[class*="__name"],[class*="__title"],[class*="__profession"],[class*="__kicker"],.kicker),${scope} .tabellarisch-pdf-continuation{display:none!important}`);
+	if (hidden("personalData")) rules.push(`${scope} :is(address,[data-element-id$=".contacts"],[data-resume-personal],.resume-personal-data,.pehlione-contacts,.pehlione-ats-contact,.pehlione-pdf-ats-contact,.zeitgenoessisch-contacts),${scope} section:has(>address),${scope} section:has(>.modern-contact-list){display:none!important}`);
+	return rules.join("\n");
+};
+//#endregion
 //#region src/shared/documentPagination.ts
 var FIRST_PAGE_CAPACITY = 30;
 var SECOND_PAGE_CAPACITY = 38;
@@ -7071,6 +7079,109 @@ var getLetterPageStatus = (documents) => {
 //#region src/shared/profileMedia.ts
 var supportedProfileMedia = /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=\s]+$/i;
 var getProfileMediaSource = (value) => value && supportedProfileMedia.test(value) ? value : "";
+//#endregion
+//#region src/shared/contactPresentation.ts
+var internationalDigits = (value) => value.trim().replace(/^00/, "+").replace(/[^\d+]/g, "");
+/** Formats German mobile numbers for display without changing their stored value. */
+var formatPhoneForDisplay = (value = "") => {
+	const digits = internationalDigits(value).replace(/\D/g, "");
+	if (digits.startsWith("49") && /^1\d{9,10}$/.test(digits.slice(2))) return `+49 ${digits.slice(2, 5)} ${digits.slice(5)}`;
+	return value.trim();
+};
+var externalUrl = (value = "") => {
+	const trimmed = value.trim();
+	if (!trimmed) return "";
+	if (/^https?:\/\//i.test(trimmed)) return trimmed;
+	return `https://${trimmed.replace(/^[a-z][a-z\d+.-]*:(?:\/\/)?/i, "")}`;
+};
+/** Keeps the URL readable while the complete URL remains the link destination. */
+var formatUrlForDisplay = (value = "") => externalUrl(value).replace(/^https?:\/\//i, "").replace(/\/$/, "");
+//#endregion
+//#region src/shared/pehlioneContacts.ts
+var iconPaths = {
+	person: "<circle cx=\"12\" cy=\"7\" r=\"4\"/><path d=\"M4 21a8 8 0 0 1 16 0\"/>",
+	location: "<path d=\"M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z\"/><circle cx=\"12\" cy=\"10\" r=\"2.5\"/>",
+	phone: "<path d=\"M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.4 1.8.6 2.8.7a2 2 0 0 1 1.8 2.1Z\"/>",
+	email: "<rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\"/><path d=\"m3 6 9 7 9-7\"/>",
+	linkedin: "<rect x=\"3\" y=\"9\" width=\"4\" height=\"12\"/><circle cx=\"5\" cy=\"4\" r=\"2\"/><path d=\"M11 21V9h4v2c3-4 7-1 7 3v7h-4v-7c0-2-3-2-3 0v7Z\"/>",
+	github: "<path d=\"M9 19c-4.3 1.3-4.3-2.5-6-3m12 6v-3.9c0-1.1-.4-1.9-.8-2.3 2.7-.3 5.5-1.3 5.5-6A4.7 4.7 0 0 0 18.4 6a4.3 4.3 0 0 0-.1-3.8S17.2 1.9 14.4 3.7a13.4 13.4 0 0 0-6.8 0C4.8 1.9 3.7 2.2 3.7 2.2A4.3 4.3 0 0 0 3.6 6a4.7 4.7 0 0 0-1.3 3.3c0 4.7 2.8 5.7 5.5 6-.4.4-.8 1.1-.8 2.3V22\"/>",
+	website: "<circle cx=\"12\" cy=\"12\" r=\"9\"/><ellipse cx=\"12\" cy=\"12\" rx=\"4\" ry=\"9\"/><path d=\"M3 12h18M5 6h14M5 18h14\"/>"
+};
+var icon = (kind) => `<svg data-contact-icon="${kind}" viewBox="0 0 24 24" aria-hidden="true">${iconPaths[kind]}</svg>`;
+var escape = (value) => value.replace(/[&<>"']/g, (char) => ({
+	"&": "&amp;",
+	"<": "&lt;",
+	">": "&gt;",
+	"\"": "&quot;",
+	"'": "&#39;"
+})[char]);
+var getPehlioneContacts = (profile) => {
+	const visible = {
+		...defaultResumePersonalFieldVisibility,
+		...profile?.resumePersonalFieldVisibility
+	};
+	return [
+		{
+			key: "location",
+			label: "Ort",
+			visible: visible.address,
+			value: [profile?.city, profile?.country].filter(Boolean).join(", "),
+			href: ""
+		},
+		{
+			key: "phone",
+			label: "Telefon",
+			visible: visible.phone,
+			value: formatPhoneForDisplay(profile?.phone),
+			href: profile?.phone ? `tel:${profile.phone.replace(/[^\d+]/g, "")}` : ""
+		},
+		{
+			key: "email",
+			label: "E-Mail",
+			visible: visible.email,
+			value: profile?.email || "",
+			href: profile?.email ? `mailto:${profile.email}` : ""
+		},
+		{
+			key: "linkedin",
+			label: "LinkedIn",
+			visible: visible.linkedin,
+			value: formatUrlForDisplay(profile?.linkedin || ""),
+			href: externalUrl(profile?.linkedin || "")
+		},
+		{
+			key: "github",
+			label: "GitHub",
+			visible: visible.github,
+			value: formatUrlForDisplay(profile?.github || ""),
+			href: externalUrl(profile?.github || "")
+		},
+		{
+			key: "website",
+			label: "Website",
+			visible: visible.website,
+			value: formatUrlForDisplay(profile?.portfolio || ""),
+			href: externalUrl(profile?.portfolio || "")
+		}
+	].filter((item) => item.visible && item.value);
+};
+var renderPehlioneContacts = (profile) => {
+	const contacts = getPehlioneContacts(profile);
+	if (!contacts.length) return "";
+	return `<section class="pehlione-contacts"><h3>${icon("person")}<span>Kontakt</span></h3><ul>${contacts.map((item) => `<li data-contact-kind="${item.key}">${icon(item.key)}<div><strong>${item.label}</strong>${item.href ? `<a href="${escape(item.href)}">${escape(item.value)}</a>` : `<span>${escape(item.value)}</span>`}</div></li>`).join("")}</ul></section>`;
+};
+var pehlioneContactsCss = `
+.pehlione-contacts.pehlione-contacts{--contact-heading:#fff;--contact-text:#fff;margin:0 0 4.5mm;color:var(--contact-text);font-family:var(--doc-font,var(--body-font,"Source Sans 3",Arial,sans-serif));font-size:7.8pt;line-height:1.2;break-inside:avoid}
+.pehlione-resume--white .pehlione-contacts,.pehlione-pdf-white .pehlione-contacts{--contact-heading:var(--pehlione-primary,#08245c);--contact-text:#142235}
+.pehlione-contacts.pehlione-contacts h3{display:grid;grid-template-columns:8mm minmax(0,1fr);gap:2mm;align-items:center;margin:0 0 2mm;padding:0 0 1.5mm;border-bottom:.3mm solid var(--contact-heading);color:var(--contact-heading);font-family:inherit;font-size:9.7pt;font-weight:700;line-height:1.1;text-transform:uppercase}
+.pehlione-contacts.pehlione-contacts svg{display:block;width:4.2mm;height:4.2mm;fill:none;stroke:var(--contact-heading);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pehlione-contacts.pehlione-contacts h3 svg{width:8mm;height:8mm}
+.pehlione-contacts.pehlione-contacts ul{display:grid;gap:1.35mm;margin:0;padding:0;list-style:none;font-size:7.8pt;line-height:1.2}
+.pehlione-contacts.pehlione-contacts li{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;align-items:start;margin:0;padding:0;break-inside:avoid}
+.pehlione-contacts.pehlione-contacts li>div{display:grid;gap:.25mm;min-width:0}
+.pehlione-contacts.pehlione-contacts strong{display:block;color:var(--contact-heading);font-size:7.8pt;font-weight:700;line-height:1.2}
+.pehlione-contacts.pehlione-contacts a,.pehlione-contacts.pehlione-contacts li span{color:var(--contact-text);font-size:7.4pt;line-height:1.2;text-decoration:none;overflow-wrap:anywhere}
+`;
 var pehlioneBlueprintMarkup = `<svg viewBox="0 0 240 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="#dcecff" stroke-width=".65">
   <path d="M18 33 57 16 168 50 219 126 29 126Z M20 40 179 103 216 23 M57 16 76 91 168 50 M131 15H219M151 12V143M182 12V143M213 12V143M119 119H224M125 139H230" opacity=".65"/>
   <polygon points="${Array.from({ length: 64 }, (_, index) => {
@@ -7083,6 +7194,62 @@ var pehlioneBlueprintMarkup = `<svg viewBox="0 0 240 160" xmlns="http://www.w3.o
   <circle cx="57" cy="16" r="4"/><circle cx="168" cy="50" r="3"/><circle cx="179" cy="103" r="4"/><circle cx="216" cy="23" r="3"/>
   <path d="M53 16h8m-4-4v8M146 119h10m-5-5v10M208 139h10m-5-5v10"/>
 </svg>`;
+//#endregion
+//#region src/shared/strengthSymbols.ts
+var strengthSymbolOptions = [
+	{
+		id: "symbol:dot",
+		label: "Punkt",
+		glyph: "●",
+		shape: "<circle cx=\"16\" cy=\"16\" r=\"5\" fill=\"currentColor\"/>"
+	},
+	{
+		id: "symbol:circle",
+		label: "Kreis",
+		glyph: "○",
+		shape: "<circle cx=\"16\" cy=\"16\" r=\"6\"/>"
+	},
+	{
+		id: "symbol:square",
+		label: "Quadrat",
+		glyph: "▪",
+		shape: "<path d=\"M11 11h10v10H11z\" fill=\"currentColor\"/>"
+	},
+	{
+		id: "symbol:diamond",
+		label: "Raute",
+		glyph: "◆",
+		shape: "<path d=\"m16 8 8 8-8 8-8-8z\" fill=\"currentColor\"/>"
+	},
+	{
+		id: "symbol:arrow",
+		label: "Pfeil",
+		glyph: "→",
+		shape: "<path d=\"M5 16h22m-8-8 8 8-8 8\"/>"
+	},
+	{
+		id: "symbol:double-arrow",
+		label: "Doppelpfeil",
+		glyph: "⇒",
+		shape: "<path d=\"M4 12h15M4 20h15m0-13 9 9-9 9\"/>"
+	},
+	{
+		id: "symbol:hash",
+		label: "Rautezeichen",
+		glyph: "#",
+		shape: "<path d=\"m13 5-4 22M23 5l-4 22M5 12h23M3 21h23\"/>"
+	},
+	{
+		id: "symbol:check",
+		label: "Häkchen",
+		glyph: "✓",
+		shape: "<path d=\"m6 16 7 7L27 8\"/>"
+	}
+];
+var getStrengthSymbolMarkup = (id) => {
+	const symbol = strengthSymbolOptions.find((option) => option.id === id);
+	return symbol ? `<svg class="technology-brand-svg" data-strength-symbol="${symbol.id}" style="color:inherit" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">${symbol.shape}</svg>` : "";
+};
 //#endregion
 //#region node_modules/devicon/icons/aarch64/aarch64-original.svg?raw
 var aarch64_original_default = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 128 128\">\n    <g fill=\"#1b3888\">\n        <path\n            d=\"M70.089 26.264c-11.411-6.789-25.108-8.22-37.713-4.746C17.432 25.636 5.38 37.116.079 51.603q-.024.066-.051.002-.009-.025-.021-.048-.011-.024-.005-.05 5.007-19.766 21.5-31.155c18.216-12.576 42.79-12.044 60.643.992a.114.114 0 0 1-.023.2l-11.654 4.748a.428.426-40.7 0 1-.38-.028zM71.325 26.978a.03.03 0 0 1 .004-.053l11.754-4.79a.159.157 53.2 0 1 .157.022q15.7 12.43 19.523 31.957c1.583 8.085.993 16.763-1.342 24.58-6.383 21.37-26.086 36.61-48.391 37.292q-1.702.053-.017-.197 15.939-2.362 27.578-14.218c9.91-10.092 14.767-24.64 13.257-38.754q-1.105-10.342-6.506-19.415-5.976-10.043-16.017-16.424z\" />\n    </g>\n    <path fill=\"#45a945\"\n        d=\"M110.985 10.209h.22Q126.873 27.613 128 51.114v4.793q-1.1 23.145-16.098 40.192c-12.77 14.514-31.675 22.415-51.067 21.64q-1.181-.049-2.343-.21-.007-.002 0-.002 21.11-.9 36.825-14.431c12.675-10.914 20.095-27.247 20.07-44.035-.026-16.352-6.81-31.694-18.68-42.812a.131.131 0 0 1 .04-.218z\" />\n    <g fill=\"#221e1f\">\n        <path\n            d=\"M45.531 33.66q1.107.914 1.543 1.642 1.4 2.34 2.937 4.6.078.112-.06.112l-2.089-.01a.21.207-14.8 0 1-.176-.102c-.965-1.602-1.962-3.38-3.182-4.79q-1.033-1.195-2.644-.953-.076.012-.076.089V39.9q0 .108-.106.108H40.01q-.19 0-.188-.188l.074-13.263q0-.098.097-.098c1.672-.01 3.817-.203 5.233.324 2.958 1.1 3.256 5.371.322 6.743q-.114.053-.017.133zm-3.715-5.45-.009 4.065a.049.049 0 0 0 .049.048l1.573.005a2.117 1.86.1 0 0 2.121-1.857v-.44a2.117 1.86.1 0 0-2.113-1.866l-1.573-.002a.049.049 0 0 0-.048.047z\" />\n        <path\n            d=\"M53.476 31.047c-2.095 2.364-1.983 5.86.756 7.693 1.848 1.239 4.272 1.321 6.35.68a.095.097-.3 0 1 .12.12l-.557 1.84q-.034.112-.15.133-3.504.635-6.42-.959c-4.02-2.197-4.642-7.314-1.737-10.665 3.148-3.631 8.288-2.59 11.455.394q.091.086.053.205l-.548 1.795q-.049.157-.155.032c-2.314-2.695-6.533-4.238-9.167-1.268ZM34.074 37.32l-5.242 1.522a.08.08 0 0 0-.057.067l-.47 4.19a.08.08 0 0 1-.06.068l-1.756.495a.08.08 0 0 1-.102-.087l1.636-14.542a.08.08 0 0 1 .06-.067l1.225-.343a.08.08 0 0 1 .085.025l9.391 11.337a.08.08 0 0 1-.038.127l-1.76.527a.08.08 0 0 1-.084-.025l-2.743-3.27a.08.08 0 0 0-.085-.024zm-5.068-.492a.064.064 0 0 0 .082.068l3.652-1.09a.064.064 0 0 0 .032-.1l-3.125-3.808a.064.064 0 0 0-.112.034zM73.059 39.509l2.456-5.12a.102.102 0 0 1 .135-.048l1.596.747a.102.102 0 0 1 .05.138L71.51 47.308a.102.102 0 0 1-.135.048l-1.594-.755a.102.102 0 0 1-.049-.136l2.454-5.134a.102.102 0 0 0-.047-.135l-6.425-3.064a.102.102 0 0 0-.136.047l-2.443 5.132a.102.102 0 0 1-.135.048l-1.6-.755a.102.102 0 0 1-.05-.138l5.787-12.084a.102.102 0 0 1 .135-.047l1.598.765a.102.102 0 0 1 .047.135l-2.466 5.126a.102.102 0 0 0 .048.135l6.423 3.06a.102.102 0 0 0 .136-.047zM20.64 42.112l-4.792 2.596a.083.083 0 0 0-.042.08l.428 4.196a.083.083 0 0 1-.043.08l-1.602.85a.083.083 0 0 1-.121-.066L12.965 35.29a.083.083 0 0 1 .044-.08l1.122-.584a.083.083 0 0 1 .09.006l11.6 9.084a.083.083 0 0 1-.01.138l-1.611.872a.083.083 0 0 1-.089-.006l-3.383-2.6a.083.083 0 0 0-.089-.007zm-5.048.564a.066.066 0 0 0 .095.048l3.339-1.806a.066.066 0 0 0 .01-.11l-3.903-3.048a.066.066 0 0 0-.104.06zM18.078 76.495c9.624-5.043 20.785.733 20.857 11.991.042 6.849-4.88 13.113-11.718 14.364q-1.96.36-4.217.142c-6.02-.578-10.621-4.243-12.677-9.895Q9.28 90.233 9.17 87.425c-.548-13.953 7.825-26.289 19.223-33.656q.082-.055.142.023l4.054 5.147a.097.097 0 0 1-.026.144c-6.402 3.844-12.28 10.102-14.6 17.315q-.062.188.114.097zm13.851 11.79c-.216-5-4.854-7.583-9.467-6.993q-3.28.422-5.976 2.481-.08.064-.104.161c-1.209 5 .559 11.005 6.15 12.343q1.725.415 3.431.055c4.012-.85 6.134-4.129 5.966-8.047zM69.464 86.773v15.599a.087.087 0 0 1-.087.086h-6.76a.087.087 0 0 1-.086-.086V86.773a.087.087 0 0 0-.087-.087H42.188a.087.087 0 0 1-.086-.086l-.003-3.112a.087.087 0 0 1 .02-.055l24.318-29.687a.087.087 0 0 1 .065-.032h2.875a.087.087 0 0 1 .087.087v26.5a.087.087 0 0 0 .087.087h5.015a.087.087 0 0 1 .087.087l-.002 6.125a.087.087 0 0 1-.087.086h-5.013a.087.087 0 0 0-.087.087zm-6.933-19.93a.064.064 0 0 0-.112-.04L51.554 80.285a.064.064 0 0 0 .05.103h10.863a.064.064 0 0 0 .064-.063z\" />\n    </g>\n    <path fill=\"#0581ab\"\n        d=\"M114.095 52.37c3.836 33.88-22.178 63.495-56.162 64.247q-.049 0-.01-.03l.044-.036q.02-.02.05-.025 18.857-2.672 31.817-16.14c16.212-16.85 19.282-42.72 7.753-63.007q-5.162-9.086-13.329-15.573a.093.093 0 0 1 .023-.159l11.593-4.72a.246.246 0 0 1 .26.048c9.92 9.368 16.418 21.78 17.961 35.394z\" />\n</svg>\n";
@@ -10941,6 +11108,8 @@ var phpBrand = () => svg("<ellipse cx=\"24\" cy=\"16\" rx=\"22\" ry=\"10.5\" fil
 var typescriptBrand = () => svg("<rect x=\"3\" y=\"3\" width=\"26\" height=\"26\" rx=\"2\" fill=\"#3178c6\"/><path d=\"M8 9h15v4h-5v12h-5V13H8z\" fill=\"#fff\"/><path d=\"M19 17c0-3 2.2-4.8 5.4-4.8 1.7 0 3.1.4 4.2 1.2l-1.7 3c-.8-.5-1.6-.8-2.4-.8-.6 0-1 .3-1 .7 0 .5.6.7 1.8 1.2 2.2.8 3.2 2 3.2 4 0 2.5-1.9 4.2-5 4.2-2 0-3.7-.5-4.9-1.6l1.8-3c.9.8 2 1.2 3 1.2.8 0 1.2-.3 1.2-.8 0-.6-.6-.8-1.8-1.2-2.1-.8-3.2-2-3.2-3.3z\" fill=\"#fff\" transform=\"translate(-1 -1) scale(.82) translate(7 5)\"/>", "typescript");
 var frameworkBrand = () => svg("<path d=\"m16 3 10 5.5v6L16 20 6 14.5v-6z\" fill=\"#6f42c1\"/><path d=\"m6 17 10 5.5L26 17v6L16 29 6 23z\" fill=\"#9b72e5\"/><path d=\"m16 3v17M6 8.5 16 14l10-5.5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linejoin=\"round\"/>", "framework");
 var getTechnologyBrandIconMarkup = (technology, iconId = "") => {
+	const symbol = getStrengthSymbolMarkup(iconId);
+	if (symbol) return symbol;
 	const selectedIcon = getDeviconMarkup(iconId);
 	if (selectedIcon) return selectedIcon;
 	const normalized = technology.trim().toLocaleLowerCase("en-US").replace(/^(?:programming|programmiersprache)\s*[:–-]?\s*/i, "");
@@ -11021,23 +11190,6 @@ var getTechnologyBrandIconMarkup = (technology, iconId = "") => {
 	if (automaticDevicon) return automaticDevicon;
 	return letterMark(technology.slice(0, 3).toLocaleUpperCase("en-US"));
 };
-//#endregion
-//#region src/shared/contactPresentation.ts
-var internationalDigits = (value) => value.trim().replace(/^00/, "+").replace(/[^\d+]/g, "");
-/** Formats German mobile numbers for display without changing their stored value. */
-var formatPhoneForDisplay = (value = "") => {
-	const digits = internationalDigits(value).replace(/\D/g, "");
-	if (digits.startsWith("49") && /^1\d{9,10}$/.test(digits.slice(2))) return `+49 ${digits.slice(2, 5)} ${digits.slice(5)}`;
-	return value.trim();
-};
-var externalUrl = (value = "") => {
-	const trimmed = value.trim();
-	if (!trimmed) return "";
-	if (/^https?:\/\//i.test(trimmed)) return trimmed;
-	return `https://${trimmed.replace(/^[a-z][a-z\d+.-]*:(?:\/\/)?/i, "")}`;
-};
-/** Keeps the URL readable while the complete URL remains the link destination. */
-var formatUrlForDisplay = (value = "") => externalUrl(value).replace(/^https?:\/\//i, "").replace(/\/$/, "");
 //#endregion
 //#region src/shared/pehlioneCompetencies.ts
 var unique$1 = (values) => [...new Set(values.map((value) => value.trim()).filter(Boolean))];
@@ -11598,19 +11750,15 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 	const designClasses = `background-${designSettings.backgroundId} background-scope-${designSettings.backgroundScope} ${designSettings.showBackgroundInPrint ? "print-background" : "no-print-background"}`;
 	const backgroundLayer = programmingBackgroundMarkup(designSettings, atsMode);
 	const docs = application.documents;
-	const sections = {
-		...profile?.resumeSections ?? {
-			profile: true,
-			strengths: true,
-			experience: true,
-			education: true,
-			skills: true,
-			languages: true,
-			certifications: true
-		},
+	const sections = { ...profile?.resumeSections ?? {
+		profile: true,
+		strengths: true,
 		experience: true,
-		education: true
-	};
+		education: true,
+		skills: true,
+		languages: true,
+		certifications: true
+	} };
 	const name = fullName(profile);
 	const role = application.job.title;
 	const company = application.company.name;
@@ -11801,7 +11949,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 		};
 	});
 	const elegantStrengths = (explicitStrengths.length ? explicitStrengths : legacyStrengths).slice(0, 3);
-	const visualStrengthSection = elegantStrengths.length ? `<section><h3>Stärken</h3><div class="elegant-pdf-strengths">${elegantStrengths.map((strength) => `<article class="elegant-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div></section>` : "";
+	const visualStrengthSection = elegantStrengths.length ? `<section><h3>Stärken</h3><div class="elegant-pdf-strengths">${elegantStrengths.map((strength) => `<article class="elegant-pdf-strength">${getTechnologyBrandIconMarkup(strength.title, profile?.strengths.find((entry) => entry.title.trim() === strength.title)?.iconId)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div></section>` : "";
 	const atsStrengthSection = elegantStrengths.length ? `<section class="elegant-pdf-section"><h3>Stärken</h3><ul>${elegantStrengths.map((strength) => `<li><strong>${escapeHtml(strength.title)}</strong>${strength.description ? ` – ${escapeHtml(strength.description)}` : ""}</li>`).join("")}</ul></section>` : "";
 	const elegantLanguages = uniqueValues(profile?.languages ?? []).map((raw) => {
 		const [namePart, ...levelParts] = raw.split(/\s+[–—-]\s+/);
@@ -11992,7 +12140,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 		description: strength.description.trim()
 	})).filter((strength) => strength.title).slice(0, 3);
 	const zweispaltigStrengths = explicitZweispaltigStrengths.length ? explicitZweispaltigStrengths : elegantStrengths;
-	const zweispaltigVisualStrengthSection = zweispaltigStrengths.length ? `<section><h3>${escapeHtml(getResumeSectionTitle(profile, "strengths"))}</h3><div class="zweispaltig-pdf-strengths">${zweispaltigStrengths.map((strength) => `<article class="zweispaltig-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div></section>` : "";
+	const zweispaltigVisualStrengthSection = zweispaltigStrengths.length ? `<section><h3>${escapeHtml(getResumeSectionTitle(profile, "strengths"))}</h3><div class="zweispaltig-pdf-strengths">${zweispaltigStrengths.map((strength) => `<article class="zweispaltig-pdf-strength">${getTechnologyBrandIconMarkup(strength.title, profile?.strengths.find((entry) => entry.title.trim() === strength.title)?.iconId)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div></section>` : "";
 	const zweispaltigAtsStrengthSection = zweispaltigStrengths.length ? `<section class="zweispaltig-pdf-section"><h3>${escapeHtml(getResumeSectionTitle(profile, "strengths"))}</h3><ul>${zweispaltigStrengths.map((strength) => `<li>${escapeHtml(strength.title)}${strength.description ? ` – ${escapeHtml(strength.description)}` : ""}</li>`).join("")}</ul></section>` : "";
 	const zweispaltigLanguages = uniqueValues(profile?.languages ?? []).map((raw) => {
 		const [namePart, ...levelParts] = raw.split(/\s+[–—-]\s+/);
@@ -12168,7 +12316,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 	const zeitVisualLanguages = zeitLanguages.length ? `<section>${zeitHeading("Sprachen", "languages")}<div class="zeit-pdf-languages">${zeitLanguages.map((language) => `<article class="zeit-pdf-language"><div><h4>${escapeHtml(language.name)}</h4><span class="zeit-pdf-dots" aria-label="${escapeHtml(`${language.name}: ${language.level}`)}">${Array.from({ length: 6 }, (_, index) => `<i class="${index < language.score ? "filled" : ""}"></i>`).join("")}</span></div></article>`).join("")}</div></section>` : "";
 	const zeitAtsLanguages = zeitLanguages.length ? `<section class="zeit-pdf-section">${zeitHeading("Sprachen", "languages")}<ul>${zeitLanguages.map((language) => `<li>${escapeHtml(language.raw)}</li>`).join("")}</ul></section>` : "";
 	const zeitStrengths = elegantStrengths;
-	const zeitVisualStrengths = zeitStrengths.length ? `<section>${zeitHeading("Stärken", "strengths")}<div class="zeit-pdf-strengths">${zeitStrengths.map((strength) => `<article class="zeit-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div></section>` : "";
+	const zeitVisualStrengths = zeitStrengths.length ? `<section>${zeitHeading("Stärken", "strengths")}<div class="zeit-pdf-strengths">${zeitStrengths.map((strength) => `<article class="zeit-pdf-strength">${getTechnologyBrandIconMarkup(strength.title, profile?.strengths.find((entry) => entry.title.trim() === strength.title)?.iconId)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div></section>` : "";
 	const zeitAtsStrengths = zeitStrengths.length ? `<section class="zeit-pdf-section">${zeitHeading("Stärken", "strengths")}<ul>${zeitStrengths.map((strength) => `<li><strong>${escapeHtml(strength.title)}</strong>${strength.description ? ` – ${escapeHtml(strength.description)}` : ""}</li>`).join("")}</ul></section>` : "";
 	const zeitCertifications = uniqueValues(profile?.certifications ?? []);
 	const zeitVisualCertifications = zeitCertifications.length ? `<section>${zeitHeading("Zertifikate", "certifications")}<ul>${zeitCertifications.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>` : "";
@@ -12347,7 +12495,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 		description: strength.description
 	}));
 	const kreativStrengthItems = (kreativExplicitStrengthItems.length ? kreativExplicitStrengthItems : kreativKnowledgeStrengthItems).slice(0, 3);
-	const kreativVisualStrengths = kreativStrengthItems.length ? `<section><h3>Stärken</h3><div class="kreativ-pdf-strengths">${kreativStrengthItems.map((strength) => `<article class="kreativ-pdf-strength">${getTechnologyBrandIconMarkup(strength.name)}<div><h4>${escapeHtml(strength.name)}</h4>${strength.description?.trim() ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div></section>` : "";
+	const kreativVisualStrengths = kreativStrengthItems.length ? `<section><h3>Stärken</h3><div class="kreativ-pdf-strengths">${kreativStrengthItems.map((strength) => `<article class="kreativ-pdf-strength">${getTechnologyBrandIconMarkup(strength.name, profile?.strengths.find((entry) => entry.title.trim() === strength.name)?.iconId)}<div><h4>${escapeHtml(strength.name)}</h4>${strength.description?.trim() ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div></section>` : "";
 	const kreativAtsStrengths = kreativStrengthItems.length ? `<section><h3>Stärken</h3><ul>${kreativStrengthItems.map((strength) => `<li>${escapeHtml(strength.name)}</li>`).join("")}</ul></section>` : "";
 	const kreativSkillValues = uniqueValues([...resolveKnowledgeGroups(application.templateId, profile?.resumeKnowledgeGroups).filter((group) => group.visible).flatMap((group) => group.items.filter((item) => item.visible && item.text.trim()).map((item) => item.description ? `${item.text} – ${item.description}` : item.text)), ...(kreativKnowledge?.categories ?? []).filter((category) => category.isVisible).sort((left, right) => left.sortOrder - right.sortOrder).flatMap((category) => [...visibleKnowledgeItems(category.items).map((item) => formatKnowledgeItem(item, category.showLevels, category.showYearsOfExperience, "comma-separated")), ...category.subcategories.filter((subcategory) => subcategory.isVisible).sort((left, right) => left.sortOrder - right.sortOrder).flatMap((subcategory) => visibleKnowledgeItems(subcategory.items).map((item) => formatKnowledgeItem(item, category.showLevels, category.showYearsOfExperience, "comma-separated")))])]);
 	const kreativVisualSkills = kreativSkillValues.length ? `<section><h3>Fähigkeiten</h3><div class="kreativ-pdf-skills">${kreativSkillValues.map((skill) => `<span class="kreativ-pdf-skill">${escapeHtml(skill)}</span>`).join("")}</div></section>` : "";
@@ -12486,7 +12634,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 			description: descriptionParts.join(" – ").trim()
 		};
 	})).slice(0, 6);
-	const ivyVisualStrengths = ivyStrengths.length ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Stärken</h3><div class="ivy-pdf-strengths">${ivyStrengths.map((strength) => `<article class="ivy-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div></section>` : "";
+	const ivyVisualStrengths = ivyStrengths.length ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Stärken</h3><div class="ivy-pdf-strengths">${ivyStrengths.map((strength) => `<article class="ivy-pdf-strength">${getTechnologyBrandIconMarkup(strength.title, profile?.strengths.find((entry) => entry.title.trim() === strength.title)?.iconId)}<div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div></section>` : "";
 	const ivyAtsStrengths = ivyStrengths.length ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Stärken</h3><ul>${ivyStrengths.map((strength) => `<li><strong>${escapeHtml(strength.title)}</strong>${strength.description ? ` – ${escapeHtml(strength.description)}` : ""}</li>`).join("")}</ul></section>` : "";
 	const ivyVisualLanguages = kreativLanguages.length ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Sprachen</h3><div class="ivy-pdf-languages ivy-pdf-languages--columns-${Math.min(3, kreativLanguages.length)}">${kreativLanguages.map((language) => `<article class="ivy-pdf-language"><strong>${escapeHtml(language.name)}</strong><span class="ivy-pdf-dots" aria-label="${escapeHtml(`${language.name}: ${language.level}`)}">${Array.from({ length: 6 }, (_, index) => `<i class="${index < language.score ? "filled" : ""}"></i>`).join("")}</span></article>`).join("")}</div></section>` : "";
 	const ivyAtsLanguages = kreativLanguages.length ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Sprachen</h3><ul>${kreativLanguages.map((language) => `<li>${escapeHtml(language.raw)}</li>`).join("")}</ul></section>` : "";
@@ -12686,7 +12834,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
         ${isContinuation ? "<p class=\"kicker\">Lebenslauf · Fortsetzung</p>" : ""}
         <h1>${escapeHtml(name)}</h1>${managedJobTitle ? `<h2>${escapeHtml(managedJobTitle)}</h2>` : ""}
       </header>
-      ${!isContinuation ? managedSection("Persönliche Daten", `<p>${managedAtsContacts}</p>`) : ""}
+      ${!isContinuation ? managedSection("Persönliche Daten", `<p>${managedAtsContacts}</p>`, "resume-personal-data") : ""}
       ${sections.profile && !isContinuation ? managedSection("Zusammenfassung", `<p>${escapeHtml(managedSummary)}</p>`, variant === "einfach" ? "einfach-pdf-summary" : "") : ""}
       ${sections.experience && experiences ? managedSection(`Berufserfahrung${isContinuation ? " · Fortsetzung" : ""}`, `<div class="managed-pdf-list">${experiences}</div>`) : ""}
       ${sections.education && education ? managedSection("Ausbildung", `<div class="managed-pdf-list">${education}</div>`) : ""}
@@ -12712,7 +12860,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
       <div>${isContinuation ? "<p class=\"kicker\">Lebenslauf · Fortsetzung</p>" : ""}<h1>${escapeHtml(name)}</h1>${managedJobTitle ? `<h2>${escapeHtml(managedJobTitle)}</h2>` : ""}${!isContinuation && managedContactValues.length ? `<address class="${contactsClass}">${contacts}</address>` : ""}</div>${photo}
     </header>`;
 	};
-	const managedStrengthCards = (variant) => managedStrengths.length ? `<div class="${variant}-pdf-strengths">${managedStrengths.map((strength) => `<article class="${variant}-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div>` : "";
+	const managedStrengthCards = (variant) => managedStrengths.length ? `<div class="${variant}-pdf-strengths">${managedStrengths.map((strength) => `<article class="${variant}-pdf-strength">${getTechnologyBrandIconMarkup(strength.title, profile?.strengths.find((entry) => entry.title.trim() === strength.title)?.iconId)}<div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div>` : "";
 	const managedAchievementCards = (variant) => kreativCertifications.length ? `<div class="${variant}-pdf-strengths">${kreativCertifications.slice(0, 2).map((achievement) => `<article class="${variant}-pdf-strength"><i aria-hidden="true">&#9733;</i><div><h3>${escapeHtml(achievement)}</h3></div></article>`).join("")}</div>` : "";
 	const managedVisualLanguages = (variant) => kreativLanguages.length ? `<div class="${variant}-pdf-languages">${kreativLanguages.map((language) => `<article class="${variant}-pdf-language"><strong>${escapeHtml(language.name)}</strong>${managedDots(language.score)}</article>`).join("")}</div>` : "";
 	const renderStilvollResumePage = (plan) => {
@@ -12781,7 +12929,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 		const value = escapeHtml(contact.value);
 		return `<span data-contact-kind="${contact.kind}">${contact.href ? `<a href="${escapeHtml(contact.href)}">${value}</a>` : value}</span>`;
 	}).join("");
-	const klassischStrengths = managedStrengths.length ? `<div class="klassisch-pdf-strengths">${managedStrengths.slice(0, 3).slice(0, 6).map((strength) => `<article class="klassisch-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div>` : "";
+	const klassischStrengths = managedStrengths.length ? `<div class="klassisch-pdf-strengths">${managedStrengths.slice(0, 3).slice(0, 6).map((strength) => `<article class="klassisch-pdf-strength">${getTechnologyBrandIconMarkup(strength.title, profile?.strengths.find((entry) => entry.title.trim() === strength.title)?.iconId)}<div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div>` : "";
 	const klassischAtsStrengths = managedStrengths.length ? `<ul>${managedStrengths.slice(0, 3).map((strength) => `<li><strong>${escapeHtml(strength.title)}</strong>${strength.description ? ` – ${escapeHtml(strength.description)}` : ""}</li>`).join("")}</ul>` : "";
 	const klassischKnowledgeValues = kreativSkillValues.filter((value) => !uniqueValues(profile?.skills ?? []).slice(0, 3).includes(value));
 	const klassischKnowledge = klassischKnowledgeValues.length ? `<p>${klassischKnowledgeValues.map(escapeHtml).join(" · ")}</p>` : "";
@@ -12796,7 +12944,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 		const isLastPage = plan.pageNumber === resumePlan.length;
 		const experiences = plan.items.filter((item) => item.kind === "experience").map((item) => klassischCareerEntry(item.id, "experience")).join("");
 		const education = plan.items.filter((item) => item.kind === "education").map((item) => klassischCareerEntry(item.id, "education")).join("");
-		if (atsMode) return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="klassisch" data-no-fit="true"><div class="page-content klassisch-pdf klassisch-pdf-ats" data-density="${plan.density}">${klassischHeader(isContinuation, false)}${!isContinuation ? klassischSection("Persönliche Daten", `<p>${managedAtsContacts}</p>`) : ""}${sections.profile && !isContinuation ? klassischSection("Zusammenfassung", `<p>${escapeHtml(managedSummary)}</p>`) : ""}${sections.experience && experiences ? klassischSection(`Erfahrung${isContinuation ? " · Fortsetzung" : ""}`, `<div class="klassisch-pdf-list">${experiences}</div>`) : ""}${sections.education && education ? klassischSection("Ausbildung", `<div class="klassisch-pdf-list">${education}</div>`, "klassisch-pdf-education") : ""}${isLastPage && sections.skills ? klassischSection("Kenntnisse", klassischKnowledge) : ""}${isLastPage && sections.languages ? klassischSection("Sprachen", klassischLanguages) : ""}${isLastPage && sections.strengths ? klassischSection("Stärken", klassischAtsStrengths) : ""}${isLastPage && sections.certifications ? klassischSection("Zertifikate", managedCertifications) : ""}</div></section>`;
+		if (atsMode) return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="klassisch" data-no-fit="true"><div class="page-content klassisch-pdf klassisch-pdf-ats" data-density="${plan.density}">${klassischHeader(isContinuation, false)}${!isContinuation ? klassischSection("Persönliche Daten", `<p>${managedAtsContacts}</p>`, "resume-personal-data") : ""}${sections.profile && !isContinuation ? klassischSection("Zusammenfassung", `<p>${escapeHtml(managedSummary)}</p>`) : ""}${sections.experience && experiences ? klassischSection(`Erfahrung${isContinuation ? " · Fortsetzung" : ""}`, `<div class="klassisch-pdf-list">${experiences}</div>`) : ""}${sections.education && education ? klassischSection("Ausbildung", `<div class="klassisch-pdf-list">${education}</div>`, "klassisch-pdf-education") : ""}${isLastPage && sections.skills ? klassischSection("Kenntnisse", klassischKnowledge) : ""}${isLastPage && sections.languages ? klassischSection("Sprachen", klassischLanguages) : ""}${isLastPage && sections.strengths ? klassischSection("Stärken", klassischAtsStrengths) : ""}${isLastPage && sections.certifications ? klassischSection("Zertifikate", managedCertifications) : ""}</div></section>`;
 		return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="klassisch" data-no-fit="true"><div class="page-content klassisch-pdf" data-density="${plan.density}">${designSettings.backgroundId === "classic-soft-blue-waves" && !isContinuation ? klassischBackground : ""}<div class="klassisch-pdf-content">${klassischHeader(isContinuation, true)}${sections.profile && !isContinuation ? klassischSection("Zusammenfassung", `<p>${escapeHtml(managedSummary)}</p>`) : ""}${sections.strengths && !isContinuation ? klassischSection("Stärken", klassischStrengths) : ""}${sections.experience && experiences ? klassischSection(`Erfahrung${isContinuation ? " · Fortsetzung" : ""}`, `<div class="klassisch-pdf-list">${experiences}</div>`) : ""}${sections.education && education ? klassischSection("Ausbildung", `<div class="klassisch-pdf-list">${education}</div>`, "klassisch-pdf-education") : ""}${isLastPage && sections.skills ? klassischSection("Kenntnisse", klassischKnowledge) : ""}${isLastPage && sections.languages ? klassischSection("Sprachen", klassischLanguages) : ""}${isLastPage && sections.certifications ? klassischSection("Zertifikate", managedCertifications) : ""}</div>${klassischFooter(plan)}</div></section>`;
 	};
 	const modernSection = (title, content, extraClass = "") => content ? `<section class="modern-pdf-section ${extraClass}"><h3 class="modern-pdf-title">${escapeHtml(title)}</h3>${content}</section>` : "";
@@ -12884,7 +13032,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 		return `<article class="modern-pdf-entry"><h3>${escapeHtml(item.title)}</h3><p class="modern-pdf-entry-meta"><strong>${escapeHtml(item.organization)}</strong><span class="modern-pdf-entry-date"><i aria-hidden="true">▦</i>${escapeHtml(formatDateRange(item.from, item.to))}</span>${item.city ? `<span class="modern-pdf-entry-location"><i aria-hidden="true">●</i>${escapeHtml(item.city)}</span>` : ""}</p>${item.achievements.length ? `<ul>${item.achievements.map((achievement) => `<li>${escapeHtml(achievement)}</li>`).join("")}</ul>` : ""}</article>`;
 	};
 	const modernDescribedStrengths = managedStrengths.filter((item) => item.description);
-	const modernVisualStrengths = modernDescribedStrengths.length ? `<div class="modern-pdf-strengths">${modernDescribedStrengths.map((item) => `<article class="modern-pdf-strength">${getTechnologyBrandIconMarkup(item.title)}<div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description)}</p></div></article>`).join("")}</div>` : "";
+	const modernVisualStrengths = modernDescribedStrengths.length ? `<div class="modern-pdf-strengths">${modernDescribedStrengths.map((item) => `<article class="modern-pdf-strength">${getTechnologyBrandIconMarkup(item.title, profile?.strengths.find((entry) => entry.title.trim() === item.title)?.iconId)}<div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description)}</p></div></article>`).join("")}</div>` : "";
 	const modernVisualKnowledge = kreativSkillValues.length ? `<div class="modern-pdf-knowledge">${kreativSkillValues.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>` : "";
 	const modernVisualAchievements = kreativCertifications.length ? `<div class="modern-pdf-achievements">${kreativCertifications.map((item) => `<article><p>${escapeHtml(item)}</p></article>`).join("")}</div>` : "";
 	const modernVisualLanguages = kreativLanguages.length ? `<div class="modern-pdf-languages">${kreativLanguages.map((language) => `<article class="modern-pdf-language"><div><strong>${escapeHtml(language.name)}</strong></div><span class="modern-pdf-dots" aria-label="${escapeHtml(`${language.name}: ${language.level}`)}">${Array.from({ length: 6 }, (_, index) => `<i class="${index < language.score ? "filled" : ""}"></i>`).join("")}</span></article>`).join("")}</div>` : "";
@@ -12949,57 +13097,8 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 		}).join("");
 		const experience = entries("experience");
 		const education = entries("education");
-		const personalVisibility = {
-			...defaultResumePersonalFieldVisibility,
-			...profile?.resumePersonalFieldVisibility
-		};
-		const contacts = [
-			{
-				visibility: personalVisibility.address,
-				kind: "location",
-				label: "Ort",
-				value: [profile?.city, profile?.country].filter(Boolean).join(", "),
-				href: ""
-			},
-			{
-				visibility: personalVisibility.phone,
-				kind: "phone",
-				label: "Telefon",
-				value: formatPhoneForDisplay(profile?.phone),
-				href: profile?.phone ? `tel:${profile.phone.replace(/[^\d+]/g, "")}` : ""
-			},
-			{
-				visibility: personalVisibility.email,
-				kind: "mail",
-				label: "E-Mail",
-				value: profile?.email || "",
-				href: profile?.email ? `mailto:${profile.email}` : ""
-			},
-			{
-				visibility: personalVisibility.linkedin,
-				kind: "linkedin",
-				label: "LinkedIn",
-				value: formatUrlForDisplay(profile?.linkedin || ""),
-				href: externalUrl(profile?.linkedin || "")
-			},
-			{
-				visibility: personalVisibility.github,
-				kind: "linkedin",
-				label: "GitHub",
-				value: formatUrlForDisplay(profile?.github || ""),
-				href: externalUrl(profile?.github || "")
-			},
-			{
-				visibility: personalVisibility.website,
-				kind: "linkedin",
-				label: "Website",
-				value: formatUrlForDisplay(profile?.portfolio || ""),
-				href: externalUrl(profile?.portfolio || "")
-			}
-		].filter((contact) => contact.visibility && contact.value).map((contact) => {
-			const value = contact.href ? `<a href="${escapeHtml(contact.href)}">${escapeHtml(contact.value)}</a>` : escapeHtml(contact.value);
-			return `<li>${kreativIconMarkup(contact.kind)}<span><strong>${escapeHtml(contact.label)}</strong>${value}</span></li>`;
-		}).join("");
+		const contactItems = getPehlioneContacts(profile);
+		const contacts = renderPehlioneContacts(profile);
 		const coreCompetencies = getPehlioneCoreCompetencies(profile);
 		const groupedCompetencies = groupPehlioneCompetencies(managedStrengths.slice(0, 8));
 		const competence = (coreCompetencies.length ? coreCompetencies.map((item) => `<li>${escapeHtml(item)}</li>`) : groupedCompetencies.map((group) => `<li><strong>${escapeHtml(group.title)}:</strong> ${escapeHtml(group.values.join(" · "))}</li>`)).join("");
@@ -13033,9 +13132,9 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 		const closingMarkup = lastPage && closingSection.visible && (closing.showPlace || closing.showDate || closing.showSignature) ? `<footer class="pehlione-pdf-closing">${closing.showPlace || closing.showDate ? `<p>${escapeHtml([closing.showPlace ? profile?.applicationPlace || profile?.city : "", closing.showDate ? profile?.applicationDate : ""].filter(Boolean).join(", "))}</p>` : ""}${closing.showSignature ? `<div class="pehlione-pdf-signer">${signatureSource ? `<img src="${escapeHtml(signatureSource)}" alt="Unterschrift">` : ""}<strong>${escapeHtml(name)}</strong></div>` : ""}</footer>` : "";
 		const main = `${!continuation && summarySection.visible && sections.profile && managedSummary ? `<section class="pehlione-pdf-section pehlione-pdf-summary-section">${sectionHeading(getResumeSemanticTitle(semanticSections, "summary"), "profile")}<p class="pehlione-pdf-summary">${escapeHtml(managedSummary)}</p></section>` : ""}${sections.experience && experience ? `<section class="pehlione-pdf-section pehlione-pdf-experience">${sectionHeading(`${getResumeSemanticTitle(semanticSections, "career")}${continuation ? " · Fortsetzung" : ""}`, "experience")}${experience}</section>` : ""}${sections.education && education ? `<section class="pehlione-pdf-section pehlione-pdf-education">${sectionHeading(getResumeSemanticTitle(semanticSections, "education"), "education")}${education}</section>` : ""}${!continuation && project && !knowledgeGroups.some((group) => group.semanticType === "project-highlight" && visibleBlockItems(group).length) ? `<section class="pehlione-pdf-section pehlione-pdf-project">${sectionHeading("Projekt-Highlight", "project")}<h4>${escapeHtml(project.title)}</h4><p>${[project.company, ...project.technologies].filter(Boolean).map(escapeHtml).join(" · ")}</p>${project.achievements.length ? `<ul>${project.achievements.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul>` : ""}</section>` : ""}${lastPage && knowledgeSection.visible && profile?.resumeKnowledgeContainer?.showTitle && mainKnowledge ? `<section class="pehlione-pdf-section">${sectionHeading(getResumeSemanticTitle(semanticSections, "knowledge"), "profile")}</section>` : ""}${lastPage && knowledgeSection.visible ? mainKnowledge : ""}${lastPage && sections.certifications && kreativCertifications.length && !knowledgeGroups.some((group) => ["training", "certificates"].includes(group.semanticType)) ? `<section class="pehlione-pdf-section pehlione-pdf-training">${sectionHeading("Weiterbildungen", "training")}<ul>${kreativCertifications.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></section>` : ""}${closingMarkup}${!experience && !education ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}`;
 		const density = plan.items.length >= 5 ? "compact" : plan.density;
-		if (atsMode || continuation) return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="${escapeHtml(template.id)}" data-no-fit="true"><div class="page-content pehlione-pdf${template.id === "pehlione_white" ? " pehlione-pdf-white" : ""} ${continuation ? "pehlione-pdf-continuation" : "pehlione-pdf-ats"}" data-density="${density}"><main class="pehlione-pdf-main">${header}${!continuation ? `<p class="pehlione-pdf-ats-contact"><strong>Kontakt:</strong> ${contacts.replace(/<[^>]+>/g, " ")}</p>` : ""}${main}</main></div></section>`;
+		if (atsMode || continuation) return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="${escapeHtml(template.id)}" data-no-fit="true"><div class="page-content pehlione-pdf${template.id === "pehlione_white" ? " pehlione-pdf-white" : ""} ${continuation ? "pehlione-pdf-continuation" : "pehlione-pdf-ats"}" data-density="${density}"><main class="pehlione-pdf-main">${header}${!continuation ? `<p class="pehlione-pdf-ats-contact"><strong>Kontakt:</strong> ${contactItems.map((item) => escapeHtml(item.value)).join(" · ")}</p>` : ""}${main}</main></div></section>`;
 		const languages = sections.languages ? (profile?.languages ?? []).filter(Boolean).map((item) => `<li>${escapeHtml(item)}</li>`).join("") : "";
-		const sidebar = `<aside class="pehlione-pdf-sidebar"><div class="pehlione-pdf-hero${pehlionePhoto ? " with-photo" : ""}">${template.id === "pehlione_white" ? `<span class="pehlione-pdf-blueprint">${pehlioneBlueprintMarkup}</span>` : ""}${pehlionePhoto}</div>${contacts ? `<section class="pehlione-pdf-contact-section">${sidebarHeading("Kontakt", "profile")}<ul>${contacts}</ul></section>` : ""}${knowledgeSection.visible && profile?.resumeKnowledgeContainer?.showTitle && knowledgeGroups.some((group) => group.slot === "sidebar") ? `<h3 class="pehlione-pdf-container-title">${escapeHtml(getResumeSemanticTitle(semanticSections, "knowledge"))}</h3>` : ""}${knowledgeSection.visible && sections.strengths && competenceMarkup ? `<section>${sidebarHeading(coreGroup?.title || "Kernkompetenzen", "project")}<ul>${competenceMarkup}</ul></section>` : ""}${knowledgeSection.visible && focus ? `<section>${sidebarHeading(focusGroup?.title || "Technische Schwerpunkte", "training")}<ul>${focus}</ul></section>` : ""}${knowledgeSection.visible ? sidebarKnowledge : ""}${languages ? `<section><h3>Sprachen</h3><ul>${languages}</ul></section>` : ""}</aside>`;
+		const sidebar = `<aside class="pehlione-pdf-sidebar"><div class="pehlione-pdf-hero${pehlionePhoto ? " with-photo" : ""}">${template.id === "pehlione_white" ? `<span class="pehlione-pdf-blueprint">${pehlioneBlueprintMarkup}</span>` : ""}${pehlionePhoto}</div>${contacts}${knowledgeSection.visible && profile?.resumeKnowledgeContainer?.showTitle && knowledgeGroups.some((group) => group.slot === "sidebar") ? `<h3 class="pehlione-pdf-container-title">${escapeHtml(getResumeSemanticTitle(semanticSections, "knowledge"))}</h3>` : ""}${knowledgeSection.visible && sections.strengths && competenceMarkup ? `<section>${sidebarHeading(coreGroup?.title || "Kernkompetenzen", "project")}<ul>${competenceMarkup}</ul></section>` : ""}${knowledgeSection.visible && focus ? `<section>${sidebarHeading(focusGroup?.title || "Technische Schwerpunkte", "training")}<ul>${focus}</ul></section>` : ""}${knowledgeSection.visible ? sidebarKnowledge : ""}${languages ? `<section><h3>Sprachen</h3><ul>${languages}</ul></section>` : ""}</aside>`;
 		const sidebarWidth = (profile?.resumeColumnRatio ?? 30) * 2.1;
 		return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="${escapeHtml(template.id)}" data-no-fit="true"><div class="page-content pehlione-pdf${template.id === "pehlione_white" ? " pehlione-pdf-white" : ""}" data-density="${density}" style="grid-template-columns:${sidebarWidth}mm minmax(0,1fr)">${sidebar}<main class="pehlione-pdf-main">${header}${main}</main></div></section>`;
 	};
@@ -13093,7 +13192,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 	const tabellarischStrengths = (ats = false) => {
 		if (!tabellarischStrengthItems.length) return "";
 		if (ats) return `<ul>${tabellarischStrengthItems.map((item) => `<li><strong>${escapeHtml(item.title)}</strong>${item.description.trim() ? ` - ${escapeHtml(item.description)}` : ""}</li>`).join("")}</ul>`;
-		return `<div class="tabellarisch-pdf-strengths">${tabellarischStrengthItems.map((item) => `<article class="tabellarisch-pdf-strength">${getTechnologyBrandIconMarkup(item.title)}<div><h3>${escapeHtml(item.title)}</h3>${item.description.trim() ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("")}</div>`;
+		return `<div class="tabellarisch-pdf-strengths">${tabellarischStrengthItems.map((item) => `<article class="tabellarisch-pdf-strength">${getTechnologyBrandIconMarkup(item.title, profile?.strengths.find((entry) => entry.title.trim() === item.title)?.iconId)}<div><h3>${escapeHtml(item.title)}</h3>${item.description.trim() ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("")}</div>`;
 	};
 	const formatTabellarischDateRange = (from, to) => {
 		const start = from.trim();
@@ -13206,7 +13305,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 	const gepflegtStrengthMarkup = (ats = false) => {
 		if (!sections.skills || !gepflegtStrengths.length) return "";
 		if (ats) return `<section><h3>Stärken</h3><ul>${gepflegtStrengths.map((strength) => `<li><strong>${escapeHtml(strength.title)}</strong>${strength.description ? ` - ${escapeHtml(strength.description)}` : ""}</li>`).join("")}</ul></section>`;
-		return `<section><h3>Stärken</h3><div class="gepflegt-pdf-strengths">${gepflegtStrengths.map((strength) => `<article class="gepflegt-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div></section>`;
+		return `<section><h3>Stärken</h3><div class="gepflegt-pdf-strengths">${gepflegtStrengths.map((strength) => `<article class="gepflegt-pdf-strength">${getTechnologyBrandIconMarkup(strength.title, profile?.strengths.find((entry) => entry.title.trim() === strength.title)?.iconId)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`).join("")}</div></section>`;
 	};
 	const gepflegtLanguageMarkup = (ats = false) => {
 		if (!sections.languages || !gepflegtLanguages.length) return "";
@@ -13312,7 +13411,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 		cover,
 		resume
 	] : target === "deckblatt" ? [cover] : target === "anschreiben" ? [letter] : [resume];
-	return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}${ivyLeagueDocumentCss}${extendedResumeDocumentCss}${klassischDocumentCss}${modernDocumentCss}${pehlioneDocumentCss}${pehlionePdfLayoutFixes}${gepflegtDocumentCss}${tabellarischDocumentCss}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
+	return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}${ivyLeagueDocumentCss}${extendedResumeDocumentCss}${klassischDocumentCss}${modernDocumentCss}${pehlioneDocumentCss}${pehlionePdfLayoutFixes}${pehlioneContactsCss}${gepflegtDocumentCss}${tabellarischDocumentCss}${getResumeIdentityVisibilityCss(profile?.resumeSemanticSections)}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
 };
 //#endregion
 //#region electron/file-management.ts

@@ -1,2 +1,3 @@
-2026/09/22-15:35:41.403 cdc Creating DB D:\bewerbung\bewerbung-studio\tmp\pdfs\white-qa-browser\Default\shared_proto_db\metadata since it was missing.
-2026/09/22-15:35:41.410 cdc Reusing MANIFEST D:\bewerbung\bewerbung-studio\tmp\pdfs\white-qa-browser\Default\shared_proto_db\metadata/MANIFEST-000001
+2026/09/22-19:55:54.892 457c Reusing MANIFEST D:\bewerbung\bewerbung-studio\tmp\pdfs\white-qa-browser\Default\shared_proto_db\metadata/MANIFEST-000001
+2026/09/22-19:55:54.893 457c Recovering log #3
+2026/09/22-19:55:54.893 457c Reusing old log D:\bewerbung\bewerbung-studio\tmp\pdfs\white-qa-browser\Default\shared_proto_db\metadata/000003.log 

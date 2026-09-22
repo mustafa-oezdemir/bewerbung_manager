@@ -7219,6 +7219,20 @@ body.is-resizing-split-view * {
   background: color-mix(in srgb, var(--surface) 92%, var(--accent) 8%);
 }
 
+.resume-knowledge-groups-panel {
+  display: block;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.resume-knowledge-groups-panel > summary { list-style: none; }
+.resume-knowledge-groups-panel > summary::-webkit-details-marker { display: none; }
+.resume-knowledge-groups-panel > summary:focus-visible { outline: 2px solid var(--brand); outline-offset: -3px; border-radius: 14px; }
+.resume-knowledge-groups-panel[open] > summary > svg { transform: rotate(180deg); }
+.resume-knowledge-groups-body { display: grid; gap: 0.8rem; padding: 1rem; border-top: 1px solid var(--line); }
+
 .resume-semantic-system > summary,
 .resume-personal-fields-panel > header,
 .resume-knowledge-groups-panel > header,
