@@ -483,6 +483,31 @@ describe("Lebenslauf-Dokumente", () => {
     expect(html).toContain("grid-template-columns:73.5mm minmax(0,1fr)");
   });
 
+  it("places an enabled Pehlione photo inside the PDF hero circle", () => {
+    const pehlioneApplication = applicationSchema.parse({
+      ...application,
+      templateId: "pehlione_white_blue",
+    });
+    const photoProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,AA==",
+      resumeSemanticSections: resolveResumeSectionInstances([]).map((section) =>
+        section.semanticType === "photo"
+          ? { ...section, visible: true, enabled: true }
+          : section,
+      ),
+    });
+    const visiblePdf = buildDocumentHtml(pehlioneApplication, photoProfile, "lebenslauf");
+    const hiddenPdf = buildDocumentHtml(
+      pehlioneApplication,
+      profileSchema.parse({ ...photoProfile, resumeSemanticSections: resolveResumeSectionInstances([]) }),
+      "lebenslauf",
+    );
+
+    expect(visiblePdf.slice(visiblePdf.indexOf("<body>"))).toContain('class="pehlione-pdf-photo"');
+    expect(hiddenPdf.slice(hiddenPdf.indexOf("<body>"))).not.toContain('class="pehlione-pdf-photo"');
+  });
+
   it("reduces the date-to-subject gap in the PDF with each requested step", () => {
     const compactGapApplication = applicationSchema.parse({
       ...application,

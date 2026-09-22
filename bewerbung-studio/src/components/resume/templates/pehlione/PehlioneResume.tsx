@@ -94,6 +94,9 @@ export function PehlioneResume({
   const density = plan.items.length >= 5 ? "compact" : plan.density;
   const project = getPehlioneProjectHighlight(profile);
   const semanticSections = profile?.resumeSemanticSections;
+  const photoSource = getResumeSemanticSection(semanticSections, "photo").visible
+    ? getProfileMediaSource(profile?.photoPath)
+    : null;
   const summarySection = getResumeSemanticSection(semanticSections, "summary");
   const knowledgeSection = getResumeSemanticSection(semanticSections, "knowledge");
   const interestsSection = getResumeSemanticSection(semanticSections, "interests");
@@ -163,8 +166,9 @@ export function PehlioneResume({
       style={style}>
       {!atsMode && !continuation ? (
         <aside className="pehlione-sidebar">
-          <div className="pehlione-hero" aria-hidden="true">
-            <i /><i /><i /><b>◉</b>
+          <div className={`pehlione-hero${photoSource ? " pehlione-hero--with-photo" : ""}`} aria-hidden="true">
+            <i /><i /><i />
+            {photoSource ? <img className="pehlione-hero__photo" src={photoSource} alt="" /> : <b>◉</b>}
           </div>
           <section className="pehlione-sidebar-section">
             {heading(<UserRound />, "Kontakt")}

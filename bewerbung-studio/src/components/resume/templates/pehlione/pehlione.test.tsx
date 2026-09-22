@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { profileSchema } from "../../../../shared/schema";
+import { resolveResumeSectionInstances } from "../../../../features/resume-sections/resume-section-system";
 import type { ResumePagePlan } from "../../../../shared/documentPagination";
 import { PehlioneResume } from "./PehlioneResume";
 
@@ -53,6 +54,54 @@ const plan: ResumePagePlan = {
 };
 
 describe("Pehlione White Blue", () => {
+  it("shows an enabled photo over the hero circle only on the first visual page", () => {
+    const photoProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,AA==",
+      resumeSemanticSections: resolveResumeSectionInstances([]).map((section) =>
+        section.semanticType === "photo"
+          ? { ...section, visible: true, enabled: true }
+          : section,
+      ),
+    });
+    const render = (atsMode: boolean, pageNumber: 1 | 2) => renderToStaticMarkup(
+      <PehlioneResume
+        profile={photoProfile}
+        name="Mina Kaya"
+        atsMode={atsMode}
+        plan={{ ...plan, pageNumber }}
+        totalPages={2}
+        accentColor="#0B3D86"
+        secondaryColor="#1F66B3"
+        resumeProfile=""
+        sections={photoProfile.resumeSections}
+      />,
+    );
+
+    expect(render(false, 1)).toContain('class="pehlione-hero__photo"');
+    expect(render(false, 1)).toContain('src="data:image/png;base64,AA=="');
+    expect(render(true, 1)).not.toContain("pehlione-hero__photo");
+    expect(render(false, 2)).not.toContain("pehlione-hero__photo");
+  });
+
+  it("keeps the original circle when the photo section is hidden", () => {
+    const html = renderToStaticMarkup(
+      <PehlioneResume
+        profile={{ ...profile, photoPath: "data:image/png;base64,AA==" }}
+        name="Mina Kaya"
+        atsMode={false}
+        plan={plan}
+        totalPages={1}
+        accentColor="#0B3D86"
+        secondaryColor="#1F66B3"
+        resumeProfile=""
+        sections={profile.resumeSections}
+      />,
+    );
+    expect(html).not.toContain("pehlione-hero__photo");
+    expect(html).toContain("◉");
+  });
+
   it("renders the technical sidebar and structured main content", () => {
     const html = renderToStaticMarkup(
       <PehlioneResume
