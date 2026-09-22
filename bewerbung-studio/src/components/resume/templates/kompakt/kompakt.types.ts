@@ -11,6 +11,7 @@ export type KompaktResumeProps = {
   accentColor: string;
   secondaryColor: string;
   backgroundId: DocumentBackgroundId;
+  photoSource: string | null;
   resumeProfile: string;
   sections: ApplicantProfile["resumeSections"];
 };

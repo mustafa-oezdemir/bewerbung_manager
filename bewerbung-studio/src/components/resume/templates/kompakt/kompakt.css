@@ -86,6 +86,21 @@
   font-weight: 500;
 }
 
+.kompakt-header--with-photo h1,
+.kompakt-header--with-photo h2 {
+  max-width: 140mm;
+}
+
+.kompakt-header__photo {
+  position: absolute;
+  top: 9mm;
+  right: var(--kompakt-margin);
+  width: 20mm;
+  height: 20mm;
+  border-radius: 1mm;
+  object-fit: cover;
+}
+
 .kompakt-header > p {
   margin: 0 0 1mm;
   color: var(--kompakt-accent);

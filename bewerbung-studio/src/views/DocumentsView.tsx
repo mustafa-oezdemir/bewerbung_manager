@@ -2382,6 +2382,9 @@ export function DocumentsView({
                       accentColor={design.accentColor}
                       secondaryColor={design.secondaryColor}
                       backgroundId={design.settings.backgroundId}
+                      photoSource={getProfileMediaSource(
+                        renderProfile?.photoPath,
+                      )}
                       resumeProfile={docs.resumeProfile}
                       sections={sections}
                     />

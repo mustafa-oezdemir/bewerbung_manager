@@ -238,6 +238,7 @@ describe("Kompakt rendering", () => {
     plan = singlePagePlan,
     totalPages = 1,
     backgroundId = "abstract" as const,
+    photoSource = "data:image/png;base64,AA==" as string | null,
     resumeProfile = commonProps.resumeProfile,
   } = {}) =>
     renderToStaticMarkup(
@@ -247,11 +248,12 @@ describe("Kompakt rendering", () => {
         plan={plan}
         totalPages={totalPages}
         backgroundId={backgroundId}
+        photoSource={photoSource}
         resumeProfile={resumeProfile}
       />,
     );
 
-  it("renders a dense photo-free grid with original flow-line decoration", () => {
+  it("renders a dense grid with a photo on the first visual page", () => {
     const markup = renderResume();
     expect(markup).toContain('data-renderer="visual"');
     expect(markup).toContain("kompakt-background");
@@ -267,7 +269,12 @@ describe("Kompakt rendering", () => {
     expect(markup).toContain('href="https://linkedin.com/in/lena"');
     expect(markup).toContain("https://lena.example.com");
     expect(markup).not.toContain("Seite 1 / 1");
-    expect(markup).not.toContain("<img");
+    expect(markup).toContain('class="kompakt-header__photo"');
+    expect(markup).toContain('src="data:image/png;base64,AA=="');
+  });
+
+  it("omits the photo when it is hidden", () => {
+    expect(renderResume({ photoSource: null })).not.toContain("kompakt-header__photo");
   });
 
   it("uses a linear ATS order without flow lines, tags, or rating dots", () => {
@@ -286,6 +293,7 @@ describe("Kompakt rendering", () => {
     expect(markup).not.toContain("kompakt-background");
     expect(markup).not.toContain("kompakt-skills");
     expect(markup).not.toContain("kompakt-language__dots");
+    expect(markup).not.toContain("kompakt-header__photo");
     expect(
       order.every(
         (index, position) =>
@@ -302,6 +310,10 @@ describe("Kompakt rendering", () => {
     expect(markup).toContain("Beispiel AG");
     expect(markup).not.toContain("Zukunft GmbH");
     expect(markup).not.toContain("Technische Universität München");
+  });
+
+  it("omits the photo on continuation pages", () => {
+    expect(renderResume({ plan: secondPagePlan, totalPages: 2 })).not.toContain("kompakt-header__photo");
   });
 });
 

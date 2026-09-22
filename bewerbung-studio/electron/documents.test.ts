@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { applicationSchema, profileSchema } from "../src/shared/schema";
+import { resolveResumeSectionInstances } from "../src/features/resume-sections/resume-section-system";
 import { buildDocumentHtml } from "./documents";
 
 const now = new Date("2026-07-19T10:00:00.000Z").toISOString();
@@ -1543,7 +1544,7 @@ describe("Lebenslauf-Dokumente", () => {
     );
   });
 
-  it("renders Kompakt as a photo-free high-density two-column document", () => {
+  it("renders Kompakt as a high-density two-column document with a photo", () => {
     const kompaktApplication = applicationSchema.parse({
       ...application,
       templateId: "kompakt",
@@ -1559,6 +1560,11 @@ describe("Lebenslauf-Dokumente", () => {
     const mediaProfile = profileSchema.parse({
       ...profile,
       photoPath: "data:image/png;base64,iVBORw0KGgo=",
+      resumeSemanticSections: resolveResumeSectionInstances([]).map((section) =>
+        section.semanticType === "photo"
+          ? { ...section, visible: true, enabled: true }
+          : section,
+      ),
       resumeSections: {
         ...profile.resumeSections,
         strengths: true,
@@ -1600,7 +1606,21 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).toContain('href="https://linkedin.com/in/mina-kaya"');
     expect(body).toContain("https://mina.example.com");
     expect(body).not.toContain("Seite 1 / 1");
-    expect(body).not.toContain("<img");
+    expect(body).toContain('class="kompakt-pdf-photo"');
+    expect(body).toContain('src="data:image/png;base64,iVBORw0KGgo="');
+  });
+
+  it("omits a Kompakt photo when its section is hidden", () => {
+    const kompaktApplication = applicationSchema.parse({
+      ...application,
+      templateId: "kompakt",
+    });
+    const hiddenPhotoProfile = profileSchema.parse({
+      ...profile,
+      photoPath: "data:image/png;base64,iVBORw0KGgo=",
+    });
+    const html = buildDocumentHtml(kompaktApplication, hiddenPhotoProfile, "lebenslauf");
+    expect(html.slice(html.indexOf("<body>"))).not.toContain('class="kompakt-pdf-photo"');
   });
 
   it("omits empty Kompakt sidebar sections instead of leaving headings behind", () => {

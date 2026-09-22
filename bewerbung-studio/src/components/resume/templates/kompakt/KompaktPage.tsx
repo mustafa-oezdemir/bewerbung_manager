@@ -25,6 +25,7 @@ export function KompaktPage({
   plan,
   totalPages,
   backgroundId,
+  photoSource,
   resumeProfile,
   sections,
 }: Props) {
@@ -93,6 +94,7 @@ export function KompaktPage({
         name={name}
         title={profile?.title}
         compact={isContinuation}
+        photoSource={isContinuation ? null : photoSource}
       />
       <div
         className={`kompakt-content ${isContinuation ? "kompakt-content--continuation" : ""}`}
