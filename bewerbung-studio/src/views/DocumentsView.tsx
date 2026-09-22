@@ -90,11 +90,9 @@ import {
 } from "../shared/documentPagination";
 import {
   defaultDocumentDesign,
-  documentBackgrounds,
   documentFonts,
   getDocumentDesignVariables,
   hasReadableColorContrast,
-  programmingLanguageBackgroundTokens,
   type DocumentDesignSettings,
 } from "../shared/documentDesign";
 import { calculateA4PreviewScale } from "../shared/documentPreview";
@@ -1941,57 +1939,11 @@ export function DocumentsView({
                       </p>
                     ) : null}
                   </div>
-                  <div className="design-option-group">
-                    <span>Hintergründe</span>
-                    <div className="background-picker">
-                      {documentBackgrounds.map((background) => (
-                        <button
-                          className={`${design.settings.backgroundId === background.id ? "selected" : ""} background-swatch background-${background.id}`}
-                          key={background.id}
-                          title={background.description}
-                          type="button"
-                          onClick={() =>
-                            updateDesignSetting("backgroundId", background.id)
-                          }>
-                          <i>
-                            {background.id === "programming-languages-bg"
-                              ? programmingLanguageBackgroundTokens
-                                  .slice(0, 5)
-                                  .map((token) => (
-                                    <span key={token}>{token}</span>
-                                  ))
-                              : null}
-                          </i>
-                          <b>{background.name}</b>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  {design.settings.backgroundId ===
-                    "programming-languages-bg" && isAtsMode ? (
-                    <p className="design-ats-background-note">
-                      Im kompakten ATS-Modus wird dieser dekorative Hintergrund
-                      automatisch ausgeblendet.
-                    </p>
-                  ) : null}
                   {template.atsInfo ? (
                     <p className="design-ats-background-note">
                       {template.atsInfo}
                     </p>
                   ) : null}
-                  <label className="design-print-toggle">
-                    <input
-                      type="checkbox"
-                      checked={design.settings.showBackgroundInPrint}
-                      onChange={(event) =>
-                        updateDesignSetting(
-                          "showBackgroundInPrint",
-                          event.target.checked,
-                        )
-                      }
-                    />
-                    <span>Hintergrund auch im PDF anzeigen</span>
-                  </label>
                   <div className="design-option-group">
                     <span>Dokumentmedien</span>
                     <div className="document-media-grid">
