@@ -988,6 +988,16 @@ export function DocumentsView({
     target: "deckblatt" | "anschreiben" | "lebenslauf" | "mappe",
   ) => {
     const snapshot = applicationSnapshot(formRef.current);
+    if (
+      (target === "lebenslauf" || target === "mappe") &&
+      resumeSectionPreview?.templateId === template.id &&
+      resumeSectionPreview.profile.id === profile?.id
+    ) {
+      await saveProfile({
+        ...resumeSectionPreview.profile,
+        updatedAt: new Date().toISOString(),
+      });
+    }
     await saveApplication(snapshot);
     await exportPdf(snapshot.id, target, snapshot);
   };
