@@ -4,6 +4,8 @@ import { profileSchema } from "../../../../shared/schema";
 import { resolveResumeSectionInstances } from "../../../../features/resume-sections/resume-section-system";
 import type { ResumePagePlan } from "../../../../shared/documentPagination";
 import { PehlioneResume } from "./PehlioneResume";
+import { getTemplate, templates } from "../../../../shared/templates";
+import { getTemplateKnowledgeSlots } from "../../../../features/resume-sections/knowledge-block-registry";
 
 const experienceId = "81000000-0000-4000-8000-000000000001";
 const educationId = "82000000-0000-4000-8000-000000000001";
@@ -54,6 +56,24 @@ const plan: ResumePagePlan = {
 };
 
 describe("Pehlione White Blue", () => {
+  it("offers a separate white variant with the technical sidebar and existing content", () => {
+    const template = getTemplate("pehlione_white");
+    expect(templates).toContainEqual(template);
+    expect(template.name).toBe("Pehlione White");
+    expect(template.supportsPhoto).toBe(true);
+    expect(getTemplateKnowledgeSlots(template.id).map((slot) => slot.id)).toContain("sidebar");
+    const html = renderToStaticMarkup(
+      <PehlioneResume templateId="pehlione_white" profile={profile} name="Mina Kaya"
+        atsMode={false} plan={plan} totalPages={1} accentColor={template.accent}
+        secondaryColor={template.secondary} resumeProfile="" sections={profile.resumeSections} />,
+    );
+    expect(html).toContain("pehlione-resume--white");
+    expect(html).toContain("pehlione-blueprint");
+    expect(html).toContain("Kernkompetenzen");
+    expect(html).toContain("Technische Schwerpunkte");
+    expect(html).toContain("Grafana Datasource Plugin für PRTG");
+  });
+
   it("groups the signature above the printed name beside place and date", () => {
     const signedProfile = profileSchema.parse({
       ...profile,

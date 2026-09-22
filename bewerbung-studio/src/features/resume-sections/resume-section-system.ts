@@ -159,7 +159,7 @@ export type ResumeKnowledgeGroup = {
 };
 
 export const getDefaultKnowledgeGroups = (templateId: string): ResumeKnowledgeGroup[] => {
-  const titles = templateId === "pehlione_white_blue"
+  const titles = (templateId === "pehlione_white_blue" || templateId === "pehlione_white")
     ? ["Kernkompetenzen", "Technische Schwerpunkte"]
     : templateId === "stilvoll"
       ? ["Kenntnisse", "Sprachen", "Stärken"]
@@ -177,11 +177,11 @@ export const getDefaultKnowledgeGroups = (templateId: string): ResumeKnowledgeGr
       visible: true,
       order,
       items: [],
-      rendererType: order === 1 && templateId === "pehlione_white_blue" ? "icon-list" : "bullet-list",
+      rendererType: order === 1 && (templateId === "pehlione_white_blue" || templateId === "pehlione_white") ? "icon-list" : "bullet-list",
     slot: resolveKnowledgeSlot(
         templateId,
         semanticType,
-        templateId === "pehlione_white_blue" ? "sidebar" : undefined,
+        (templateId === "pehlione_white_blue" || templateId === "pehlione_white") ? "sidebar" : undefined,
     ),
     slotOverrides: {},
     pageBreakBefore: false,

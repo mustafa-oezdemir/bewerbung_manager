@@ -83,6 +83,7 @@ const twoColumnSlots: readonly ResumeTemplateSlotDefinition[] = [
 
 const twoColumnTemplateIds = new Set([
   "pehlione_white_blue",
+  "pehlione_white",
   "zweispaltig",
   "gepflegt",
   "modern",

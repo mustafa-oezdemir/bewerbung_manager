@@ -483,6 +483,25 @@ describe("Lebenslauf-Dokumente", () => {
     expect(html).toContain("grid-template-columns:73.5mm minmax(0,1fr)");
   });
 
+  it("exports the white Pehlione variant through the Pehlione renderer, including ATS", () => {
+    const whiteApplication = applicationSchema.parse({ ...application, templateId: "pehlione_white" });
+    const html = buildDocumentHtml(whiteApplication, profile, "lebenslauf");
+    const body = html.slice(html.indexOf("<body>"));
+    expect(body).toContain('data-template="pehlione_white"');
+    expect(body).toContain("pehlione-pdf-white");
+    expect(body).toContain("pehlione-pdf-blueprint");
+    expect(body).toContain("Kernkompetenzen");
+    expect(body).toContain("Technische Schwerpunkte");
+    const atsHtml = buildDocumentHtml(applicationSchema.parse({
+      ...whiteApplication,
+      designSettings: { ...whiteApplication.designSettings, resumeOutputMode: "ats" },
+    }), profile, "lebenslauf");
+    const atsBody = atsHtml.slice(atsHtml.indexOf("<body>"));
+    expect(atsBody).toContain("pehlione-pdf-ats");
+    expect(atsBody).not.toContain('class="pehlione-pdf-sidebar"');
+    expect(atsBody).not.toContain("pehlione-pdf-blueprint");
+  });
+
   it("places an enabled Pehlione photo inside the PDF hero circle", () => {
     const pehlioneApplication = applicationSchema.parse({
       ...application,

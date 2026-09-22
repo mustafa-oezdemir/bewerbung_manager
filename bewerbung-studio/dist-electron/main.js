@@ -1,10 +1,10 @@
 import path from "node:path";
-import { constants, mkdirSync, watch } from "node:fs";
-import { access, appendFile, copyFile, mkdir, open, readFile, readdir, rename, rm, rmdir, stat, writeFile } from "node:fs/promises";
+import { access, appendFile, copyFile, lstat, mkdir, open, readFile, readdir, rename, rm, rmdir, stat, writeFile } from "node:fs/promises";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { BrowserWindow, Notification, app, dialog, ipcMain, nativeImage, shell } from "electron";
 import { createHash, randomUUID } from "node:crypto";
 import { PDFDocument } from "pdf-lib";
+import { constants, createReadStream, watch } from "node:fs";
 import { promisify } from "node:util";
 import { execFile } from "node:child_process";
 //#region \0rolldown/runtime.js
@@ -4850,6 +4850,7 @@ var twoColumnSlots = [
 ];
 var twoColumnTemplateIds = /* @__PURE__ */ new Set([
 	"pehlione_white_blue",
+	"pehlione_white",
 	"zweispaltig",
 	"gepflegt",
 	"modern",
@@ -5019,7 +5020,7 @@ var defaultResumePersonalFieldVisibility = Object.fromEntries(resumePersonalFiel
 	"xing"
 ].includes(key)]));
 var getDefaultKnowledgeGroups = (templateId) => {
-	return (templateId === "pehlione_white_blue" ? ["Kernkompetenzen", "Technische Schwerpunkte"] : templateId === "stilvoll" ? [
+	return (templateId === "pehlione_white_blue" || templateId === "pehlione_white" ? ["Kernkompetenzen", "Technische Schwerpunkte"] : templateId === "stilvoll" ? [
 		"Kenntnisse",
 		"Sprachen",
 		"Stärken"
@@ -5032,8 +5033,8 @@ var getDefaultKnowledgeGroups = (templateId) => {
 			visible: true,
 			order,
 			items: [],
-			rendererType: order === 1 && templateId === "pehlione_white_blue" ? "icon-list" : "bullet-list",
-			slot: resolveKnowledgeSlot(templateId, semanticType, templateId === "pehlione_white_blue" ? "sidebar" : void 0),
+			rendererType: order === 1 && (templateId === "pehlione_white_blue" || templateId === "pehlione_white") ? "icon-list" : "bullet-list",
+			slot: resolveKnowledgeSlot(templateId, semanticType, templateId === "pehlione_white_blue" || templateId === "pehlione_white" ? "sidebar" : void 0),
 			slotOverrides: {},
 			pageBreakBefore: false
 		};
@@ -5253,6 +5254,7 @@ var twoColumnCapabilities = (templateId) => ({
 });
 var templateSectionCapabilities = {
 	pehlione_white_blue: twoColumnCapabilities("pehlione_white_blue"),
+	pehlione_white: twoColumnCapabilities("pehlione_white"),
 	"ivy-league": {
 		...mainOnlyCapabilities("ivy-league"),
 		defaultSectionOrder: [
@@ -5849,6 +5851,9 @@ var defaultSettings = {
 	sidebarCollapsed: false,
 	language: "de"
 };
+//#endregion
+//#region src/config/application-paths.ts
+var DEFAULT_BEWERBUNG_ROOT_PATH = "D:\\bewerbung_mustafa";
 var BEWERBUNG_ROOT_PATH_ENV = "BEWERBUNG_ROOT_PATH";
 var resolveBewerbungRootPath = (environment = process.env) => {
 	const configured = environment[BEWERBUNG_ROOT_PATH_ENV]?.trim();
@@ -5898,7 +5903,7 @@ var allTemplates = [
 		],
 		category: "modern-professional",
 		supportsAtsMode: true,
-		supportsPhoto: false,
+		supportsPhoto: true,
 		supportsFreeform: true,
 		supportsMultiplePages: true,
 		sidebarWidthRatio: .3,
@@ -5916,6 +5921,49 @@ var allTemplates = [
 			backgroundScope: "page",
 			textColor: "#142235",
 			headingColor: "#0B3D86",
+			lineColor: "#B8C3D0",
+			backgroundColor: "#FFFFFF",
+			syncAcrossDocuments: true,
+			fontId: "source-sans",
+			headingFontId: "source-sans"
+		}
+	},
+	{
+		id: "pehlione_white",
+		name: "Pehlione White",
+		family: "Pehlione",
+		variant: "White",
+		description: "Weiße Seitenleiste mit dunkelblauen Icons, technischem Blueprint-Kopf und klarer Zweispaltenstruktur.",
+		accent: "#08245C",
+		secondary: "#08245C",
+		font: "IBM Plex Sans",
+		layout: "sidebar-left",
+		features: [
+			"Pehlione",
+			"Weiße Seitenleiste",
+			"Technische Icons",
+			"Projekt-Highlight"
+		],
+		category: "modern-professional",
+		supportsAtsMode: true,
+		supportsPhoto: true,
+		supportsFreeform: true,
+		supportsMultiplePages: true,
+		sidebarWidthRatio: .3,
+		atsInfo: "Der ATS-Modus entfernt die dekorative Sidebar und gibt alle Inhalte in klarer Textreihenfolge aus.",
+		designDefaults: {
+			marginLevel: 5,
+			paddingLevel: 5,
+			sectionSpacingLevel: 5,
+			fontSize: "medium",
+			lineHeightLevel: 5,
+			backgroundShadeLevel: 1,
+			columnLayout: "left-sidebar",
+			resumeOutputMode: "visual",
+			backgroundId: "white",
+			backgroundScope: "page",
+			textColor: "#142235",
+			headingColor: "#08245C",
 			lineColor: "#B8C3D0",
 			backgroundColor: "#FFFFFF",
 			syncAcrossDocuments: true,
@@ -6417,6 +6465,7 @@ var allTemplates = [
 	}
 ];
 var enabledTemplateIds = /* @__PURE__ */ new Set([
+	"pehlione_white",
 	"pehlione_white_blue",
 	"zweispaltig",
 	"gepflegt",
@@ -7022,6 +7071,18 @@ var getLetterPageStatus = (documents) => {
 //#region src/shared/profileMedia.ts
 var supportedProfileMedia = /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=\s]+$/i;
 var getProfileMediaSource = (value) => value && supportedProfileMedia.test(value) ? value : "";
+var pehlioneBlueprintMarkup = `<svg viewBox="0 0 240 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="#dcecff" stroke-width=".65">
+  <path d="M18 33 57 16 168 50 219 126 29 126Z M20 40 179 103 216 23 M57 16 76 91 168 50 M131 15H219M151 12V143M182 12V143M213 12V143M119 119H224M125 139H230" opacity=".65"/>
+  <polygon points="${Array.from({ length: 64 }, (_, index) => {
+	const radius = index % 4 === 0 || index % 4 === 3 ? 49 : 57;
+	const angle = index * Math.PI * 2 / 64;
+	return `${(76 + Math.cos(angle) * radius).toFixed(2)},${(91 + Math.sin(angle) * radius).toFixed(2)}`;
+}).join(" ")}" stroke-width="1.2"/>
+  <circle cx="76" cy="91" r="45"/><circle cx="76" cy="91" r="38"/><circle cx="76" cy="91" r="29"/><circle cx="76" cy="91" r="17" stroke-width="1.2"/>
+  <path d="M9 91H143M76 27V153M37 51 116 132M32 131 117 50" opacity=".5"/>
+  <circle cx="57" cy="16" r="4"/><circle cx="168" cy="50" r="3"/><circle cx="179" cy="103" r="4"/><circle cx="216" cy="23" r="3"/>
+  <path d="M53 16h8m-4-4v8M146 119h10m-5-5v10M208 139h10m-5-5v10"/>
+</svg>`;
 //#endregion
 //#region node_modules/devicon/icons/aarch64/aarch64-original.svg?raw
 var aarch64_original_default = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 128 128\">\n    <g fill=\"#1b3888\">\n        <path\n            d=\"M70.089 26.264c-11.411-6.789-25.108-8.22-37.713-4.746C17.432 25.636 5.38 37.116.079 51.603q-.024.066-.051.002-.009-.025-.021-.048-.011-.024-.005-.05 5.007-19.766 21.5-31.155c18.216-12.576 42.79-12.044 60.643.992a.114.114 0 0 1-.023.2l-11.654 4.748a.428.426-40.7 0 1-.38-.028zM71.325 26.978a.03.03 0 0 1 .004-.053l11.754-4.79a.159.157 53.2 0 1 .157.022q15.7 12.43 19.523 31.957c1.583 8.085.993 16.763-1.342 24.58-6.383 21.37-26.086 36.61-48.391 37.292q-1.702.053-.017-.197 15.939-2.362 27.578-14.218c9.91-10.092 14.767-24.64 13.257-38.754q-1.105-10.342-6.506-19.415-5.976-10.043-16.017-16.424z\" />\n    </g>\n    <path fill=\"#45a945\"\n        d=\"M110.985 10.209h.22Q126.873 27.613 128 51.114v4.793q-1.1 23.145-16.098 40.192c-12.77 14.514-31.675 22.415-51.067 21.64q-1.181-.049-2.343-.21-.007-.002 0-.002 21.11-.9 36.825-14.431c12.675-10.914 20.095-27.247 20.07-44.035-.026-16.352-6.81-31.694-18.68-42.812a.131.131 0 0 1 .04-.218z\" />\n    <g fill=\"#221e1f\">\n        <path\n            d=\"M45.531 33.66q1.107.914 1.543 1.642 1.4 2.34 2.937 4.6.078.112-.06.112l-2.089-.01a.21.207-14.8 0 1-.176-.102c-.965-1.602-1.962-3.38-3.182-4.79q-1.033-1.195-2.644-.953-.076.012-.076.089V39.9q0 .108-.106.108H40.01q-.19 0-.188-.188l.074-13.263q0-.098.097-.098c1.672-.01 3.817-.203 5.233.324 2.958 1.1 3.256 5.371.322 6.743q-.114.053-.017.133zm-3.715-5.45-.009 4.065a.049.049 0 0 0 .049.048l1.573.005a2.117 1.86.1 0 0 2.121-1.857v-.44a2.117 1.86.1 0 0-2.113-1.866l-1.573-.002a.049.049 0 0 0-.048.047z\" />\n        <path\n            d=\"M53.476 31.047c-2.095 2.364-1.983 5.86.756 7.693 1.848 1.239 4.272 1.321 6.35.68a.095.097-.3 0 1 .12.12l-.557 1.84q-.034.112-.15.133-3.504.635-6.42-.959c-4.02-2.197-4.642-7.314-1.737-10.665 3.148-3.631 8.288-2.59 11.455.394q.091.086.053.205l-.548 1.795q-.049.157-.155.032c-2.314-2.695-6.533-4.238-9.167-1.268ZM34.074 37.32l-5.242 1.522a.08.08 0 0 0-.057.067l-.47 4.19a.08.08 0 0 1-.06.068l-1.756.495a.08.08 0 0 1-.102-.087l1.636-14.542a.08.08 0 0 1 .06-.067l1.225-.343a.08.08 0 0 1 .085.025l9.391 11.337a.08.08 0 0 1-.038.127l-1.76.527a.08.08 0 0 1-.084-.025l-2.743-3.27a.08.08 0 0 0-.085-.024zm-5.068-.492a.064.064 0 0 0 .082.068l3.652-1.09a.064.064 0 0 0 .032-.1l-3.125-3.808a.064.064 0 0 0-.112.034zM73.059 39.509l2.456-5.12a.102.102 0 0 1 .135-.048l1.596.747a.102.102 0 0 1 .05.138L71.51 47.308a.102.102 0 0 1-.135.048l-1.594-.755a.102.102 0 0 1-.049-.136l2.454-5.134a.102.102 0 0 0-.047-.135l-6.425-3.064a.102.102 0 0 0-.136.047l-2.443 5.132a.102.102 0 0 1-.135.048l-1.6-.755a.102.102 0 0 1-.05-.138l5.787-12.084a.102.102 0 0 1 .135-.047l1.598.765a.102.102 0 0 1 .047.135l-2.466 5.126a.102.102 0 0 0 .048.135l6.423 3.06a.102.102 0 0 0 .136-.047zM20.64 42.112l-4.792 2.596a.083.083 0 0 0-.042.08l.428 4.196a.083.083 0 0 1-.043.08l-1.602.85a.083.083 0 0 1-.121-.066L12.965 35.29a.083.083 0 0 1 .044-.08l1.122-.584a.083.083 0 0 1 .09.006l11.6 9.084a.083.083 0 0 1-.01.138l-1.611.872a.083.083 0 0 1-.089-.006l-3.383-2.6a.083.083 0 0 0-.089-.007zm-5.048.564a.066.066 0 0 0 .095.048l3.339-1.806a.066.066 0 0 0 .01-.11l-3.903-3.048a.066.066 0 0 0-.104.06zM18.078 76.495c9.624-5.043 20.785.733 20.857 11.991.042 6.849-4.88 13.113-11.718 14.364q-1.96.36-4.217.142c-6.02-.578-10.621-4.243-12.677-9.895Q9.28 90.233 9.17 87.425c-.548-13.953 7.825-26.289 19.223-33.656q.082-.055.142.023l4.054 5.147a.097.097 0 0 1-.026.144c-6.402 3.844-12.28 10.102-14.6 17.315q-.062.188.114.097zm13.851 11.79c-.216-5-4.854-7.583-9.467-6.993q-3.28.422-5.976 2.481-.08.064-.104.161c-1.209 5 .559 11.005 6.15 12.343q1.725.415 3.431.055c4.012-.85 6.134-4.129 5.966-8.047zM69.464 86.773v15.599a.087.087 0 0 1-.087.086h-6.76a.087.087 0 0 1-.086-.086V86.773a.087.087 0 0 0-.087-.087H42.188a.087.087 0 0 1-.086-.086l-.003-3.112a.087.087 0 0 1 .02-.055l24.318-29.687a.087.087 0 0 1 .065-.032h2.875a.087.087 0 0 1 .087.087v26.5a.087.087 0 0 0 .087.087h5.015a.087.087 0 0 1 .087.087l-.002 6.125a.087.087 0 0 1-.087.086h-5.013a.087.087 0 0 0-.087.087zm-6.933-19.93a.064.064 0 0 0-.112-.04L51.554 80.285a.064.064 0 0 0 .05.103h10.863a.064.064 0 0 0 .064-.063z\" />\n    </g>\n    <path fill=\"#0581ab\"\n        d=\"M114.095 52.37c3.836 33.88-22.178 63.495-56.162 64.247q-.049 0-.01-.03l.044-.036q.02-.02.05-.025 18.857-2.672 31.817-16.14c16.212-16.85 19.282-42.72 7.753-63.007q-5.162-9.086-13.329-15.573a.093.093 0 0 1 .023-.159l11.593-4.72a.246.246 0 0 1 .26.048c9.92 9.368 16.418 21.78 17.961 35.394z\" />\n</svg>\n";
@@ -11417,6 +11478,7 @@ var ivyLeagueDocumentCss = `
   @media print{.no-print-background .ivy-pdf-watercolor{display:none!important}}
 `;
 var extendedResumeDocumentCss = `
+  .kompakt-pdf-header.with-photo h1,.kompakt-pdf-header.with-photo h2{max-width:140mm}.kompakt-pdf-photo{position:absolute;top:9mm;right:var(--managed-margin);width:20mm;height:20mm;border-radius:1mm;object-fit:cover}
   .managed-pdf{position:relative;width:100%;height:100%;overflow:hidden;color:var(--managed-text);background:#fff;font-family:var(--body-font);font-size:var(--body-size);line-height:var(--body-line)}
   .managed-pdf *{box-sizing:border-box}.managed-pdf a{color:inherit;text-decoration:none}.managed-pdf-content{position:relative;z-index:2;height:100%}.managed-pdf-background{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none}.managed-pdf-section{min-width:0;margin:0 0 var(--managed-section-gap);break-inside:avoid}.managed-pdf-title{margin:0 0 3mm;color:var(--managed-muted);font-size:9pt;font-weight:500;line-height:1;text-transform:uppercase;break-after:avoid}.managed-pdf-list{display:flex;flex-direction:column;gap:var(--managed-entry-gap)}.managed-pdf-entry{break-inside:avoid}.managed-pdf-entry h3,.managed-pdf-entry h4{margin:0;overflow-wrap:anywhere}.managed-pdf-entry ul,.managed-pdf-ats ul{margin:1mm 0 0;padding-left:4mm}.managed-pdf-entry li,.managed-pdf-ats li{margin:.25mm 0;padding-left:.4mm;hyphens:auto;overflow-wrap:break-word}.managed-pdf-footer{position:absolute;right:var(--managed-margin);bottom:6mm;left:var(--managed-margin);z-index:3;display:flex;justify-content:space-between;gap:8mm;color:var(--managed-muted);font-size:7pt}.managed-pdf-footer span:last-child{margin-left:auto;white-space:nowrap}
   .stilvoll-pdf{--managed-primary:var(--accent);--managed-dark:var(--secondary);--managed-text:#465156;--managed-muted:#6d777c;--managed-divider:#aeb8b5;--managed-pattern:#dce2df;--managed-margin:max(15mm,var(--doc-margin));--managed-section-gap:var(--section-gap);--managed-entry-gap:5mm}.stilvoll-pdf .managed-pdf-background{color:var(--managed-pattern);opacity:.62}.stilvoll-pdf .managed-pdf-background path{fill:none;stroke:currentColor;stroke-width:.45}.stilvoll-pdf-header{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) 28mm;gap:10mm;min-height:36mm;padding:14mm var(--managed-margin) 0}.stilvoll-pdf-header.no-photo{grid-template-columns:1fr}.stilvoll-pdf-header h1{margin:0;color:var(--managed-dark);font-size:23pt;font-weight:400;line-height:1;letter-spacing:.015em;text-transform:uppercase;overflow-wrap:anywhere}.stilvoll-pdf-header h2{margin:2mm 0 2.5mm;color:var(--managed-primary);font-size:12pt;font-weight:400;line-height:1.2}.stilvoll-pdf-contacts{display:flex;flex-wrap:wrap;gap:1mm 3.5mm;margin:0;color:var(--managed-text);font-size:7.8pt;font-style:normal}.stilvoll-pdf-contacts span{display:inline-flex;gap:1mm}.stilvoll-pdf-contacts i{color:var(--managed-muted);font-style:normal}.stilvoll-pdf-photo{width:26mm;height:26mm;overflow:hidden;border-radius:1.5mm;object-fit:cover}.stilvoll-pdf-header.compact{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm;min-height:24mm;padding-top:11mm;padding-bottom:3mm;border-bottom:.3mm solid var(--managed-divider)}.stilvoll-pdf-header.compact .kicker{flex-basis:100%;margin:0;color:var(--managed-primary);font-size:7pt;text-transform:uppercase}.stilvoll-pdf-header.compact h1{font-size:15pt}.stilvoll-pdf-header.compact h2{margin:0;font-size:8.5pt}.stilvoll-pdf-columns{display:grid;grid-template-columns:54mm minmax(0,115mm);gap:11mm;padding:10mm var(--managed-margin) 16mm}.stilvoll-pdf-columns.continuation{display:block;padding-top:6mm}.stilvoll-pdf .managed-pdf-title{padding-bottom:1mm;border-bottom:.3mm solid var(--managed-divider)}.stilvoll-pdf-strength{display:grid;grid-template-columns:9mm minmax(0,1fr);gap:3mm;margin-bottom:5mm}.stilvoll-pdf-strength i{display:grid;place-items:center;width:8mm;height:8mm;border-radius:50%;color:var(--managed-primary);background:#f1f3f2;font-style:normal}.stilvoll-pdf-strength h3{margin:0 0 1mm;color:var(--managed-dark);font-size:9.5pt;font-weight:500}.stilvoll-pdf-strength p{margin:0}.stilvoll-pdf-language{display:grid;grid-template-columns:auto minmax(0,1fr) 11mm;gap:2mm;align-items:center;margin-bottom:3mm}.managed-pdf-dots{display:flex;gap:.6mm}.managed-pdf-dots i{display:block;width:1.5mm;height:1.5mm;border-radius:50%;background:#dde2e0}.managed-pdf-dots i.filled{background:var(--managed-dark)}.stilvoll-pdf-entry h3{color:var(--managed-dark);font-size:11pt;font-weight:400}.stilvoll-pdf-heading,.stilvoll-pdf-meta{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:1mm 4mm}.stilvoll-pdf-heading span,.stilvoll-pdf-meta span{color:var(--managed-muted);font-size:7.8pt;text-align:right}.stilvoll-pdf-heading span{white-space:nowrap}.stilvoll-pdf-meta{margin:1mm 0 1.5mm}.stilvoll-pdf-meta strong{color:var(--managed-primary);font-size:9.8pt;font-weight:400}
@@ -11465,8 +11527,11 @@ var pehlioneDocumentCss = `
   .pehlione-pdf{--pehlione-primary:var(--accent);--pehlione-accent:var(--secondary);display:grid;grid-template-columns:62mm minmax(0,1fr);width:100%;height:100%;overflow:hidden;color:#142235;background:#fff;font-family:var(--body-font);font-size:8.8pt;line-height:1.3}.pehlione-pdf *{box-sizing:border-box}.pehlione-pdf-sidebar{padding:0 7mm 11mm;color:#fff;background:linear-gradient(155deg,#062e64,#0b3d86 58%,#041f45)}.pehlione-pdf-hero{position:relative;height:46mm;margin:0 -7mm 8mm;overflow:hidden;background-color:#062b5a;background-image:radial-gradient(circle at 50% 50%,transparent 24%,#d7eaff 25% 27%,transparent 28% 43%,#d7eaff 44% 45%,transparent 46%),linear-gradient(#fff2 1px,transparent 1px),linear-gradient(90deg,#fff2 1px,transparent 1px);background-size:auto,4mm 4mm,4mm 4mm}.pehlione-pdf-hero:after{position:absolute;top:22mm;left:8mm;width:37mm;border-top:.3mm solid #d7eaff;content:"";transform:rotate(-24deg)}.pehlione-pdf-sidebar section{margin:0 0 7mm}.pehlione-pdf-sidebar h3{margin:0 0 3mm;padding-bottom:2mm;border-bottom:.3mm solid #b8d2f4;color:#fff;font-size:10.5pt;line-height:1.1;text-transform:uppercase}.pehlione-pdf-sidebar ul{display:grid;gap:2mm;margin:0;padding-left:4mm}.pehlione-pdf-sidebar li{line-height:1.25}.pehlione-pdf-main{min-width:0;padding:10mm 10mm 12mm}.pehlione-pdf-header{margin:0 0 7mm;padding-bottom:4mm;border-bottom:.7mm solid var(--pehlione-primary)}.pehlione-pdf-header h1{margin:0;color:var(--pehlione-primary);font-size:29pt;font-weight:800;letter-spacing:-.035em;line-height:1}.pehlione-pdf-header h2{margin:2mm 0 0;color:#12294e;font-size:13pt;line-height:1.18}.pehlione-pdf-header p{margin:0 0 1mm;color:var(--pehlione-primary);font-size:8pt;font-weight:700;text-transform:uppercase}.pehlione-pdf-section{margin:0 0 6mm}.pehlione-pdf-section h3{display:grid;grid-template-columns:9mm minmax(0,1fr);gap:3mm;align-items:center;margin:0 0 3mm;color:var(--pehlione-primary);font-size:13pt;line-height:1.1;text-transform:uppercase}.pehlione-pdf-section h3:before{display:grid;width:9mm;height:9mm;place-items:center;border-radius:1mm;color:#fff;background:var(--pehlione-primary);content:"◆";font-size:5pt}.pehlione-pdf-section h3 span{padding-bottom:1.2mm;border-bottom:.3mm solid var(--pehlione-primary)}.pehlione-pdf-summary{margin:0;text-align:justify;hyphens:auto}.pehlione-pdf-entry{display:grid;grid-template-columns:29mm minmax(0,1fr);gap:4mm;padding-bottom:4mm;border-bottom:.25mm solid #b8c3d0}.pehlione-pdf-entry+.pehlione-pdf-entry{padding-top:4mm}.pehlione-pdf-entry:last-child{padding-bottom:0;border-bottom:0}.pehlione-pdf-entry>p{margin:0;color:#1e3150;font-weight:700;line-height:1.25}.pehlione-pdf-entry h4{margin:0;color:var(--pehlione-primary);font-size:10.4pt;line-height:1.2}.pehlione-pdf-entry strong{display:block;margin:1mm 0 1.5mm;color:#173f82;font-size:9.2pt}.pehlione-pdf-entry ul,.pehlione-pdf-project ul,.pehlione-pdf-training ul{margin:0;padding-left:4mm}.pehlione-pdf-entry li,.pehlione-pdf-project li,.pehlione-pdf-training li{margin:.5mm 0;hyphens:auto}.pehlione-pdf-project{padding:3mm 3.5mm;border-left:1.2mm solid var(--pehlione-primary);background:#f1f6fc}.pehlione-pdf-project h4{margin:0;color:var(--pehlione-primary);font-size:10.4pt}.pehlione-pdf-project p{margin:1mm 0 1.5mm;color:#173f82;font-weight:700}.pehlione-pdf[data-density="compact"] .pehlione-pdf-section{margin-bottom:4mm}.pehlione-pdf[data-density="dense"] .pehlione-pdf-main{padding-top:7mm;padding-bottom:8mm}.pehlione-pdf[data-density="dense"] .pehlione-pdf-header{margin-bottom:4mm}.pehlione-pdf[data-density="dense"] .pehlione-pdf-header h1{font-size:24pt}.pehlione-pdf[data-density="dense"] .pehlione-pdf-section{margin-bottom:3.5mm}.pehlione-pdf[data-density="dense"] .pehlione-pdf-entry{padding-bottom:2.5mm}.pehlione-pdf-ats{display:block;padding:14mm 16mm;background:#fff;font-family:Arial,sans-serif}.pehlione-pdf-ats .pehlione-pdf-main{padding:0}.pehlione-pdf-ats .pehlione-pdf-header h1{font-size:20pt}.pehlione-pdf-ats .pehlione-pdf-section h3:before{display:none}.pehlione-pdf-ats .pehlione-pdf-section h3{display:block;font-size:10.5pt}.pehlione-pdf-ats .pehlione-pdf-section h3 span{display:block}.pehlione-pdf-ats-contact{margin:0 0 5mm}.pehlione-pdf-continuation{display:block;padding:14mm 16mm;background:#fff;font-family:Arial,sans-serif}
 `;
 var pehlionePdfLayoutFixes = `
+  .pehlione-pdf-sidebar-heading{display:grid;grid-template-columns:8mm minmax(0,1fr);gap:2mm;align-items:center}.pehlione-pdf-white .pehlione-pdf-sidebar-heading .pehlione-pdf-section-icon{width:8mm;height:8mm;color:var(--pehlione-primary);background:transparent}.pehlione-pdf-white .pehlione-pdf-sidebar-heading svg{width:7mm;height:7mm}
+  .pehlione-pdf-white .pehlione-pdf-sidebar{color:#142235;background:#fff;border-right:.25mm solid #d4dbe5}.pehlione-pdf-white .pehlione-pdf-sidebar h3,.pehlione-pdf-white .pehlione-pdf-sidebar .pehlione-pdf-flex-block h3,.pehlione-pdf-white .pehlione-pdf-container-title{color:var(--pehlione-primary);border-color:var(--pehlione-primary)}.pehlione-pdf-white .pehlione-pdf-contact-section strong,.pehlione-pdf-white .pehlione-pdf-contact-section svg,.pehlione-pdf-white .pehlione-pdf-sidebar li::marker{color:var(--pehlione-primary)}.pehlione-pdf-white .pehlione-pdf-hero{background-image:linear-gradient(#fff2 1px,transparent 1px),linear-gradient(90deg,#fff2 1px,transparent 1px);background-size:4mm 4mm}.pehlione-pdf-white .pehlione-pdf-hero:before,.pehlione-pdf-white .pehlione-pdf-hero:after{display:none}.pehlione-pdf-blueprint{position:absolute;inset:0;width:100%;height:100%}.pehlione-pdf-blueprint svg{width:100%;height:100%}
+  .pehlione-pdf-hero.with-photo{background-image:linear-gradient(#fff2 1px,transparent 1px),linear-gradient(90deg,#fff2 1px,transparent 1px)}.pehlione-pdf-hero.with-photo:before{position:absolute;top:8mm;left:10mm;width:28mm;height:28mm;border:.25mm solid #d7eaff;border-radius:50%;content:""}.pehlione-pdf-photo{position:absolute;top:8mm;left:10mm;z-index:1;width:28mm;height:28mm;border:.25mm solid #d7eaff;border-radius:50%;object-fit:cover;object-position:center 30%}
   .pehlione-pdf-sidebar a{color:inherit;text-decoration:none;overflow-wrap:normal;word-break:normal}.pehlione-pdf-sidebar li{break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-sidebar section{margin-bottom:4.5mm}.pehlione-pdf-sidebar h3{margin-bottom:2mm;padding-bottom:1.5mm;font-size:9.7pt}.pehlione-pdf-sidebar ul{gap:1.35mm;font-size:7.8pt;line-height:1.2}.pehlione-pdf-contact-section ul{padding:0;list-style:none}.pehlione-pdf-contact-section li{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;align-items:start}.pehlione-pdf-contact-section svg{width:4.2mm;height:4.2mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2}.pehlione-pdf-contact-section li>span{display:grid;gap:.25mm;min-width:0}.pehlione-pdf-contact-section strong{display:block;color:#fff;font-size:7.8pt}.pehlione-pdf-contact-section a{font-size:7.4pt}.pehlione-pdf-section{break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-section h3{break-after:avoid;page-break-after:avoid}.pehlione-pdf-section h3:before{display:none}.pehlione-pdf-section-icon{display:grid;width:9mm;height:9mm;place-items:center;border-radius:1mm;color:#fff;background:var(--pehlione-primary);font-style:normal}.pehlione-pdf-section-icon svg{width:5.5mm;height:5.5mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.9}.pehlione-pdf-entry{break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-entry ul{break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-project{padding:0;border-left:0;background:transparent}.pehlione-pdf-continuation{padding:10mm 16mm 16mm}.pehlione-pdf-continuation .pehlione-pdf-main{padding:0}.pehlione-pdf-header.continuation{margin-bottom:5mm;padding-bottom:2.5mm}.pehlione-pdf-header.continuation h1{font-size:18pt}.pehlione-pdf-header.continuation h2{margin-top:1mm;font-size:9.5pt}.pehlione-pdf[data-density="compact"]{font-size:8.1pt;line-height:1.23}.pehlione-pdf[data-density="compact"] .pehlione-pdf-main{padding:7mm 9mm 8mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-header{margin-bottom:4mm;padding-bottom:3mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-header h1{font-size:30pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-header h2{margin-top:1.2mm;font-size:10.3pt;white-space:nowrap}.pehlione-pdf[data-density="compact"] .pehlione-pdf-section{margin-bottom:3.1mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-section h3{margin-bottom:2mm;font-size:11.2pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-section h3 span{padding-bottom:.8mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-summary{font-size:8.1pt;line-height:1.24}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry{grid-template-columns:27mm minmax(0,1fr);gap:3mm;padding-bottom:2.1mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry+.pehlione-pdf-entry{padding-top:2.1mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry>p{font-size:7.7pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry h4{font-size:9.3pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry strong{margin:.6mm 0 1mm;font-size:8.2pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry ul,.pehlione-pdf[data-density="compact"] .pehlione-pdf-project ul,.pehlione-pdf[data-density="compact"] .pehlione-pdf-training ul{font-size:7.8pt;line-height:1.2}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry li,.pehlione-pdf[data-density="compact"] .pehlione-pdf-project li,.pehlione-pdf[data-density="compact"] .pehlione-pdf-training li{margin:.15mm 0}.pehlione-pdf[data-density="compact"] .pehlione-pdf-project h4{font-size:9.3pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-project p{margin:.6mm 0 1mm;font-size:8pt}
-  .pehlione-pdf-closing{display:flex;min-height:9mm;align-items:flex-end;gap:3mm;margin-top:2mm;padding-top:2mm;border-top:.25mm solid var(--line);font-size:7.5pt}.pehlione-pdf-closing span{margin-right:auto}.pehlione-pdf-closing img{width:auto;max-width:30mm;height:auto;max-height:9mm}.pehlione-pdf-closing strong{white-space:nowrap}
+  .pehlione-pdf-closing{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:4mm;margin-top:3mm;padding-top:3mm;border-top:.25mm solid var(--line);font-size:8pt;break-inside:avoid}.pehlione-pdf-closing p{margin:0 0 1mm}.pehlione-pdf-signer{display:flex;grid-column:2;flex-direction:column;align-items:center;width:42mm}.pehlione-pdf-signer img{display:block;width:100%;height:12mm;object-fit:contain}.pehlione-pdf-signer strong{margin-top:1mm;font-size:8pt;font-weight:600;white-space:nowrap}
   .pehlione-pdf-container-title{margin:0 0 4mm;padding-bottom:2mm;border-bottom:.5mm solid #dcecff;color:#fff;font-size:8pt;letter-spacing:.08em;text-transform:uppercase}.pehlione-pdf-flex-block{margin:0 0 5mm;break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-flex-block.page-break-before{break-before:page;page-break-before:always}.pehlione-pdf-flex-block h3{margin:0 0 2mm;color:var(--pehlione-primary);font-size:11pt;text-transform:uppercase}.pehlione-pdf-sidebar .pehlione-pdf-flex-block h3{padding-bottom:1.5mm;border-bottom:.3mm solid #b8d2f4;color:#fff;font-size:9.7pt}.pehlione-pdf-flex-block ul{display:grid;gap:1mm;margin:0;padding-left:4mm}.pehlione-pdf-flex-block li strong,.pehlione-pdf-flex-block li small,.pehlione-pdf-flex-block li em{display:block}.pehlione-pdf-flex-block li small,.pehlione-pdf-flex-block li em{font-size:.88em;font-style:normal;opacity:.82}.pehlione-pdf-flex-block.renderer-tag-list ul,.pehlione-pdf-flex-block.renderer-compact-grid ul,.pehlione-pdf-flex-block.renderer-two-column-list ul{grid-template-columns:repeat(2,minmax(0,1fr));padding:0;list-style:none}.pehlione-pdf-flex-block.renderer-tag-list li{padding:1mm;border-radius:8mm;background:#eaf1f9;text-align:center}.pehlione-pdf-sidebar .pehlione-pdf-flex-block.renderer-tag-list li{color:#082c5d;background:#dcecff}
 `;
 var gepflegtDocumentCss = `
@@ -11611,7 +11676,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 		...profile,
 		experiences: sections.experience ? profile.experiences : [],
 		education: sections.education ? profile.education : []
-	} : void 0, template.id === "pehlione_white_blue" ? docs.resumeProfile || (/kundenservice|sachbearbeit/i.test(role) ? docs.deckblattStatement : "") || profile?.summary || "" : docs.resumeProfile, template.id === "elegant" ? elegantPaginationOptions : template.id === "zweispaltig" ? zweispaltigPaginationOptions : template.id === "kompakt" ? kompaktPaginationOptions : template.id === "kreativ" ? kreativPaginationOptions : template.id === "gepflegt" ? gepflegtPaginationOptions : template.id === "zeitgenoessisch" ? zeitgenoessischPaginationOptions : template.id === "ivy-league" ? ivyLeaguePaginationOptions : template.id === "stilvoll" ? stilvollPaginationOptions : template.id === "einspaltig" ? einspaltigPaginationOptions : template.id === "klassisch" ? klassischPaginationOptions : template.id === "tabellarisch" ? tabellarischPaginationOptions : template.id === "modern" ? modernPaginationOptions : template.id === "pehlione_white_blue" ? pehlionePaginationOptions : void 0);
+	} : void 0, template.id === "pehlione_white_blue" || template.id === "pehlione_white" ? docs.resumeProfile || (/kundenservice|sachbearbeit/i.test(role) ? docs.deckblattStatement : "") || profile?.summary || "" : docs.resumeProfile, template.id === "elegant" ? elegantPaginationOptions : template.id === "zweispaltig" ? zweispaltigPaginationOptions : template.id === "kompakt" ? kompaktPaginationOptions : template.id === "kreativ" ? kreativPaginationOptions : template.id === "gepflegt" ? gepflegtPaginationOptions : template.id === "zeitgenoessisch" ? zeitgenoessischPaginationOptions : template.id === "ivy-league" ? ivyLeaguePaginationOptions : template.id === "stilvoll" ? stilvollPaginationOptions : template.id === "einspaltig" ? einspaltigPaginationOptions : template.id === "klassisch" ? klassischPaginationOptions : template.id === "tabellarisch" ? tabellarischPaginationOptions : template.id === "modern" ? modernPaginationOptions : template.id === "pehlione_white_blue" || template.id === "pehlione_white" ? pehlionePaginationOptions : void 0);
 	const renderExperience = (id) => {
 		const item = experienceById.get(id);
 		if (!item) return "";
@@ -12672,7 +12737,8 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 		const kompaktAchievements = sections.certifications ? managedAchievementCards("kompakt") : "";
 		const kompaktSkills = sections.skills && kreativSkillValues.length ? `<div class="kompakt-pdf-skills">${kreativSkillValues.map((skill) => `<span class="kompakt-pdf-skill">${escapeHtml(skill)}</span>`).join("")}</div>` : "";
 		const right = isContinuation ? "" : `<aside>${managedSection("Kontaktdaten", `<address class="kompakt-pdf-contacts">${contacts}</address>`)}${sections.profile ? managedSection("Zusammenfassung", `<p>${escapeHtml(managedSummary)}</p>`) : ""}${managedSection("Stärken", kompaktStrengths)}${managedSection("Erfolge", kompaktAchievements)}${managedSection("Fähigkeiten", kompaktSkills)}</aside>`;
-		return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="kompakt" data-no-fit="true"><div class="page-content managed-pdf kompakt-pdf" data-density="${plan.density}">${designSettings.backgroundId === "abstract" && !isContinuation ? kompaktBackground : ""}<header class="managed-pdf-header kompakt-pdf-header${isContinuation ? " compact" : ""}">${isContinuation ? "<p class=\"kicker\">Lebenslauf · Fortsetzung</p>" : ""}<h1>${escapeHtml(name)}</h1>${managedJobTitle ? `<h2>${escapeHtml(managedJobTitle)}</h2>` : ""}</header><div class="kompakt-pdf-columns${isContinuation ? " continuation" : ""}"><main>${sections.experience ? managedSection(`Erfahrung${isContinuation ? " · Fortsetzung" : ""}`, `<div class="managed-pdf-list">${experiences}</div>`) : ""}${sections.education ? managedSection("Ausbildung", `<div class="managed-pdf-list">${education}</div>`) : ""}${isLastPage && sections.languages ? managedSection("Sprachen", managedVisualLanguages("kompakt")) : ""}</main>${right}</div>${managedFooter(plan, true)}</div></section>`;
+		const photo = !isContinuation && getResumeSemanticSection(profile?.resumeSemanticSections, "photo").visible && photoSource ? `<img class="kompakt-pdf-photo" src="${escapeHtml(photoSource)}" alt="">` : "";
+		return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="kompakt" data-no-fit="true"><div class="page-content managed-pdf kompakt-pdf" data-density="${plan.density}">${designSettings.backgroundId === "abstract" && !isContinuation ? kompaktBackground : ""}<header class="managed-pdf-header kompakt-pdf-header${isContinuation ? " compact" : ""}${photo ? " with-photo" : ""}">${isContinuation ? "<p class=\"kicker\">Lebenslauf · Fortsetzung</p>" : ""}<h1>${escapeHtml(name)}</h1>${managedJobTitle ? `<h2>${escapeHtml(managedJobTitle)}</h2>` : ""}${photo}</header><div class="kompakt-pdf-columns${isContinuation ? " continuation" : ""}"><main>${sections.experience ? managedSection(`Erfahrung${isContinuation ? " · Fortsetzung" : ""}`, `<div class="managed-pdf-list">${experiences}</div>`) : ""}${sections.education ? managedSection("Ausbildung", `<div class="managed-pdf-list">${education}</div>`) : ""}${isLastPage && sections.languages ? managedSection("Sprachen", managedVisualLanguages("kompakt")) : ""}</main>${right}</div>${managedFooter(plan, true)}</div></section>`;
 	};
 	const renderEinspaltigResumePage = (plan) => {
 		if (atsMode) return renderManagedAtsPage(plan, "einfach", "einspaltig");
@@ -12869,6 +12935,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 			}[kind]}</svg></i>`;
 		};
 		const sectionHeading = (title, kind) => `<h3>${sectionIcon(kind)}<span>${escapeHtml(title)}</span></h3>`;
+		const sidebarHeading = (title, kind) => template.id === "pehlione_white" ? `<h3 class="pehlione-pdf-sidebar-heading">${sectionIcon(kind)}<span>${escapeHtml(title)}</span></h3>` : `<h3>${escapeHtml(title)}</h3>`;
 		const entries = (kind) => plan.items.filter((item) => item.kind === kind).map((item) => {
 			if (kind === "experience") {
 				const source = experienceById.get(item.id);
@@ -12938,10 +13005,11 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 		const competence = (coreCompetencies.length ? coreCompetencies.map((item) => `<li>${escapeHtml(item)}</li>`) : groupedCompetencies.map((group) => `<li><strong>${escapeHtml(group.title)}:</strong> ${escapeHtml(group.values.join(" · "))}</li>`)).join("");
 		const derivedFocus = getPehlioneTechnicalFocus(profile);
 		const semanticSections = profile?.resumeSemanticSections;
+		const pehlionePhoto = getResumeSemanticSection(semanticSections, "photo").visible && photoSource ? `<img class="pehlione-pdf-photo" src="${escapeHtml(photoSource)}" alt="">` : "";
 		const summarySection = getResumeSemanticSection(semanticSections, "summary");
 		const knowledgeSection = getResumeSemanticSection(semanticSections, "knowledge");
 		const closingSection = getResumeSemanticSection(semanticSections, "closing");
-		const knowledgeGroups = resolveKnowledgeGroups("pehlione_white_blue", profile?.resumeKnowledgeGroups).filter((group) => group.visible);
+		const knowledgeGroups = resolveKnowledgeGroups(template.id, profile?.resumeKnowledgeGroups).filter((group) => group.visible);
 		const coreGroup = knowledgeGroups.find((group) => group.semanticType === "core-competencies");
 		const focusGroup = knowledgeGroups.find((group) => group.semanticType === "technical-focus");
 		const visibleBlockItems = (group) => group.items.filter((item) => item.visible && item.text.trim());
@@ -12962,14 +13030,14 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
 			showDate: true,
 			showSignature: true
 		};
-		const closingMarkup = lastPage && closingSection.visible && (closing.showPlace || closing.showDate || closing.showSignature) ? `<footer class="pehlione-pdf-closing">${closing.showPlace || closing.showDate ? `<span>${escapeHtml([closing.showPlace ? profile?.applicationPlace || profile?.city : "", closing.showDate ? profile?.applicationDate : ""].filter(Boolean).join(", "))}</span>` : ""}${closing.showSignature && signatureSource ? `<img src="${escapeHtml(signatureSource)}" alt="">` : ""}${closing.showSignature ? `<strong>${escapeHtml(name)}</strong>` : ""}</footer>` : "";
+		const closingMarkup = lastPage && closingSection.visible && (closing.showPlace || closing.showDate || closing.showSignature) ? `<footer class="pehlione-pdf-closing">${closing.showPlace || closing.showDate ? `<p>${escapeHtml([closing.showPlace ? profile?.applicationPlace || profile?.city : "", closing.showDate ? profile?.applicationDate : ""].filter(Boolean).join(", "))}</p>` : ""}${closing.showSignature ? `<div class="pehlione-pdf-signer">${signatureSource ? `<img src="${escapeHtml(signatureSource)}" alt="Unterschrift">` : ""}<strong>${escapeHtml(name)}</strong></div>` : ""}</footer>` : "";
 		const main = `${!continuation && summarySection.visible && sections.profile && managedSummary ? `<section class="pehlione-pdf-section pehlione-pdf-summary-section">${sectionHeading(getResumeSemanticTitle(semanticSections, "summary"), "profile")}<p class="pehlione-pdf-summary">${escapeHtml(managedSummary)}</p></section>` : ""}${sections.experience && experience ? `<section class="pehlione-pdf-section pehlione-pdf-experience">${sectionHeading(`${getResumeSemanticTitle(semanticSections, "career")}${continuation ? " · Fortsetzung" : ""}`, "experience")}${experience}</section>` : ""}${sections.education && education ? `<section class="pehlione-pdf-section pehlione-pdf-education">${sectionHeading(getResumeSemanticTitle(semanticSections, "education"), "education")}${education}</section>` : ""}${!continuation && project && !knowledgeGroups.some((group) => group.semanticType === "project-highlight" && visibleBlockItems(group).length) ? `<section class="pehlione-pdf-section pehlione-pdf-project">${sectionHeading("Projekt-Highlight", "project")}<h4>${escapeHtml(project.title)}</h4><p>${[project.company, ...project.technologies].filter(Boolean).map(escapeHtml).join(" · ")}</p>${project.achievements.length ? `<ul>${project.achievements.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul>` : ""}</section>` : ""}${lastPage && knowledgeSection.visible && profile?.resumeKnowledgeContainer?.showTitle && mainKnowledge ? `<section class="pehlione-pdf-section">${sectionHeading(getResumeSemanticTitle(semanticSections, "knowledge"), "profile")}</section>` : ""}${lastPage && knowledgeSection.visible ? mainKnowledge : ""}${lastPage && sections.certifications && kreativCertifications.length && !knowledgeGroups.some((group) => ["training", "certificates"].includes(group.semanticType)) ? `<section class="pehlione-pdf-section pehlione-pdf-training">${sectionHeading("Weiterbildungen", "training")}<ul>${kreativCertifications.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></section>` : ""}${closingMarkup}${!experience && !education ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}`;
 		const density = plan.items.length >= 5 ? "compact" : plan.density;
-		if (atsMode || continuation) return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="pehlione_white_blue" data-no-fit="true"><div class="page-content pehlione-pdf ${continuation ? "pehlione-pdf-continuation" : "pehlione-pdf-ats"}" data-density="${density}"><main class="pehlione-pdf-main">${header}${!continuation ? `<p class="pehlione-pdf-ats-contact"><strong>Kontakt:</strong> ${contacts.replace(/<[^>]+>/g, " ")}</p>` : ""}${main}</main></div></section>`;
+		if (atsMode || continuation) return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="${escapeHtml(template.id)}" data-no-fit="true"><div class="page-content pehlione-pdf${template.id === "pehlione_white" ? " pehlione-pdf-white" : ""} ${continuation ? "pehlione-pdf-continuation" : "pehlione-pdf-ats"}" data-density="${density}"><main class="pehlione-pdf-main">${header}${!continuation ? `<p class="pehlione-pdf-ats-contact"><strong>Kontakt:</strong> ${contacts.replace(/<[^>]+>/g, " ")}</p>` : ""}${main}</main></div></section>`;
 		const languages = sections.languages ? (profile?.languages ?? []).filter(Boolean).map((item) => `<li>${escapeHtml(item)}</li>`).join("") : "";
-		const sidebar = `<aside class="pehlione-pdf-sidebar"><div class="pehlione-pdf-hero"></div>${contacts ? `<section class="pehlione-pdf-contact-section"><h3>Kontakt</h3><ul>${contacts}</ul></section>` : ""}${knowledgeSection.visible && profile?.resumeKnowledgeContainer?.showTitle && knowledgeGroups.some((group) => group.slot === "sidebar") ? `<h3 class="pehlione-pdf-container-title">${escapeHtml(getResumeSemanticTitle(semanticSections, "knowledge"))}</h3>` : ""}${knowledgeSection.visible && sections.strengths && competenceMarkup ? `<section><h3>${escapeHtml(coreGroup?.title || "Kernkompetenzen")}</h3><ul>${competenceMarkup}</ul></section>` : ""}${knowledgeSection.visible && focus ? `<section><h3>${escapeHtml(focusGroup?.title || "Technische Schwerpunkte")}</h3><ul>${focus}</ul></section>` : ""}${knowledgeSection.visible ? sidebarKnowledge : ""}${languages ? `<section><h3>Sprachen</h3><ul>${languages}</ul></section>` : ""}</aside>`;
+		const sidebar = `<aside class="pehlione-pdf-sidebar"><div class="pehlione-pdf-hero${pehlionePhoto ? " with-photo" : ""}">${template.id === "pehlione_white" ? `<span class="pehlione-pdf-blueprint">${pehlioneBlueprintMarkup}</span>` : ""}${pehlionePhoto}</div>${contacts ? `<section class="pehlione-pdf-contact-section">${sidebarHeading("Kontakt", "profile")}<ul>${contacts}</ul></section>` : ""}${knowledgeSection.visible && profile?.resumeKnowledgeContainer?.showTitle && knowledgeGroups.some((group) => group.slot === "sidebar") ? `<h3 class="pehlione-pdf-container-title">${escapeHtml(getResumeSemanticTitle(semanticSections, "knowledge"))}</h3>` : ""}${knowledgeSection.visible && sections.strengths && competenceMarkup ? `<section>${sidebarHeading(coreGroup?.title || "Kernkompetenzen", "project")}<ul>${competenceMarkup}</ul></section>` : ""}${knowledgeSection.visible && focus ? `<section>${sidebarHeading(focusGroup?.title || "Technische Schwerpunkte", "training")}<ul>${focus}</ul></section>` : ""}${knowledgeSection.visible ? sidebarKnowledge : ""}${languages ? `<section><h3>Sprachen</h3><ul>${languages}</ul></section>` : ""}</aside>`;
 		const sidebarWidth = (profile?.resumeColumnRatio ?? 30) * 2.1;
-		return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="pehlione_white_blue" data-no-fit="true"><div class="page-content pehlione-pdf" data-density="${density}" style="grid-template-columns:${sidebarWidth}mm minmax(0,1fr)">${sidebar}<main class="pehlione-pdf-main">${header}${main}</main></div></section>`;
+		return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="${escapeHtml(template.id)}" data-no-fit="true"><div class="page-content pehlione-pdf${template.id === "pehlione_white" ? " pehlione-pdf-white" : ""}" data-density="${density}" style="grid-template-columns:${sidebarWidth}mm minmax(0,1fr)">${sidebar}<main class="pehlione-pdf-main">${header}${main}</main></div></section>`;
 	};
 	const tabellarischExtraIcon = (kind) => {
 		return `<svg viewBox="0 0 24 24" aria-hidden="true">${{
@@ -13238,7 +13306,7 @@ var buildDocumentHtml = (application, profile, target, attachments = []) => {
         </div>
       </section>`;
 	};
-	const resume = resumePlan.map(template.id === "pehlione_white_blue" ? renderPehlioneResumePage : template.id === "modern" ? renderModernResumePage : template.id === "stilvoll" ? renderStilvollResumePage : template.id === "kompakt" ? renderKompaktResumePage : template.id === "einspaltig" ? renderEinspaltigResumePage : template.id === "klassisch" ? (plan) => renderKlassischResumePage(plan) : template.id === "elegant" ? renderElegantResumePage : template.id === "gepflegt" ? renderGepflegtResumePage : template.id === "ivy-league" ? renderIvyLeagueResumePage : template.id === "kreativ" ? renderKreativResumePage : template.id === "zeitgenoessisch" ? renderZeitgenoessischResumePage : template.id === "zweispaltig" ? renderZweispaltigResumePage : template.id === "tabellarisch" ? renderTabellarischResumePage : renderResumePage).join("");
+	const resume = resumePlan.map(template.id === "pehlione_white_blue" || template.id === "pehlione_white" ? renderPehlioneResumePage : template.id === "modern" ? renderModernResumePage : template.id === "stilvoll" ? renderStilvollResumePage : template.id === "kompakt" ? renderKompaktResumePage : template.id === "einspaltig" ? renderEinspaltigResumePage : template.id === "klassisch" ? (plan) => renderKlassischResumePage(plan) : template.id === "elegant" ? renderElegantResumePage : template.id === "gepflegt" ? renderGepflegtResumePage : template.id === "ivy-league" ? renderIvyLeagueResumePage : template.id === "kreativ" ? renderKreativResumePage : template.id === "zeitgenoessisch" ? renderZeitgenoessischResumePage : template.id === "zweispaltig" ? renderZweispaltigResumePage : template.id === "tabellarisch" ? renderTabellarischResumePage : renderResumePage).join("");
 	const selected = target === "mappe" ? [
 		letter,
 		cover,
@@ -13672,7 +13740,7 @@ var uniqueFilePath = async (requestedPath) => {
 	}
 	throw new Error(`Für „${requestedPath}“ konnte kein eindeutiger Dateiname erzeugt werden.`);
 };
-var listFiles = async (root) => {
+var listFiles$1 = async (root) => {
 	const files = [];
 	const pending = [root];
 	while (pending.length) {
@@ -13698,7 +13766,7 @@ var copyFileWithoutOverwrite = async (source, requestedTarget) => {
 };
 var copyDirectoryWithoutOverwrite = async (sourceRoot, targetRoot, shouldCopy = () => true) => {
 	if (!await pathExists(sourceRoot)) return;
-	for (const sourceFile of await listFiles(sourceRoot)) {
+	for (const sourceFile of await listFiles$1(sourceRoot)) {
 		const relativePath = path.relative(sourceRoot, sourceFile);
 		if (!shouldCopy(relativePath)) continue;
 		if (!isPathInside$1(sourceRoot, sourceFile)) throw new Error("Ungültiger Migrationsquellpfad.");
@@ -13734,7 +13802,7 @@ var LegacyMigrationService = class {
 	}
 	async preview(sourcePath) {
 		const source = await this.readWorkspace(sourcePath);
-		const files = await listFiles(source.sourcePath);
+		const files = await listFiles$1(source.sourcePath);
 		let totalBytes = 0;
 		for (const file of files) totalBytes += (await stat(file)).size;
 		return {
@@ -13865,7 +13933,7 @@ var emptyDeletedApplicationsArchive = () => ({
 	deletedApplications: [],
 	updatedAt: nowIso()
 });
-var timestamp = () => (/* @__PURE__ */ new Date()).toISOString().replace(/\D/g, "").slice(0, 14);
+var timestamp$1 = () => (/* @__PURE__ */ new Date()).toISOString().replace(/\D/g, "").slice(0, 14);
 var addDaysAtNine = (value, days) => {
 	const date = new Date(value);
 	date.setDate(date.getDate() + days);
@@ -13935,11 +14003,25 @@ var DataStore = class {
 		await rm(`${this.applicationDraftPath}.bak`, { force: true });
 	}
 	async loadWorkspace() {
+		let foundExisting = false;
 		for (const candidate of [this.workspacePath, `${this.workspacePath}.bak`]) try {
 			const parsed = JSON.parse(await readFile(candidate, "utf8"));
+			foundExisting = true;
 			const result = workspaceSchema.safeParse(parsed);
-			if (result.success) return result.data;
-		} catch {}
+			if (result.success) {
+				if (candidate !== this.workspacePath) {
+					const recoveryRoot = path.join(this.dataPath, "Backups");
+					await mkdir(recoveryRoot, { recursive: true });
+					const recoveryId = `${timestamp$1()}-${createId()}`;
+					if (await stat(this.workspacePath).catch(() => null)) await copyFile(this.workspacePath, path.join(recoveryRoot, `unlesbar-workspace-${recoveryId}.json`));
+					await copyFile(candidate, path.join(recoveryRoot, `wiederhergestellt-workspace-${recoveryId}.json`));
+				}
+				return result.data;
+			}
+		} catch {
+			if (await stat(candidate).catch(() => null)) foundExisting = true;
+		}
+		if (foundExisting) throw new Error("Die vorhandenen Bewerbungsdaten konnten nicht gelesen werden. Die Dateien wurden nicht überschrieben.");
 		return emptyWorkspace();
 	}
 	async loadDeletedApplicationsArchive() {
@@ -14690,6 +14772,12 @@ var DataStore = class {
 		if (target === "deckblatt") return `${applicationFileBaseName(application)}_Deckblatt.pdf`;
 		return `${applicationFileBaseName(application)}_${sanitizeFileName(application.job.title)}_${target}.pdf`;
 	}
+	getAutomaticExportPath(id, target) {
+		const application = this.getApplication(id);
+		const directories = this.files.documentDirectories(application);
+		const directory = target === "mappe" ? path.join(this.files.applicationDataPath(application.folderName), "Bewerbungsunterlagen") : directories[target];
+		return path.join(directory, this.getExportDefaultName(id, target));
+	}
 	async writeBackup(filePath) {
 		await writeFile(filePath, JSON.stringify(workspaceSchema.parse(this.workspace), null, 2), "utf8");
 	}
@@ -14698,14 +14786,14 @@ var DataStore = class {
 	}
 	async migrateLegacyData(sourcePath) {
 		if (this.workspace.applications.length > 0 || this.workspace.profiles.length > 0 || this.workspace.events.length > 0 || this.workspace.attachments.length > 0) throw new Error("Eine Migration ist nur möglich, solange der neue Datenbestand leer ist.");
-		const emergencyPath = path.join(this.dataPath, "Backups", `vor-migration-${timestamp()}-${createId()}.json`);
+		const emergencyPath = path.join(this.dataPath, "Backups", `vor-migration-${timestamp$1()}-${createId()}.json`);
 		await copyFile(this.workspacePath, emergencyPath);
 		const preview = await this.migration.preview(sourcePath);
 		const previous = this.workspace;
 		try {
 			this.workspace = await this.migration.migrate(sourcePath);
 			await this.persist(this.workspace.applications);
-			await this.atomicWrite(path.join(this.dataPath, "Backups", `migration-${timestamp()}-${createId()}.json`), JSON.stringify({
+			await this.atomicWrite(path.join(this.dataPath, "Backups", `migration-${timestamp$1()}-${createId()}.json`), JSON.stringify({
 				migratedAt: nowIso(),
 				sourcePath: preview.sourcePath,
 				targetPath: this.dataPath,
@@ -14724,7 +14812,7 @@ var DataStore = class {
 	async importBackup(filePath) {
 		const parsed = JSON.parse(await readFile(filePath, "utf8"));
 		const imported = workspaceSchema.parse(parsed);
-		const emergencyPath = path.join(this.dataPath, "Backups", `vor-import-${timestamp()}.json`);
+		const emergencyPath = path.join(this.dataPath, "Backups", `vor-import-${timestamp$1()}.json`);
 		await copyFile(this.workspacePath, emergencyPath);
 		const previous = this.workspace;
 		try {
@@ -33765,6 +33853,218 @@ var GitAutomationService = class {
 	}
 };
 //#endregion
+//#region electron/workspace-management.ts
+var bootstrapSchema = object({
+	workspaceRootPath: string().min(1),
+	setupCompleted: literal(true)
+});
+var exists = async (candidate) => {
+	try {
+		await stat(candidate);
+		return true;
+	} catch {
+		return false;
+	}
+};
+var hashFile = async (filePath) => {
+	const hash = createHash("sha256");
+	for await (const chunk of createReadStream(filePath)) hash.update(chunk);
+	return hash.digest("hex");
+};
+var timestamp = () => (/* @__PURE__ */ new Date()).toISOString().replace("T", "_").replace(/:/g, "-").slice(0, 19);
+var listFiles = async (root, excluded) => {
+	const files = [];
+	const pending = [root];
+	while (pending.length) {
+		const current = pending.pop();
+		for (const entry of await readdir(current, { withFileTypes: true })) {
+			const candidate = path.join(current, entry.name);
+			if (excluded && isPathInside$1(excluded, candidate)) continue;
+			if (entry.isSymbolicLink()) throw new Error("Verknüpfungen im Bewerbungsordner können nicht sicher kopiert werden.");
+			if (entry.isDirectory()) pending.push(candidate);
+			else if (entry.isFile()) files.push(candidate);
+		}
+	}
+	return files.sort();
+};
+var copyAndVerify = async (source, target) => {
+	await mkdir(path.dirname(target), { recursive: true });
+	await copyFile(source, target, constants.COPYFILE_EXCL);
+	const [sourceInfo, targetInfo] = await Promise.all([stat(source), stat(target)]);
+	const [sourceHash, targetHash] = await Promise.all([hashFile(source), hashFile(target)]);
+	if (sourceInfo.size !== targetInfo.size || sourceHash !== targetHash) throw new Error(`Kopie konnte nicht geprüft werden: ${path.basename(source)}`);
+	return {
+		size: sourceInfo.size,
+		sha256: targetHash
+	};
+};
+var WorkspaceManager = class {
+	constructor(userDataPath, environment = process.env, legacyRootPath = DEFAULT_BEWERBUNG_ROOT_PATH) {
+		this.userDataPath = userDataPath;
+		this.environment = environment;
+		this.legacyRootPath = legacyRootPath;
+		this.bootstrapPath = path.join(userDataPath, "bootstrap.json");
+	}
+	async readBootstrap() {
+		try {
+			return bootstrapSchema.parse(JSON.parse(await readFile(this.bootstrapPath, "utf8")));
+		} catch (error) {
+			if (error.code === "ENOENT") return null;
+			throw new Error("Die gespeicherte Speicherort-Konfiguration ist beschädigt.");
+		}
+	}
+	async writeBootstrap(root) {
+		await mkdir(this.userDataPath, { recursive: true });
+		const temporary = `${this.bootstrapPath}.${randomUUID()}.tmp`;
+		await writeFile(temporary, JSON.stringify({
+			workspaceRootPath: root,
+			setupCompleted: true
+		}, null, 2), "utf8");
+		await rename(temporary, this.bootstrapPath);
+	}
+	async status() {
+		const override = this.environment[BEWERBUNG_ROOT_PATH_ENV]?.trim();
+		if (override) return {
+			state: "ready",
+			root: path.resolve(override)
+		};
+		const config = await this.readBootstrap();
+		if (config) {
+			const root = path.resolve(config.workspaceRootPath);
+			if (!await exists(root)) return {
+				state: "missing",
+				root
+			};
+			const workspacePath = path.join(root, "data", "Settings", "workspace.json");
+			if (!await exists(workspacePath) && !await exists(`${workspacePath}.bak`)) return {
+				state: "error",
+				root,
+				message: "Die gespeicherten Bewerbungsdaten wurden in diesem Ordner nicht gefunden. Der Ordner wurde nicht verändert."
+			};
+			return {
+				state: "ready",
+				root
+			};
+		}
+		const legacyRoot = path.resolve(this.legacyRootPath);
+		if (await exists(path.join(legacyRoot, "data", "Settings", "workspace.json"))) {
+			await this.writeBootstrap(legacyRoot);
+			return {
+				state: "ready",
+				root: legacyRoot
+			};
+		}
+		return { state: "setup" };
+	}
+	async validateRoot(rootPath, create) {
+		if (!path.isAbsolute(rootPath) || !rootPath.trim()) throw new Error("Bitte wählen Sie einen gültigen Ordner.");
+		const root = path.resolve(rootPath);
+		if (create) await mkdir(root, { recursive: true });
+		const info = await lstat(root).catch(() => null);
+		if (!info?.isDirectory() || info.isSymbolicLink()) throw new Error("Der ausgewählte Bewerbungsordner ist nicht verfügbar.");
+		const testPath = path.join(root, `.bewerbungsmanager-write-${randomUUID()}`);
+		try {
+			await (await open(testPath, "wx")).close();
+			await rm(testPath);
+		} catch {
+			throw new Error("In den ausgewählten Bewerbungsordner kann nicht geschrieben werden.");
+		}
+		return root;
+	}
+	async setup(rootPath, activate = true) {
+		const root = await this.validateRoot(rootPath, true);
+		const workspacePath = path.join(root, "data", "Settings", "workspace.json");
+		if (await exists(workspacePath)) try {
+			if (!workspaceSchema.safeParse(JSON.parse(await readFile(workspacePath, "utf8"))).success) throw new Error("invalid");
+		} catch {
+			throw new Error("Der vorhandene Bewerbungsordner enthält ungültige Daten.");
+		}
+		await new FileManagementService(resolveApplicationPaths(root)).initialize();
+		if (activate) await this.writeBootstrap(root);
+		return root;
+	}
+	async activate(root) {
+		await this.writeBootstrap(path.resolve(root));
+	}
+	async fullBackup(rootPath, oldSchemaVersion = 1, newSchemaVersion = 1, migratedFields = []) {
+		const root = await this.validateRoot(rootPath, false);
+		const backupRoot = path.join(root, "data", "Backups", `Migration_${timestamp()}_${randomUUID().slice(0, 8)}`);
+		await mkdir(backupRoot, { recursive: true });
+		const entries = [];
+		try {
+			for (const source of await listFiles(root, backupRoot)) {
+				const relative = path.relative(root, source);
+				const verified = await copyAndVerify(source, path.join(backupRoot, relative));
+				entries.push({
+					path: relative,
+					...verified
+				});
+			}
+			const workspaceSource = path.join(root, "data", "Settings", "workspace.json");
+			if (await exists(workspaceSource) && !await exists(path.join(backupRoot, "workspace.json"))) await copyAndVerify(workspaceSource, path.join(backupRoot, "workspace.json"));
+			const manifest = {
+				migratedAt: (/* @__PURE__ */ new Date()).toISOString(),
+				oldSchemaVersion,
+				newSchemaVersion,
+				sourcePath: root,
+				backupPath: backupRoot,
+				migratedFields,
+				warnings: [],
+				errors: [],
+				files: entries
+			};
+			await writeFile(path.join(backupRoot, "migration-manifest.json"), JSON.stringify(manifest, null, 2), "utf8");
+			return backupRoot;
+		} catch (error) {
+			await rm(backupRoot, {
+				recursive: true,
+				force: true
+			});
+			throw error;
+		}
+	}
+	async changeRoot(currentRootPath, nextRootPath, mode) {
+		if (![
+			"move",
+			"copy",
+			"new"
+		].includes(mode)) throw new Error("Ungültige Speicherort-Aktion.");
+		if (!path.isAbsolute(nextRootPath)) throw new Error("Bitte wählen Sie einen gültigen Ordner.");
+		const prospectiveSource = path.resolve(currentRootPath);
+		const prospectiveTarget = path.resolve(nextRootPath);
+		if (prospectiveSource !== prospectiveTarget && (isPathInside$1(prospectiveSource, prospectiveTarget) || isPathInside$1(prospectiveTarget, prospectiveSource))) throw new Error("Der neue Bewerbungsordner darf nicht im bisherigen Ordner liegen.");
+		const source = await this.validateRoot(currentRootPath, false);
+		const target = await this.validateRoot(nextRootPath, true);
+		if (source === target) return target;
+		if (mode !== "new") {
+			if ((await readdir(target)).length) throw new Error("Der neue Bewerbungsordner muss leer sein, damit keine Dateien überschrieben werden.");
+			await this.fullBackup(source);
+			try {
+				for (const file of await listFiles(source)) await copyAndVerify(file, path.join(target, path.relative(source, file)));
+				const workspacePath = path.join(target, "data", "Settings", "workspace.json");
+				if (await exists(workspacePath)) try {
+					if (!workspaceSchema.safeParse(JSON.parse(await readFile(workspacePath, "utf8"))).success) throw new Error("invalid");
+				} catch {
+					throw new Error("Die Daten im neuen Bewerbungsordner sind ungültig.");
+				}
+			} catch (error) {
+				throw error;
+			}
+		} else {
+			const workspacePath = path.join(target, "data", "Settings", "workspace.json");
+			if (await exists(workspacePath)) try {
+				if (!workspaceSchema.safeParse(JSON.parse(await readFile(workspacePath, "utf8"))).success) throw new Error("invalid");
+			} catch {
+				throw new Error("Der neue Bewerbungsordner enthält ungültige Daten.");
+			}
+			await this.fullBackup(source);
+			await new FileManagementService(resolveApplicationPaths(target)).initialize();
+		}
+		await this.writeBootstrap(target);
+		return target;
+	}
+};
+//#endregion
 //#region electron/main.ts
 var mainWindow = null;
 var store;
@@ -33772,26 +34072,16 @@ var templateService;
 var gitAutomation;
 var gitShutdownInProgress = false;
 var gitShutdownComplete = false;
+var workspaceStatus = { state: "setup" };
+var workspaceManager;
+var runtimeRegistered = false;
 var notifiedEvents = /* @__PURE__ */ new Set();
 var appId = "de.bewerbungsmanager.desktop";
 var __filename = fileURLToPath(import.meta.url);
 var __dirname = path.dirname(__filename);
 var isDevelopment = Boolean(process.env.VITE_DEV_SERVER_URL);
-var applicationPaths = resolveApplicationPaths(void 0, path.join(__dirname, isDevelopment ? "../public/templates" : "../dist/templates"));
-var electronDataPath = path.join(applicationPaths.dataRoot, "Electron");
-var electronSessionPath = path.join(applicationPaths.dataRoot, "ElectronSession");
-var logsPath = path.join(applicationPaths.dataRoot, "Logs");
-var crashDumpsPath = path.join(applicationPaths.dataRoot, "CrashDumps");
-for (const directory of [
-	electronDataPath,
-	electronSessionPath,
-	logsPath,
-	crashDumpsPath
-]) mkdirSync(directory, { recursive: true });
-app.setPath("userData", electronDataPath);
-app.setPath("sessionData", electronSessionPath);
-app.setPath("logs", logsPath);
-app.setPath("crashDumps", crashDumpsPath);
+var bundledTemplatesRoot = path.join(__dirname, isDevelopment ? "../public/templates" : "../dist/templates");
+var applicationPaths;
 if (process.platform === "win32") app.setAppUserModelId(appId);
 var createMainWindow = async () => {
 	mainWindow = new BrowserWindow({
@@ -34044,15 +34334,19 @@ var registerIpc = () => {
 		const normalizedApplicationId = String(applicationId);
 		const applicationSnapshot = rawApplicationSnapshot === void 0 ? void 0 : applicationSchema.parse(rawApplicationSnapshot);
 		if (applicationSnapshot && applicationSnapshot.id !== normalizedApplicationId) throw new Error("Die Exportdaten gehören nicht zur ausgewählten Bewerbung.");
-		const result = await dialog.showSaveDialog(mainWindow, {
-			title: "PDF exportieren",
-			defaultPath: store.getExportDefaultName(normalizedApplicationId, target),
-			filters: [{
-				name: "PDF",
-				extensions: ["pdf"]
-			}]
-		});
-		if (result.canceled || !result.filePath) return null;
+		const exportPath = store.getAutomaticExportPath(normalizedApplicationId, target);
+		try {
+			await access(exportPath);
+			if ((await dialog.showMessageBox(mainWindow, {
+				type: "question",
+				title: "PDF bereits vorhanden",
+				message: "Die vorhandene PDF-Datei ersetzen?",
+				detail: exportPath,
+				buttons: ["Ersetzen", "Abbrechen"],
+				defaultId: 1,
+				cancelId: 1
+			})).response !== 0) return null;
+		} catch {}
 		const exporter = new BrowserWindow({
 			show: false,
 			webPreferences: {
@@ -34079,9 +34373,10 @@ var registerIpc = () => {
 				fileName: attachment.fileName,
 				bytes: await readFile(attachment.path)
 			})))) : generatedPdf;
-			await writeFile(result.filePath, pdf);
+			await mkdir(path.dirname(exportPath), { recursive: true });
+			await writeFile(exportPath, pdf);
 			store.queueGitCommit(normalizedApplicationId, target === "anschreiben" ? "anschreiben" : "update");
-			return result.filePath;
+			return exportPath;
 		} finally {
 			exporter.destroy();
 		}
@@ -34109,6 +34404,8 @@ var registerIpc = () => {
 			}]
 		});
 		if (result.canceled || !result.filePaths[0]) return null;
+		if (workspaceStatus.state !== "ready") throw new Error("Kein Bewerbungsordner eingerichtet.");
+		await workspaceManager.fullBackup(workspaceStatus.root);
 		return store.importBackup(result.filePaths[0]);
 	});
 	ipcMain.handle("export:settings", async () => {
@@ -34160,6 +34457,8 @@ var registerIpc = () => {
 			cancelId: 1,
 			noLink: true
 		})).response !== 0) return null;
+		if (workspaceStatus.state !== "ready") throw new Error("Kein Bewerbungsordner eingerichtet.");
+		await workspaceManager.fullBackup(workspaceStatus.root);
 		return store.migrateLegacyData(preview.sourcePath);
 	});
 	ipcMain.handle("system:open-external", async (_event, rawUrl) => {
@@ -34168,6 +34467,28 @@ var registerIpc = () => {
 		await shell.openExternal(url.toString());
 	});
 	ipcMain.handle("system:data-path", () => store.dataPath);
+};
+var initializeRuntime = async (root) => {
+	if (gitAutomation) {
+		gitAutomation.dispose();
+		await gitAutomation.waitForIdle().catch(() => void 0);
+	}
+	applicationPaths = resolveApplicationPaths(root, bundledTemplatesRoot);
+	gitAutomation = await access(path.join(root, ".git")).then(() => new GitAutomationService(applicationPaths.root)).catch(() => void 0);
+	store = new DataStore(applicationPaths, gitAutomation);
+	await store.initialize();
+	await gitAutomation?.initialize();
+	templateService = new TemplateService(applicationPaths);
+	await templateService.initialize();
+	await createMissingExistingDeckblatts();
+	if (!runtimeRegistered) {
+		registerIpc();
+		runtimeRegistered = true;
+	}
+	workspaceStatus = {
+		state: "ready",
+		root
+	};
 };
 var notifyDueEvents = () => {
 	const workspace = store.getWorkspace();
@@ -34190,17 +34511,81 @@ var notifyDueEvents = () => {
 	});
 };
 app.whenReady().then(async () => {
-	gitAutomation = new GitAutomationService(applicationPaths.root);
-	store = new DataStore(applicationPaths, gitAutomation);
-	await store.initialize();
-	await gitAutomation.initialize();
-	templateService = new TemplateService(applicationPaths);
-	await templateService.initialize();
-	await createMissingExistingDeckblatts();
-	registerIpc();
+	workspaceManager = new WorkspaceManager(app.getPath("userData"));
+	try {
+		workspaceStatus = await workspaceManager.status();
+	} catch (error) {
+		workspaceStatus = {
+			state: "error",
+			root: "",
+			message: error instanceof Error ? error.message : "Die Speicherort-Konfiguration konnte nicht gelesen werden."
+		};
+	}
+	ipcMain.handle("system:workspace-status", () => workspaceStatus);
+	ipcMain.handle("system:choose-workspace", async () => {
+		const selection = await dialog.showOpenDialog(mainWindow, {
+			title: "Bewerbungsordner auswählen",
+			properties: ["openDirectory", "createDirectory"]
+		});
+		if (selection.canceled || !selection.filePaths[0]) return workspaceStatus;
+		const root = await workspaceManager.setup(selection.filePaths[0], false);
+		await initializeRuntime(root);
+		await workspaceManager.activate(root);
+		return workspaceStatus;
+	});
+	ipcMain.handle("system:open-workspace", async () => {
+		if (workspaceStatus.state !== "ready") throw new Error("Kein Bewerbungsordner eingerichtet.");
+		const error = await shell.openPath(workspaceStatus.root);
+		if (error) throw new Error(error);
+	});
+	ipcMain.handle("system:backup-workspace", async () => {
+		if (workspaceStatus.state !== "ready") throw new Error("Kein Bewerbungsordner eingerichtet.");
+		return workspaceManager.fullBackup(workspaceStatus.root);
+	});
+	ipcMain.handle("system:open-backups", async () => {
+		if (workspaceStatus.state !== "ready") throw new Error("Kein Bewerbungsordner eingerichtet.");
+		const backupPath = path.join(workspaceStatus.root, "data", "Backups");
+		const error = await shell.openPath(backupPath);
+		if (error) throw new Error(error);
+	});
+	ipcMain.handle("system:change-workspace", async (_event, rawMode) => {
+		if (workspaceStatus.state !== "ready") throw new Error("Kein Bewerbungsordner eingerichtet.");
+		if (![
+			"move",
+			"copy",
+			"new"
+		].includes(String(rawMode))) throw new Error("Ungültige Speicherort-Aktion.");
+		const selection = await dialog.showOpenDialog(mainWindow, {
+			title: "Neuen Bewerbungsordner auswählen",
+			properties: ["openDirectory", "createDirectory"]
+		});
+		if (selection.canceled || !selection.filePaths[0]) return workspaceStatus;
+		const oldRoot = workspaceStatus.root;
+		await gitAutomation?.waitForIdle().catch(() => void 0);
+		const nextRoot = await workspaceManager.changeRoot(oldRoot, selection.filePaths[0], rawMode);
+		try {
+			await initializeRuntime(nextRoot);
+		} catch (error) {
+			await workspaceManager.setup(oldRoot);
+			await initializeRuntime(oldRoot);
+			throw error;
+		}
+		return workspaceStatus;
+	});
+	if (workspaceStatus.state === "ready") try {
+		await initializeRuntime(workspaceStatus.root);
+	} catch (error) {
+		workspaceStatus = {
+			state: "error",
+			root: workspaceStatus.root,
+			message: error instanceof Error ? error.message : "Der Bewerbungsordner konnte nicht geladen werden."
+		};
+	}
 	await createMainWindow();
-	notifyDueEvents();
-	setInterval(notifyDueEvents, 6e4).unref();
+	if (workspaceStatus.state === "ready") notifyDueEvents();
+	setInterval(() => {
+		if (workspaceStatus.state === "ready") notifyDueEvents();
+	}, 6e4).unref();
 	app.on("activate", () => {
 		if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
 	});

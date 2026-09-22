@@ -33,10 +33,13 @@ import {
   resolveKnowledgeGroups,
 } from "../../../../features/resume-sections/resume-section-system";
 import { getProfileMediaSource } from "../../../../shared/profileMedia";
+import { pehlioneBlueprintMarkup } from "../../../../shared/pehlioneBlueprint";
 import "./pehlione.css";
 import "./pehlione-blocks.css";
+import "./pehlione-white.css";
 
 type Props = {
+  templateId?: "pehlione_white_blue" | "pehlione_white";
   profile?: ApplicantProfile;
   name: string;
   atsMode: boolean;
@@ -69,6 +72,7 @@ const contactItems = (profile?: ApplicantProfile) => {
 };
 
 export function PehlioneResume({
+  templateId = "pehlione_white_blue",
   profile,
   name,
   atsMode,
@@ -101,7 +105,7 @@ export function PehlioneResume({
   const knowledgeSection = getResumeSemanticSection(semanticSections, "knowledge");
   const interestsSection = getResumeSemanticSection(semanticSections, "interests");
   const closingSection = getResumeSemanticSection(semanticSections, "closing");
-  const knowledgeGroups = resolveKnowledgeGroups("pehlione_white_blue", profile?.resumeKnowledgeGroups);
+  const knowledgeGroups = resolveKnowledgeGroups(templateId, profile?.resumeKnowledgeGroups);
   const visibleKnowledgeGroups = knowledgeGroups.filter((group) => group.visible);
   const coreGroup = visibleKnowledgeGroups.find((group) => group.semanticType === "core-competencies");
   const focusGroup = visibleKnowledgeGroups.find((group) => group.semanticType === "technical-focus");
@@ -160,15 +164,16 @@ export function PehlioneResume({
 
   return (
     <article
-      className={`pehlione-resume ${atsMode ? "pehlione-resume--ats" : ""}`}
+      className={`pehlione-resume ${atsMode ? "pehlione-resume--ats" : ""}${templateId === "pehlione_white" ? " pehlione-resume--white" : ""}`}
+      data-template={templateId}
       data-density={density}
       data-page={plan.pageNumber}
       style={style}>
       {!atsMode && !continuation ? (
         <aside className="pehlione-sidebar">
           <div className={`pehlione-hero${photoSource ? " pehlione-hero--with-photo" : ""}`} aria-hidden="true">
-            <i /><i /><i />
-            {photoSource ? <img className="pehlione-hero__photo" src={photoSource} alt="" /> : <b>◉</b>}
+            {templateId === "pehlione_white" ? <span className="pehlione-blueprint" dangerouslySetInnerHTML={{ __html: pehlioneBlueprintMarkup }} /> : <><i /><i /><i /></>}
+            {photoSource ? <img className="pehlione-hero__photo" src={photoSource} alt="" /> : templateId !== "pehlione_white" ? <b>◉</b> : null}
           </div>
           <section className="pehlione-sidebar-section">
             {heading(<UserRound />, "Kontakt")}

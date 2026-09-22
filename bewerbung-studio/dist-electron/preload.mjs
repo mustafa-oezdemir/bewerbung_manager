@@ -51,7 +51,13 @@ electron.contextBridge.exposeInMainWorld("bewerbungsManager", {
 	migration: { importLegacy: () => electron.ipcRenderer.invoke("migration:import-legacy") },
 	system: {
 		openExternal: (url) => electron.ipcRenderer.invoke("system:open-external", url),
-		dataPath: () => electron.ipcRenderer.invoke("system:data-path")
+		dataPath: () => electron.ipcRenderer.invoke("system:data-path"),
+		workspaceStatus: () => electron.ipcRenderer.invoke("system:workspace-status"),
+		chooseWorkspace: () => electron.ipcRenderer.invoke("system:choose-workspace"),
+		openWorkspace: () => electron.ipcRenderer.invoke("system:open-workspace"),
+		backupWorkspace: () => electron.ipcRenderer.invoke("system:backup-workspace"),
+		openBackups: () => electron.ipcRenderer.invoke("system:open-backups"),
+		changeWorkspace: (mode) => electron.ipcRenderer.invoke("system:change-workspace", mode)
 	}
 });
 //#endregion

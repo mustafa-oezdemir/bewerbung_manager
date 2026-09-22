@@ -17,6 +17,7 @@ export function TemplateThumbnail({
   return (
     <span
       aria-hidden="true"
+      data-template={template.id}
       className={`template-thumbnail template-layout-${template.layout} ${className}`.trim()}
       style={
         {
@@ -26,7 +27,7 @@ export function TemplateThumbnail({
         } as CSSProperties
       }
     >
-      {template.id === "pehlione_white_blue" ? (
+      {(template.id === "pehlione_white_blue" || template.id === "pehlione_white") ? (
         <>
           <span className="pehlione-thumbnail-hero" />
           <span className="pehlione-thumbnail-sidebar" />

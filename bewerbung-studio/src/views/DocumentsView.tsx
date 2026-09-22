@@ -712,7 +712,7 @@ export function DocumentsView({
     : undefined;
   const resumePlan = createResumePagePlan(
     paginatedProfile,
-    template.id === "pehlione_white_blue"
+    (template.id === "pehlione_white_blue" || template.id === "pehlione_white")
       ? pehlioneResumeProfile
       : docs.resumeProfile,
     template.id === "elegant"
@@ -739,7 +739,7 @@ export function DocumentsView({
                           ? tabellarischPaginationOptions
                           : template.id === "modern"
                             ? modernPaginationOptions
-                            : template.id === "pehlione_white_blue"
+                            : (template.id === "pehlione_white_blue" || template.id === "pehlione_white")
                               ? pehlionePaginationOptions
                               : undefined,
   );
@@ -2533,8 +2533,9 @@ export function DocumentsView({
                       resumeProfile={docs.resumeProfile}
                       sections={sections}
                     />
-                  ) : template.id === "pehlione_white_blue" ? (
+                  ) : (template.id === "pehlione_white_blue" || template.id === "pehlione_white") ? (
                     <PehlioneResume
+                      templateId={template.id as "pehlione_white_blue" | "pehlione_white"}
                       profile={renderProfile}
                       name={name}
                       atsMode={isAtsMode}

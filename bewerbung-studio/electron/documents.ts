@@ -36,6 +36,7 @@ import {
   type DocumentDesignSettings,
 } from "../src/shared/documentDesign";
 import { getProfileMediaSource } from "../src/shared/profileMedia";
+import { pehlioneBlueprintMarkup } from "../src/shared/pehlioneBlueprint";
 import {
   getDeckblattCompetencies,
   getDeckblattContacts,
@@ -623,6 +624,8 @@ const pehlioneDocumentCss = `
 // Shared with the preview rules: continuation pages use a compact header and
 // no nested page padding, so page two does not start with an artificial void.
 const pehlionePdfLayoutFixes = `
+  .pehlione-pdf-sidebar-heading{display:grid;grid-template-columns:8mm minmax(0,1fr);gap:2mm;align-items:center}.pehlione-pdf-white .pehlione-pdf-sidebar-heading .pehlione-pdf-section-icon{width:8mm;height:8mm;color:var(--pehlione-primary);background:transparent}.pehlione-pdf-white .pehlione-pdf-sidebar-heading svg{width:7mm;height:7mm}
+  .pehlione-pdf-white .pehlione-pdf-sidebar{color:#142235;background:#fff;border-right:.25mm solid #d4dbe5}.pehlione-pdf-white .pehlione-pdf-sidebar h3,.pehlione-pdf-white .pehlione-pdf-sidebar .pehlione-pdf-flex-block h3,.pehlione-pdf-white .pehlione-pdf-container-title{color:var(--pehlione-primary);border-color:var(--pehlione-primary)}.pehlione-pdf-white .pehlione-pdf-contact-section strong,.pehlione-pdf-white .pehlione-pdf-contact-section svg,.pehlione-pdf-white .pehlione-pdf-sidebar li::marker{color:var(--pehlione-primary)}.pehlione-pdf-white .pehlione-pdf-hero{background-image:linear-gradient(#fff2 1px,transparent 1px),linear-gradient(90deg,#fff2 1px,transparent 1px);background-size:4mm 4mm}.pehlione-pdf-white .pehlione-pdf-hero:before,.pehlione-pdf-white .pehlione-pdf-hero:after{display:none}.pehlione-pdf-blueprint{position:absolute;inset:0;width:100%;height:100%}.pehlione-pdf-blueprint svg{width:100%;height:100%}
   .pehlione-pdf-hero.with-photo{background-image:linear-gradient(#fff2 1px,transparent 1px),linear-gradient(90deg,#fff2 1px,transparent 1px)}.pehlione-pdf-hero.with-photo:before{position:absolute;top:8mm;left:10mm;width:28mm;height:28mm;border:.25mm solid #d7eaff;border-radius:50%;content:""}.pehlione-pdf-photo{position:absolute;top:8mm;left:10mm;z-index:1;width:28mm;height:28mm;border:.25mm solid #d7eaff;border-radius:50%;object-fit:cover;object-position:center 30%}
   .pehlione-pdf-sidebar a{color:inherit;text-decoration:none;overflow-wrap:normal;word-break:normal}.pehlione-pdf-sidebar li{break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-sidebar section{margin-bottom:4.5mm}.pehlione-pdf-sidebar h3{margin-bottom:2mm;padding-bottom:1.5mm;font-size:9.7pt}.pehlione-pdf-sidebar ul{gap:1.35mm;font-size:7.8pt;line-height:1.2}.pehlione-pdf-contact-section ul{padding:0;list-style:none}.pehlione-pdf-contact-section li{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;align-items:start}.pehlione-pdf-contact-section svg{width:4.2mm;height:4.2mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2}.pehlione-pdf-contact-section li>span{display:grid;gap:.25mm;min-width:0}.pehlione-pdf-contact-section strong{display:block;color:#fff;font-size:7.8pt}.pehlione-pdf-contact-section a{font-size:7.4pt}.pehlione-pdf-section{break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-section h3{break-after:avoid;page-break-after:avoid}.pehlione-pdf-section h3:before{display:none}.pehlione-pdf-section-icon{display:grid;width:9mm;height:9mm;place-items:center;border-radius:1mm;color:#fff;background:var(--pehlione-primary);font-style:normal}.pehlione-pdf-section-icon svg{width:5.5mm;height:5.5mm;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.9}.pehlione-pdf-entry{break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-entry ul{break-inside:avoid;page-break-inside:avoid}.pehlione-pdf-project{padding:0;border-left:0;background:transparent}.pehlione-pdf-continuation{padding:10mm 16mm 16mm}.pehlione-pdf-continuation .pehlione-pdf-main{padding:0}.pehlione-pdf-header.continuation{margin-bottom:5mm;padding-bottom:2.5mm}.pehlione-pdf-header.continuation h1{font-size:18pt}.pehlione-pdf-header.continuation h2{margin-top:1mm;font-size:9.5pt}.pehlione-pdf[data-density="compact"]{font-size:8.1pt;line-height:1.23}.pehlione-pdf[data-density="compact"] .pehlione-pdf-main{padding:7mm 9mm 8mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-header{margin-bottom:4mm;padding-bottom:3mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-header h1{font-size:30pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-header h2{margin-top:1.2mm;font-size:10.3pt;white-space:nowrap}.pehlione-pdf[data-density="compact"] .pehlione-pdf-section{margin-bottom:3.1mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-section h3{margin-bottom:2mm;font-size:11.2pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-section h3 span{padding-bottom:.8mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-summary{font-size:8.1pt;line-height:1.24}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry{grid-template-columns:27mm minmax(0,1fr);gap:3mm;padding-bottom:2.1mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry+.pehlione-pdf-entry{padding-top:2.1mm}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry>p{font-size:7.7pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry h4{font-size:9.3pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry strong{margin:.6mm 0 1mm;font-size:8.2pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry ul,.pehlione-pdf[data-density="compact"] .pehlione-pdf-project ul,.pehlione-pdf[data-density="compact"] .pehlione-pdf-training ul{font-size:7.8pt;line-height:1.2}.pehlione-pdf[data-density="compact"] .pehlione-pdf-entry li,.pehlione-pdf[data-density="compact"] .pehlione-pdf-project li,.pehlione-pdf[data-density="compact"] .pehlione-pdf-training li{margin:.15mm 0}.pehlione-pdf[data-density="compact"] .pehlione-pdf-project h4{font-size:9.3pt}.pehlione-pdf[data-density="compact"] .pehlione-pdf-project p{margin:.6mm 0 1mm;font-size:8pt}
   .pehlione-pdf-closing{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:4mm;margin-top:3mm;padding-top:3mm;border-top:.25mm solid var(--line);font-size:8pt;break-inside:avoid}.pehlione-pdf-closing p{margin:0 0 1mm}.pehlione-pdf-signer{display:flex;grid-column:2;flex-direction:column;align-items:center;width:42mm}.pehlione-pdf-signer img{display:block;width:100%;height:12mm;object-fit:contain}.pehlione-pdf-signer strong{margin-top:1mm;font-size:8pt;font-weight:600;white-space:nowrap}
@@ -840,7 +843,7 @@ export const buildDocumentHtml = (
     : undefined;
   const resumePlan = createResumePagePlan(
     paginatedProfile,
-    template.id === "pehlione_white_blue"
+    (template.id === "pehlione_white_blue" || template.id === "pehlione_white")
       ? docs.resumeProfile ||
         (/kundenservice|sachbearbeit/i.test(role)
           ? docs.deckblattStatement
@@ -872,7 +875,7 @@ export const buildDocumentHtml = (
                         ? tabellarischPaginationOptions
                         : template.id === "modern"
                           ? modernPaginationOptions
-                          : template.id === "pehlione_white_blue"
+                          : (template.id === "pehlione_white_blue" || template.id === "pehlione_white")
                             ? pehlionePaginationOptions
                           : undefined,
   );
@@ -3191,6 +3194,10 @@ export const buildDocumentHtml = (
       title: string,
       kind: "profile" | "experience" | "education" | "project" | "training",
     ) => `<h3>${sectionIcon(kind)}<span>${escapeHtml(title)}</span></h3>`;
+    const sidebarHeading = (title: string, kind: "profile" | "project" | "training") =>
+      template.id === "pehlione_white"
+        ? `<h3 class="pehlione-pdf-sidebar-heading">${sectionIcon(kind)}<span>${escapeHtml(title)}</span></h3>`
+        : `<h3>${escapeHtml(title)}</h3>`;
     const entries = (kind: "experience" | "education") =>
       plan.items
         .filter((item) => item.kind === kind)
@@ -3238,7 +3245,7 @@ export const buildDocumentHtml = (
     const summarySection = getResumeSemanticSection(semanticSections, "summary");
     const knowledgeSection = getResumeSemanticSection(semanticSections, "knowledge");
     const closingSection = getResumeSemanticSection(semanticSections, "closing");
-    const knowledgeGroups = resolveKnowledgeGroups("pehlione_white_blue", profile?.resumeKnowledgeGroups).filter((group) => group.visible);
+    const knowledgeGroups = resolveKnowledgeGroups(template.id, profile?.resumeKnowledgeGroups).filter((group) => group.visible);
     const coreGroup = knowledgeGroups.find((group) => group.semanticType === "core-competencies");
     const focusGroup = knowledgeGroups.find((group) => group.semanticType === "technical-focus");
     const visibleBlockItems = (group: (typeof knowledgeGroups)[number]) =>
@@ -3272,14 +3279,14 @@ export const buildDocumentHtml = (
     const main = `${!continuation && summarySection.visible && sections.profile && managedSummary ? `<section class="pehlione-pdf-section pehlione-pdf-summary-section">${sectionHeading(getResumeSemanticTitle(semanticSections, "summary"), "profile")}<p class="pehlione-pdf-summary">${escapeHtml(managedSummary)}</p></section>` : ""}${sections.experience && experience ? `<section class="pehlione-pdf-section pehlione-pdf-experience">${sectionHeading(`${getResumeSemanticTitle(semanticSections, "career")}${continuation ? " · Fortsetzung" : ""}`, "experience")}${experience}</section>` : ""}${sections.education && education ? `<section class="pehlione-pdf-section pehlione-pdf-education">${sectionHeading(getResumeSemanticTitle(semanticSections, "education"), "education")}${education}</section>` : ""}${!continuation && project && !knowledgeGroups.some((group) => group.semanticType === "project-highlight" && visibleBlockItems(group).length) ? `<section class="pehlione-pdf-section pehlione-pdf-project">${sectionHeading("Projekt-Highlight", "project")}<h4>${escapeHtml(project.title)}</h4><p>${[project.company, ...project.technologies].filter(Boolean).map(escapeHtml).join(" · ")}</p>${project.achievements.length ? `<ul>${project.achievements.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul>` : ""}</section>` : ""}${lastPage && knowledgeSection.visible && profile?.resumeKnowledgeContainer?.showTitle && mainKnowledge ? `<section class="pehlione-pdf-section">${sectionHeading(getResumeSemanticTitle(semanticSections, "knowledge"), "profile")}</section>` : ""}${lastPage && knowledgeSection.visible ? mainKnowledge : ""}${lastPage && sections.certifications && kreativCertifications.length && !knowledgeGroups.some((group) => ["training", "certificates"].includes(group.semanticType)) ? `<section class="pehlione-pdf-section pehlione-pdf-training">${sectionHeading("Weiterbildungen", "training")}<ul>${kreativCertifications.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></section>` : ""}${closingMarkup}${!experience && !education ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}`;
     const density = plan.items.length >= 5 ? "compact" : plan.density;
     if (atsMode || continuation) {
-      return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="pehlione_white_blue" data-no-fit="true"><div class="page-content pehlione-pdf ${continuation ? "pehlione-pdf-continuation" : "pehlione-pdf-ats"}" data-density="${density}"><main class="pehlione-pdf-main">${header}${!continuation ? `<p class="pehlione-pdf-ats-contact"><strong>Kontakt:</strong> ${contacts.replace(/<[^>]+>/g, " ")}</p>` : ""}${main}</main></div></section>`;
+      return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="${escapeHtml(template.id)}" data-no-fit="true"><div class="page-content pehlione-pdf${template.id === "pehlione_white" ? " pehlione-pdf-white" : ""} ${continuation ? "pehlione-pdf-continuation" : "pehlione-pdf-ats"}" data-density="${density}"><main class="pehlione-pdf-main">${header}${!continuation ? `<p class="pehlione-pdf-ats-contact"><strong>Kontakt:</strong> ${contacts.replace(/<[^>]+>/g, " ")}</p>` : ""}${main}</main></div></section>`;
     }
     const languages = sections.languages
       ? (profile?.languages ?? []).filter(Boolean).map((item) => `<li>${escapeHtml(item)}</li>`).join("")
       : "";
-    const sidebar = `<aside class="pehlione-pdf-sidebar"><div class="pehlione-pdf-hero${pehlionePhoto ? " with-photo" : ""}">${pehlionePhoto}</div>${contacts ? `<section class="pehlione-pdf-contact-section"><h3>Kontakt</h3><ul>${contacts}</ul></section>` : ""}${knowledgeSection.visible && profile?.resumeKnowledgeContainer?.showTitle && knowledgeGroups.some((group) => group.slot === "sidebar") ? `<h3 class="pehlione-pdf-container-title">${escapeHtml(getResumeSemanticTitle(semanticSections, "knowledge"))}</h3>` : ""}${knowledgeSection.visible && sections.strengths && competenceMarkup ? `<section><h3>${escapeHtml(coreGroup?.title || "Kernkompetenzen")}</h3><ul>${competenceMarkup}</ul></section>` : ""}${knowledgeSection.visible && focus ? `<section><h3>${escapeHtml(focusGroup?.title || "Technische Schwerpunkte")}</h3><ul>${focus}</ul></section>` : ""}${knowledgeSection.visible ? sidebarKnowledge : ""}${languages ? `<section><h3>Sprachen</h3><ul>${languages}</ul></section>` : ""}</aside>`;
+    const sidebar = `<aside class="pehlione-pdf-sidebar"><div class="pehlione-pdf-hero${pehlionePhoto ? " with-photo" : ""}">${template.id === "pehlione_white" ? `<span class="pehlione-pdf-blueprint">${pehlioneBlueprintMarkup}</span>` : ""}${pehlionePhoto}</div>${contacts ? `<section class="pehlione-pdf-contact-section">${sidebarHeading("Kontakt", "profile")}<ul>${contacts}</ul></section>` : ""}${knowledgeSection.visible && profile?.resumeKnowledgeContainer?.showTitle && knowledgeGroups.some((group) => group.slot === "sidebar") ? `<h3 class="pehlione-pdf-container-title">${escapeHtml(getResumeSemanticTitle(semanticSections, "knowledge"))}</h3>` : ""}${knowledgeSection.visible && sections.strengths && competenceMarkup ? `<section>${sidebarHeading(coreGroup?.title || "Kernkompetenzen", "project")}<ul>${competenceMarkup}</ul></section>` : ""}${knowledgeSection.visible && focus ? `<section>${sidebarHeading(focusGroup?.title || "Technische Schwerpunkte", "training")}<ul>${focus}</ul></section>` : ""}${knowledgeSection.visible ? sidebarKnowledge : ""}${languages ? `<section><h3>Sprachen</h3><ul>${languages}</ul></section>` : ""}</aside>`;
     const sidebarWidth = (profile?.resumeColumnRatio ?? 30) * 2.1;
-    return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="pehlione_white_blue" data-no-fit="true"><div class="page-content pehlione-pdf" data-density="${density}" style="grid-template-columns:${sidebarWidth}mm minmax(0,1fr)">${sidebar}<main class="pehlione-pdf-main">${header}${main}</main></div></section>`;
+    return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="${escapeHtml(template.id)}" data-no-fit="true"><div class="page-content pehlione-pdf${template.id === "pehlione_white" ? " pehlione-pdf-white" : ""}" data-density="${density}" style="grid-template-columns:${sidebarWidth}mm minmax(0,1fr)">${sidebar}<main class="pehlione-pdf-main">${header}${main}</main></div></section>`;
   };
 
   const tabellarischExtraIcon = (kind: "profile" | "flag" | "trophy") => {
@@ -3784,7 +3791,7 @@ export const buildDocumentHtml = (
   };
   const resume = resumePlan
     .map(
-      template.id === "pehlione_white_blue"
+      (template.id === "pehlione_white_blue" || template.id === "pehlione_white")
         ? renderPehlioneResumePage
         : template.id === "modern"
         ? renderModernResumePage
