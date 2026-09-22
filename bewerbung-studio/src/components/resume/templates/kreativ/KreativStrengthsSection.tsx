@@ -24,7 +24,7 @@ export function KreativStrengthsSection({
         {strengths.map((strength) => (
             <article className="kreativ-strength" key={strength.title}>
               {!atsMode ? (
-                <TechnologyBrandIcon technology={strength.title} />
+                <TechnologyBrandIcon technology={strength.title} iconId={strength.iconId} />
               ) : null}
               <div>
                 <h3>{strength.title}</h3>

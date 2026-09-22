@@ -21,7 +21,7 @@ export function GepflegtStrengthsSection({
       <div className="gepflegt-strengths">
         {strengths.map((strength, index) => (
             <article className="gepflegt-strength" key={`${strength.title}-${index}`}>
-              {!atsMode ? <TechnologyBrandIcon technology={strength.title} /> : null}
+              {!atsMode ? <TechnologyBrandIcon technology={strength.title} iconId={strength.iconId} /> : null}
               <div>
                 <h3>{strength.title}</h3>
                 {strength.description ? <p>{strength.description}</p> : null}

@@ -39,7 +39,7 @@ export function IvyLeagueStrengthsSection({
               className="ivy-league-strength"
               key={`${strength.title}-${strength.description}`}
             >
-              <TechnologyBrandIcon technology={strength.title} />
+              <TechnologyBrandIcon technology={strength.title} iconId={profile?.strengths.find((entry) => entry.title.trim() === strength.title)?.iconId} />
               <div>
                 <h3>{strength.title}</h3>
                 {strength.description ? <p>{strength.description}</p> : null}

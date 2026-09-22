@@ -162,7 +162,7 @@ export function KompaktRightColumn({
           <KompaktHeading>{getResumeSectionTitle(profile, "strengths")}</KompaktHeading>
           {strengths.map((strength) => (
             <article key={strength.title}>
-              <TechnologyBrandIcon technology={strength.title} />
+              <TechnologyBrandIcon technology={strength.title} iconId={strength.iconId} />
               <div>
                 <h3>{strength.title}</h3>
                 {strength.description ? (

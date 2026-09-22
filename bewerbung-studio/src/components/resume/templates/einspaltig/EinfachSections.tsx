@@ -43,7 +43,7 @@ export function EinfachStrengths({
             </p>
           ) : (
             <article key={strength.title}>
-              <TechnologyBrandIcon technology={strength.title} />
+              <TechnologyBrandIcon technology={strength.title} iconId={strength.iconId} />
               <div>
                 <h3>{strength.title}</h3>
                 {strength.description ? (

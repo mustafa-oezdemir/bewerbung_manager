@@ -33,7 +33,7 @@ export function KlassischStrengths({
       <div>
         {strengths.map((strength) => (
           <article key={`${strength.title}-${strength.description}`}>
-            {!atsMode ? <TechnologyBrandIcon technology={strength.title} /> : null}
+            {!atsMode ? <TechnologyBrandIcon technology={strength.title} iconId={strength.iconId} /> : null}
             <div>
               <h3>{strength.title}</h3>
               {strength.description ? <p>{strength.description}</p> : null}

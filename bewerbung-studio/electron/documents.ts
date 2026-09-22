@@ -1042,7 +1042,7 @@ export const buildDocumentHtml = (
     ? `<section><h3>Stärken</h3><div class="elegant-pdf-strengths">${elegantStrengths
         .map(
           (strength) =>
-            `<article class="elegant-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+            `<article class="elegant-pdf-strength">${getTechnologyBrandIconMarkup(strength.title, profile?.strengths.find((entry) => entry.title.trim() === strength.title)?.iconId)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
         )
         .join("")}</div></section>`
     : "";
@@ -1345,7 +1345,7 @@ export const buildDocumentHtml = (
     ? `<section><h3>${escapeHtml(getResumeSectionTitle(profile, "strengths"))}</h3><div class="zweispaltig-pdf-strengths">${zweispaltigStrengths
         .map(
           (strength) =>
-            `<article class="zweispaltig-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+            `<article class="zweispaltig-pdf-strength">${getTechnologyBrandIconMarkup(strength.title, profile?.strengths.find((entry) => entry.title.trim() === strength.title)?.iconId)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
         )
         .join("")}</div></section>`
     : "";
@@ -1668,7 +1668,7 @@ export const buildDocumentHtml = (
     ? `<section>${zeitHeading("Stärken", "strengths")}<div class="zeit-pdf-strengths">${zeitStrengths
         .map(
           (strength) =>
-            `<article class="zeit-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+            `<article class="zeit-pdf-strength">${getTechnologyBrandIconMarkup(strength.title, profile?.strengths.find((entry) => entry.title.trim() === strength.title)?.iconId)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
         )
         .join("")}</div></section>`
     : "";
@@ -1984,7 +1984,7 @@ export const buildDocumentHtml = (
     ? `<section><h3>Stärken</h3><div class="kreativ-pdf-strengths">${kreativStrengthItems
         .map(
           (strength) =>
-            `<article class="kreativ-pdf-strength">${getTechnologyBrandIconMarkup(strength.name)}<div><h4>${escapeHtml(strength.name)}</h4>${strength.description?.trim() ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+            `<article class="kreativ-pdf-strength">${getTechnologyBrandIconMarkup(strength.name, profile?.strengths.find((entry) => entry.title.trim() === strength.name)?.iconId)}<div><h4>${escapeHtml(strength.name)}</h4>${strength.description?.trim() ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
         )
         .join("")}</div></section>`
     : "";
@@ -2275,7 +2275,7 @@ export const buildDocumentHtml = (
     ? `<section class="ivy-pdf-section"><h3 class="ivy-pdf-title">Stärken</h3><div class="ivy-pdf-strengths">${ivyStrengths
         .map(
           (strength) =>
-            `<article class="ivy-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+            `<article class="ivy-pdf-strength">${getTechnologyBrandIconMarkup(strength.title, profile?.strengths.find((entry) => entry.title.trim() === strength.title)?.iconId)}<div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
         )
         .join("")}</div></section>`
     : "";
@@ -2684,7 +2684,7 @@ export const buildDocumentHtml = (
       ? `<div class="${variant}-pdf-strengths">${managedStrengths
           .map(
             (strength) =>
-              `<article class="${variant}-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+              `<article class="${variant}-pdf-strength">${getTechnologyBrandIconMarkup(strength.title, profile?.strengths.find((entry) => entry.title.trim() === strength.title)?.iconId)}<div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
           )
           .join("")}</div>`
       : "";
@@ -2842,7 +2842,7 @@ export const buildDocumentHtml = (
         .slice(0, 6)
         .map(
           (strength) =>
-            `<article class="klassisch-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+            `<article class="klassisch-pdf-strength">${getTechnologyBrandIconMarkup(strength.title, profile?.strengths.find((entry) => entry.title.trim() === strength.title)?.iconId)}<div><h3>${escapeHtml(strength.title)}</h3>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
         )
         .join("")}</div>`
     : "";
@@ -3031,7 +3031,7 @@ export const buildDocumentHtml = (
     ? `<div class="modern-pdf-strengths">${modernDescribedStrengths
         .map(
           (item) =>
-            `<article class="modern-pdf-strength">${getTechnologyBrandIconMarkup(item.title)}<div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description)}</p></div></article>`,
+            `<article class="modern-pdf-strength">${getTechnologyBrandIconMarkup(item.title, profile?.strengths.find((entry) => entry.title.trim() === item.title)?.iconId)}<div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description)}</p></div></article>`,
         )
         .join("")}</div>`
     : "";
@@ -3362,7 +3362,7 @@ export const buildDocumentHtml = (
     return `<div class="tabellarisch-pdf-strengths">${tabellarischStrengthItems
       .map(
         (item) =>
-          `<article class="tabellarisch-pdf-strength">${getTechnologyBrandIconMarkup(item.title)}<div><h3>${escapeHtml(item.title)}</h3>${item.description.trim() ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`,
+          `<article class="tabellarisch-pdf-strength">${getTechnologyBrandIconMarkup(item.title, profile?.strengths.find((entry) => entry.title.trim() === item.title)?.iconId)}<div><h3>${escapeHtml(item.title)}</h3>${item.description.trim() ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`,
       )
       .join("")}</div>`;
   };
@@ -3603,7 +3603,7 @@ export const buildDocumentHtml = (
     return `<section><h3>Stärken</h3><div class="gepflegt-pdf-strengths">${gepflegtStrengths
       .map(
         (strength) =>
-          `<article class="gepflegt-pdf-strength">${getTechnologyBrandIconMarkup(strength.title)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
+          `<article class="gepflegt-pdf-strength">${getTechnologyBrandIconMarkup(strength.title, profile?.strengths.find((entry) => entry.title.trim() === strength.title)?.iconId)}<div><h4>${escapeHtml(strength.title)}</h4>${strength.description ? `<p>${escapeHtml(strength.description)}</p>` : ""}</div></article>`,
       )
       .join("")}</div></section>`;
   };

@@ -31,7 +31,7 @@ export function ZweispaltigStrengths({
         <div className="zweispaltig-strengths__list">
           {strengths.map((strength) => (
               <article className="zweispaltig-strength" key={strength.title}>
-                <TechnologyBrandIcon technology={strength.title} />
+                <TechnologyBrandIcon technology={strength.title} iconId={strength.iconId} />
                 <div>
                   <h3>{strength.title}</h3>
                   {strength.description.trim() ? (

@@ -35,7 +35,7 @@ export function TabellarischStrengths({
         <div className="tabellarisch-strengths">
           {strengths.map((strength) => (
               <article className="tabellarisch-strength" key={strength.title}>
-                <TechnologyBrandIcon technology={strength.title} />
+                <TechnologyBrandIcon technology={strength.title} iconId={strength.iconId} />
                 <div>
                   <h3>{strength.title}</h3>
                   {strength.description.trim() ? (

@@ -27,7 +27,7 @@ export function ModernStrengthsSection({
           (item, idx: number) => (
             <div key={idx} className="modern-strengths-item">
               <TechnologyBrandIcon
-                technology={item.title}
+                technology={item.title} iconId={item.iconId}
                 className="modern-strengths-item__icon"
               />
               <div>

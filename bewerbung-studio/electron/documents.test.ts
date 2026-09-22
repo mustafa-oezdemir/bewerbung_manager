@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { applicationSchema, profileSchema } from "../src/shared/schema";
 import { resolveResumeSectionInstances } from "../src/features/resume-sections/resume-section-system";
 import { buildDocumentHtml } from "./documents";
+import { strengthSymbolOptions } from "../src/shared/strengthSymbols";
 
 const now = new Date("2026-07-19T10:00:00.000Z").toISOString();
 
@@ -56,6 +57,16 @@ const profile = profileSchema.parse({
 });
 
 describe("Lebenslauf-Dokumente", () => {
+  it("preserves chosen strength symbols in PDF with inherited text color", () => {
+    for (const symbol of strengthSymbolOptions) {
+      const symbolProfile = profileSchema.parse({ ...profile, strengths: [{
+        id: crypto.randomUUID(), title: "Analytisches Denken", description: "Strukturierte Analyse", iconId: symbol.id,
+      }] });
+      const pdf = buildDocumentHtml({ ...application, templateId: "modern" }, symbolProfile, "lebenslauf");
+      expect(pdf).toContain(`data-strength-symbol="${symbol.id}" style="color:inherit"`);
+      expect(pdf).toContain('stroke="currentColor"');
+    }
+  });
   it("renders Deckblatt information from the actual profile data", () => {
     const deckblattProfile = profileSchema.parse({
       ...profile,

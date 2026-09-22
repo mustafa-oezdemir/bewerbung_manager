@@ -13,6 +13,7 @@ export function TechnologyBrandIcon({
     <span
       className={`technology-brand-icon ${className}`.trim()}
       data-technology={technology}
+      style={iconId.startsWith("symbol:") ? { color: "inherit", background: "none" } : undefined}
       aria-hidden="true"
       dangerouslySetInnerHTML={{
         __html: getTechnologyBrandIconMarkup(technology, iconId),

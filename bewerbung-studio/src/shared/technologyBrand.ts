@@ -1,3 +1,5 @@
+import { getStrengthSymbolMarkup } from "./strengthSymbols";
+
 const svg = (content: string, brand = "generic", viewBox = "0 0 32 32") =>
   `<svg class="technology-brand-svg" data-brand="${brand}" viewBox="${viewBox}" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">${content}</svg>`;
 
@@ -59,6 +61,8 @@ export const getTechnologyBrandIconMarkup = (
   technology: string,
   iconId = "",
 ) => {
+  const symbol = getStrengthSymbolMarkup(iconId);
+  if (symbol) return symbol;
   const selectedIcon = getDeviconMarkup(iconId);
   if (selectedIcon) return selectedIcon;
 

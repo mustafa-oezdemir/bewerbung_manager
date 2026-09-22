@@ -7529,6 +7529,23 @@ body.is-resizing-split-view * {
   background: repeating-linear-gradient(to bottom, #0b3d86 0 3px, transparent 3px 14px, #d4dbe5 14px 15px, transparent 15px 29px);
 }
 
+.strength-symbol-picker { display: flex; flex-wrap: wrap; gap: 6px; }
+.strength-symbol-picker button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--surface);
+  font-size: 20px;
+  cursor: pointer;
+}
+.strength-symbol-picker button:hover,
+.strength-symbol-picker button[aria-pressed="true"] { color: var(--brand); background: var(--brand-soft); border-color: var(--brand); }
+.strength-symbol-picker button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 .technology-icon-picker {
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr);

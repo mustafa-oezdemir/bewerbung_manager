@@ -40,7 +40,7 @@ export function ElegantStrengths({
         {strengths.map((strength) => (
           <article className="elegant-strength" key={strength.title}>
             <TechnologyBrandIcon
-              technology={strength.title}
+              technology={strength.title} iconId={strength.iconId}
               className="elegant-strength__icon"
             />
             <div>
