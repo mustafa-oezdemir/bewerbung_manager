@@ -43,7 +43,7 @@ export const resolveApplicationEmailAttachments = (
 
 export const validateEmailClosingDuplication = (
   message: string,
-  closing = "Für Rückfragen stehe ich Ihnen gerne zur Verfügung. Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.",
+  closing = "",
 ) => {
   const combined = `${message} ${closing}`.toLocaleLowerCase("de-DE");
 
@@ -106,7 +106,6 @@ export const getApplicationEmail = (
     application.documents.emailMessage?.trim() ||
     defaults.emailMessage;
   const greeting = defaults.emailGreeting;
-  const closing = "Für Rückfragen stehe ich Ihnen gerne zur Verfügung. Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.";
 
   const resolvedAttachments = Array.from(
     new Set(
@@ -145,13 +144,11 @@ export const getApplicationEmail = (
     body: message,
 
     greeting,
-    closing,
 
     attachments: resolvedAttachments,
 
     warnings: validateEmailClosingDuplication(
       message,
-      closing,
     ),
   };
 };
@@ -187,8 +184,6 @@ export const buildApplicationEmailMarkdown = (
     email.salutation,
     "",
     email.body,
-    "",
-    email.closing,
     "",
     email.greeting,
     "",

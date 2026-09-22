@@ -154,9 +154,9 @@ describe("application email", () => {
       "Sehr geehrte Frau Moter,\n\nanbei übersende ich Ihnen meine Bewerbung",
     );
     expect(markdown).toContain(
-      "kann ab sofort beginnen.\n\nFür Rückfragen stehe ich Ihnen gerne zur Verfügung.",
+      "kann ab sofort beginnen.\n\nMit freundlichen Grüßen",
     );
-    expect(markdown).toContain(
+    expect(markdown).not.toContain(
       "Über die Gelegenheit zu einem persönlichen Gespräch freue ich mich.",
     );
     expect(markdown).toContain("Mit freundlichen Grüßen");
@@ -195,9 +195,12 @@ describe("application email", () => {
     ]);
   });
 
-  it("warns when the editable message duplicates the fixed closing", () => {
+  it("warns only about repetitions in the supplied text", () => {
     expect(validateEmailClosingDuplication(
       "Ich freue mich auf ein persönliches Gespräch.",
+    )).toEqual([]);
+    expect(validateEmailClosingDuplication(
+      "Ich freue mich auf ein persönliches Gespräch. Ein persönliches Gespräch wäre schön.",
     )).toHaveLength(1);
     expect(validateEmailClosingDuplication(
       "Die Unterlagen finden Sie im Anhang.",

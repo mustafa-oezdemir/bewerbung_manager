@@ -2336,7 +2336,6 @@ export function DocumentsView({
 
                   <p>{email.body}</p>
 
-                  <p>{email.closing}</p>
                   <p>{email.greeting}</p>
 
                   <p>{email.senderName || "Absender im Profil ergänzen"}</p>
