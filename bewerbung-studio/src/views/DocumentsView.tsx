@@ -89,7 +89,6 @@ import {
   zweispaltigPaginationOptions,
 } from "../shared/documentPagination";
 import {
-  columnLayoutOptions,
   defaultDocumentDesign,
   documentBackgrounds,
   documentFonts,
@@ -1941,30 +1940,6 @@ export function DocumentsView({
                         Layout mit reduzierter Visualisierung.
                       </p>
                     ) : null}
-                  </div>
-                  <div className="design-option-group">
-                    <span>Spaltenanordnung</span>
-                    <div className="column-layout-picker">
-                      {columnLayoutOptions.map((option) => (
-                        <button
-                          className={
-                            design.settings.columnLayout === option.id
-                              ? "selected"
-                              : ""
-                          }
-                          key={option.id}
-                          title={option.description}
-                          type="button"
-                          onClick={() =>
-                            updateDesignSetting("columnLayout", option.id)
-                          }>
-                          <i
-                            className={`column-icon column-icon-${option.id}`}
-                          />
-                          <b>{option.name}</b>
-                        </button>
-                      ))}
-                    </div>
                   </div>
                   <div className="design-option-group">
                     <span>Hintergründe</span>
