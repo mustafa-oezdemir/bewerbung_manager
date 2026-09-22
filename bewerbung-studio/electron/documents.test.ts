@@ -485,11 +485,14 @@ describe("Lebenslauf-Dokumente", () => {
 
   it("exports the white Pehlione variant through the Pehlione renderer, including ATS", () => {
     const whiteApplication = applicationSchema.parse({ ...application, templateId: "pehlione_white" });
-    const html = buildDocumentHtml(whiteApplication, profile, "lebenslauf");
+    const html = buildDocumentHtml(whiteApplication, { ...profile, phone: "+49176123456", github: "github.com/mina", portfolio: "mina.example.com" }, "lebenslauf");
     const body = html.slice(html.indexOf("<body>"));
     expect(body).toContain('data-template="pehlione_white"');
     expect(body).toContain("pehlione-pdf-white");
     expect(body).toContain("pehlione-pdf-blueprint");
+    expect(body).toContain('data-contact-icon="github"');
+    expect(body).toContain('data-contact-icon="website"');
+    expect(body).toContain("<strong>Telefon</strong>");
     expect(body).toContain("Kernkompetenzen");
     expect(body).toContain("Technische Schwerpunkte");
     const atsHtml = buildDocumentHtml(applicationSchema.parse({

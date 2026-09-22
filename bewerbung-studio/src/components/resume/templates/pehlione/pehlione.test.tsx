@@ -63,12 +63,15 @@ describe("Pehlione White Blue", () => {
     expect(template.supportsPhoto).toBe(true);
     expect(getTemplateKnowledgeSlots(template.id).map((slot) => slot.id)).toContain("sidebar");
     const html = renderToStaticMarkup(
-      <PehlioneResume templateId="pehlione_white" profile={profile} name="Mina Kaya"
+      <PehlioneResume templateId="pehlione_white" profile={{ ...profile, github: "github.com/mina", portfolio: "mina.example.com" }} name="Mina Kaya"
         atsMode={false} plan={plan} totalPages={1} accentColor={template.accent}
         secondaryColor={template.secondary} resumeProfile="" sections={profile.resumeSections} />,
     );
     expect(html).toContain("pehlione-resume--white");
     expect(html).toContain("pehlione-blueprint");
+    expect(html).toContain('data-contact-icon="github"');
+    expect(html).toContain('data-contact-icon="website"');
+    expect(html).toContain("<strong>Telefon</strong>");
     expect(html).toContain("Kernkompetenzen");
     expect(html).toContain("Technische Schwerpunkte");
     expect(html).toContain("Grafana Datasource Plugin für PRTG");

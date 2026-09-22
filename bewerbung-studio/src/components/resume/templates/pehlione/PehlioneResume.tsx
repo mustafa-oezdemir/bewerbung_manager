@@ -4,10 +4,6 @@ import {
   Database,
   GraduationCap,
   Lightbulb,
-  Linkedin,
-  Mail,
-  MapPin,
-  Phone,
   UserRound,
   Wrench,
 } from "lucide-react";
@@ -15,11 +11,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { getTemplateKnowledge, parseTemplateStrengths, resolveTemplateSummary } from "../resume-template-data";
 import type { ApplicantProfile } from "../../../../shared/schema";
 import type { ResumePagePlan } from "../../../../shared/documentPagination";
-import {
-  externalUrl,
-  formatPhoneForDisplay,
-  formatUrlForDisplay,
-} from "../../../../shared/contactPresentation";
+
 import { groupPehlioneCompetencies } from "../../../../shared/pehlioneCompetencies";
 import {
   getPehlioneCoreCompetencies,
@@ -27,12 +19,12 @@ import {
   getPehlioneTechnicalFocus,
 } from "../../../../shared/pehlioneContent";
 import {
-  defaultResumePersonalFieldVisibility,
   getResumeSemanticSection,
   getResumeSemanticTitle,
   resolveKnowledgeGroups,
 } from "../../../../features/resume-sections/resume-section-system";
 import { getProfileMediaSource } from "../../../../shared/profileMedia";
+import { getPehlioneContacts, renderPehlioneContacts, pehlioneContactsCss } from "../../../../shared/pehlioneContacts";
 import { pehlioneBlueprintMarkup } from "../../../../shared/pehlioneBlueprint";
 import "./pehlione.css";
 import "./pehlione-blocks.css";
@@ -57,19 +49,6 @@ const heading = (icon: ReactNode, title: string) => (
     <b>{title}</b>
   </h2>
 );
-
-const contactItems = (profile?: ApplicantProfile) => {
-  const visibility = {
-    ...defaultResumePersonalFieldVisibility,
-    ...profile?.resumePersonalFieldVisibility,
-  };
-  return [
-  { key: "location", icon: <MapPin />, value: [profile?.city, profile?.country].filter(Boolean).join(", ") },
-  { key: "phone", icon: <Phone />, value: formatPhoneForDisplay(profile?.phone), href: profile?.phone ? `tel:${profile.phone.replace(/[^\d+]/g, "")}` : "" },
-  { key: "email", icon: <Mail />, value: profile?.email || "", href: profile?.email ? `mailto:${profile.email}` : "" },
-  { key: "linkedin", icon: <Linkedin />, value: formatUrlForDisplay(profile?.linkedin || profile?.github || ""), href: externalUrl(profile?.linkedin || profile?.github || "") },
-  ].filter((item) => item.value && visibility[item.key === "location" ? "address" : item.key as keyof typeof visibility]);
-};
 
 export function PehlioneResume({
   templateId = "pehlione_white_blue",
@@ -169,18 +148,14 @@ export function PehlioneResume({
       data-density={density}
       data-page={plan.pageNumber}
       style={style}>
+      <style>{pehlioneContactsCss}</style>
       {!atsMode && !continuation ? (
         <aside className="pehlione-sidebar">
           <div className={`pehlione-hero${photoSource ? " pehlione-hero--with-photo" : ""}`} aria-hidden="true">
             {templateId === "pehlione_white" ? <span className="pehlione-blueprint" dangerouslySetInnerHTML={{ __html: pehlioneBlueprintMarkup }} /> : <><i /><i /><i /></>}
             {photoSource ? <img className="pehlione-hero__photo" src={photoSource} alt="" /> : templateId !== "pehlione_white" ? <b>◉</b> : null}
           </div>
-          <section className="pehlione-sidebar-section">
-            {heading(<UserRound />, "Kontakt")}
-            <ul className="pehlione-contact-list">
-              {contactItems(profile).map((item) => <li key={item.key}><span>{item.icon}</span>{item.href ? <a href={item.href}>{item.value}</a> : item.value}</li>)}
-            </ul>
-          </section>
+          <div dangerouslySetInnerHTML={{ __html: renderPehlioneContacts(profile) }} />
           {knowledgeSection.visible && profile?.resumeKnowledgeContainer?.showTitle && visibleKnowledgeGroups.some((group) => group.slot === "sidebar") ? <h3 className="pehlione-container-title">{getResumeSemanticTitle(semanticSections, "knowledge")}</h3> : null}
           {knowledgeSection.visible && sections.strengths && (coreGroup?.items.length || coreCompetencies.length || competencyGroups.length) ? (
             <section className="pehlione-sidebar-section">
@@ -218,7 +193,7 @@ export function PehlioneResume({
           <h2>{profile?.title || "Fachkraft"}</h2>
         </header>
         {atsMode && !continuation ? (
-          <section className="pehlione-ats-contact"><b>Kontakt:</b> {contactItems(profile).map((item) => item.value).join(" · ")}</section>
+          <section className="pehlione-ats-contact"><b>Kontakt:</b> {getPehlioneContacts(profile).map((item) => item.value).join(" · ")}</section>
         ) : null}
         {!continuation && summarySection.visible && sections.profile && summary ? <section className="pehlione-main-section">{heading(<UserRound />, getResumeSemanticTitle(semanticSections, "summary"))}<p className="pehlione-summary">{summary}</p></section> : null}
         {sections.experience && experiences.length ? <section className="pehlione-main-section">{heading(<BriefcaseBusiness />, `${getResumeSemanticTitle(semanticSections, "career")}${continuation ? " · Fortsetzung" : ""}`)}{career(experiences, "experience")}</section> : null}

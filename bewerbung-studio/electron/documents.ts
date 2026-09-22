@@ -36,6 +36,7 @@ import {
   type DocumentDesignSettings,
 } from "../src/shared/documentDesign";
 import { getProfileMediaSource } from "../src/shared/profileMedia";
+import { getPehlioneContacts, renderPehlioneContacts, pehlioneContactsCss } from "../src/shared/pehlioneContacts";
 import { pehlioneBlueprintMarkup } from "../src/shared/pehlioneBlueprint";
 import {
   getDeckblattCompetencies,
@@ -75,7 +76,6 @@ import {
   hasSavedTemplateSectionLayout,
 } from "../src/features/resume-sections/resume-sections";
 import {
-  defaultResumePersonalFieldVisibility,
   getResumeSemanticSection,
   getResumeSemanticTitle,
   resolveKnowledgeGroups,
@@ -3215,22 +3215,8 @@ export const buildDocumentHtml = (
         .join("");
     const experience = entries("experience");
     const education = entries("education");
-    const personalVisibility = {
-      ...defaultResumePersonalFieldVisibility,
-      ...profile?.resumePersonalFieldVisibility,
-    };
-    const contactItems = [
-      { visibility: personalVisibility.address, kind: "location" as const, label: "Ort", value: [profile?.city, profile?.country].filter(Boolean).join(", "), href: "" },
-      { visibility: personalVisibility.phone, kind: "phone" as const, label: "Telefon", value: formatPhoneForDisplay(profile?.phone), href: profile?.phone ? `tel:${profile.phone.replace(/[^\d+]/g, "")}` : "" },
-      { visibility: personalVisibility.email, kind: "mail" as const, label: "E-Mail", value: profile?.email || "", href: profile?.email ? `mailto:${profile.email}` : "" },
-      { visibility: personalVisibility.linkedin, kind: "linkedin" as const, label: "LinkedIn", value: formatUrlForDisplay(profile?.linkedin || ""), href: externalUrl(profile?.linkedin || "") },
-      { visibility: personalVisibility.github, kind: "linkedin" as const, label: "GitHub", value: formatUrlForDisplay(profile?.github || ""), href: externalUrl(profile?.github || "") },
-      { visibility: personalVisibility.website, kind: "linkedin" as const, label: "Website", value: formatUrlForDisplay(profile?.portfolio || ""), href: externalUrl(profile?.portfolio || "") },
-    ].filter((contact) => contact.visibility && contact.value);
-    const contacts = contactItems.map((contact) => {
-      const value = contact.href ? `<a href="${escapeHtml(contact.href)}">${escapeHtml(contact.value)}</a>` : escapeHtml(contact.value);
-      return `<li>${kreativIconMarkup(contact.kind)}<span><strong>${escapeHtml(contact.label)}</strong>${value}</span></li>`;
-    }).join("");
+    const contactItems = getPehlioneContacts(profile);
+    const contacts = renderPehlioneContacts(profile);
     const coreCompetencies = getPehlioneCoreCompetencies(profile);
     const groupedCompetencies = groupPehlioneCompetencies(managedStrengths.slice(0, 8));
     const competence = (coreCompetencies.length
@@ -3279,12 +3265,12 @@ export const buildDocumentHtml = (
     const main = `${!continuation && summarySection.visible && sections.profile && managedSummary ? `<section class="pehlione-pdf-section pehlione-pdf-summary-section">${sectionHeading(getResumeSemanticTitle(semanticSections, "summary"), "profile")}<p class="pehlione-pdf-summary">${escapeHtml(managedSummary)}</p></section>` : ""}${sections.experience && experience ? `<section class="pehlione-pdf-section pehlione-pdf-experience">${sectionHeading(`${getResumeSemanticTitle(semanticSections, "career")}${continuation ? " · Fortsetzung" : ""}`, "experience")}${experience}</section>` : ""}${sections.education && education ? `<section class="pehlione-pdf-section pehlione-pdf-education">${sectionHeading(getResumeSemanticTitle(semanticSections, "education"), "education")}${education}</section>` : ""}${!continuation && project && !knowledgeGroups.some((group) => group.semanticType === "project-highlight" && visibleBlockItems(group).length) ? `<section class="pehlione-pdf-section pehlione-pdf-project">${sectionHeading("Projekt-Highlight", "project")}<h4>${escapeHtml(project.title)}</h4><p>${[project.company, ...project.technologies].filter(Boolean).map(escapeHtml).join(" · ")}</p>${project.achievements.length ? `<ul>${project.achievements.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul>` : ""}</section>` : ""}${lastPage && knowledgeSection.visible && profile?.resumeKnowledgeContainer?.showTitle && mainKnowledge ? `<section class="pehlione-pdf-section">${sectionHeading(getResumeSemanticTitle(semanticSections, "knowledge"), "profile")}</section>` : ""}${lastPage && knowledgeSection.visible ? mainKnowledge : ""}${lastPage && sections.certifications && kreativCertifications.length && !knowledgeGroups.some((group) => ["training", "certificates"].includes(group.semanticType)) ? `<section class="pehlione-pdf-section pehlione-pdf-training">${sectionHeading("Weiterbildungen", "training")}<ul>${kreativCertifications.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></section>` : ""}${closingMarkup}${!experience && !education ? "<p class='muted'>Berufserfahrung und Ausbildung im Profil ergänzen.</p>" : ""}`;
     const density = plan.items.length >= 5 ? "compact" : plan.density;
     if (atsMode || continuation) {
-      return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="${escapeHtml(template.id)}" data-no-fit="true"><div class="page-content pehlione-pdf${template.id === "pehlione_white" ? " pehlione-pdf-white" : ""} ${continuation ? "pehlione-pdf-continuation" : "pehlione-pdf-ats"}" data-density="${density}"><main class="pehlione-pdf-main">${header}${!continuation ? `<p class="pehlione-pdf-ats-contact"><strong>Kontakt:</strong> ${contacts.replace(/<[^>]+>/g, " ")}</p>` : ""}${main}</main></div></section>`;
+      return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="${escapeHtml(template.id)}" data-no-fit="true"><div class="page-content pehlione-pdf${template.id === "pehlione_white" ? " pehlione-pdf-white" : ""} ${continuation ? "pehlione-pdf-continuation" : "pehlione-pdf-ats"}" data-density="${density}"><main class="pehlione-pdf-main">${header}${!continuation ? `<p class="pehlione-pdf-ats-contact"><strong>Kontakt:</strong> ${contactItems.map((item) => escapeHtml(item.value)).join(" · ")}</p>` : ""}${main}</main></div></section>`;
     }
     const languages = sections.languages
       ? (profile?.languages ?? []).filter(Boolean).map((item) => `<li>${escapeHtml(item)}</li>`).join("")
       : "";
-    const sidebar = `<aside class="pehlione-pdf-sidebar"><div class="pehlione-pdf-hero${pehlionePhoto ? " with-photo" : ""}">${template.id === "pehlione_white" ? `<span class="pehlione-pdf-blueprint">${pehlioneBlueprintMarkup}</span>` : ""}${pehlionePhoto}</div>${contacts ? `<section class="pehlione-pdf-contact-section">${sidebarHeading("Kontakt", "profile")}<ul>${contacts}</ul></section>` : ""}${knowledgeSection.visible && profile?.resumeKnowledgeContainer?.showTitle && knowledgeGroups.some((group) => group.slot === "sidebar") ? `<h3 class="pehlione-pdf-container-title">${escapeHtml(getResumeSemanticTitle(semanticSections, "knowledge"))}</h3>` : ""}${knowledgeSection.visible && sections.strengths && competenceMarkup ? `<section>${sidebarHeading(coreGroup?.title || "Kernkompetenzen", "project")}<ul>${competenceMarkup}</ul></section>` : ""}${knowledgeSection.visible && focus ? `<section>${sidebarHeading(focusGroup?.title || "Technische Schwerpunkte", "training")}<ul>${focus}</ul></section>` : ""}${knowledgeSection.visible ? sidebarKnowledge : ""}${languages ? `<section><h3>Sprachen</h3><ul>${languages}</ul></section>` : ""}</aside>`;
+    const sidebar = `<aside class="pehlione-pdf-sidebar"><div class="pehlione-pdf-hero${pehlionePhoto ? " with-photo" : ""}">${template.id === "pehlione_white" ? `<span class="pehlione-pdf-blueprint">${pehlioneBlueprintMarkup}</span>` : ""}${pehlionePhoto}</div>${contacts}${knowledgeSection.visible && profile?.resumeKnowledgeContainer?.showTitle && knowledgeGroups.some((group) => group.slot === "sidebar") ? `<h3 class="pehlione-pdf-container-title">${escapeHtml(getResumeSemanticTitle(semanticSections, "knowledge"))}</h3>` : ""}${knowledgeSection.visible && sections.strengths && competenceMarkup ? `<section>${sidebarHeading(coreGroup?.title || "Kernkompetenzen", "project")}<ul>${competenceMarkup}</ul></section>` : ""}${knowledgeSection.visible && focus ? `<section>${sidebarHeading(focusGroup?.title || "Technische Schwerpunkte", "training")}<ul>${focus}</ul></section>` : ""}${knowledgeSection.visible ? sidebarKnowledge : ""}${languages ? `<section><h3>Sprachen</h3><ul>${languages}</ul></section>` : ""}</aside>`;
     const sidebarWidth = (profile?.resumeColumnRatio ?? 30) * 2.1;
     return `<section class="page cv-sheet ${designClasses}" data-resume-page="${plan.pageNumber}" data-template="${escapeHtml(template.id)}" data-no-fit="true"><div class="page-content pehlione-pdf${template.id === "pehlione_white" ? " pehlione-pdf-white" : ""}" data-density="${density}" style="grid-template-columns:${sidebarWidth}mm minmax(0,1fr)">${sidebar}<main class="pehlione-pdf-main">${header}${main}</main></div></section>`;
   };
@@ -3821,7 +3807,7 @@ export const buildDocumentHtml = (
     )
     .join("");
   const selected = target === "mappe" ? [letter, cover, resume] : target === "deckblatt" ? [cover] : target === "anschreiben" ? [letter] : [resume];
-  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}${ivyLeagueDocumentCss}${extendedResumeDocumentCss}${klassischDocumentCss}${modernDocumentCss}${pehlioneDocumentCss}${pehlionePdfLayoutFixes}${gepflegtDocumentCss}${tabellarischDocumentCss}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}${ivyLeagueDocumentCss}${extendedResumeDocumentCss}${klassischDocumentCss}${modernDocumentCss}${pehlioneDocumentCss}${pehlionePdfLayoutFixes}${pehlioneContactsCss}${gepflegtDocumentCss}${tabellarischDocumentCss}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
 };
 
 export const buildCoverLetterMarkdown = (
