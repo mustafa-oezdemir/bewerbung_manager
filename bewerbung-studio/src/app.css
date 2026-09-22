@@ -7398,19 +7398,21 @@ body.is-resizing-split-view * {
 .pehlione-career-entry { border-color: var(--doc-line-color, #b8c3d0); }
 
 .pehlione-closing {
-  display: flex;
-  min-height: 10mm;
-  align-items: flex-end;
-  gap: 3mm;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 4mm;
   margin-top: 3mm;
-  padding-top: 2mm;
+  padding-top: 3mm;
   border-top: 0.25mm solid var(--doc-line-color, #b8c3d0);
   font-size: 8pt;
+  break-inside: avoid;
 }
 
-.pehlione-closing p { margin: 0 auto 0 0; }
-.pehlione-closing img { width: auto; max-width: 34mm; height: auto; max-height: 10mm; }
-.pehlione-closing strong { white-space: nowrap; }
+.pehlione-closing p { margin: 0 0 1mm; }
+.pehlione-closing__signer { display: flex; grid-column: 2; flex-direction: column; align-items: center; width: 42mm; }
+.pehlione-closing__signer img { display: block; width: 100%; height: 12mm; object-fit: contain; }
+.pehlione-closing__signer strong { margin-top: 1mm; font-size: 8pt; font-weight: 600; white-space: nowrap; }
 
 .template-thumbnail:has(.pehlione-thumbnail-hero) {
   position: relative;

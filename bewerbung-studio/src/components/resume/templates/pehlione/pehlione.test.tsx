@@ -54,6 +54,32 @@ const plan: ResumePagePlan = {
 };
 
 describe("Pehlione White Blue", () => {
+  it("groups the signature above the printed name beside place and date", () => {
+    const signedProfile = profileSchema.parse({
+      ...profile,
+      applicationPlace: "Marburg",
+      applicationDate: "22.09.2026",
+      signaturePath: "data:image/png;base64,AA==",
+    });
+    const html = renderToStaticMarkup(
+      <PehlioneResume
+        profile={signedProfile}
+        name="Mina Kaya"
+        atsMode={false}
+        plan={plan}
+        totalPages={1}
+        accentColor="#0B3D86"
+        secondaryColor="#1F66B3"
+        resumeProfile=""
+        sections={signedProfile.resumeSections}
+      />,
+    );
+
+    expect(html).toContain("<p>Marburg, 22.09.2026</p>");
+    expect(html).toContain('<div class="pehlione-closing__signer"><img');
+    expect(html).toContain('alt="Unterschrift"/><strong>Mina Kaya</strong></div>');
+  });
+
   it("shows an enabled photo over the hero circle only on the first visual page", () => {
     const photoProfile = profileSchema.parse({
       ...profile,

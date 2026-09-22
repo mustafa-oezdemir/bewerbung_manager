@@ -508,6 +508,25 @@ describe("Lebenslauf-Dokumente", () => {
     expect(hiddenPdf.slice(hiddenPdf.indexOf("<body>"))).not.toContain('class="pehlione-pdf-photo"');
   });
 
+  it("groups the Pehlione PDF signature above the printed name", () => {
+    const pehlioneApplication = applicationSchema.parse({
+      ...application,
+      templateId: "pehlione_white_blue",
+    });
+    const signedProfile = profileSchema.parse({
+      ...profile,
+      applicationPlace: "Marburg",
+      applicationDate: "22.09.2026",
+      signaturePath: "data:image/png;base64,AA==",
+    });
+    const html = buildDocumentHtml(pehlioneApplication, signedProfile, "lebenslauf");
+    const body = html.slice(html.indexOf("<body>"));
+
+    expect(body).toContain('<footer class="pehlione-pdf-closing"><p>Marburg, 22.09.2026</p>');
+    expect(body).toContain('<div class="pehlione-pdf-signer"><img');
+    expect(body).toContain('<strong>Mina Kaya</strong></div></footer>');
+  });
+
   it("reduces the date-to-subject gap in the PDF with each requested step", () => {
     const compactGapApplication = applicationSchema.parse({
       ...application,

@@ -228,8 +228,12 @@ export function PehlioneResume({
         {lastPage && closingSection.visible && (closing.showPlace || closing.showDate || closing.showSignature) ? (
           <footer className="pehlione-closing">
             {(closing.showPlace || closing.showDate) ? <p>{[closing.showPlace ? profile?.applicationPlace || profile?.city : "", closing.showDate ? profile?.applicationDate : ""].filter(Boolean).join(", ")}</p> : null}
-            {closing.showSignature && signatureSource ? <img src={signatureSource} alt="Unterschrift" /> : null}
-            {closing.showSignature ? <strong>{name}</strong> : null}
+            {closing.showSignature ? (
+              <div className="pehlione-closing__signer">
+                {signatureSource ? <img src={signatureSource} alt="Unterschrift" /> : null}
+                <strong>{name}</strong>
+              </div>
+            ) : null}
           </footer>
         ) : null}
         {!experiences.length && !education.length ? <p className="pehlione-empty">Berufserfahrung und Ausbildung im Profil ergänzen.</p> : null}
