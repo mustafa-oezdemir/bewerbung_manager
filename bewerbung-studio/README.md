@@ -28,12 +28,18 @@ Erstellung eines konsistenten Sets aus Deckblatt, Anschreiben und Lebenslauf.
 
 ## Datenablage
 
-Die Anwendung verwaltet alle Daten standardmäßig unter
-`D:\bewerbung_mustafa`. Der Hauptordner kann vor dem Start über die
-Umgebungsvariable `BEWERBUNG_ROOT_PATH` geändert werden.
+Beim ersten Start wählen Sie einen Bewerbungsordner. Die Anwendung speichert
+dessen Pfad in `bootstrap.json` im plattformüblichen Electron-`userData`-Ordner.
+Vorhandene Installationen mit `D:\bewerbung_mustafa\data\Settings\workspace.json`
+werden automatisch übernommen. `BEWERBUNG_ROOT_PATH` bleibt als Override für
+Entwicklung und Tests erhalten. Den Ordner können Sie später unter
+**Einstellungen → Speicherort / Bewerbungsordner** ändern. Vor einem Wechsel
+wird eine vollständige Sicherung mit Manifest erstellt und die kopierten Dateien
+werden geprüft. Der alte Ordner bleibt als zusätzliche Wiederherstellungskopie
+erhalten.
 
 ```text
-D:\bewerbung_mustafa
+<gewählter Bewerbungsordner>
 ├── data
 │   ├── Bewerbungen
 │   │   └── Firma_TT.MM.JJJJ
@@ -55,7 +61,7 @@ D:\bewerbung_mustafa
     └── Firma_TT.MM.JJJJ
 ```
 
-`Settings/workspace.json` ist der zentrale, versionierte Datensatz. Aktive
+`data/Settings/workspace.json` ist der zentrale, versionierte Datensatz. Aktive
 Bewerbungen, Gespräche und Absagen sind gefilterte Ansichten dieses Datensatzes
 und keine separaten Kopien.
 

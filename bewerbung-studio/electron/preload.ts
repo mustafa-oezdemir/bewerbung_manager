@@ -79,6 +79,12 @@ const api: BewerbungsManagerApi = {
   system: {
     openExternal: (url) => ipcRenderer.invoke("system:open-external", url),
     dataPath: () => ipcRenderer.invoke("system:data-path"),
+    workspaceStatus: () => ipcRenderer.invoke("system:workspace-status"),
+    chooseWorkspace: () => ipcRenderer.invoke("system:choose-workspace"),
+    openWorkspace: () => ipcRenderer.invoke("system:open-workspace"),
+    backupWorkspace: () => ipcRenderer.invoke("system:backup-workspace"),
+    openBackups: () => ipcRenderer.invoke("system:open-backups"),
+    changeWorkspace: (mode) => ipcRenderer.invoke("system:change-workspace", mode),
   },
 };
 

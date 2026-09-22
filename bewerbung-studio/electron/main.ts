@@ -1,6 +1,5 @@
 import path from "node:path";
-import { mkdirSync } from "node:fs";
-import { access, readFile, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   app,
@@ -38,45 +37,29 @@ import { createDefaultDeckblattDocument } from "./templates/default-deckblatt";
 import { sanitizeTemplateFileName } from "./templates/template-filename.service";
 import { wordMusterTemplateConfig } from "../src/features/templates/template.constants";
 import { GitAutomationService } from "./git-automation";
+import { WorkspaceManager } from "./workspace-management";
+import type { WorkspaceStatus, WorkspaceChangeMode } from "../src/shared/ipc";
 
 let mainWindow: BrowserWindow | null = null;
 let store: DataStore;
 let templateService: TemplateService;
-let gitAutomation: GitAutomationService;
+let gitAutomation: GitAutomationService | undefined;
 let gitShutdownInProgress = false;
 let gitShutdownComplete = false;
+let workspaceStatus: WorkspaceStatus = { state: "setup" };
+let workspaceManager: WorkspaceManager;
+let runtimeRegistered = false;
 const notifiedEvents = new Set<string>();
 const appId = "de.bewerbungsmanager.desktop";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const isDevelopment = Boolean(process.env.VITE_DEV_SERVER_URL);
-const applicationPaths = resolveApplicationPaths(
-  undefined,
-  path.join(
-    __dirname,
-    isDevelopment ? "../public/templates" : "../dist/templates",
-  ),
+const bundledTemplatesRoot = path.join(
+  __dirname,
+  isDevelopment ? "../public/templates" : "../dist/templates",
 );
-const electronDataPath = path.join(applicationPaths.dataRoot, "Electron");
-const electronSessionPath = path.join(
-  applicationPaths.dataRoot,
-  "ElectronSession",
-);
-const logsPath = path.join(applicationPaths.dataRoot, "Logs");
-const crashDumpsPath = path.join(applicationPaths.dataRoot, "CrashDumps");
-for (const directory of [
-  electronDataPath,
-  electronSessionPath,
-  logsPath,
-  crashDumpsPath,
-]) {
-  mkdirSync(directory, { recursive: true });
-}
-app.setPath("userData", electronDataPath);
-app.setPath("sessionData", electronSessionPath);
-app.setPath("logs", logsPath);
-app.setPath("crashDumps", crashDumpsPath);
+let applicationPaths: ReturnType<typeof resolveApplicationPaths>;
 
 if (process.platform === "win32") app.setAppUserModelId(appId);
 
@@ -510,15 +493,22 @@ const registerIpc = () => {
           "Die Exportdaten gehören nicht zur ausgewählten Bewerbung.",
         );
       }
-      const result = await dialog.showSaveDialog(mainWindow!, {
-        title: "PDF exportieren",
-        defaultPath: store.getExportDefaultName(
-          normalizedApplicationId,
-          target,
-        ),
-        filters: [{ name: "PDF", extensions: ["pdf"] }],
-      });
-      if (result.canceled || !result.filePath) return null;
+      const exportPath = store.getAutomaticExportPath(normalizedApplicationId, target);
+      try {
+        await access(exportPath);
+        const confirmation = await dialog.showMessageBox(mainWindow!, {
+          type: "question",
+          title: "PDF bereits vorhanden",
+          message: "Die vorhandene PDF-Datei ersetzen?",
+          detail: exportPath,
+          buttons: ["Ersetzen", "Abbrechen"],
+          defaultId: 1,
+          cancelId: 1,
+        });
+        if (confirmation.response !== 0) return null;
+      } catch {
+        // First export has no existing file.
+      }
       const exporter = new BrowserWindow({
         show: false,
         webPreferences: {
@@ -556,12 +546,13 @@ const registerIpc = () => {
                 ),
               )
             : generatedPdf;
-        await writeFile(result.filePath, pdf);
+        await mkdir(path.dirname(exportPath), { recursive: true });
+        await writeFile(exportPath, pdf);
         store.queueGitCommit(
           normalizedApplicationId,
           target === "anschreiben" ? "anschreiben" : "update",
         );
-        return result.filePath;
+        return exportPath;
       } finally {
         exporter.destroy();
       }
@@ -584,6 +575,8 @@ const registerIpc = () => {
       filters: [{ name: "BewerbungsManager JSON", extensions: ["json"] }],
     });
     if (result.canceled || !result.filePaths[0]) return null;
+    if (workspaceStatus.state !== "ready") throw new Error("Kein Bewerbungsordner eingerichtet.");
+    await workspaceManager.fullBackup(workspaceStatus.root);
     return store.importBackup(result.filePaths[0]);
   });
   ipcMain.handle("export:settings", async () => {
@@ -630,6 +623,8 @@ const registerIpc = () => {
       noLink: true,
     });
     if (confirmation.response !== 0) return null;
+    if (workspaceStatus.state !== "ready") throw new Error("Kein Bewerbungsordner eingerichtet.");
+    await workspaceManager.fullBackup(workspaceStatus.root);
     return store.migrateLegacyData(preview.sourcePath);
   });
   ipcMain.handle("system:open-external", async (_event, rawUrl: unknown) => {
@@ -639,6 +634,28 @@ const registerIpc = () => {
     await shell.openExternal(url.toString());
   });
   ipcMain.handle("system:data-path", () => store.dataPath);
+};
+
+const initializeRuntime = async (root: string) => {
+  if (gitAutomation) {
+    gitAutomation.dispose();
+    await gitAutomation.waitForIdle().catch(() => undefined);
+  }
+  applicationPaths = resolveApplicationPaths(root, bundledTemplatesRoot);
+  gitAutomation = await access(path.join(root, ".git"))
+    .then(() => new GitAutomationService(applicationPaths.root))
+    .catch(() => undefined);
+  store = new DataStore(applicationPaths, gitAutomation);
+  await store.initialize();
+  await gitAutomation?.initialize();
+  templateService = new TemplateService(applicationPaths);
+  await templateService.initialize();
+  await createMissingExistingDeckblatts();
+  if (!runtimeRegistered) {
+    registerIpc();
+    runtimeRegistered = true;
+  }
+  workspaceStatus = { state: "ready", root };
 };
 
 const notifyDueEvents = () => {
@@ -666,17 +683,77 @@ const notifyDueEvents = () => {
 };
 
 app.whenReady().then(async () => {
-  gitAutomation = new GitAutomationService(applicationPaths.root);
-  store = new DataStore(applicationPaths, gitAutomation);
-  await store.initialize();
-  await gitAutomation.initialize();
-  templateService = new TemplateService(applicationPaths);
-  await templateService.initialize();
-  await createMissingExistingDeckblatts();
-  registerIpc();
+  workspaceManager = new WorkspaceManager(app.getPath("userData"));
+  try {
+    workspaceStatus = await workspaceManager.status();
+  } catch (error) {
+    workspaceStatus = {
+      state: "error",
+      root: "",
+      message: error instanceof Error ? error.message : "Die Speicherort-Konfiguration konnte nicht gelesen werden.",
+    };
+  }
+  ipcMain.handle("system:workspace-status", () => workspaceStatus);
+  ipcMain.handle("system:choose-workspace", async () => {
+    const selection = await dialog.showOpenDialog(mainWindow!, {
+      title: "Bewerbungsordner auswählen",
+      properties: ["openDirectory", "createDirectory"],
+    });
+    if (selection.canceled || !selection.filePaths[0]) return workspaceStatus;
+    const root = await workspaceManager.setup(selection.filePaths[0], false);
+    await initializeRuntime(root);
+    await workspaceManager.activate(root);
+    return workspaceStatus;
+  });
+  ipcMain.handle("system:open-workspace", async () => {
+    if (workspaceStatus.state !== "ready") throw new Error("Kein Bewerbungsordner eingerichtet.");
+    const error = await shell.openPath(workspaceStatus.root);
+    if (error) throw new Error(error);
+  });
+  ipcMain.handle("system:backup-workspace", async () => {
+    if (workspaceStatus.state !== "ready") throw new Error("Kein Bewerbungsordner eingerichtet.");
+    return workspaceManager.fullBackup(workspaceStatus.root);
+  });
+  ipcMain.handle("system:open-backups", async () => {
+    if (workspaceStatus.state !== "ready") throw new Error("Kein Bewerbungsordner eingerichtet.");
+    const backupPath = path.join(workspaceStatus.root, "data", "Backups");
+    const error = await shell.openPath(backupPath);
+    if (error) throw new Error(error);
+  });
+  ipcMain.handle("system:change-workspace", async (_event, rawMode: unknown) => {
+    if (workspaceStatus.state !== "ready") throw new Error("Kein Bewerbungsordner eingerichtet.");
+    if (!["move", "copy", "new"].includes(String(rawMode))) throw new Error("Ungültige Speicherort-Aktion.");
+    const selection = await dialog.showOpenDialog(mainWindow!, {
+      title: "Neuen Bewerbungsordner auswählen",
+      properties: ["openDirectory", "createDirectory"],
+    });
+    if (selection.canceled || !selection.filePaths[0]) return workspaceStatus;
+    const oldRoot = workspaceStatus.root;
+    await gitAutomation?.waitForIdle().catch(() => undefined);
+    const nextRoot = await workspaceManager.changeRoot(oldRoot, selection.filePaths[0], rawMode as WorkspaceChangeMode);
+    try {
+      await initializeRuntime(nextRoot);
+    } catch (error) {
+      await workspaceManager.setup(oldRoot);
+      await initializeRuntime(oldRoot);
+      throw error;
+    }
+    return workspaceStatus;
+  });
+  if (workspaceStatus.state === "ready") {
+    try {
+      await initializeRuntime(workspaceStatus.root);
+    } catch (error) {
+      workspaceStatus = {
+        state: "error",
+        root: workspaceStatus.root,
+        message: error instanceof Error ? error.message : "Der Bewerbungsordner konnte nicht geladen werden.",
+      };
+    }
+  }
   await createMainWindow();
-  notifyDueEvents();
-  setInterval(notifyDueEvents, 60_000).unref();
+  if (workspaceStatus.state === "ready") notifyDueEvents();
+  setInterval(() => { if (workspaceStatus.state === "ready") notifyDueEvents(); }, 60_000).unref();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) void createMainWindow();
   });

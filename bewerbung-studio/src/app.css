@@ -7535,3 +7535,22 @@ body.is-resizing-split-view * {
   height: 5.5mm;
   color: var(--klassisch-accent);
 }
+.workspace-setup {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background: #f3f1ec;
+}
+
+.workspace-setup-card {
+  width: min(100%, 34rem);
+  display: grid;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.workspace-setup-card h1,
+.workspace-setup-card p { margin: 0; }
+
+.workspace-setup-card .button { justify-self: start; }

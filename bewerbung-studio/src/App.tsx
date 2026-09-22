@@ -31,6 +31,7 @@ import { SettingsView } from "./views/SettingsView";
 import { TemplatesView } from "./views/TemplatesView";
 import { useAppStore } from "./store/useAppStore";
 import { resolveSelectedProfile } from "./shared/profileSelection";
+import type { WorkspaceStatus } from "./shared/ipc";
 
 type View =
   | "home"
@@ -60,6 +61,8 @@ const titles: Record<View, string> = {
 };
 
 export default function App() {
+  const [workspaceStatus, setWorkspaceStatus] = useState<WorkspaceStatus | null>(null);
+  const [setupError, setSetupError] = useState("");
   const [view, setView] = useState<View>("home");
   const [wizardOpen, setWizardOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -87,8 +90,29 @@ export default function App() {
   );
 
   useEffect(() => {
-    void hydrate();
+    if (!window.bewerbungsManager) {
+      void hydrate();
+      setWorkspaceStatus({ state: "ready", root: "" });
+      return;
+    }
+    void window.bewerbungsManager.system.workspaceStatus()
+      .then((status) => {
+        setWorkspaceStatus(status);
+        if (status.state === "ready") void hydrate();
+      })
+      .catch((error: unknown) => setSetupError(error instanceof Error ? error.message : "Der Speicherort konnte nicht geladen werden."));
   }, [hydrate]);
+
+  const chooseWorkspace = async () => {
+    setSetupError("");
+    try {
+      const status = await window.bewerbungsManager.system.chooseWorkspace();
+      setWorkspaceStatus(status);
+      if (status.state === "ready") await hydrate();
+    } catch (error) {
+      setSetupError(error instanceof Error ? error.message : "Der Ordner konnte nicht eingerichtet werden.");
+    }
+  };
 
   useEffect(() => {
     const theme = workspace.settings.theme;
@@ -134,6 +158,27 @@ export default function App() {
     selectApplication(id);
     setView("active");
   };
+
+  if (workspaceStatus?.state !== "ready") {
+    return (
+      <main className="workspace-setup">
+        <div className="surface workspace-setup-card">
+          <span className="eyebrow">BewerbungsManager</span>
+          <h1>{workspaceStatus?.state === "missing" ? "Bewerbungsordner nicht gefunden" : workspaceStatus?.state === "error" ? "Bewerbungsordner kann nicht geladen werden" : "BewerbungsManager einrichten"}</h1>
+          <p>{workspaceStatus?.state === "error" ? workspaceStatus.message : workspaceStatus?.state === "missing"
+            ? "Der gespeicherte Bewerbungsordner wurde nicht gefunden. Wählen Sie den Ordner erneut aus."
+            : "Wo sollen Ihre Bewerbungsunterlagen gespeichert werden?"}</p>
+          {(workspaceStatus?.state === "missing" || workspaceStatus?.state === "error") && <div className="path-box"><code>{workspaceStatus.root}</code></div>}
+          <p>Unter diesem Ordner werden Bewerbungen, Anschreiben, Lebensläufe und Backups automatisch organisiert.</p>
+          {setupError && <p role="alert" className="field-error">{setupError}</p>}
+          <button className="button primary" type="button" onClick={() => void chooseWorkspace()}>
+            <FolderArchive size={18} /> Ordner auswählen
+          </button>
+          {(workspaceStatus?.state === "missing" || workspaceStatus?.state === "error") && <button className="button secondary" type="button" onClick={() => window.close()}>Abbrechen</button>}
+        </div>
+      </main>
+    );
+  }
 
   return (
     <div className="app-shell">

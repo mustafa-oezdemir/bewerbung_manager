@@ -320,14 +320,30 @@ export class DataStore {
   }
 
   private async loadWorkspace() {
+    let foundExisting = false;
     for (const candidate of [this.workspacePath, `${this.workspacePath}.bak`]) {
       try {
         const parsed: unknown = JSON.parse(await readFile(candidate, "utf8"));
+        foundExisting = true;
         const result = workspaceSchema.safeParse(parsed);
-        if (result.success) return result.data;
+        if (result.success) {
+          if (candidate !== this.workspacePath) {
+            const recoveryRoot = path.join(this.dataPath, "Backups");
+            await mkdir(recoveryRoot, { recursive: true });
+            const recoveryId = `${timestamp()}-${createId()}`;
+            if (await stat(this.workspacePath).catch(() => null)) {
+              await copyFile(this.workspacePath, path.join(recoveryRoot, `unlesbar-workspace-${recoveryId}.json`));
+            }
+            await copyFile(candidate, path.join(recoveryRoot, `wiederhergestellt-workspace-${recoveryId}.json`));
+          }
+          return result.data;
+        }
       } catch {
-        // Try the next safe candidate.
+        if (await stat(candidate).catch(() => null)) foundExisting = true;
       }
+    }
+    if (foundExisting) {
+      throw new Error("Die vorhandenen Bewerbungsdaten konnten nicht gelesen werden. Die Dateien wurden nicht überschrieben.");
     }
     return emptyWorkspace();
   }
@@ -1622,6 +1638,15 @@ export class DataStore {
       return `${applicationFileBaseName(application)}_Deckblatt.pdf`;
     }
     return `${applicationFileBaseName(application)}_${sanitizeFileName(application.job.title)}_${target}.pdf`;
+  }
+
+  getAutomaticExportPath(id: string, target: "deckblatt" | "anschreiben" | "lebenslauf" | "mappe") {
+    const application = this.getApplication(id);
+    const directories = this.files.documentDirectories(application);
+    const directory = target === "mappe"
+      ? path.join(this.files.applicationDataPath(application.folderName), "Bewerbungsunterlagen")
+      : directories[target];
+    return path.join(directory, this.getExportDefaultName(id, target));
   }
 
   async writeBackup(filePath: string) {

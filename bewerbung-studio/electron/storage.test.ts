@@ -228,6 +228,27 @@ describe("DataStore backups", () => {
     ).rejects.toThrow();
   });
 
+  it("does not replace unreadable existing workspace data with an empty workspace", async () => {
+    const workspacePath = path.join(store.dataPath, "Settings", "workspace.json");
+    await writeFile(workspacePath, "{broken", "utf8");
+    await writeFile(`${workspacePath}.bak`, "{broken", "utf8");
+    await expect(new DataStore(root).initialize()).rejects.toThrow("nicht gelesen");
+    expect(await readFile(workspacePath, "utf8")).toBe("{broken");
+  });
+
+  it("preserves both the damaged file and the valid fallback before recovery", async () => {
+    const workspacePath = path.join(store.dataPath, "Settings", "workspace.json");
+    await writeFile(`${workspacePath}.bak`, await readFile(workspacePath));
+    await writeFile(workspacePath, "{broken", "utf8");
+    await new DataStore(root).initialize();
+    const backups = await readdir(path.join(store.dataPath, "Backups"));
+    const damaged = backups.find((file) => file.startsWith("unlesbar-workspace-"));
+    const recovered = backups.find((file) => file.startsWith("wiederhergestellt-workspace-"));
+    expect(damaged).toBeDefined();
+    expect(recovered).toBeDefined();
+    expect(await readFile(path.join(store.dataPath, "Backups", damaged!), "utf8")).toBe("{broken");
+  });
+
   it("creates a dated application with its email area and cover-letter name", async () => {
     const created = await store.createApplication({
       ...applicationInput("Muster GmbH"),
@@ -252,6 +273,9 @@ describe("DataStore backups", () => {
     );
     expect(store.getExportDefaultName(application.id, "deckblatt")).toBe(
       "Muster_GmbH_08.09.2026_Deckblatt.pdf",
+    );
+    expect(store.getAutomaticExportPath(application.id, "lebenslauf")).toBe(
+      path.join(context.targetDirectories.lebenslauf, store.getExportDefaultName(application.id, "lebenslauf")),
     );
     expect(context.data.BEWERBUNGSDATUM).toBe("08.09.2026");
     expect(context.data.DECKBLATT_DOKUMENTE).toBe("Anschreiben\nLebenslauf");

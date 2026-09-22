@@ -18,6 +18,12 @@ import type {
   TemplateScanResult,
   UseTemplateInput,
 } from "../features/templates/template.types";
+export type WorkspaceStatus =
+  | { state: "ready"; root: string }
+  | { state: "setup" }
+  | { state: "missing"; root: string }
+  | { state: "error"; root: string; message: string };
+export type WorkspaceChangeMode = "move" | "copy" | "new";
 
 export type ExportTarget = "deckblatt" | "anschreiben" | "lebenslauf" | "mappe";
 export type ProfileMediaKind = "photo" | "signature";
@@ -108,5 +114,11 @@ export interface BewerbungsManagerApi {
   system: {
     openExternal: (url: string) => Promise<void>;
     dataPath: () => Promise<string>;
+    workspaceStatus: () => Promise<WorkspaceStatus>;
+    chooseWorkspace: () => Promise<WorkspaceStatus>;
+    openWorkspace: () => Promise<void>;
+    backupWorkspace: () => Promise<string>;
+    openBackups: () => Promise<void>;
+    changeWorkspace: (mode: WorkspaceChangeMode) => Promise<WorkspaceStatus>;
   };
 }

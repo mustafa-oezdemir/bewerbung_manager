@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { AppSettings } from "../shared/schema";
+import type { WorkspaceChangeMode } from "../shared/ipc";
 import { useAppStore } from "../store/useAppStore";
 
 export function SettingsView() {
@@ -20,11 +21,37 @@ export function SettingsView() {
   const importSettings = useAppStore((state) => state.importSettings);
   const importLegacyData = useAppStore((state) => state.importLegacyData);
   const [dataPath, setDataPath] = useState("Wird geladen …");
+  const [workspaceRoot, setWorkspaceRoot] = useState("");
+  const [changeMode, setChangeMode] = useState<WorkspaceChangeMode>("move");
+  const [storageMessage, setStorageMessage] = useState("");
   useEffect(() => {
     if (window.bewerbungsManager) {
       void window.bewerbungsManager.system.dataPath().then(setDataPath);
+      void window.bewerbungsManager.system.workspaceStatus().then((status) => {
+        if (status.state === "ready") setWorkspaceRoot(status.root);
+      });
     }
   }, []);
+
+  const changeWorkspace = async () => {
+    setStorageMessage("");
+    try {
+      const status = await window.bewerbungsManager.system.changeWorkspace(changeMode);
+      if (status.state === "ready" && status.root !== workspaceRoot) window.location.reload();
+    } catch (error) {
+      setStorageMessage(error instanceof Error ? error.message : "Der Speicherort konnte nicht geändert werden.");
+    }
+  };
+
+  const backupWorkspace = async () => {
+    setStorageMessage("");
+    try {
+      const folder = await window.bewerbungsManager.system.backupWorkspace();
+      setStorageMessage(`Vollständige Sicherung erstellt: ${folder}`);
+    } catch (error) {
+      setStorageMessage(error instanceof Error ? error.message : "Die Sicherung konnte nicht erstellt werden.");
+    }
+  };
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -46,6 +73,25 @@ export function SettingsView() {
   return (
     <div className="settings-layout">
       <form className="view-stack" onSubmit={(event) => void submit(event)}>
+        <section className="surface settings-section">
+          <header><span className="large-icon"><Database /></span><div><h3>Speicherort / Bewerbungsordner</h3><p>Ihre Unterlagen werden unter diesem Ordner organisiert.</p></div></header>
+          <div className="path-box"><small>Aktueller Speicherort</small><code>{workspaceRoot || "Wird geladen …"}</code></div>
+          <label className="field"><span>Beim Wechsel des Speicherorts</span>
+            <select value={changeMode} onChange={(event) => setChangeMode(event.target.value as WorkspaceChangeMode)}>
+              <option value="move">Bestehende Daten in den neuen Ordner übernehmen</option>
+              <option value="copy">Bestehende Daten kopieren</option>
+              <option value="new">Nur neuen Speicherort verwenden</option>
+            </select>
+          </label>
+          <p>Vor dem Wechsel wird eine vollständige Sicherung erstellt. Der bisherige Ordner bleibt zur Wiederherstellung erhalten.</p>
+          {storageMessage && <p role="status">{storageMessage}</p>}
+          <div className="settings-action-grid">
+            <button className="button secondary" type="button" onClick={() => void window.bewerbungsManager.system.openWorkspace()}>Ordner öffnen</button>
+            <button className="button secondary" type="button" onClick={() => void changeWorkspace()}>Speicherort ändern</button>
+            <button className="button secondary" type="button" onClick={() => void backupWorkspace()}>Jetzt sichern</button>
+            <button className="button secondary" type="button" onClick={() => void window.bewerbungsManager.system.openBackups()}>Backup-Ordner öffnen</button>
+          </div>
+        </section>
         <section className="surface settings-section">
           <header><span className="large-icon"><Bell /></span><div><h3>Erinnerungen</h3><p>Automatische Nachfass-Termine und native Desktop-Benachrichtigungen.</p></div></header>
           <div className="form-grid">
