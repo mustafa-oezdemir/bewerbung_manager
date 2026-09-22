@@ -88,6 +88,7 @@ import {
   zeitgenoessischPaginationOptions,
   zweispaltigPaginationOptions,
 } from "../shared/documentPagination";
+import { getResumeIdentityVisibilityCss } from "../shared/resumeIdentityVisibility";
 import {
   defaultDocumentDesign,
   documentFonts,
@@ -663,8 +664,6 @@ export function DocumentsView({
       languages: true,
       certifications: true,
     }),
-    experience: true,
-    education: true,
   };
   const keywordMatch = analyzeKeywordMatch(application, renderProfile);
   const name = renderProfile
@@ -2288,6 +2287,7 @@ export function DocumentsView({
                   className={`document-paper document-lebenslauf layout-${template.layout} ${designClassName}`}
                   key={plan.pageNumber}
                   style={paperStyle}>
+                  <style>{getResumeIdentityVisibilityCss(renderProfile?.resumeSemanticSections)}</style>
                   <DocumentBackgroundLayer
                     backgroundId={design.settings.backgroundId}
                     atsMode={isAtsMode}

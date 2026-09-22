@@ -48,7 +48,7 @@ export function StilvollPage({
           atsMode
         />
         {!isContinuation ? (
-          <section className="stilvoll-section">
+          <section className="stilvoll-section" data-resume-personal>
             <StilvollHeading>Persönliche Daten</StilvollHeading>
             <p>
               {[

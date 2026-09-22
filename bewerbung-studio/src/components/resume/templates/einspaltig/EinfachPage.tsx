@@ -92,7 +92,7 @@ export function EinfachPage({
           atsMode
         />
         {!isContinuation ? (
-          <section className="einfach-section">
+          <section className="einfach-section" data-resume-personal>
             <EinfachHeading>Persönliche Daten</EinfachHeading>
             <p>
               {[

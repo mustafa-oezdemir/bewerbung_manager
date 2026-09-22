@@ -77,9 +77,6 @@ const updateVisibility = (
   type: ResumeSectionType,
   visible: boolean,
 ) => {
-  if (!visible && (type === "experience" || type === "education")) {
-    return profile;
-  }
   const key =
     type === "summary"
       ? "profile"
@@ -283,14 +280,9 @@ export function ResumeSectionsPanel({
     semanticType: ResumeSemanticType,
     change: Partial<(typeof semanticSections)[number]>,
   ) => {
-    const definition = resumeSectionDefinitions.find(
-      (item) => item.semanticType === semanticType,
-    )!;
     setDraftProfile((current) => {
       const resolved = resolveResumeSectionInstances(current.resumeSemanticSections);
-      const nextVisible = definition.requirement === "required"
-        ? true
-        : (change.visible ?? resolved.find((item) => item.semanticType === semanticType)?.visible ?? true);
+      const nextVisible = change.visible ?? resolved.find((item) => item.semanticType === semanticType)?.visible ?? true;
       let next = {
         ...current,
         resumeSemanticSections: resolved.map((item) =>
@@ -299,7 +291,7 @@ export function ResumeSectionsPanel({
                 ...item,
                 ...change,
                 visible: nextVisible,
-                enabled: definition.requirement === "required" ? true : (change.enabled ?? item.enabled),
+                enabled: change.enabled ?? item.enabled,
               }
             : item,
         ),
@@ -322,11 +314,11 @@ export function ResumeSectionsPanel({
         </div>
       </div>
 
-      <div className="resume-semantic-system">
-        <header>
+      <details className="resume-semantic-system">
+        <summary>
           <strong>{semanticSections.length} Lebenslauf-Bereiche</strong>
           <small>Überschriften bearbeiten und Bereiche ein- oder ausblenden. Ihre Inhalte bleiben beim Vorlagenwechsel erhalten.</small>
-        </header>
+        </summary>
         <div className="resume-semantic-table-scroll" tabIndex={0} role="region" aria-label="Lebenslauf-Bereiche bearbeiten">
         <table className="resume-semantic-table">
           <caption className="sr-only">Bereiche, Überschriften und Sichtbarkeit im Lebenslauf</caption>
@@ -361,10 +353,9 @@ export function ResumeSectionsPanel({
                     role="switch"
                     aria-label={`${definition.defaultTitle} sichtbar`}
                     checked={section.visible}
-                    disabled={!definition.hideable}
                     onChange={(event) => updateSemanticSection(section.semanticType, { visible: event.target.checked, enabled: event.target.checked })}
                   />
-                  <span>{definition.hideable ? (section.visible ? "Sichtbar" : "Ausgeblendet") : "Immer sichtbar"}</span>
+                  <span>{section.visible ? "Sichtbar" : "Ausgeblendet"}</span>
                 </label>
                 </td>
               </tr>
@@ -373,7 +364,7 @@ export function ResumeSectionsPanel({
           </tbody>
         </table>
         </div>
-      </div>
+      </details>
 
       <div className="resume-personal-fields-panel">
         <header>
@@ -564,7 +555,6 @@ export function ResumeSectionsPanel({
                   const allowedZones =
                     capabilities.allowedZonesBySection[placement.type] ?? ["main"];
                   const isVisible = isResumeSectionVisible(draftProfile, placement.type);
-                  const isRequired = placement.type === "experience" || placement.type === "education";
                   const sectionTitle = getResumeSectionTitle(
                     draftProfile,
                     placement.type,
@@ -592,14 +582,13 @@ export function ResumeSectionsPanel({
                       <button
                         aria-label={`${sectionTitle} ${isVisible ? "ausblenden" : "anzeigen"}`}
                         className="icon-button"
-                        disabled={isRequired}
                         type="button"
                         onClick={() =>
                           setDraftProfile((current) =>
                             updateVisibility(current, placement.type, !isVisible),
                           )
                         }>
-                        {isRequired || isVisible ? <Eye size={15} /> : <EyeOff size={15} />}
+                        {isVisible ? <Eye size={15} /> : <EyeOff size={15} />}
                       </button>
                       <button
                         aria-label={`${sectionTitle} nach oben`}

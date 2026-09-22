@@ -79,7 +79,7 @@ export function KlassischPage({
           atsMode
         />
         {!isContinuation && profile ? (
-          <section className="klassisch-section">
+          <section className="klassisch-section" data-resume-personal>
             <KlassischHeading>Persönliche Daten</KlassischHeading>
             <p>
               {[

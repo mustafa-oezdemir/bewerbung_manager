@@ -25,6 +25,11 @@ describe("ResumeSectionsPanel flexible blocks", () => {
       />,
     );
 
+    expect(html).toContain('<details class="resume-semantic-system"><summary>');
+    expect(html).not.toContain('<details class="resume-semantic-system" open');
+    const sectionTable = html.split('<table class="resume-semantic-table">')[1].split('</table>')[0];
+    expect(sectionTable.match(/role="switch"/g)).toHaveLength(9);
+    expect(sectionTable).not.toContain("disabled");
     expect(html).toContain("Besondere Kenntnisse · Bausteine");
     expect(html).toContain("Kernkompetenzen");
     expect(html).toContain("Technische Schwerpunkte");

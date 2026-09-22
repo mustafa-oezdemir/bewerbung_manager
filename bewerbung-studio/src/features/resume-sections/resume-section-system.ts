@@ -41,12 +41,12 @@ export type ResumeSectionInstance = {
 };
 
 export const resumeSectionDefinitions: readonly ResumeSectionDefinition[] = [
-  { id: "heading", semanticType: "heading", defaultTitle: "Lebenslauf", requirement: "required", locked: true, renamable: true, hideable: false, deletable: false },
-  { id: "personalData", semanticType: "personalData", defaultTitle: "Persönliche Daten", requirement: "required", locked: true, renamable: true, hideable: false, deletable: false },
+  { id: "heading", semanticType: "heading", defaultTitle: "Lebenslauf", requirement: "required", locked: true, renamable: true, hideable: true, deletable: false },
+  { id: "personalData", semanticType: "personalData", defaultTitle: "Persönliche Daten", requirement: "required", locked: true, renamable: true, hideable: true, deletable: false },
   { id: "photo", semanticType: "photo", defaultTitle: "Bewerbungsfoto", requirement: "optional", locked: false, renamable: false, hideable: true, deletable: true },
   { id: "summary", semanticType: "summary", defaultTitle: "Kurzprofil", requirement: "recommended", locked: false, renamable: true, hideable: true, deletable: false },
-  { id: "career", semanticType: "career", defaultTitle: "Beruflicher Werdegang", requirement: "required", locked: true, renamable: true, hideable: false, deletable: false },
-  { id: "education", semanticType: "education", defaultTitle: "Bildungsweg", requirement: "required", locked: true, renamable: true, hideable: false, deletable: false },
+  { id: "career", semanticType: "career", defaultTitle: "Beruflicher Werdegang", requirement: "required", locked: true, renamable: true, hideable: true, deletable: false },
+  { id: "education", semanticType: "education", defaultTitle: "Bildungsweg", requirement: "required", locked: true, renamable: true, hideable: true, deletable: false },
   { id: "knowledge", semanticType: "knowledge", defaultTitle: "Besondere Kenntnisse", requirement: "recommended", locked: false, renamable: true, hideable: true, deletable: false },
   { id: "interests", semanticType: "interests", defaultTitle: "Interessen und Hobbys", requirement: "optional", locked: false, renamable: true, hideable: true, deletable: true },
   { id: "closing", semanticType: "closing", defaultTitle: "Ort, Datum und Unterschrift", requirement: "recommended", locked: false, renamable: true, hideable: true, deletable: false },
@@ -67,15 +67,12 @@ export const resolveResumeSectionInstances = (
   const byType = new Map(saved?.map((item) => [item.semanticType, item]));
   return defaultResumeSectionInstances()
     .map((fallback) => {
-      const definition = resumeSectionDefinitions.find(
-        (candidate) => candidate.semanticType === fallback.semanticType,
-      )!;
       const current = byType.get(fallback.semanticType);
       return {
         ...fallback,
         ...current,
-        visible: definition.requirement === "required" ? true : (current?.visible ?? fallback.visible),
-        enabled: definition.requirement === "required" ? true : (current?.enabled ?? fallback.enabled),
+        visible: current?.visible ?? fallback.visible,
+        enabled: current?.enabled ?? fallback.enabled,
       };
     })
     .sort((left, right) => left.order - right.order);

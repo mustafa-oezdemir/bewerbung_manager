@@ -18,16 +18,17 @@ describe("resume section system", () => {
     expect(resumeSectionDefinitions).toHaveLength(9);
   });
 
-  it("keeps required sections visible", () => {
+  it("preserves explicit visibility choices for required sections", () => {
     const resolved = resolveResumeSectionInstances([
       { semanticType: "career", customTitle: "Praxis", visible: false, enabled: false, order: 4 },
     ]);
     expect(resolved.find((item) => item.semanticType === "career")).toMatchObject({
-      visible: true,
-      enabled: true,
+      visible: false,
+      enabled: false,
       customTitle: "Praxis",
     });
-    expect(validateRequiredResumeSections(resolved)).toEqual([]);
+    expect(validateRequiredResumeSections(resolved)).toEqual(["Beruflicher Werdegang"]);
+    expect(resumeSectionDefinitions.every((section) => section.hideable)).toBe(true);
   });
 
   it("maps Pehlione knowledge groups", () => {

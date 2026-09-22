@@ -57,6 +57,20 @@ const profile = profileSchema.parse({
 });
 
 describe("Lebenslauf-Dokumente", () => {
+  it("allows hiding career, education and identity sections without changing saved content", () => {
+    const hiddenProfile = profileSchema.parse({
+      ...profile,
+      resumeSections: { ...profile.resumeSections, experience: false, education: false },
+      resumeSemanticSections: resolveResumeSectionInstances([]).map((section) =>
+        ["heading", "personalData", "career", "education"].includes(section.semanticType)
+          ? { ...section, visible: false, enabled: false } : section),
+    });
+    const html = buildDocumentHtml({ ...application, templateId: "pehlione_white" }, hiddenProfile, "lebenslauf");
+    expect(html).not.toContain("Ladezeiten um 30 % reduziert.");
+    expect(html).toContain(".pehlione-contacts");
+    expect(html).toContain("display:none!important");
+    expect(hiddenProfile.experiences).toEqual(profile.experiences);
+  });
   it("preserves chosen strength symbols in PDF with inherited text color", () => {
     for (const symbol of strengthSymbolOptions) {
       const symbolProfile = profileSchema.parse({ ...profile, strengths: [{
