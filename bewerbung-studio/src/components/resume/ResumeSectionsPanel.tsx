@@ -324,22 +324,27 @@ export function ResumeSectionsPanel({
 
       <div className="resume-semantic-system">
         <header>
-          <strong>9 Lebenslauf-Bereiche</strong>
-          <small>Semantik und Inhalte bleiben beim Wechsel der Vorlage erhalten.</small>
+          <strong>{semanticSections.length} Lebenslauf-Bereiche</strong>
+          <small>Überschriften bearbeiten und Bereiche ein- oder ausblenden. Ihre Inhalte bleiben beim Vorlagenwechsel erhalten.</small>
         </header>
-        <div className="resume-semantic-list">
+        <div className="resume-semantic-table-scroll" tabIndex={0} role="region" aria-label="Lebenslauf-Bereiche bearbeiten">
+        <table className="resume-semantic-table">
+          <caption className="sr-only">Bereiche, Überschriften und Sichtbarkeit im Lebenslauf</caption>
+          <thead><tr><th scope="col">Bereich</th><th scope="col">Überschrift</th><th scope="col">Sichtbarkeit</th></tr></thead>
+          <tbody>
           {semanticSections.map((section) => {
             const definition = resumeSectionDefinitions.find(
               (item) => item.semanticType === section.semanticType,
             )!;
             return (
-              <article className="resume-semantic-card" key={section.semanticType}>
-                <div>
+              <tr className={section.visible ? "" : "is-hidden"} key={section.semanticType}>
+                <th scope="row"><div className="resume-semantic-name">
                   <b>{definition.defaultTitle}</b>
                   <span className={`requirement-badge requirement-${definition.requirement}`}>
                     {requirementLabels[definition.requirement]}
                   </span>
-                </div>
+                </div></th>
+                <td>
                 {definition.renamable ? (
                   <input
                     aria-label={`${definition.defaultTitle} umbenennen`}
@@ -347,19 +352,26 @@ export function ResumeSectionsPanel({
                     value={section.customTitle}
                     onChange={(event) => updateSemanticSection(section.semanticType, { customTitle: event.target.value })}
                   />
-                ) : null}
-                <label className="checkbox-field compact">
+                ) : <span className="resume-semantic-fixed-title">—</span>}
+                </td>
+                <td>
+                <label className="resume-semantic-visibility">
                   <input
                     type="checkbox"
+                    role="switch"
+                    aria-label={`${definition.defaultTitle} sichtbar`}
                     checked={section.visible}
                     disabled={!definition.hideable}
                     onChange={(event) => updateSemanticSection(section.semanticType, { visible: event.target.checked, enabled: event.target.checked })}
                   />
-                  <span>{definition.hideable ? "Sichtbar" : "Immer sichtbar"}</span>
+                  <span>{definition.hideable ? (section.visible ? "Sichtbar" : "Ausgeblendet") : "Immer sichtbar"}</span>
                 </label>
-              </article>
+                </td>
+              </tr>
             );
           })}
+          </tbody>
+        </table>
         </div>
       </div>
 

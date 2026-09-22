@@ -7234,28 +7234,108 @@ body.is-resizing-split-view * {
   color: var(--muted);
 }
 
-.resume-semantic-list,
 .resume-knowledge-group-list {
   display: grid;
   gap: 0.65rem;
 }
 
-.resume-semantic-card {
-  display: grid;
-  grid-template-columns: minmax(150px, 0.85fr) minmax(170px, 1fr) auto;
-  gap: 0.65rem;
-  align-items: center;
-  padding: 0.7rem;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+.resume-semantic-system {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: var(--surface);
 }
 
-.resume-semantic-card > div {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  align-items: center;
+.resume-semantic-system > header strong { font-size: 15px; }
+.resume-semantic-system > header small { font-size: 12px; line-height: 1.6; }
+.resume-semantic-table-scroll {
+  min-width: 0;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
 }
+.resume-semantic-table {
+  width: 100%;
+  min-width: 470px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  color: var(--ink);
+  font-size: 12px;
+  text-align: left;
+}
+.resume-semantic-table thead { background: var(--brand-soft); }
+.resume-semantic-table thead th {
+  padding: 12px;
+  color: var(--brand);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.resume-semantic-table th:first-child { width: 35%; }
+.resume-semantic-table th:last-child { width: 30%; }
+.resume-semantic-table tbody th,
+.resume-semantic-table td {
+  padding: 12px;
+  border-top: 1px solid var(--line);
+  vertical-align: middle;
+}
+.resume-semantic-table tbody tr:nth-child(even) { background: var(--surface-muted); }
+.resume-semantic-table tbody tr:hover { background: color-mix(in srgb, var(--brand-soft) 45%, var(--surface)); }
+.resume-semantic-name {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  overflow-wrap: anywhere;
+}
+.resume-semantic-name b { font-size: 12px; font-weight: 600; }
+.resume-semantic-name .requirement-badge { padding: 2px 7px; font-size: 9px; }
+.resume-semantic-name .requirement-required { color: var(--brand); background: var(--brand-soft); }
+.resume-semantic-name .requirement-optional { color: var(--muted); background: var(--surface-muted); }
+.resume-semantic-table td > input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 8px 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-strong);
+  color: var(--ink);
+  font: inherit;
+}
+.resume-semantic-table td > input::placeholder { color: var(--muted); }
+.resume-semantic-table input:focus-visible,
+.resume-semantic-table-scroll:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+.resume-semantic-fixed-title { color: var(--muted); }
+.resume-semantic-visibility { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 11px; }
+.resume-semantic-visibility input {
+  appearance: none;
+  position: relative;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 18px;
+  margin: 0;
+  border: 1px solid var(--muted);
+  border-radius: 20px;
+  background: var(--surface-muted);
+  cursor: pointer;
+}
+.resume-semantic-visibility input::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.resume-semantic-visibility input:checked { background: var(--brand); border-color: var(--brand); }
+.resume-semantic-visibility input:checked::after { left: 14px; background: var(--surface-strong); }
+.resume-semantic-visibility:has(input:disabled) { color: var(--muted); cursor: default; }
+.resume-semantic-visibility input:disabled { opacity: 0.45; cursor: default; }
+.resume-semantic-table .is-hidden .resume-semantic-name b { color: var(--muted); }
 
 .requirement-badge {
   padding: 0.12rem 0.42rem;
@@ -7371,7 +7451,6 @@ body.is-resizing-split-view * {
 .resume-block-picker button.active { border-color: var(--accent); color: var(--accent); }
 
 @media (max-width: 980px) {
-  .resume-semantic-card,
   .resume-knowledge-group-list > article,
   .resume-knowledge-container-settings,
   .resume-block-config-grid,
