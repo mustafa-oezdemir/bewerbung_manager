@@ -39,6 +39,11 @@ import { KreativResume } from "../components/resume/templates/kreativ";
 import { IvyLeagueResume } from "../components/resume/templates/ivy-league";
 import { ModernResume } from "../components/resume/templates/modern";
 import { PehlioneResume } from "../components/resume/templates/pehlione";
+import {
+  getResumeEditorSettings,
+  mergeResumeDataDraft,
+  mergeResumeSectionDraft,
+} from "../features/resume-sections/resume-editor-settings";
 import { StilvollResume } from "../components/resume/templates/stilvoll";
 import { TabellarischResume } from "../components/resume/templates/tabellarisch";
 import { ZeitgenoessischResume } from "../components/resume/templates/zeitgenoessisch";
@@ -436,12 +441,7 @@ export function DocumentsView({
             : previewProfile;
         return {
           templateId,
-          profile: {
-            ...base,
-            resumeSections: previewProfile.resumeSections,
-            resumeSectionLayout: previewProfile.resumeSectionLayout,
-            resumeSectionLayouts: previewProfile.resumeSectionLayouts,
-          },
+          profile: mergeResumeSectionDraft(base, previewProfile),
         };
       });
     },
@@ -451,17 +451,12 @@ export function DocumentsView({
     (previewProfile: ApplicantProfile | null) => {
       setResumeSectionPreview((current) => {
         if (!previewProfile) return null;
-        const preservedLayout =
-          current?.profile.id === previewProfile.id
-            ? {
-                resumeSections: current.profile.resumeSections,
-                resumeSectionLayout: current.profile.resumeSectionLayout,
-                resumeSectionLayouts: current.profile.resumeSectionLayouts,
-              }
-            : {};
+        const sectionDraft = current?.profile.id === previewProfile.id
+          ? current.profile
+          : undefined;
         return {
           templateId: current?.templateId ?? "",
-          profile: { ...previewProfile, ...preservedLayout },
+          profile: mergeResumeDataDraft(previewProfile, sectionDraft),
         };
       });
     },
@@ -853,13 +848,7 @@ export function DocumentsView({
         : undefined;
     await saveProfile({
       ...changedProfile,
-      ...(preview
-        ? {
-            resumeSections: preview.resumeSections,
-            resumeSectionLayout: preview.resumeSectionLayout,
-            resumeSectionLayouts: preview.resumeSectionLayouts,
-          }
-        : {}),
+      ...(preview ? getResumeEditorSettings(preview) : {}),
       updatedAt: new Date().toISOString(),
     });
   };
@@ -871,9 +860,7 @@ export function DocumentsView({
         : changedProfile;
     await saveProfile({
       ...preview,
-      resumeSections: changedProfile.resumeSections,
-      resumeSectionLayout: changedProfile.resumeSectionLayout,
-      resumeSectionLayouts: changedProfile.resumeSectionLayouts,
+      ...getResumeEditorSettings(changedProfile),
       updatedAt: new Date().toISOString(),
     });
   };
