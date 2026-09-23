@@ -1,5 +1,8 @@
 import type { ApplicantProfile } from "../../shared/schema";
-import { resolveResumeSectionInstances, type ResumeSemanticType } from "./resume-section-system";
+import {
+  resolveResumeSectionInstances,
+  type ResumeSemanticType,
+} from "./resume-section-system";
 
 export const resumeSectionTypes = [
   "summary",
@@ -73,11 +76,20 @@ export const defaultEditableResumeSectionTitles = {
 export type EditableResumeSectionTitle =
   keyof typeof defaultEditableResumeSectionTitles;
 
-const titleSemanticTypes: Partial<Record<ResumeSectionType, ResumeSemanticType>> = {
-  summary: "summary", experience: "career", education: "education", knowledge: "knowledge",
+const titleSemanticTypes: Partial<
+  Record<ResumeSectionType, ResumeSemanticType>
+> = {
+  summary: "summary",
+  experience: "career",
+  education: "education",
+  knowledge: "knowledge",
 };
 
-export const setResumeSectionTitle = (profile: ApplicantProfile, type: ResumeSectionType, value: string): ApplicantProfile => {
+export const setResumeSectionTitle = (
+  profile: ApplicantProfile,
+  type: ResumeSectionType,
+  value: string,
+): ApplicantProfile => {
   const title = value.trim() ? value : resumeSectionLabels[type];
   const semanticType = titleSemanticTypes[type];
   const overrides = { ...profile.resumeManagerOverrides };
@@ -85,14 +97,41 @@ export const setResumeSectionTitle = (profile: ApplicantProfile, type: ResumeSec
     const { title: _oldTitle, ...rest } = overrides[type];
     overrides[type] = rest;
   }
-  const groupTypes: Record<string, string> = { "core-competencies": "strengths", stärken: "strengths", strengths: "strengths", "technical-focus": "knowledge", kenntnisse: "knowledge", sprachen: "languages", languages: "languages", certificates: "certifications" };
+  const groupTypes: Record<string, string> = {
+    "core-competencies": "strengths",
+    stärken: "strengths",
+    strengths: "strengths",
+    "technical-focus": "knowledge",
+    kenntnisse: "knowledge",
+    sprachen: "languages",
+    languages: "languages",
+    certificates: "certifications",
+  };
   return {
     ...profile,
     resumeManagerOverrides: overrides,
-    ...(type in defaultEditableResumeSectionTitles ? { resumeSectionTitles: { ...profile.resumeSectionTitles, [type]: title } } : {}),
-    ...(type === "knowledge" ? { knowledgeSection: { ...profile.knowledgeSection, title } } : {}),
-    resumeSemanticSections: semanticType ? resolveResumeSectionInstances(profile.resumeSemanticSections).map((section) => section.semanticType === semanticType ? { ...section, customTitle: value } : section) : profile.resumeSemanticSections,
-    resumeKnowledgeGroups: profile.resumeKnowledgeGroups.map((group) => groupTypes[group.semanticType] === type ? { ...group, title } : group),
+    ...(type in defaultEditableResumeSectionTitles
+      ? {
+          resumeSectionTitles: {
+            ...profile.resumeSectionTitles,
+            [type]: title,
+          },
+        }
+      : {}),
+    ...(type === "knowledge"
+      ? { knowledgeSection: { ...profile.knowledgeSection, title } }
+      : {}),
+    resumeSemanticSections: semanticType
+      ? resolveResumeSectionInstances(profile.resumeSemanticSections).map(
+          (section) =>
+            section.semanticType === semanticType
+              ? { ...section, customTitle: value }
+              : section,
+        )
+      : profile.resumeSemanticSections,
+    resumeKnowledgeGroups: profile.resumeKnowledgeGroups.map((group) =>
+      groupTypes[group.semanticType] === type ? { ...group, title } : group,
+    ),
   };
 };
 
@@ -102,16 +141,21 @@ export const getResumeSectionTitle = (
 ) => {
   const override = profile?.resumeManagerOverrides?.[type]?.title;
   if (override?.trim()) return override;
-  const semantic = profile?.resumeSemanticSections.find((section) => section.semanticType === titleSemanticTypes[type])?.customTitle;
+  const semantic = profile?.resumeSemanticSections.find(
+    (section) => section.semanticType === titleSemanticTypes[type],
+  )?.customTitle;
   if (semantic?.trim()) return semantic;
   if (type === "knowledge") {
-    return profile?.knowledgeSection.title.trim() ? profile.knowledgeSection.title : resumeSectionLabels.knowledge;
+    return profile?.knowledgeSection.title.trim()
+      ? profile.knowledgeSection.title
+      : resumeSectionLabels.knowledge;
   }
   if (type in defaultEditableResumeSectionTitles) {
     const editableType = type as EditableResumeSectionTitle;
     return (
-      (profile?.resumeSectionTitles?.[editableType]?.trim() ? profile.resumeSectionTitles[editableType] : "") ||
-      defaultEditableResumeSectionTitles[editableType]
+      (profile?.resumeSectionTitles?.[editableType]?.trim()
+        ? profile.resumeSectionTitles[editableType]
+        : "") || defaultEditableResumeSectionTitles[editableType]
     );
   }
   return resumeSectionLabels[type];
@@ -220,8 +264,7 @@ export const templateSectionCapabilities: Record<
 };
 
 export const getTemplateSectionCapabilities = (templateId: string) =>
-  templateSectionCapabilities[templateId] ??
-  mainOnlyCapabilities(templateId);
+  templateSectionCapabilities[templateId] ?? mainOnlyCapabilities(templateId);
 
 export const getDefaultResumeSectionLayout = (
   templateId: string,
@@ -241,15 +284,22 @@ export const resolveResumeSectionLayout = (
   const defaults = getDefaultResumeSectionLayout(templateId);
   const known = new Set<ResumeSectionType>();
   const resolved = (savedLayout ?? []).flatMap((placement) => {
-    if (!resumeSectionTypes.includes(placement.type) || known.has(placement.type)) {
+    if (
+      !resumeSectionTypes.includes(placement.type) ||
+      known.has(placement.type)
+    ) {
       return [];
     }
     known.add(placement.type);
-    const allowed = capabilities.allowedZonesBySection[placement.type] ?? ["main"];
+    const allowed = capabilities.allowedZonesBySection[placement.type] ?? [
+      "main",
+    ];
     return [
       {
         type: placement.type,
-        zone: allowed.includes(placement.zone) ? placement.zone : (allowed[0] ?? "main"),
+        zone: allowed.includes(placement.zone)
+          ? placement.zone
+          : (allowed[0] ?? "main"),
       },
     ];
   });
@@ -257,10 +307,9 @@ export const resolveResumeSectionLayout = (
 };
 
 export const getProfileResumeSectionLayout = (
-  profile: Pick<
-    ApplicantProfile,
-    "resumeSectionLayout" | "resumeSectionLayouts"
-  > | undefined,
+  profile:
+    | Pick<ApplicantProfile, "resumeSectionLayout" | "resumeSectionLayouts">
+    | undefined,
   templateId: string,
 ) =>
   resolveResumeSectionLayout(
@@ -269,15 +318,15 @@ export const getProfileResumeSectionLayout = (
   );
 
 export const hasSavedTemplateSectionLayout = (
-  profile: Pick<
-    ApplicantProfile,
-    "resumeSectionLayout" | "resumeSectionLayouts"
-  > | undefined,
+  profile:
+    | Pick<ApplicantProfile, "resumeSectionLayout" | "resumeSectionLayouts">
+    | undefined,
   templateId: string,
-) => Boolean(
-  profile?.resumeSectionLayouts?.[templateId]?.length ||
+) =>
+  Boolean(
+    profile?.resumeSectionLayouts?.[templateId]?.length ||
     profile?.resumeSectionLayout?.length,
-);
+  );
 
 export const isResumeSectionVisible = (
   profile: Pick<ApplicantProfile, "resumeSections"> | undefined,
@@ -304,17 +353,25 @@ export const moveResumeSection = (
 ) => {
   const capabilities = getTemplateSectionCapabilities(templateId);
   const allowed = capabilities.allowedZonesBySection[type] ?? ["main"];
-  if (!allowed.includes(destination)) return resolveResumeSectionLayout(templateId, current);
+  if (!allowed.includes(destination))
+    return resolveResumeSectionLayout(templateId, current);
 
   const layout = resolveResumeSectionLayout(templateId, current);
   const sourceIndex = layout.findIndex((item) => item.type === type);
   if (sourceIndex < 0) return layout;
   const withoutSource = layout.filter((item) => item.type !== type);
-  const destinationItems = withoutSource.filter((item) => item.zone === destination);
-  const beforeDestination = withoutSource.findIndex(
-    (item) => item === destinationItems[Math.max(0, Math.min(targetIndex, destinationItems.length))],
+  const destinationItems = withoutSource.filter(
+    (item) => item.zone === destination,
   );
-  const insertionIndex = beforeDestination < 0 ? withoutSource.length : beforeDestination;
+  const beforeDestination = withoutSource.findIndex(
+    (item) =>
+      item ===
+      destinationItems[
+        Math.max(0, Math.min(targetIndex, destinationItems.length))
+      ],
+  );
+  const insertionIndex =
+    beforeDestination < 0 ? withoutSource.length : beforeDestination;
   withoutSource.splice(insertionIndex, 0, { type, zone: destination });
   return withoutSource;
 };
