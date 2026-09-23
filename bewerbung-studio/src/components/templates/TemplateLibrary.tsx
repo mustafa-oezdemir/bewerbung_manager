@@ -1,10 +1,4 @@
-import {
-  FilePlus2,
-  Filter,
-  RefreshCw,
-  Search,
-  X,
-} from "lucide-react";
+import { FilePlus2, Filter, RefreshCw, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
   templateSourceLabels,
@@ -85,8 +79,7 @@ export function TemplateLibrary() {
             (template.source === "muster-folder" ||
               template.source === "uploaded-word-template") &&
             !template.isSystemTemplate) ||
-          (source === "documents" &&
-            template.source === "existing-document"))
+          (source === "documents" && template.source === "existing-document"))
       );
     });
   }, [activeTab, extension, query, source, templates]);
@@ -108,16 +101,13 @@ export function TemplateLibrary() {
           <div>
             <p className="eyebrow">Lokale Word-Bibliothek</p>
             <h2>Vorlagen</h2>
-            <p>
-              Muster und vorhandene Anschreiben sicher wiederverwenden.
-            </p>
+            <p>Muster und vorhandene Anschreiben sicher wiederverwenden.</p>
           </div>
           <button
             className="button secondary"
             type="button"
             disabled={loading}
-            onClick={() => void load()}
-          >
+            onClick={() => void load()}>
             <RefreshCw size={16} className={loading ? "spin" : ""} />
             Vorlagen neu laden
           </button>
@@ -134,8 +124,7 @@ export function TemplateLibrary() {
               className="button secondary small-button"
               type="button"
               key={type}
-              onClick={() => void add(type)}
-            >
+              onClick={() => void add(type)}>
               <FilePlus2 size={15} /> {label}
             </button>
           ))}
@@ -154,8 +143,7 @@ export function TemplateLibrary() {
             <Filter size={15} />
             <select
               value={extension}
-              onChange={(event) => setExtension(event.target.value)}
-            >
+              onChange={(event) => setExtension(event.target.value)}>
               <option value="all">Alle Formate</option>
               <option value=".docx">DOCX</option>
               <option value=".dotx">DOTX</option>
@@ -165,8 +153,7 @@ export function TemplateLibrary() {
           <label>
             <select
               value={source}
-              onChange={(event) => setSource(event.target.value)}
-            >
+              onChange={(event) => setSource(event.target.value)}>
               <option value="all">Alle Quellen</option>
               <option value="system">Systemvorlagen</option>
               <option value="custom">Eigene Vorlagen</option>
@@ -229,8 +216,7 @@ export function TemplateLibrary() {
         <button
           className={`toast ${error ? "error" : "success"}`}
           type="button"
-          onClick={clearMessage}
-        >
+          onClick={clearMessage}>
           {error || notice} <X size={15} />
         </button>
       )}
@@ -270,10 +256,15 @@ function TemplateDetailsDialog({
 }) {
   return (
     <div className="modal-backdrop" role="presentation">
-      <section className="modal template-details-dialog" role="dialog" aria-modal="true">
+      <section
+        className="modal template-details-dialog"
+        role="dialog"
+        aria-modal="true">
         <header>
           <div>
-            <p className="eyebrow">{templateTypeLabels[template.documentType]}</p>
+            <p className="eyebrow">
+              {templateTypeLabels[template.documentType]}
+            </p>
             <h2>{template.name}</h2>
           </div>
           <button className="icon-button" type="button" onClick={onClose}>
@@ -281,18 +272,47 @@ function TemplateDetailsDialog({
           </button>
         </header>
         {template.previewDataUrl ? (
-          <img src={template.previewDataUrl} alt={`${template.name} Vorschau`} />
+          <img
+            src={template.previewDataUrl}
+            alt={`${template.name} Vorschau`}
+          />
         ) : null}
         <dl>
-          <div><dt>Datei</dt><dd>{template.fileName}</dd></div>
-          <div><dt>Format</dt><dd>{template.format.toUpperCase()}</dd></div>
-          <div><dt>Quelle</dt><dd>{templateSourceLabels[template.source]}</dd></div>
-          <div><dt>Vorlagentyp</dt><dd>{templateTypeLabels[template.documentType]}</dd></div>
-          <div><dt>Geändert</dt><dd>{template.modifiedAt ? new Intl.DateTimeFormat("de-DE", { dateStyle: "medium", timeStyle: "short" }).format(new Date(template.modifiedAt)) : "Unbekannt"}</dd></div>
+          <div>
+            <dt>Datei</dt>
+            <dd>{template.fileName}</dd>
+          </div>
+          <div>
+            <dt>Format</dt>
+            <dd>{template.format.toUpperCase()}</dd>
+          </div>
+          <div>
+            <dt>Quelle</dt>
+            <dd>{templateSourceLabels[template.source]}</dd>
+          </div>
+          <div>
+            <dt>Vorlagentyp</dt>
+            <dd>{templateTypeLabels[template.documentType]}</dd>
+          </div>
+          <div>
+            <dt>Geändert</dt>
+            <dd>
+              {template.modifiedAt
+                ? new Intl.DateTimeFormat("de-DE", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  }).format(new Date(template.modifiedAt))
+                : "Unbekannt"}
+            </dd>
+          </div>
         </dl>
         <footer>
-          <button className="button secondary" type="button" onClick={onClose}>Schließen</button>
-          <button className="button primary" type="button" onClick={onUse}>Vorlage verwenden</button>
+          <button className="button secondary" type="button" onClick={onClose}>
+            Schließen
+          </button>
+          <button className="button primary" type="button" onClick={onUse}>
+            Vorlage verwenden
+          </button>
         </footer>
       </section>
     </div>
@@ -306,17 +326,20 @@ function UseTemplateDialog({
   onUse,
 }: {
   template: DocumentTemplate;
-  applications: ReturnType<typeof useAppStore.getState>["workspace"]["applications"];
+  applications: ReturnType<
+    typeof useAppStore.getState
+  >["workspace"]["applications"];
   onClose: () => void;
   onUse: (applicationId: string, atsMode: boolean) => void;
 }) {
-  const [applicationId, setApplicationId] = useState(
-    applications[0]?.id ?? "",
-  );
+  const [applicationId, setApplicationId] = useState(applications[0]?.id ?? "");
   const [atsMode, setAtsMode] = useState(false);
   return (
     <div className="modal-backdrop" role="presentation">
-      <section className="modal use-template-dialog" role="dialog" aria-modal="true">
+      <section
+        className="modal use-template-dialog"
+        role="dialog"
+        aria-modal="true">
         <header>
           <div>
             <p className="eyebrow">Original bleibt unverändert</p>
@@ -334,8 +357,7 @@ function UseTemplateDialog({
           <span>Bewerbung</span>
           <select
             value={applicationId}
-            onChange={(event) => setApplicationId(event.target.value)}
-          >
+            onChange={(event) => setApplicationId(event.target.value)}>
             {applications.map((application) => (
               <option value={application.id} key={application.id}>
                 {application.company.name} · {application.job.title}
@@ -355,14 +377,20 @@ function UseTemplateDialog({
             />
             <span>
               <strong>ATS-Modus</strong>
-              Einspaltige, besonders maschinenlesbare Word-Ausgabe ohne
-              Foto und Seitenleiste erstellen.
+              Einspaltige, besonders maschinenlesbare Word-Ausgabe ohne Foto und
+              Seitenleiste erstellen.
             </span>
           </label>
         ) : null}
         <footer>
-          <button className="button secondary" type="button" onClick={onClose}>Abbrechen</button>
-          <button className="button primary" type="button" disabled={!applicationId} onClick={() => onUse(applicationId, atsMode)}>
+          <button className="button secondary" type="button" onClick={onClose}>
+            Abbrechen
+          </button>
+          <button
+            className="button primary"
+            type="button"
+            disabled={!applicationId}
+            onClick={() => onUse(applicationId, atsMode)}>
             Dokument erstellen
           </button>
         </footer>

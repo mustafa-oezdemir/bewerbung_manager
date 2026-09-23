@@ -53,11 +53,7 @@ export function CalendarView({
   const navigate = (direction: number) =>
     setFocus(
       (current) =>
-        new Date(
-          current.getFullYear(),
-          current.getMonth() + direction,
-          1,
-        ),
+        new Date(current.getFullYear(), current.getMonth() + direction, 1),
     );
 
   return (
@@ -79,18 +75,42 @@ export function CalendarView({
         </div>
         <div className="calendar-controls">
           <div className="segmented">
-            <button className={mode === "month" ? "active" : ""} onClick={() => setMode("month")}>Monat</button>
-            <button className={mode === "agenda" ? "active" : ""} onClick={() => setMode("agenda")}>Agenda</button>
+            <button
+              className={mode === "month" ? "active" : ""}
+              onClick={() => setMode("month")}>
+              Monat
+            </button>
+            <button
+              className={mode === "agenda" ? "active" : ""}
+              onClick={() => setMode("agenda")}>
+              Agenda
+            </button>
           </div>
-          <button className="icon-button" onClick={() => navigate(-1)} aria-label="Vorheriger Monat"><ChevronLeft size={18} /></button>
-          <button className="button secondary" onClick={() => setFocus(new Date())}>Heute</button>
-          <button className="icon-button" onClick={() => navigate(1)} aria-label="Nächster Monat"><ChevronRight size={18} /></button>
+          <button
+            className="icon-button"
+            onClick={() => navigate(-1)}
+            aria-label="Vorheriger Monat">
+            <ChevronLeft size={18} />
+          </button>
+          <button
+            className="button secondary"
+            onClick={() => setFocus(new Date())}>
+            Heute
+          </button>
+          <button
+            className="icon-button"
+            onClick={() => navigate(1)}
+            aria-label="Nächster Monat">
+            <ChevronRight size={18} />
+          </button>
         </div>
       </section>
       {mode === "month" ? (
         <section className="calendar surface">
           <div className="weekday-row">
-            {["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].map((day) => <span key={day}>{day}</span>)}
+            {["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].map((day) => (
+              <span key={day}>{day}</span>
+            ))}
           </div>
           <div className="month-grid">
             {days.map((day) => {
@@ -102,8 +122,7 @@ export function CalendarView({
               return (
                 <article
                   key={day.toISOString()}
-                  className={`${day.getMonth() !== focus.getMonth() ? "outside" : ""} ${today ? "today" : ""}`}
-                >
+                  className={`${day.getMonth() !== focus.getMonth() ? "outside" : ""} ${today ? "today" : ""}`}>
                   <strong>{day.getDate()}</strong>
                   <div>
                     {dayEvents.map((event) => (
@@ -111,8 +130,7 @@ export function CalendarView({
                         key={event.id}
                         className={`calendar-event ${event.type}`}
                         onClick={() => onOpenApplication(event.applicationId)}
-                        title={event.title}
-                      >
+                        title={event.title}>
                         {event.title}
                       </button>
                     ))}
@@ -124,25 +142,48 @@ export function CalendarView({
         </section>
       ) : (
         <section className="surface agenda">
-          {visible.length ? visible.map((event) => (
-            <article
-              key={event.id}
-              className={`${event.completed ? "completed" : ""} event-${event.type}`}>
-              <span className="agenda-date"><strong>{new Date(event.startAt).getDate()}</strong><small>{new Date(event.startAt).toLocaleDateString("de-DE", { month: "short" })}</small></span>
-              <span className="agenda-icon">{calendarEventIcon(event.type)}</span>
-              <button className="agenda-content" onClick={() => onOpenApplication(event.applicationId)}>
-                <strong>{event.title}</strong>
-                <small>{formatDate(event.startAt, !event.allDay)}</small>
-              </button>
-              <button
-                className="icon-button"
-                title="Als erledigt markieren"
-                onClick={() => void saveEvent({ ...event, completed: !event.completed, updatedAt: new Date().toISOString() })}
-              >
-                <Check size={17} />
-              </button>
-            </article>
-          )) : <div className="empty-state"><CalendarDays size={24} /><p>Keine Kalendereinträge vorhanden.</p></div>}
+          {visible.length ? (
+            visible.map((event) => (
+              <article
+                key={event.id}
+                className={`${event.completed ? "completed" : ""} event-${event.type}`}>
+                <span className="agenda-date">
+                  <strong>{new Date(event.startAt).getDate()}</strong>
+                  <small>
+                    {new Date(event.startAt).toLocaleDateString("de-DE", {
+                      month: "short",
+                    })}
+                  </small>
+                </span>
+                <span className="agenda-icon">
+                  {calendarEventIcon(event.type)}
+                </span>
+                <button
+                  className="agenda-content"
+                  onClick={() => onOpenApplication(event.applicationId)}>
+                  <strong>{event.title}</strong>
+                  <small>{formatDate(event.startAt, !event.allDay)}</small>
+                </button>
+                <button
+                  className="icon-button"
+                  title="Als erledigt markieren"
+                  onClick={() =>
+                    void saveEvent({
+                      ...event,
+                      completed: !event.completed,
+                      updatedAt: new Date().toISOString(),
+                    })
+                  }>
+                  <Check size={17} />
+                </button>
+              </article>
+            ))
+          ) : (
+            <div className="empty-state">
+              <CalendarDays size={24} />
+              <p>Keine Kalendereinträge vorhanden.</p>
+            </div>
+          )}
         </section>
       )}
     </div>

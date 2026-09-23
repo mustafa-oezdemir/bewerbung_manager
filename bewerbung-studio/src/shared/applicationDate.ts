@@ -2,9 +2,8 @@ import type { Application } from "./schema";
 
 export type ApplicationDateSource = Pick<Application, "sentAt" | "createdAt">;
 
-export const getApplicationDate = (
-  application: ApplicationDateSource,
-) => new Date(application.sentAt ?? application.createdAt);
+export const getApplicationDate = (application: ApplicationDateSource) =>
+  new Date(application.sentAt ?? application.createdAt);
 
 export const formatApplicationDate = (application: ApplicationDateSource) =>
   new Intl.DateTimeFormat("de-DE", {
@@ -20,9 +19,7 @@ export const formatApplicationDateFolder = (date: Date) =>
     year: "numeric",
   }).format(date);
 
-export const formatApplicationDateLong = (
-  application: ApplicationDateSource,
-) =>
+export const formatApplicationDateLong = (application: ApplicationDateSource) =>
   new Intl.DateTimeFormat("de-DE", {
     day: "numeric",
     month: "long",

@@ -1,7 +1,8 @@
 import type { ApplicantProfile } from "./schema";
 
-const unique = (values: string[]) =>
-  [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+const unique = (values: string[]) => [
+  ...new Set(values.map((value) => value.trim()).filter(Boolean)),
+];
 
 const profileEvidence = (profile?: ApplicantProfile) =>
   [

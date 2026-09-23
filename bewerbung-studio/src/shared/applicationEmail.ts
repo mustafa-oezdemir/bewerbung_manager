@@ -1,11 +1,7 @@
 import { formatApplicationDate } from "./applicationDate";
 import { applicationGreeting } from "./applicationContacts";
 import { createCoverSubject } from "./coverLetter";
-import type {
-  ApplicantProfile,
-  Application,
-  DocumentDraft,
-} from "./schema";
+import type { ApplicantProfile, Application, DocumentDraft } from "./schema";
 
 const contactName = (contact: Application["contact"]) =>
   [contact.salutation, contact.firstName, contact.lastName]
@@ -33,10 +29,7 @@ export const resolveApplicationEmailAttachments = (
   visibleDocuments: readonly string[],
 ) =>
   documents.emailAttachmentMode === "package"
-    ? [
-        documents.emailPackageFileName.trim() ||
-          "Bewerbungsunterlagen.pdf",
-      ]
+    ? [documents.emailPackageFileName.trim() || "Bewerbungsunterlagen.pdf"]
     : visibleDocuments.map((item) =>
         /\.pdf$/i.test(item) ? item : `${item}.pdf`,
       );
@@ -49,14 +42,13 @@ export const validateEmailClosingDuplication = (
 
   const personalPhrase = "persönlich(?:e|en|es|em|er)?";
 
-  const hasExchange = new RegExp(
-    `${personalPhrase}\\s+austausch`,
-  ).test(combined);
+  const hasExchange = new RegExp(`${personalPhrase}\\s+austausch`).test(
+    combined,
+  );
 
   const conversationMatches =
-    combined.match(
-      new RegExp(`${personalPhrase}\\s+gespräch`, "g"),
-    )?.length ?? 0;
+    combined.match(new RegExp(`${personalPhrase}\\s+gespräch`, "g"))?.length ??
+    0;
 
   if (hasExchange && conversationMatches) {
     return [
@@ -65,9 +57,7 @@ export const validateEmailClosingDuplication = (
   }
 
   if (conversationMatches > 1) {
-    return [
-      "Die Formulierung zum persönlichen Gespräch kommt mehrfach vor.",
-    ];
+    return ["Die Formulierung zum persönlichen Gespräch kommt mehrfach vor."];
   }
 
   return [];
@@ -84,35 +74,22 @@ export const getApplicationEmail = (
     | "job"
     | "sentAt"
   >,
-  profile?: Pick<
-    ApplicantProfile,
-    "firstName" | "lastName" | "email"
-  >,
+  profile?: Pick<ApplicantProfile, "firstName" | "lastName" | "email">,
   attachments: readonly string[] = [],
 ) => {
   const defaults = defaultApplicationEmail(application);
 
   const recipient =
-    [application.contact, ...application.additionalContacts].find(
-      (contact) =>
-        Boolean(
-          contact.email ||
-            contact.firstName ||
-            contact.lastName,
-        ),
+    [application.contact, ...application.additionalContacts].find((contact) =>
+      Boolean(contact.email || contact.firstName || contact.lastName),
     ) ?? application.contact;
 
   const message =
-    application.documents.emailMessage?.trim() ||
-    defaults.emailMessage;
+    application.documents.emailMessage?.trim() || defaults.emailMessage;
   const greeting = defaults.emailGreeting;
 
   const resolvedAttachments = Array.from(
-    new Set(
-      attachments
-        .map((item) => item.trim())
-        .filter(Boolean),
-    ),
+    new Set(attachments.map((item) => item.trim()).filter(Boolean)),
   );
 
   return {
@@ -125,17 +102,14 @@ export const getApplicationEmail = (
     recipientEmail: recipient.email,
 
     senderName: profile
-      ? [profile.firstName, profile.lastName]
-          .filter(Boolean)
-          .join(" ")
+      ? [profile.firstName, profile.lastName].filter(Boolean).join(" ")
       : "",
 
     senderEmail: profile?.email ?? "",
 
     subject: createCoverSubject(
       application.job.title,
-      application.documents.emailSubject ||
-        defaults.emailSubject,
+      application.documents.emailSubject || defaults.emailSubject,
     ),
 
     salutation: applicationGreeting(application),
@@ -147,9 +121,7 @@ export const getApplicationEmail = (
 
     attachments: resolvedAttachments,
 
-    warnings: validateEmailClosingDuplication(
-      message,
-    ),
+    warnings: validateEmailClosingDuplication(message),
   };
 };
 
@@ -158,11 +130,7 @@ export const buildApplicationEmailMarkdown = (
   profile?: Parameters<typeof getApplicationEmail>[1],
   attachments: Parameters<typeof getApplicationEmail>[2] = [],
 ) => {
-  const email = getApplicationEmail(
-    application,
-    profile,
-    attachments,
-  );
+  const email = getApplicationEmail(application, profile, attachments);
 
   const header = [
     "# Bewerbungs-E-Mail",
@@ -194,16 +162,9 @@ export const buildApplicationEmailMarkdown = (
     ? [
         "## Anlagen",
         "",
-        ...email.attachments.map(
-          (attachment) => `- ${attachment}`,
-        ),
+        ...email.attachments.map((attachment) => `- ${attachment}`),
       ]
     : [];
 
-  return [
-    ...header,
-    ...message,
-    ...attachmentSection,
-    "",
-  ].join("\n");
+  return [...header, ...message, ...attachmentSection, ""].join("\n");
 };

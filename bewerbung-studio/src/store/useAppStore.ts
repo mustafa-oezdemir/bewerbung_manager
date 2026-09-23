@@ -72,10 +72,7 @@ type StoreState = {
 const apiAvailable = () => typeof window.bewerbungsManager !== "undefined";
 
 export const useAppStore = create<StoreState>((set, get) => {
-  const perform = async (
-    action: () => Promise<Workspace>,
-    notice: string,
-  ) => {
+  const perform = async (action: () => Promise<Workspace>, notice: string) => {
     set({ loading: true, error: undefined });
     try {
       const workspace = await action();
@@ -84,7 +81,9 @@ export const useAppStore = create<StoreState>((set, get) => {
       set({
         loading: false,
         error:
-          error instanceof Error ? error.message : "Ein Fehler ist aufgetreten.",
+          error instanceof Error
+            ? error.message
+            : "Ein Fehler ist aufgetreten.",
       });
       throw error;
     }
@@ -223,8 +222,7 @@ export const useAppStore = create<StoreState>((set, get) => {
     async addAttachment(applicationId, category) {
       if (!apiAvailable()) return;
       await perform(
-        () =>
-          window.bewerbungsManager.attachments.add(applicationId, category),
+        () => window.bewerbungsManager.attachments.add(applicationId, category),
         "Dokument wurde zur Bewerbungsmappe hinzugefügt.",
       );
     },
@@ -278,7 +276,8 @@ export const useAppStore = create<StoreState>((set, get) => {
       } catch (error) {
         set({
           loading: false,
-          error: error instanceof Error ? error.message : "Export fehlgeschlagen.",
+          error:
+            error instanceof Error ? error.message : "Export fehlgeschlagen.",
         });
       }
     },
@@ -291,8 +290,7 @@ export const useAppStore = create<StoreState>((set, get) => {
       if (!apiAvailable()) return;
       set({ loading: true, error: undefined });
       try {
-        const workspace =
-          await window.bewerbungsManager.export.importBackup();
+        const workspace = await window.bewerbungsManager.export.importBackup();
         if (workspace) {
           set({
             workspace,

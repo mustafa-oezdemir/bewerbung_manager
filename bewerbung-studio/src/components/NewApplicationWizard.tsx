@@ -86,9 +86,7 @@ export function NewApplicationWizard({ onClose }: Props) {
     trigger,
     formState: { errors, isSubmitting },
   } = useForm<ApplicationInput>({
-    resolver: zodResolver(
-      applicationInputSchema,
-    ) as Resolver<ApplicationInput>,
+    resolver: zodResolver(applicationInputSchema) as Resolver<ApplicationInput>,
     defaultValues: defaults,
   });
   const selectedTemplateId = watch("templateId");
@@ -170,7 +168,11 @@ export function NewApplicationWizard({ onClose }: Props) {
 
   return (
     <div className="modal-backdrop" role="presentation">
-      <section className="wizard" role="dialog" aria-modal="true" aria-labelledby="wizard-title">
+      <section
+        className="wizard"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="wizard-title">
         <header className="wizard-header">
           <div>
             <p className="eyebrow">Neue Bewerbung</p>
@@ -181,7 +183,11 @@ export function NewApplicationWizard({ onClose }: Props) {
               {step === 4 && "Prüfen & anlegen"}
             </h2>
           </div>
-          <button className="icon-button" type="button" onClick={onClose} aria-label="Schließen">
+          <button
+            className="icon-button"
+            type="button"
+            onClick={onClose}
+            aria-label="Schließen">
             <X size={19} />
           </button>
         </header>
@@ -290,8 +296,7 @@ export function NewApplicationWizard({ onClose }: Props) {
                         onClick={() => {
                           setValue("additionalContacts", []);
                           setShowSecondContact(false);
-                        }}
-                      >
+                        }}>
                         Entfernen
                       </button>
                     </div>
@@ -348,8 +353,7 @@ export function NewApplicationWizard({ onClose }: Props) {
                           },
                         ]);
                         setShowSecondContact(true);
-                      }}
-                    >
+                      }}>
                       Zweiten Ansprechpartner hinzufügen
                     </button>
                   </div>
@@ -363,7 +367,9 @@ export function NewApplicationWizard({ onClose }: Props) {
                       setValue(
                         "sentAt",
                         event.target.value
-                          ? new Date(`${event.target.value}T09:00:00`).toISOString()
+                          ? new Date(
+                              `${event.target.value}T09:00:00`,
+                            ).toISOString()
                           : undefined,
                       )
                     }
@@ -378,7 +384,9 @@ export function NewApplicationWizard({ onClose }: Props) {
                       setValue(
                         "deadlineAt",
                         event.target.value
-                          ? new Date(`${event.target.value}T18:00:00`).toISOString()
+                          ? new Date(
+                              `${event.target.value}T18:00:00`,
+                            ).toISOString()
                           : undefined,
                       )
                     }
@@ -386,11 +394,17 @@ export function NewApplicationWizard({ onClose }: Props) {
                 </label>
                 <label className="field">
                   <span>Kennziffer / Referenznummer</span>
-                  <input placeholder="z. B. ABC-123" {...register("job.reference")} />
+                  <input
+                    placeholder="z. B. ABC-123"
+                    {...register("job.reference")}
+                  />
                 </label>
                 <label className="field">
                   <span>Quelle</span>
-                  <input placeholder="z. B. LinkedIn" {...register("job.source")} />
+                  <input
+                    placeholder="z. B. LinkedIn"
+                    {...register("job.source")}
+                  />
                 </label>
                 <label className="field">
                   <span>Stellen-URL</span>
@@ -407,8 +421,7 @@ export function NewApplicationWizard({ onClose }: Props) {
                   <select
                     {...register("profileId", {
                       setValueAs: (value) => value || undefined,
-                    })}
-                  >
+                    })}>
                     <option value="">Standardprofil</option>
                     {profiles.map((profile) => (
                       <option key={profile.id} value={profile.id}>
@@ -419,7 +432,10 @@ export function NewApplicationWizard({ onClose }: Props) {
                 </label>
                 <label className="field">
                   <span>Gehaltsvorstellung</span>
-                  <input placeholder="z. B. 58.500 € brutto/Jahr" {...register("job.salaryExpectation")} />
+                  <input
+                    placeholder="z. B. 58.500 € brutto/Jahr"
+                    {...register("job.salaryExpectation")}
+                  />
                 </label>
               </div>
             )}
@@ -434,8 +450,7 @@ export function NewApplicationWizard({ onClose }: Props) {
                       setValue("templateId", template.id);
                       setValue("accentColor", template.accent);
                       setValue("secondaryColor", template.secondary);
-                    }}
-                  >
+                    }}>
                     <TemplateThumbnail
                       template={template}
                       accent={watch("accentColor")}
@@ -454,7 +469,12 @@ export function NewApplicationWizard({ onClose }: Props) {
                         type="button"
                         title={preset.name}
                         aria-label={preset.name}
-                        style={{ "--preset-accent": preset.accent, "--preset-secondary": preset.secondary } as React.CSSProperties}
+                        style={
+                          {
+                            "--preset-accent": preset.accent,
+                            "--preset-secondary": preset.secondary,
+                          } as React.CSSProperties
+                        }
                         onClick={() => {
                           setValue("accentColor", preset.accent);
                           setValue("secondaryColor", preset.secondary);
@@ -477,17 +497,30 @@ export function NewApplicationWizard({ onClose }: Props) {
             )}
             {step === 4 && (
               <div className="review-card">
-                <span className="review-logo" style={{ background: watch("accentColor") }}>
+                <span
+                  className="review-logo"
+                  style={{ background: watch("accentColor") }}>
                   {watch("company.name").slice(0, 2).toUpperCase()}
                 </span>
                 <div>
                   <p className="eyebrow">Bereit zum Anlegen</p>
                   <h3>{watch("job.title")}</h3>
-                  <p>{watch("company.name")} · {watch("company.city")}</p>
+                  <p>
+                    {watch("company.name")} · {watch("company.city")}
+                  </p>
                   <dl>
-                    <div><dt>Arbeitsmodell</dt><dd>{watch("job.workModel")}</dd></div>
-                    <div><dt>Vorlage</dt><dd>{selectedTemplate.name}</dd></div>
-                    <div><dt>Status</dt><dd>{watch("sentAt") ? "Beworben" : "Entwurf"}</dd></div>
+                    <div>
+                      <dt>Arbeitsmodell</dt>
+                      <dd>{watch("job.workModel")}</dd>
+                    </div>
+                    <div>
+                      <dt>Vorlage</dt>
+                      <dd>{selectedTemplate.name}</dd>
+                    </div>
+                    <div>
+                      <dt>Status</dt>
+                      <dd>{watch("sentAt") ? "Beworben" : "Entwurf"}</dd>
+                    </div>
                     <div>
                       <dt>1. Ansprechpartner</dt>
                       <dd>
@@ -512,18 +545,29 @@ export function NewApplicationWizard({ onClose }: Props) {
             )}
           </div>
           <footer className="wizard-footer">
-            <button className="button secondary" type="button" onClick={() => step === 1 ? onClose() : setStep((current) => current - 1)}>
+            <button
+              className="button secondary"
+              type="button"
+              onClick={() =>
+                step === 1 ? onClose() : setStep((current) => current - 1)
+              }>
               <ArrowLeft size={17} /> {step === 1 ? "Abbrechen" : "Zurück"}
             </button>
             <span className="autosave-hint">
               <Save size={14} /> Entwurf wird automatisch gespeichert
             </span>
             {step < 4 ? (
-              <button className="button primary" type="button" onClick={() => void next()}>
+              <button
+                className="button primary"
+                type="button"
+                onClick={() => void next()}>
                 Weiter <ArrowRight size={17} />
               </button>
             ) : (
-              <button className="button primary" type="submit" disabled={isSubmitting}>
+              <button
+                className="button primary"
+                type="submit"
+                disabled={isSubmitting}>
                 <Check size={17} /> Bewerbung anlegen
               </button>
             )}

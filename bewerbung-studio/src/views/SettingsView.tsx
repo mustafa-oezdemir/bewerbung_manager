@@ -36,10 +36,16 @@ export function SettingsView() {
   const changeWorkspace = async () => {
     setStorageMessage("");
     try {
-      const status = await window.bewerbungsManager.system.changeWorkspace(changeMode);
-      if (status.state === "ready" && status.root !== workspaceRoot) window.location.reload();
+      const status =
+        await window.bewerbungsManager.system.changeWorkspace(changeMode);
+      if (status.state === "ready" && status.root !== workspaceRoot)
+        window.location.reload();
     } catch (error) {
-      setStorageMessage(error instanceof Error ? error.message : "Der Speicherort konnte nicht geändert werden.");
+      setStorageMessage(
+        error instanceof Error
+          ? error.message
+          : "Der Speicherort konnte nicht geändert werden.",
+      );
     }
   };
 
@@ -49,7 +55,11 @@ export function SettingsView() {
       const folder = await window.bewerbungsManager.system.backupWorkspace();
       setStorageMessage(`Vollständige Sicherung erstellt: ${folder}`);
     } catch (error) {
-      setStorageMessage(error instanceof Error ? error.message : "Die Sicherung konnte nicht erstellt werden.");
+      setStorageMessage(
+        error instanceof Error
+          ? error.message
+          : "Die Sicherung konnte nicht erstellt werden.",
+      );
     }
   };
 
@@ -74,30 +84,88 @@ export function SettingsView() {
     <div className="settings-layout">
       <form className="view-stack" onSubmit={(event) => void submit(event)}>
         <section className="surface settings-section">
-          <header><span className="large-icon"><Database /></span><div><h3>Speicherort / Bewerbungsordner</h3><p>Ihre Unterlagen werden unter diesem Ordner organisiert.</p></div></header>
-          <div className="path-box"><small>Aktueller Speicherort</small><code>{workspaceRoot || "Wird geladen …"}</code></div>
-          <label className="field"><span>Beim Wechsel des Speicherorts</span>
-            <select value={changeMode} onChange={(event) => setChangeMode(event.target.value as WorkspaceChangeMode)}>
-              <option value="move">Bestehende Daten in den neuen Ordner übernehmen</option>
+          <header>
+            <span className="large-icon">
+              <Database />
+            </span>
+            <div>
+              <h3>Speicherort / Bewerbungsordner</h3>
+              <p>Ihre Unterlagen werden unter diesem Ordner organisiert.</p>
+            </div>
+          </header>
+          <div className="path-box">
+            <small>Aktueller Speicherort</small>
+            <code>{workspaceRoot || "Wird geladen …"}</code>
+          </div>
+          <label className="field">
+            <span>Beim Wechsel des Speicherorts</span>
+            <select
+              value={changeMode}
+              onChange={(event) =>
+                setChangeMode(event.target.value as WorkspaceChangeMode)
+              }>
+              <option value="move">
+                Bestehende Daten in den neuen Ordner übernehmen
+              </option>
               <option value="copy">Bestehende Daten kopieren</option>
               <option value="new">Nur neuen Speicherort verwenden</option>
             </select>
           </label>
-          <p>Vor dem Wechsel wird eine vollständige Sicherung erstellt. Der bisherige Ordner bleibt zur Wiederherstellung erhalten.</p>
+          <p>
+            Vor dem Wechsel wird eine vollständige Sicherung erstellt. Der
+            bisherige Ordner bleibt zur Wiederherstellung erhalten.
+          </p>
           {storageMessage && <p role="status">{storageMessage}</p>}
           <div className="settings-action-grid">
-            <button className="button secondary" type="button" onClick={() => void window.bewerbungsManager.system.openWorkspace()}>Ordner öffnen</button>
-            <button className="button secondary" type="button" onClick={() => void changeWorkspace()}>Speicherort ändern</button>
-            <button className="button secondary" type="button" onClick={() => void backupWorkspace()}>Jetzt sichern</button>
-            <button className="button secondary" type="button" onClick={() => void window.bewerbungsManager.system.openBackups()}>Backup-Ordner öffnen</button>
+            <button
+              className="button secondary"
+              type="button"
+              onClick={() =>
+                void window.bewerbungsManager.system.openWorkspace()
+              }>
+              Ordner öffnen
+            </button>
+            <button
+              className="button secondary"
+              type="button"
+              onClick={() => void changeWorkspace()}>
+              Speicherort ändern
+            </button>
+            <button
+              className="button secondary"
+              type="button"
+              onClick={() => void backupWorkspace()}>
+              Jetzt sichern
+            </button>
+            <button
+              className="button secondary"
+              type="button"
+              onClick={() =>
+                void window.bewerbungsManager.system.openBackups()
+              }>
+              Backup-Ordner öffnen
+            </button>
           </div>
         </section>
         <section className="surface settings-section">
-          <header><span className="large-icon"><Bell /></span><div><h3>Erinnerungen</h3><p>Automatische Nachfass-Termine und native Desktop-Benachrichtigungen.</p></div></header>
+          <header>
+            <span className="large-icon">
+              <Bell />
+            </span>
+            <div>
+              <h3>Erinnerungen</h3>
+              <p>
+                Automatische Nachfass-Termine und native
+                Desktop-Benachrichtigungen.
+              </p>
+            </div>
+          </header>
           <div className="form-grid">
             <label className="field">
               <span>Nach Bewerbung nachfassen</span>
-              <select name="followUp" defaultValue={settings.followUpDays ?? "off"}>
+              <select
+                name="followUp"
+                defaultValue={settings.followUpDays ?? "off"}>
                 <option value="7">nach 7 Tagen</option>
                 <option value="10">nach 10 Tagen</option>
                 <option value="14">nach 14 Tagen</option>
@@ -105,19 +173,62 @@ export function SettingsView() {
                 <option value="off">keine automatische Erinnerung</option>
               </select>
             </label>
-            <label className="checkbox-field"><input type="checkbox" name="notificationsEnabled" defaultChecked={settings.notificationsEnabled} /><span>Desktop-Benachrichtigungen aktivieren</span></label>
+            <label className="checkbox-field">
+              <input
+                type="checkbox"
+                name="notificationsEnabled"
+                defaultChecked={settings.notificationsEnabled}
+              />
+              <span>Desktop-Benachrichtigungen aktivieren</span>
+            </label>
           </div>
         </section>
         <section className="surface settings-section">
-          <header><span className="large-icon"><Moon /></span><div><h3>Darstellung</h3><p>Das Erscheinungsbild wird lokal gespeichert.</p></div></header>
+          <header>
+            <span className="large-icon">
+              <Moon />
+            </span>
+            <div>
+              <h3>Darstellung</h3>
+              <p>Das Erscheinungsbild wird lokal gespeichert.</p>
+            </div>
+          </header>
           <div className="form-grid">
-            <label className="field"><span>Farbschema</span><select name="theme" defaultValue={settings.theme}><option value="system">Systemeinstellung</option><option value="light">Hell</option><option value="dark">Dunkel</option></select></label>
-            <label className="checkbox-field"><input type="checkbox" name="archiveAccepted" defaultChecked={settings.archiveAccepted} /><span>Zusagen nach Abschluss archivieren</span></label>
+            <label className="field">
+              <span>Farbschema</span>
+              <select name="theme" defaultValue={settings.theme}>
+                <option value="system">Systemeinstellung</option>
+                <option value="light">Hell</option>
+                <option value="dark">Dunkel</option>
+              </select>
+            </label>
+            <label className="checkbox-field">
+              <input
+                type="checkbox"
+                name="archiveAccepted"
+                defaultChecked={settings.archiveAccepted}
+              />
+              <span>Zusagen nach Abschluss archivieren</span>
+            </label>
           </div>
         </section>
         <section className="surface settings-section">
-          <header><span className="large-icon"><Database /></span><div><h3>Daten & Sicherung</h3><p>Alle Daten liegen lokal. JSON wird versioniert, validiert und mit Sicherung geschrieben.</p></div></header>
-          <div className="path-box"><small>Datenordner</small><code>{dataPath}</code></div>
+          <header>
+            <span className="large-icon">
+              <Database />
+            </span>
+            <div>
+              <h3>Daten & Sicherung</h3>
+              <p>
+                Alle Daten liegen lokal. JSON wird versioniert, validiert und
+                mit Sicherung geschrieben.
+              </p>
+            </div>
+          </header>
+          <div className="path-box">
+            <small>Datenordner</small>
+            <code>{dataPath}</code>
+          </div>
           <div className="form-grid">
             <label className="checkbox-field">
               <input
@@ -149,7 +260,10 @@ export function SettingsView() {
             </label>
           </div>
           <div className="settings-action-grid">
-            <button className="button secondary" type="button" onClick={() => void exportBackup()}>
+            <button
+              className="button secondary"
+              type="button"
+              onClick={() => void exportBackup()}>
               <Download size={17} /> JSON-Sicherung exportieren
             </button>
             <button
@@ -163,26 +277,37 @@ export function SettingsView() {
                 ) {
                   void importBackup();
                 }
-              }}
-            >
+              }}>
               <History size={17} /> Sicherung wiederherstellen
             </button>
-            <button className="button secondary" type="button" onClick={() => void exportSettings()}>
+            <button
+              className="button secondary"
+              type="button"
+              onClick={() => void exportSettings()}>
               <Download size={17} /> Einstellungen exportieren
             </button>
-            <button className="button secondary" type="button" onClick={() => void importSettings()}>
+            <button
+              className="button secondary"
+              type="button"
+              onClick={() => void importSettings()}>
               <Upload size={17} /> Einstellungen importieren
             </button>
             <button
               className="button secondary"
               type="button"
-              onClick={() => void importLegacyData()}
-            >
+              onClick={() => void importLegacyData()}>
               <Database size={17} /> Bisherigen data-Ordner migrieren
             </button>
           </div>
         </section>
-        <div className="save-bar sticky-save"><span>Änderungen gelten sofort für neue Status- und Kalenderereignisse.</span><button className="button primary" type="submit"><Save size={17} /> Einstellungen speichern</button></div>
+        <div className="save-bar sticky-save">
+          <span>
+            Änderungen gelten sofort für neue Status- und Kalenderereignisse.
+          </span>
+          <button className="button primary" type="submit">
+            <Save size={17} /> Einstellungen speichern
+          </button>
+        </div>
       </form>
     </div>
   );

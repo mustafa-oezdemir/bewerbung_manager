@@ -22,7 +22,12 @@ export const documentFontIds = [
 export const fontSizeIds = ["small", "medium", "large"] as const;
 
 export const resumeOutputModes = ["visual", "ats"] as const;
-export const documentBackgroundScopes = ["page", "sidebar", "header", "sections"] as const;
+export const documentBackgroundScopes = [
+  "page",
+  "sidebar",
+  "header",
+  "sections",
+] as const;
 
 export const columnLayoutIds = [
   "template",
@@ -131,52 +136,326 @@ export const defaultDocumentDesign: DocumentDesignSettings = {
 };
 
 export const documentFonts: ResumeFont[] = [
-  { id: "rubik", name: "Rubik", family: "Rubik, Arial, sans-serif", category: "sans-serif", headingWeight: 700, bodyWeight: 400 },
-  { id: "inter", name: "Inter", family: "Inter, Arial, sans-serif", category: "sans-serif", headingWeight: 750, bodyWeight: 400 },
-  { id: "roboto", name: "Roboto", family: "Roboto, Arial, sans-serif", category: "sans-serif", headingWeight: 700, bodyWeight: 400 },
-  { id: "open-sans", name: "Open Sans", family: "\"Open Sans\", Arial, sans-serif", category: "sans-serif", headingWeight: 700, bodyWeight: 400 },
-  { id: "lato", name: "Lato", family: "Lato, Arial, sans-serif", category: "sans-serif", headingWeight: 700, bodyWeight: 400 },
-  { id: "arimo", name: "Arimo", family: "Arimo, Arial, sans-serif", category: "sans-serif", headingWeight: 700, bodyWeight: 400 },
-  { id: "raleway", name: "Raleway", family: "Raleway, Arial, sans-serif", category: "sans-serif", headingWeight: 750, bodyWeight: 400 },
-  { id: "bitter", name: "Bitter", family: "Bitter, Georgia, serif", category: "serif", headingWeight: 700, bodyWeight: 400 },
-  { id: "exo-2", name: "Exo 2", family: "\"Exo 2\", Arial, sans-serif", category: "sans-serif", headingWeight: 700, bodyWeight: 400 },
-  { id: "chivo", name: "Chivo", family: "Chivo, Arial, sans-serif", category: "sans-serif", headingWeight: 700, bodyWeight: 400 },
-  { id: "tinos", name: "Tinos", family: "Tinos, \"Times New Roman\", serif", category: "serif", headingWeight: 700, bodyWeight: 400 },
-  { id: "source-sans", name: "Source Sans 3", family: "\"Source Sans 3\", \"Segoe UI\", Arial, sans-serif", category: "sans-serif", headingWeight: 700, bodyWeight: 400 },
-  { id: "merriweather", name: "Merriweather", family: "Merriweather, Georgia, serif", category: "serif", headingWeight: 700, bodyWeight: 400 },
-  { id: "montserrat", name: "Montserrat", family: "Montserrat, Arial, sans-serif", category: "sans-serif", headingWeight: 750, bodyWeight: 400 },
-  { id: "oswald", name: "Oswald", family: "Oswald, \"Arial Narrow\", Arial, sans-serif", category: "sans-serif", headingWeight: 700, bodyWeight: 400 },
-  { id: "volkhov", name: "Volkhov", family: "Volkhov, Georgia, serif", category: "serif", headingWeight: 700, bodyWeight: 400 },
-  { id: "arial", name: "Arial", family: "Arial, sans-serif", category: "sans-serif", headingWeight: 700, bodyWeight: 400 },
-  { id: "georgia", name: "Georgia", family: "Georgia, \"Times New Roman\", serif", category: "serif", headingWeight: 700, bodyWeight: 400 },
+  {
+    id: "rubik",
+    name: "Rubik",
+    family: "Rubik, Arial, sans-serif",
+    category: "sans-serif",
+    headingWeight: 700,
+    bodyWeight: 400,
+  },
+  {
+    id: "inter",
+    name: "Inter",
+    family: "Inter, Arial, sans-serif",
+    category: "sans-serif",
+    headingWeight: 750,
+    bodyWeight: 400,
+  },
+  {
+    id: "roboto",
+    name: "Roboto",
+    family: "Roboto, Arial, sans-serif",
+    category: "sans-serif",
+    headingWeight: 700,
+    bodyWeight: 400,
+  },
+  {
+    id: "open-sans",
+    name: "Open Sans",
+    family: '"Open Sans", Arial, sans-serif',
+    category: "sans-serif",
+    headingWeight: 700,
+    bodyWeight: 400,
+  },
+  {
+    id: "lato",
+    name: "Lato",
+    family: "Lato, Arial, sans-serif",
+    category: "sans-serif",
+    headingWeight: 700,
+    bodyWeight: 400,
+  },
+  {
+    id: "arimo",
+    name: "Arimo",
+    family: "Arimo, Arial, sans-serif",
+    category: "sans-serif",
+    headingWeight: 700,
+    bodyWeight: 400,
+  },
+  {
+    id: "raleway",
+    name: "Raleway",
+    family: "Raleway, Arial, sans-serif",
+    category: "sans-serif",
+    headingWeight: 750,
+    bodyWeight: 400,
+  },
+  {
+    id: "bitter",
+    name: "Bitter",
+    family: "Bitter, Georgia, serif",
+    category: "serif",
+    headingWeight: 700,
+    bodyWeight: 400,
+  },
+  {
+    id: "exo-2",
+    name: "Exo 2",
+    family: '"Exo 2", Arial, sans-serif',
+    category: "sans-serif",
+    headingWeight: 700,
+    bodyWeight: 400,
+  },
+  {
+    id: "chivo",
+    name: "Chivo",
+    family: "Chivo, Arial, sans-serif",
+    category: "sans-serif",
+    headingWeight: 700,
+    bodyWeight: 400,
+  },
+  {
+    id: "tinos",
+    name: "Tinos",
+    family: 'Tinos, "Times New Roman", serif',
+    category: "serif",
+    headingWeight: 700,
+    bodyWeight: 400,
+  },
+  {
+    id: "source-sans",
+    name: "Source Sans 3",
+    family: '"Source Sans 3", "Segoe UI", Arial, sans-serif',
+    category: "sans-serif",
+    headingWeight: 700,
+    bodyWeight: 400,
+  },
+  {
+    id: "merriweather",
+    name: "Merriweather",
+    family: "Merriweather, Georgia, serif",
+    category: "serif",
+    headingWeight: 700,
+    bodyWeight: 400,
+  },
+  {
+    id: "montserrat",
+    name: "Montserrat",
+    family: "Montserrat, Arial, sans-serif",
+    category: "sans-serif",
+    headingWeight: 750,
+    bodyWeight: 400,
+  },
+  {
+    id: "oswald",
+    name: "Oswald",
+    family: 'Oswald, "Arial Narrow", Arial, sans-serif',
+    category: "sans-serif",
+    headingWeight: 700,
+    bodyWeight: 400,
+  },
+  {
+    id: "volkhov",
+    name: "Volkhov",
+    family: "Volkhov, Georgia, serif",
+    category: "serif",
+    headingWeight: 700,
+    bodyWeight: 400,
+  },
+  {
+    id: "arial",
+    name: "Arial",
+    family: "Arial, sans-serif",
+    category: "sans-serif",
+    headingWeight: 700,
+    bodyWeight: 400,
+  },
+  {
+    id: "georgia",
+    name: "Georgia",
+    family: 'Georgia, "Times New Roman", serif',
+    category: "serif",
+    headingWeight: 700,
+    bodyWeight: 400,
+  },
 ];
 
 export const columnLayoutOptions: ColumnLayoutOption[] = [
-  { id: "template", name: "Vorlagenlayout", description: "Spalten der gewählten Vorlage" },
-  { id: "single", name: "Eine Spalte", description: "Klassisch und ATS-sicher" },
-  { id: "two-column-left-wide", name: "Links breit", description: "Inhalt links, Details rechts" },
-  { id: "two-column-right-wide", name: "Rechts breit", description: "Details links, Inhalt rechts" },
-  { id: "two-column-equal", name: "Zwei gleich", description: "Ausgewogene Spalten" },
-  { id: "left-sidebar", name: "Sidebar links", description: "Farbfläche auf der linken Seite" },
-  { id: "right-sidebar", name: "Sidebar rechts", description: "Farbfläche auf der rechten Seite" },
-  { id: "three-column", name: "Drei Spalten", description: "Kompakte Informationsblöcke" },
-  { id: "timeline", name: "Zeitleiste", description: "Stationen chronologisch betont" },
-  { id: "compact-ats", name: "Kompakt ATS", description: "Einfach, dicht und maschinenlesbar" },
+  {
+    id: "template",
+    name: "Vorlagenlayout",
+    description: "Spalten der gewählten Vorlage",
+  },
+  {
+    id: "single",
+    name: "Eine Spalte",
+    description: "Klassisch und ATS-sicher",
+  },
+  {
+    id: "two-column-left-wide",
+    name: "Links breit",
+    description: "Inhalt links, Details rechts",
+  },
+  {
+    id: "two-column-right-wide",
+    name: "Rechts breit",
+    description: "Details links, Inhalt rechts",
+  },
+  {
+    id: "two-column-equal",
+    name: "Zwei gleich",
+    description: "Ausgewogene Spalten",
+  },
+  {
+    id: "left-sidebar",
+    name: "Sidebar links",
+    description: "Farbfläche auf der linken Seite",
+  },
+  {
+    id: "right-sidebar",
+    name: "Sidebar rechts",
+    description: "Farbfläche auf der rechten Seite",
+  },
+  {
+    id: "three-column",
+    name: "Drei Spalten",
+    description: "Kompakte Informationsblöcke",
+  },
+  {
+    id: "timeline",
+    name: "Zeitleiste",
+    description: "Stationen chronologisch betont",
+  },
+  {
+    id: "compact-ats",
+    name: "Kompakt ATS",
+    description: "Einfach, dicht und maschinenlesbar",
+  },
 ];
 
 export const documentBackgrounds: DocumentBackground[] = [
-  { id: "white", name: "Weiß", description: "Rein und klassisch", category: "minimal", previewType: "css", previewValue: "white", supportsPrint: true, atsFriendly: true },
-  { id: "soft", name: "Helle Fläche", description: "Dezente Grundfarbe", category: "minimal", previewType: "css", previewValue: "soft", supportsPrint: true, atsFriendly: true },
-  { id: "geometric", name: "Geometrisch", description: "Feine diagonale Formen", category: "geometric", previewType: "css", previewValue: "geometric", supportsPrint: true, atsFriendly: false },
-  { id: "hexagons", name: "Hexagon", description: "Technisches Wabenmuster", category: "technical", previewType: "css", previewValue: "hexagons", supportsPrint: true, atsFriendly: false },
-  { id: "waves", name: "Wellen", description: "Ruhige weiche Linien", category: "creative", previewType: "css", previewValue: "waves", supportsPrint: true, atsFriendly: false },
-  { id: "lines", name: "Linien", description: "Minimal gerastert", category: "minimal", previewType: "css", previewValue: "lines", supportsPrint: true, atsFriendly: true },
-  { id: "dots", name: "Punkte", description: "Dezentes Punktraster", category: "minimal", previewType: "css", previewValue: "dots", supportsPrint: true, atsFriendly: true },
-  { id: "abstract", name: "Abstrakt", description: "Organische Akzentlinien", category: "creative", previewType: "css", previewValue: "abstract", supportsPrint: true, atsFriendly: false },
-  { id: "corner", name: "Eckdekor", description: "Farbige obere Ecke", category: "geometric", previewType: "css", previewValue: "corner", supportsPrint: true, atsFriendly: false },
-  { id: "pastel-gradient", name: "Pastell", description: "Sehr heller Verlauf", category: "creative", previewType: "css", previewValue: "pastel-gradient", supportsPrint: true, atsFriendly: false },
-  { id: "top-band", name: "Kopfband", description: "Farbige obere Fläche", category: "geometric", previewType: "css", previewValue: "top-band", supportsPrint: true, atsFriendly: false },
-  { id: "bottom-band", name: "Fußband", description: "Farbige untere Fläche", category: "geometric", previewType: "css", previewValue: "bottom-band", supportsPrint: true, atsFriendly: false },
+  {
+    id: "white",
+    name: "Weiß",
+    description: "Rein und klassisch",
+    category: "minimal",
+    previewType: "css",
+    previewValue: "white",
+    supportsPrint: true,
+    atsFriendly: true,
+  },
+  {
+    id: "soft",
+    name: "Helle Fläche",
+    description: "Dezente Grundfarbe",
+    category: "minimal",
+    previewType: "css",
+    previewValue: "soft",
+    supportsPrint: true,
+    atsFriendly: true,
+  },
+  {
+    id: "geometric",
+    name: "Geometrisch",
+    description: "Feine diagonale Formen",
+    category: "geometric",
+    previewType: "css",
+    previewValue: "geometric",
+    supportsPrint: true,
+    atsFriendly: false,
+  },
+  {
+    id: "hexagons",
+    name: "Hexagon",
+    description: "Technisches Wabenmuster",
+    category: "technical",
+    previewType: "css",
+    previewValue: "hexagons",
+    supportsPrint: true,
+    atsFriendly: false,
+  },
+  {
+    id: "waves",
+    name: "Wellen",
+    description: "Ruhige weiche Linien",
+    category: "creative",
+    previewType: "css",
+    previewValue: "waves",
+    supportsPrint: true,
+    atsFriendly: false,
+  },
+  {
+    id: "lines",
+    name: "Linien",
+    description: "Minimal gerastert",
+    category: "minimal",
+    previewType: "css",
+    previewValue: "lines",
+    supportsPrint: true,
+    atsFriendly: true,
+  },
+  {
+    id: "dots",
+    name: "Punkte",
+    description: "Dezentes Punktraster",
+    category: "minimal",
+    previewType: "css",
+    previewValue: "dots",
+    supportsPrint: true,
+    atsFriendly: true,
+  },
+  {
+    id: "abstract",
+    name: "Abstrakt",
+    description: "Organische Akzentlinien",
+    category: "creative",
+    previewType: "css",
+    previewValue: "abstract",
+    supportsPrint: true,
+    atsFriendly: false,
+  },
+  {
+    id: "corner",
+    name: "Eckdekor",
+    description: "Farbige obere Ecke",
+    category: "geometric",
+    previewType: "css",
+    previewValue: "corner",
+    supportsPrint: true,
+    atsFriendly: false,
+  },
+  {
+    id: "pastel-gradient",
+    name: "Pastell",
+    description: "Sehr heller Verlauf",
+    category: "creative",
+    previewType: "css",
+    previewValue: "pastel-gradient",
+    supportsPrint: true,
+    atsFriendly: false,
+  },
+  {
+    id: "top-band",
+    name: "Kopfband",
+    description: "Farbige obere Fläche",
+    category: "geometric",
+    previewType: "css",
+    previewValue: "top-band",
+    supportsPrint: true,
+    atsFriendly: false,
+  },
+  {
+    id: "bottom-band",
+    name: "Fußband",
+    description: "Farbige untere Fläche",
+    category: "geometric",
+    previewType: "css",
+    previewValue: "bottom-band",
+    supportsPrint: true,
+    atsFriendly: false,
+  },
   {
     id: "programming-languages-bg",
     name: "Programmiersprachen",
@@ -325,21 +604,37 @@ export const getDocumentDesignVariables = (
   "--doc-background-shade": `${backgroundShadeLevelToOpacity[settings.backgroundShadeLevel] * 100}%`,
 });
 
-const channel = (hex: string, offset: number) => Number.parseInt(hex.slice(offset, offset + 2), 16);
+const channel = (hex: string, offset: number) =>
+  Number.parseInt(hex.slice(offset, offset + 2), 16);
 const relativeLuminance = (hex: string) => {
   const normalized = /^#[0-9a-f]{6}$/i.test(hex) ? hex : "#000000";
-  const values = [channel(normalized, 1), channel(normalized, 3), channel(normalized, 5)].map((value) => {
+  const values = [
+    channel(normalized, 1),
+    channel(normalized, 3),
+    channel(normalized, 5),
+  ].map((value) => {
     const ratio = value / 255;
     return ratio <= 0.03928 ? ratio / 12.92 : ((ratio + 0.055) / 1.055) ** 2.4;
   });
   return values[0] * 0.2126 + values[1] * 0.7152 + values[2] * 0.0722;
 };
 
-export const getColorContrastRatio = (foreground: string, background: string) => {
-  const light = Math.max(relativeLuminance(foreground), relativeLuminance(background));
-  const dark = Math.min(relativeLuminance(foreground), relativeLuminance(background));
+export const getColorContrastRatio = (
+  foreground: string,
+  background: string,
+) => {
+  const light = Math.max(
+    relativeLuminance(foreground),
+    relativeLuminance(background),
+  );
+  const dark = Math.min(
+    relativeLuminance(foreground),
+    relativeLuminance(background),
+  );
   return (light + 0.05) / (dark + 0.05);
 };
 
-export const hasReadableColorContrast = (foreground: string, background: string) =>
-  getColorContrastRatio(foreground, background) >= 4.5;
+export const hasReadableColorContrast = (
+  foreground: string,
+  background: string,
+) => getColorContrastRatio(foreground, background) >= 4.5;

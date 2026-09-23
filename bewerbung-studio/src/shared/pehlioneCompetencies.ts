@@ -5,8 +5,9 @@ type CompetencyGroup = {
   values: string[];
 };
 
-const unique = (values: string[]) =>
-  [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+const unique = (values: string[]) => [
+  ...new Set(values.map((value) => value.trim()).filter(Boolean)),
+];
 
 const frontendTechnology = (value: string) =>
   /^(react|typescript|javascript|html|css|vue|angular)/i.test(value.trim());

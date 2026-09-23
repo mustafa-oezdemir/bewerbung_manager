@@ -69,9 +69,7 @@ export interface BewerbungsManagerApi {
     scan: () => Promise<TemplateScanResult>;
     add: (input: AddTemplateInput) => Promise<DocumentTemplate | null>;
     use: (input: UseTemplateInput) => Promise<CreatedDocumentResult>;
-    syncAnschreiben: (
-      applicationId: string,
-    ) => Promise<CreatedDocumentResult>;
+    syncAnschreiben: (applicationId: string) => Promise<CreatedDocumentResult>;
     duplicate: (templateId: string) => Promise<DocumentTemplate | null>;
     copyToMuster: (templateId: string) => Promise<DocumentTemplate>;
     toggleFavorite: (templateId: string) => Promise<TemplateScanResult>;
@@ -91,7 +89,10 @@ export interface BewerbungsManagerApi {
     save: (event: CalendarEvent) => Promise<Workspace>;
   };
   attachments: {
-    add: (applicationId: string, category: AttachmentCategory) => Promise<Workspace>;
+    add: (
+      applicationId: string,
+      category: AttachmentCategory,
+    ) => Promise<Workspace>;
     save: (attachment: Attachment) => Promise<Workspace>;
     move: (id: string, direction: -1 | 1) => Promise<Workspace>;
     remove: (id: string) => Promise<Workspace>;

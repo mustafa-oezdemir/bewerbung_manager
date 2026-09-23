@@ -148,12 +148,36 @@ const profileStrengthSchema = z.object({
 
 const resumeSectionTitlesSchema = z
   .object({
-    summary: z.string().trim().min(1).default(defaultEditableResumeSectionTitles.summary),
-    strengths: z.string().trim().min(1).default(defaultEditableResumeSectionTitles.strengths),
-    experience: z.string().trim().min(1).default(defaultEditableResumeSectionTitles.experience),
-    education: z.string().trim().min(1).default(defaultEditableResumeSectionTitles.education),
-    languages: z.string().trim().min(1).default(defaultEditableResumeSectionTitles.languages),
-    certifications: z.string().trim().min(1).default(defaultEditableResumeSectionTitles.certifications),
+    summary: z
+      .string()
+      .trim()
+      .min(1)
+      .default(defaultEditableResumeSectionTitles.summary),
+    strengths: z
+      .string()
+      .trim()
+      .min(1)
+      .default(defaultEditableResumeSectionTitles.strengths),
+    experience: z
+      .string()
+      .trim()
+      .min(1)
+      .default(defaultEditableResumeSectionTitles.experience),
+    education: z
+      .string()
+      .trim()
+      .min(1)
+      .default(defaultEditableResumeSectionTitles.education),
+    languages: z
+      .string()
+      .trim()
+      .min(1)
+      .default(defaultEditableResumeSectionTitles.languages),
+    certifications: z
+      .string()
+      .trim()
+      .min(1)
+      .default(defaultEditableResumeSectionTitles.certifications),
   })
   .default(defaultEditableResumeSectionTitles);
 
@@ -199,7 +223,10 @@ export const documentDraftSchema = z.object({
   coverSenderContact: optionalText,
   coverSheetProfessionalTitle: optionalText,
   coverSheetContactVisibility: z
-    .record(z.enum(["address", "phone", "email", "linkedin", "github", "website"]), z.boolean())
+    .record(
+      z.enum(["address", "phone", "email", "linkedin", "github", "website"]),
+      z.boolean(),
+    )
     .default({
       address: true,
       phone: true,
@@ -225,7 +252,11 @@ export const documentDraftSchema = z.object({
   emailMessage: optionalText,
   emailAttachmentNote: optionalText,
   emailAttachmentMode: z.enum(["package", "separate"]).default("package"),
-  emailPackageFileName: z.string().trim().min(1).default("Bewerbungsunterlagen.pdf"),
+  emailPackageFileName: z
+    .string()
+    .trim()
+    .min(1)
+    .default("Bewerbungsunterlagen.pdf"),
   showCoverLetterAttachments: z.boolean().default(true),
   documentListSettings: z
     .array(
@@ -257,10 +288,16 @@ const hexColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 export const documentDesignSchema = z.object({
   marginLevel: designLevelSchema.default(defaultDocumentDesign.marginLevel),
   paddingLevel: designLevelSchema.default(defaultDocumentDesign.paddingLevel),
-  sectionSpacingLevel: designLevelSchema.default(defaultDocumentDesign.sectionSpacingLevel),
+  sectionSpacingLevel: designLevelSchema.default(
+    defaultDocumentDesign.sectionSpacingLevel,
+  ),
   fontSize: z.enum(fontSizeIds),
-  lineHeightLevel: designLevelSchema.default(defaultDocumentDesign.lineHeightLevel),
-  backgroundShadeLevel: designLevelSchema.default(defaultDocumentDesign.backgroundShadeLevel),
+  lineHeightLevel: designLevelSchema.default(
+    defaultDocumentDesign.lineHeightLevel,
+  ),
+  backgroundShadeLevel: designLevelSchema.default(
+    defaultDocumentDesign.backgroundShadeLevel,
+  ),
   fontId: z.enum(documentFontIds),
   headingFontId: z.enum(documentFontIds),
   columnLayout: z.enum(columnLayoutIds),
@@ -268,11 +305,15 @@ export const documentDesignSchema = z.object({
     .enum(resumeOutputModes)
     .default(defaultDocumentDesign.resumeOutputMode),
   backgroundId: z.enum(documentBackgroundIds),
-  backgroundScope: z.enum(documentBackgroundScopes).default(defaultDocumentDesign.backgroundScope),
+  backgroundScope: z
+    .enum(documentBackgroundScopes)
+    .default(defaultDocumentDesign.backgroundScope),
   textColor: hexColorSchema.default(defaultDocumentDesign.textColor),
   headingColor: hexColorSchema.default(defaultDocumentDesign.headingColor),
   lineColor: hexColorSchema.default(defaultDocumentDesign.lineColor),
-  backgroundColor: hexColorSchema.default(defaultDocumentDesign.backgroundColor),
+  backgroundColor: hexColorSchema.default(
+    defaultDocumentDesign.backgroundColor,
+  ),
   showBackgroundInPrint: z.boolean(),
   syncAcrossDocuments: z.boolean().default(true),
 });
@@ -288,14 +329,22 @@ export const applicationSchema = z.object({
   status: z.enum(applicationStatuses),
   templateId: z.string().min(1),
   accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
-  secondaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).default("#244766"),
+  secondaryColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .default("#244766"),
   designSettings: documentDesignSchema.default(defaultDocumentDesign),
   // Inactive templates only; the selected template uses the fields above.
-  templateDesigns: z.record(z.string(), z.object({
-    accentColor: hexColorSchema,
-    secondaryColor: hexColorSchema,
-    settings: documentDesignSchema,
-  })).default({}),
+  templateDesigns: z
+    .record(
+      z.string(),
+      z.object({
+        accentColor: hexColorSchema,
+        secondaryColor: hexColorSchema,
+        settings: documentDesignSchema,
+      }),
+    )
+    .default({}),
   profileId: z.uuid().optional(),
   notes: optionalText,
   sentAt: optionalIsoDate,
@@ -325,7 +374,10 @@ export const applicationInputSchema = z.object({
   job: jobAdvertisementSchema,
   templateId: z.string().min(1),
   accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
-  secondaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).default("#244766"),
+  secondaryColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .default("#244766"),
   designSettings: documentDesignSchema.default(defaultDocumentDesign),
   profileId: z.uuid().optional(),
   notes: optionalText,
@@ -370,8 +422,14 @@ export const applicationDraftSchema = z.object({
     })
     .optional(),
   templateId: z.string().optional(),
-  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
-  secondaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  accentColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
+  secondaryColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
   designSettings: documentDesignSchema.partial().optional(),
   profileId: z.uuid().optional(),
   notes: z.string().optional(),
@@ -480,11 +538,26 @@ export const profileSchema = z.object({
       }),
     )
     .default([]),
-  resumeManagerLayouts: z.record(z.string(), z.array(z.object({
-    id: z.string().min(1),
-    zone: z.enum(["main", "sidebar"]),
-  }))).default({}),
-  resumeManagerOverrides: z.record(z.string(), z.object({ title: z.string().optional(), visible: z.boolean().optional() })).default({}),
+  resumeManagerLayouts: z
+    .record(
+      z.string(),
+      z.array(
+        z.object({
+          id: z.string().min(1),
+          zone: z.enum(["main", "sidebar"]),
+        }),
+      ),
+    )
+    .default({}),
+  resumeManagerOverrides: z
+    .record(
+      z.string(),
+      z.object({
+        title: z.string().optional(),
+        visible: z.boolean().optional(),
+      }),
+    )
+    .default({}),
   resumeSectionLayouts: z
     .record(
       z.string(),
@@ -533,24 +606,37 @@ export const profileSchema = z.object({
               }),
             ]),
           )
-          .transform((items) => items.map((item, order) => typeof item === "string"
-            ? {
-                id: `legacy-${order}-${item.toLocaleLowerCase("de-DE").replace(/[^a-z0-9]+/g, "-")}`,
-                text: item,
-                description: "",
-                icon: "",
-                level: "",
-                order,
-                visible: true,
-              }
-            : item))
+          .transform((items) =>
+            items.map((item, order) =>
+              typeof item === "string"
+                ? {
+                    id: `legacy-${order}-${item.toLocaleLowerCase("de-DE").replace(/[^a-z0-9]+/g, "-")}`,
+                    text: item,
+                    description: "",
+                    icon: "",
+                    level: "",
+                    order,
+                    visible: true,
+                  }
+                : item,
+            ),
+          )
           .default([]),
-        rendererType: z.preprocess(
-          (value) => value === "list" ? "bullet-list" : value === "tags" ? "tag-list" : value,
-          z.enum(resumeBlockRendererTypes),
-        ).default("bullet-list"),
+        rendererType: z
+          .preprocess(
+            (value) =>
+              value === "list"
+                ? "bullet-list"
+                : value === "tags"
+                  ? "tag-list"
+                  : value,
+            z.enum(resumeBlockRendererTypes),
+          )
+          .default("bullet-list"),
         slot: z.enum(resumeKnowledgeSlots).default("sidebar"),
-        slotOverrides: z.record(z.string(), z.enum(resumeKnowledgeSlots)).default({}),
+        slotOverrides: z
+          .record(z.string(), z.enum(resumeKnowledgeSlots))
+          .default({}),
         pageBreakBefore: z.boolean().default(false),
       }),
     )
@@ -558,7 +644,9 @@ export const profileSchema = z.object({
   resumeKnowledgeContainer: z
     .object({ showTitle: z.boolean().default(false) })
     .default({ showTitle: false }),
-  resumeColumnRatio: z.union([z.literal(25), z.literal(30), z.literal(35), z.literal(40)]).default(30),
+  resumeColumnRatio: z
+    .union([z.literal(25), z.literal(30), z.literal(35), z.literal(40)])
+    .default(30),
   resumeClosing: z
     .object({
       showPlace: z.boolean().default(true),

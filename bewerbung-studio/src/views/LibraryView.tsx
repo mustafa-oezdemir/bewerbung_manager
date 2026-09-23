@@ -10,14 +10,8 @@ import {
   Save,
   Trash2,
 } from "lucide-react";
-import type {
-  Attachment,
-  AttachmentCategory,
-} from "../shared/schema";
-import {
-  selectCurrentApplication,
-  useAppStore,
-} from "../store/useAppStore";
+import type { Attachment, AttachmentCategory } from "../shared/schema";
+import { selectCurrentApplication, useAppStore } from "../store/useAppStore";
 
 export function LibraryView() {
   const application = useAppStore(selectCurrentApplication);
@@ -127,7 +121,9 @@ export function LibraryView() {
             ) : (
               <div className="empty-state compact">
                 <Files size={22} />
-                <p>Noch keine {category.toLocaleLowerCase("de-DE")} zugeordnet.</p>
+                <p>
+                  Noch keine {category.toLocaleLowerCase("de-DE")} zugeordnet.
+                </p>
               </div>
             )}
           </section>
@@ -158,8 +154,7 @@ function UploadCard({
       <button
         className="button secondary"
         disabled={disabled}
-        onClick={onClick}
-      >
+        onClick={onClick}>
         <FilePlus2 size={17} /> PDF auswählen
       </button>
     </article>
@@ -200,13 +195,19 @@ function ManagedDocument({
     <form className="managed-document" onSubmit={submit}>
       <div className="document-order">
         <strong>{String(index + 1).padStart(2, "0")}</strong>
-        <span>{attachment.category === "Zeugnisse" ? <FileCheck2 /> : <Award />}</span>
+        <span>
+          {attachment.category === "Zeugnisse" ? <FileCheck2 /> : <Award />}
+        </span>
       </div>
       <div className="document-fields">
         <div className="form-grid">
           <label className="field">
             <span>Anzeigename</span>
-            <input name="fileName" defaultValue={attachment.fileName} required />
+            <input
+              name="fileName"
+              defaultValue={attachment.fileName}
+              required
+            />
           </label>
           <label className="field">
             <span>Kategorie</span>
@@ -244,8 +245,7 @@ function ManagedDocument({
           className="icon-button"
           aria-label="Dokument nach oben verschieben"
           disabled={index === 0}
-          onClick={() => void onMove(attachment.id, -1)}
-        >
+          onClick={() => void onMove(attachment.id, -1)}>
           <ArrowUp size={16} />
         </button>
         <button
@@ -253,19 +253,20 @@ function ManagedDocument({
           className="icon-button"
           aria-label="Dokument nach unten verschieben"
           disabled={index === length - 1}
-          onClick={() => void onMove(attachment.id, 1)}
-        >
+          onClick={() => void onMove(attachment.id, 1)}>
           <ArrowDown size={16} />
         </button>
         <button
           type="button"
           className="icon-button"
           aria-label="PDF öffnen"
-          onClick={() => void onOpen(attachment.id)}
-        >
+          onClick={() => void onOpen(attachment.id)}>
           <Eye size={16} />
         </button>
-        <button className="icon-button" type="submit" aria-label="Dokument speichern">
+        <button
+          className="icon-button"
+          type="submit"
+          aria-label="Dokument speichern">
           <Save size={16} />
         </button>
         <button
@@ -280,8 +281,7 @@ function ManagedDocument({
             ) {
               void onRemove(attachment.id);
             }
-          }}
-        >
+          }}>
           <Trash2 size={16} />
         </button>
       </div>

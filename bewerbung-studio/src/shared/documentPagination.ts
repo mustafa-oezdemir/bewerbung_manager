@@ -1,7 +1,4 @@
-import type {
-  ApplicantProfile,
-  DocumentDraft,
-} from "./schema";
+import type { ApplicantProfile, DocumentDraft } from "./schema";
 import { ensureKnowledgeSection } from "../features/knowledge/knowledge.service";
 import { flattenKnowledgeNames } from "../features/knowledge/knowledge.utils";
 import { getCoverLetterMainBody } from "./coverLetter";
@@ -121,14 +118,12 @@ const experienceWeight = (
 ) =>
   4 +
   textWeight(`${experience.role} ${experience.company}`, 70) +
-  experience.achievements.filter((achievement) => achievement.trim()).reduce(
-    (total, achievement) => total + 1 + textWeight(achievement),
-    0,
-  );
+  experience.achievements
+    .filter((achievement) => achievement.trim())
+    .reduce((total, achievement) => total + 1 + textWeight(achievement), 0);
 
-const educationWeight = (
-  education: ApplicantProfile["education"][number],
-) => 2 + textWeight(`${education.degree} ${education.institution}`, 80);
+const educationWeight = (education: ApplicantProfile["education"][number]) =>
+  2 + textWeight(`${education.degree} ${education.institution}`, 80);
 
 const sidebarWeight = (
   profile: ApplicantProfile | undefined,
@@ -162,10 +157,8 @@ export const createResumePagePlan = (
   options: ResumePaginationOptions = {},
   templateId?: string,
 ): ResumePagePlan[] => {
-  const firstPageCapacity =
-    options.firstPageCapacity ?? FIRST_PAGE_CAPACITY;
-  const secondPageCapacity =
-    options.secondPageCapacity ?? SECOND_PAGE_CAPACITY;
+  const firstPageCapacity = options.firstPageCapacity ?? FIRST_PAGE_CAPACITY;
+  const secondPageCapacity = options.secondPageCapacity ?? SECOND_PAGE_CAPACITY;
   const items: ResumePageItem[] = [
     ...(profile?.experiences ?? []).map(
       (experience): ResumePageItem => ({
@@ -182,10 +175,14 @@ export const createResumePagePlan = (
       }),
     ),
   ];
-  const managerLayout = templateId ? profile?.resumeManagerLayouts?.[templateId] : undefined;
+  const managerLayout = templateId
+    ? profile?.resumeManagerLayouts?.[templateId]
+    : undefined;
   if (managerLayout?.length) {
     const order = managerLayout.map((item) => item.id);
-    items.sort((left, right) => order.indexOf(left.kind) - order.indexOf(right.kind));
+    items.sort(
+      (left, right) => order.indexOf(left.kind) - order.indexOf(right.kind),
+    );
   }
   const totalMainWeight = items.reduce((total, item) => total + item.weight, 0);
   const firstPageWeight = Math.max(
@@ -218,7 +215,8 @@ export const createResumePagePlan = (
       pageOneWeight += item.weight;
     } else {
       pageTwoItems.push(item);
-      continueOnSecondPage = Boolean(managerLayout?.length) || (options.preserveItemOrder ?? false);
+      continueOnSecondPage =
+        Boolean(managerLayout?.length) || (options.preserveItemOrder ?? false);
     }
   }
 
@@ -252,7 +250,8 @@ export const createResumePagePlan = (
   ];
 };
 
-export const getLetterPageStatus = <T extends Pick<
+export const getLetterPageStatus = <
+  T extends Pick<
     DocumentDraft,
     | "coverSubject"
     | "coverIntroduction"
@@ -262,7 +261,10 @@ export const getLetterPageStatus = <T extends Pick<
     | "coverCompanyFit"
     | "coverExtraParagraph"
     | "coverClosing"
-  >>(documents: T): LetterPageStatus => {
+  >,
+>(
+  documents: T,
+): LetterPageStatus => {
   const characterCount = [
     documents.coverSubject,
     documents.coverIntroduction,
@@ -281,7 +283,6 @@ export const getLetterPageStatus = <T extends Pick<
         : characterCount > 2_500
           ? "compact"
           : "standard",
-    isOverRecommendedLength:
-      characterCount > RECOMMENDED_LETTER_CHARACTERS,
+    isOverRecommendedLength: characterCount > RECOMMENDED_LETTER_CHARACTERS,
   };
 };

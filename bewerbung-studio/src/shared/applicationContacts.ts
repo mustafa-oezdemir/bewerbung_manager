@@ -27,13 +27,14 @@ export const applicationContactDepartmentLines = (application: Application) =>
     ),
   );
 
-export const applicationRecipientLines = (application: Application) => [
-  application.company.name,
-  ...applicationPostalContactLines(application),
-  ...applicationContactDepartmentLines(application),
-  application.company.street,
-  `${application.company.postalCode} ${application.company.city}`.trim(),
-].filter(Boolean);
+export const applicationRecipientLines = (application: Application) =>
+  [
+    application.company.name,
+    ...applicationPostalContactLines(application),
+    ...applicationContactDepartmentLines(application),
+    application.company.street,
+    `${application.company.postalCode} ${application.company.city}`.trim(),
+  ].filter(Boolean);
 
 const greetingForContact = (contact: Contact) => {
   const name = contactFullName(contact);

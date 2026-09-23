@@ -1,5 +1,8 @@
 const internationalDigits = (value: string) =>
-  value.trim().replace(/^00/, "+").replace(/[^\d+]/g, "");
+  value
+    .trim()
+    .replace(/^00/, "+")
+    .replace(/[^\d+]/g, "");
 
 /** Formats German mobile numbers for display without changing their stored value. */
 export const formatPhoneForDisplay = (value = "") => {
@@ -22,4 +25,6 @@ export const externalUrl = (value = "") => {
 
 /** Keeps the URL readable while the complete URL remains the link destination. */
 export const formatUrlForDisplay = (value = "") =>
-  externalUrl(value).replace(/^https?:\/\//i, "").replace(/\/$/, "");
+  externalUrl(value)
+    .replace(/^https?:\/\//i, "")
+    .replace(/\/$/, "");

@@ -24,11 +24,16 @@ export const getDeckblattContacts = (
 ): DeckblattContact[] => {
   if (!profile) return [];
 
-  const address = [profile.street, `${profile.postalCode} ${profile.city}`.trim()]
+  const address = [
+    profile.street,
+    `${profile.postalCode} ${profile.city}`.trim(),
+  ]
     .filter(Boolean)
     .join(", ");
   return [
-    visibility.address && address ? { label: "Adresse", value: address } : undefined,
+    visibility.address && address
+      ? { label: "Adresse", value: address }
+      : undefined,
     visibility.phone && profile.phone
       ? {
           label: "Telefon",
@@ -37,7 +42,11 @@ export const getDeckblattContacts = (
         }
       : undefined,
     visibility.email && profile.email
-      ? { label: "E-Mail", value: profile.email, href: `mailto:${profile.email}` }
+      ? {
+          label: "E-Mail",
+          value: profile.email,
+          href: `mailto:${profile.email}`,
+        }
       : undefined,
     visibility.linkedin && profile.linkedin
       ? {
@@ -47,7 +56,11 @@ export const getDeckblattContacts = (
         }
       : undefined,
     visibility.github && profile.github
-      ? { label: "GitHub", value: profile.github, href: externalHref(profile.github) }
+      ? {
+          label: "GitHub",
+          value: profile.github,
+          href: externalHref(profile.github),
+        }
       : undefined,
     visibility.website && profile.portfolio
       ? {
@@ -70,10 +83,14 @@ export const getDeckblattCompetencies = (
     .map((skill) => skill.split(/\s+(?:-|–|—|:)\s+/)[0].trim())
     .filter(Boolean);
   const unique = Array.from(
-    new Map(values.map((value) => [value.toLocaleLowerCase("de-DE"), value])).values(),
+    new Map(
+      values.map((value) => [value.toLocaleLowerCase("de-DE"), value]),
+    ).values(),
   );
-  const jobText = `${application?.job.title ?? ""} ${application?.job.fullText ?? ""}`
-    .toLocaleLowerCase("de-DE");
+  const jobText =
+    `${application?.job.title ?? ""} ${application?.job.fullText ?? ""}`.toLocaleLowerCase(
+      "de-DE",
+    );
   const ranked = unique
     .map((value, index) => ({
       value,

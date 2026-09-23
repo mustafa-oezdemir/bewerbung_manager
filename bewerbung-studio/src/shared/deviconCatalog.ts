@@ -18,7 +18,10 @@ const readableIconName = (name: string) =>
 
 const namespaceSvgIds = (markup: string, iconName: string) => {
   const prefix = `devicon-${iconName}-`;
-  const ids = Array.from(markup.matchAll(/\bid="([^"]+)"/g), (match) => match[1]);
+  const ids = Array.from(
+    markup.matchAll(/\bid="([^"]+)"/g),
+    (match) => match[1],
+  );
   return ids.reduce(
     (current, id) =>
       current

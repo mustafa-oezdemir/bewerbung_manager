@@ -70,7 +70,11 @@ export const getTechnologyBrandIconMarkup = (
     .trim()
     .toLocaleLowerCase("en-US")
     .replace(/^(?:programming|programmiersprache)\s*[:–-]?\s*/i, "");
-  if (normalized === "react" || normalized === "react.js" || normalized === "reactjs") {
+  if (
+    normalized === "react" ||
+    normalized === "react.js" ||
+    normalized === "reactjs"
+  ) {
     return svg(
       '<circle cx="16" cy="16" r="2.3" fill="#61dafb"/><ellipse cx="16" cy="16" rx="13" ry="5.2" fill="none" stroke="#61dafb" stroke-width="1.6"/><ellipse cx="16" cy="16" rx="13" ry="5.2" transform="rotate(60 16 16)" fill="none" stroke="#61dafb" stroke-width="1.6"/><ellipse cx="16" cy="16" rx="13" ry="5.2" transform="rotate(120 16 16)" fill="none" stroke="#61dafb" stroke-width="1.6"/>',
       "react",
@@ -98,10 +102,20 @@ export const getTechnologyBrandIconMarkup = (
     );
   }
   if (["html", "html5"].includes(normalized)) {
-    return shieldBrand("html", "#e44d26", "#f16529", "M9 8h15l-.4 4H14l.3 3.4h9l-.8 8.1-6.5 1.8-6.5-1.8-.4-4h4l.2 1.2 2.7.7 2.8-.8.3-3.3H9.8z");
+    return shieldBrand(
+      "html",
+      "#e44d26",
+      "#f16529",
+      "M9 8h15l-.4 4H14l.3 3.4h9l-.8 8.1-6.5 1.8-6.5-1.8-.4-4h4l.2 1.2 2.7.7 2.8-.8.3-3.3H9.8z",
+    );
   }
   if (["css", "css3"].includes(normalized)) {
-    return shieldBrand("css", "#1572b6", "#33a9dc", "M9 8h15l-.4 4-8.8 3.5h8.5l-.8 8-6.5 1.8-6.5-1.8-.4-4h4l.2 1.2 2.7.7 2.8-.8.2-2.2H9.8l-.3-3.8 8.7-3.4H9.3z");
+    return shieldBrand(
+      "css",
+      "#1572b6",
+      "#33a9dc",
+      "M9 8h15l-.4 4-8.8 3.5h8.5l-.8 8-6.5 1.8-6.5-1.8-.4-4h4l.2 1.2 2.7.7 2.8-.8.2-2.2H9.8l-.3-3.8 8.7-3.4H9.3z",
+    );
   }
   if (normalized === "c#") return letterMark("C#", "hexagon");
   if (normalized === "c++") return letterMark("C++", "hexagon");
@@ -109,9 +123,23 @@ export const getTechnologyBrandIconMarkup = (
   if (normalized === "php") return phpBrand();
   if (["go", "golang", "go language"].includes(normalized)) return goBrand();
   if (normalized === ".net") return letterMark(".NET");
-  if (["typescript", "type script", "ts"].includes(normalized)) return typescriptBrand();
-  if (["javascript", "java script", "javascript (es6+)", "js"].includes(normalized)) return javascriptBrand();
-  if (["framework", "frameworks", "framework / libraries", "frameworks / libraries"].includes(normalized)) return frameworkBrand();
+  if (["typescript", "type script", "ts"].includes(normalized))
+    return typescriptBrand();
+  if (
+    ["javascript", "java script", "javascript (es6+)", "js"].includes(
+      normalized,
+    )
+  )
+    return javascriptBrand();
+  if (
+    [
+      "framework",
+      "frameworks",
+      "framework / libraries",
+      "frameworks / libraries",
+    ].includes(normalized)
+  )
+    return frameworkBrand();
   if (["kotlin", "kt"].includes(normalized)) return letterMark("KT", "hexagon");
   if (normalized === "swift") return letterMark("SW", "rounded");
   if (normalized === "ruby") return letterMark("RB", "hexagon");
@@ -124,8 +152,10 @@ export const getTechnologyBrandIconMarkup = (
     );
   }
   if (["bash", "shell", "zsh"].includes(normalized)) return letterMark(">_");
-  if (["powershell", "power shell"].includes(normalized)) return letterMark("PS");
-  if (["visual basic", "vb", "vb.net"].includes(normalized)) return letterMark("VB");
+  if (["powershell", "power shell"].includes(normalized))
+    return letterMark("PS");
+  if (["visual basic", "vb", "vb.net"].includes(normalized))
+    return letterMark("VB");
   if (["f#", "fsharp"].includes(normalized)) return letterMark("F#", "hexagon");
   if (normalized === "objective-c") return letterMark("ObjC", "rounded");
   if (normalized === "solidity") return letterMark("SOL", "hexagon");
@@ -136,7 +166,8 @@ export const getTechnologyBrandIconMarkup = (
   if (normalized === "perl") return letterMark("PL", "oval");
   if (normalized === "matlab") return letterMark("MAT", "rounded");
   if (normalized === "groovy") return letterMark("GV", "rounded");
-  if (["assembly", "assembler", "asm"].includes(normalized)) return letterMark("ASM");
+  if (["assembly", "assembler", "asm"].includes(normalized))
+    return letterMark("ASM");
   if (normalized === "cobol") return letterMark("COB");
   const automaticDevicon = getDeviconMarkup(
     normalized.replace(/[^a-z0-9]/g, ""),

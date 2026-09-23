@@ -1,5 +1,10 @@
 import { getResumeDisplayProfile } from "../shared/resumeDisplayProfile";
-import { createDocumentDesignDraft, selectDocumentTemplate, persistDocumentDraft, type DocumentDesignDraft } from "../shared/documentEditorState";
+import {
+  createDocumentDesignDraft,
+  selectDocumentTemplate,
+  persistDocumentDraft,
+  type DocumentDesignDraft,
+} from "../shared/documentEditorState";
 import { normalizeResumeDataDraft } from "../components/resume/ResumeDataEditor";
 import { ManagedResumePreview } from "../components/resume/ManagedResumePreview";
 import {
@@ -428,20 +433,28 @@ export function DocumentsView({
   } | null>(null);
   const handleResumeSectionPreview = useCallback(
     (templateId: string, previewProfile: ApplicantProfile | null) => {
-      setResumeSectionPreview(previewProfile ? { templateId, profile: previewProfile } : null);
+      setResumeSectionPreview(
+        previewProfile ? { templateId, profile: previewProfile } : null,
+      );
     },
     [],
   );
-  const [designDraft, setDesign] = useState<DocumentDesignDraft>(() => application ? createDocumentDesignDraft(application) : ({
-    applicationId: "",
-    templateId: templates[0].id,
-    accentColor: templates[0].accent,
-    secondaryColor: templates[0].secondary,
-    settings: defaultDocumentDesign,
-    templateDesigns: {},
-  }));
-  const design = application && designDraft.applicationId !== application.id
-    ? createDocumentDesignDraft(application) : designDraft;
+  const [designDraft, setDesign] = useState<DocumentDesignDraft>(() =>
+    application
+      ? createDocumentDesignDraft(application)
+      : {
+          applicationId: "",
+          templateId: templates[0].id,
+          accentColor: templates[0].accent,
+          secondaryColor: templates[0].secondary,
+          settings: defaultDocumentDesign,
+          templateDesigns: {},
+        },
+  );
+  const design =
+    application && designDraft.applicationId !== application.id
+      ? createDocumentDesignDraft(application)
+      : designDraft;
   const persistedDocuments = JSON.stringify(application?.documents);
   const formRef = useRef<HTMLFormElement>(null);
   const paperStageRef = useRef<HTMLElement>(null);
@@ -647,7 +660,7 @@ export function DocumentsView({
     : undefined;
   const resumePlan = createResumePagePlan(
     paginatedProfile,
-    (template.id === "pehlione_white_blue" || template.id === "pehlione_white")
+    template.id === "pehlione_white_blue" || template.id === "pehlione_white"
       ? pehlioneResumeProfile
       : docs.resumeProfile,
     template.id === "elegant"
@@ -674,7 +687,8 @@ export function DocumentsView({
                           ? tabellarischPaginationOptions
                           : template.id === "modern"
                             ? modernPaginationOptions
-                            : (template.id === "pehlione_white_blue" || template.id === "pehlione_white")
+                            : template.id === "pehlione_white_blue" ||
+                                template.id === "pehlione_white"
                               ? pehlionePaginationOptions
                               : undefined,
     template.id,
@@ -778,7 +792,10 @@ export function DocumentsView({
   };
 
   const saveResumeSections = async (changedProfile: ApplicantProfile) => {
-    await saveProfile({ ...changedProfile, updatedAt: new Date().toISOString() });
+    await saveProfile({
+      ...changedProfile,
+      updatedAt: new Date().toISOString(),
+    });
   };
 
   const pickProfileMedia = async (kind: ProfileMediaKind) => {
@@ -787,7 +804,9 @@ export function DocumentsView({
       await window.bewerbungsManager.media.pickProfileImage(kind);
     if (!selected) return;
     await saveProfile({
-      ...(resumeSectionPreview?.profile.id === profile.id ? resumeSectionPreview.profile : profile),
+      ...(resumeSectionPreview?.profile.id === profile.id
+        ? resumeSectionPreview.profile
+        : profile),
       [kind === "photo" ? "photoPath" : "signaturePath"]: selected.dataUrl,
       updatedAt: new Date().toISOString(),
     });
@@ -796,7 +815,9 @@ export function DocumentsView({
   const removeProfileMedia = async (kind: ProfileMediaKind) => {
     if (!profile) return;
     await saveProfile({
-      ...(resumeSectionPreview?.profile.id === profile.id ? resumeSectionPreview.profile : profile),
+      ...(resumeSectionPreview?.profile.id === profile.id
+        ? resumeSectionPreview.profile
+        : profile),
       [kind === "photo" ? "photoPath" : "signaturePath"]: "",
       updatedAt: new Date().toISOString(),
     });
@@ -895,7 +916,12 @@ export function DocumentsView({
   const save = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const snapshot = applicationSnapshot(event.currentTarget);
-    await persistDocumentDraft(snapshot, currentProfileDraft(), saveProfile, saveApplication);
+    await persistDocumentDraft(
+      snapshot,
+      currentProfileDraft(),
+      saveProfile,
+      saveApplication,
+    );
     if (tab === "anschreiben") {
       await syncCoverLetter(snapshot.id);
     }
@@ -910,7 +936,12 @@ export function DocumentsView({
     target: "deckblatt" | "anschreiben" | "lebenslauf" | "mappe",
   ) => {
     const snapshot = applicationSnapshot(formRef.current);
-    await persistDocumentDraft(snapshot, currentProfileDraft(), saveProfile, saveApplication);
+    await persistDocumentDraft(
+      snapshot,
+      currentProfileDraft(),
+      saveProfile,
+      saveApplication,
+    );
     await exportPdf(snapshot.id, target, snapshot);
   };
 
@@ -966,376 +997,1186 @@ export function DocumentsView({
         persistKey="resume-editor-layout"
         primary={
           <aside className="document-editor surface">
-          <div className="document-tabs">
-            <button
-              className={tab === "deckblatt" ? "active" : ""}
-              onClick={() => setTab("deckblatt")}>
-              Deckblatt
-            </button>
-            <button
-              className={tab === "anschreiben" ? "active" : ""}
-              onClick={() => setTab("anschreiben")}>
-              Anschreiben
-            </button>
-            <button
-              className={tab === "email" ? "active" : ""}
-              onClick={() => setTab("email")}>
-              E-Mail
-            </button>
-            <button
-              className={tab === "lebenslauf" ? "active" : ""}
-              onClick={() => setTab("lebenslauf")}>
-              Lebenslauf
-            </button>
-          </div>
-          <form
-            key={application.id}
-            ref={formRef}
-            onInput={previewDocumentInput}
-            onSubmit={(event) => void save(event)}>
-            {tab === "lebenslauf" && profiles.length ? (
-              <label className="field document-profile-selector">
-                <span>Lebenslaufprofil</span>
-                <select
-                  value={profile?.id ?? ""}
-                  onChange={(event) =>
-                    void changeDocumentProfile(event.target.value)
-                  }>
-                  {profiles.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.firstName} {item.lastName}
-                      {item.title ? ` · ${item.title}` : ""}
-                    </option>
-                  ))}
-                </select>
-                <small>
-                  Die Auswahl aktualisiert Lebenslaufdaten, Vorschau und PDF.
-                </small>
-              </label>
-            ) : null}
-            {tab === "deckblatt" && (
-              <div className="cover-letter-editor-sections">
-                <label className="field">
-                  <span>Berufsbezeichnung auf dem Deckblatt</span>
-                  <input
-                    name="coverSheetProfessionalTitle"
-                    defaultValue={coverSheetProfessionalTitle}
-                    placeholder="z. B. Sachbearbeitung / Kundenservice"
-                  />
+            <div className="document-tabs">
+              <button
+                className={tab === "deckblatt" ? "active" : ""}
+                onClick={() => setTab("deckblatt")}>
+                Deckblatt
+              </button>
+              <button
+                className={tab === "anschreiben" ? "active" : ""}
+                onClick={() => setTab("anschreiben")}>
+                Anschreiben
+              </button>
+              <button
+                className={tab === "email" ? "active" : ""}
+                onClick={() => setTab("email")}>
+                E-Mail
+              </button>
+              <button
+                className={tab === "lebenslauf" ? "active" : ""}
+                onClick={() => setTab("lebenslauf")}>
+                Lebenslauf
+              </button>
+            </div>
+            <form
+              key={application.id}
+              ref={formRef}
+              onInput={previewDocumentInput}
+              onSubmit={(event) => void save(event)}>
+              {tab === "lebenslauf" && profiles.length ? (
+                <label className="field document-profile-selector">
+                  <span>Lebenslaufprofil</span>
+                  <select
+                    value={profile?.id ?? ""}
+                    onChange={(event) =>
+                      void changeDocumentProfile(event.target.value)
+                    }>
+                    {profiles.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.firstName} {item.lastName}
+                        {item.title ? ` · ${item.title}` : ""}
+                      </option>
+                    ))}
+                  </select>
                   <small>
-                    Nur diese Bewerbung wird geändert; das Masterprofil bleibt
-                    unverändert.
+                    Die Auswahl aktualisiert Lebenslaufdaten, Vorschau und PDF.
                   </small>
                 </label>
-                <label className="field">
-                  <span>Kurzprofil auf dem Deckblatt</span>
-                  <textarea
-                    name="deckblattStatement"
-                    rows={8}
-                    defaultValue={docs.deckblattStatement}
-                    placeholder="Prägnante Positionierung in zwei bis drei Sätzen …"
-                  />
-                </label>
-                <section className="cover-letter-editor-section">
-                  <header>
-                    <b>Bewerbungsunterlagen</b>
+              ) : null}
+              {tab === "deckblatt" && (
+                <div className="cover-letter-editor-sections">
+                  <label className="field">
+                    <span>Berufsbezeichnung auf dem Deckblatt</span>
+                    <input
+                      name="coverSheetProfessionalTitle"
+                      defaultValue={coverSheetProfessionalTitle}
+                      placeholder="z. B. Sachbearbeitung / Kundenservice"
+                    />
                     <small>
-                      Nur ausgewählte, sichtbare Dokumente erscheinen auf dem
-                      Deckblatt.
+                      Nur diese Bewerbung wird geändert; das Masterprofil bleibt
+                      unverändert.
                     </small>
-                  </header>
-                  <DocumentListEditor
-                    items={applicationDocumentItems}
-                    onChange={updateDocumentListItem}
-                  />
-                </section>
-                <section className="cover-letter-editor-section">
-                  <header>
-                    <b>Kontakt auf dem Deckblatt</b>
-                    <small>
-                      Felder unabhängig vom Lebenslauf ein- oder ausblenden.
-                    </small>
-                  </header>
-                  <div className="visibility-checkbox-grid">
-                    {(
-                      [
-                        ["address", "Adresse"],
-                        ["phone", "Telefon"],
-                        ["email", "E-Mail"],
-                        ["linkedin", "LinkedIn"],
-                        ["github", "GitHub"],
-                        ["website", "Website"],
-                      ] as const
-                    ).map(([key, label]) => (
-                      <label className="checkbox-field compact" key={key}>
-                        <input
-                          type="checkbox"
-                          checked={docs.coverSheetContactVisibility[key]}
-                          onChange={(event) =>
-                            setDocumentPreview({
-                              applicationId: application.id,
-                              documents: {
-                                ...docs,
-                                coverSheetContactVisibility: {
-                                  ...docs.coverSheetContactVisibility,
-                                  [key]: event.target.checked,
+                  </label>
+                  <label className="field">
+                    <span>Kurzprofil auf dem Deckblatt</span>
+                    <textarea
+                      name="deckblattStatement"
+                      rows={8}
+                      defaultValue={docs.deckblattStatement}
+                      placeholder="Prägnante Positionierung in zwei bis drei Sätzen …"
+                    />
+                  </label>
+                  <section className="cover-letter-editor-section">
+                    <header>
+                      <b>Bewerbungsunterlagen</b>
+                      <small>
+                        Nur ausgewählte, sichtbare Dokumente erscheinen auf dem
+                        Deckblatt.
+                      </small>
+                    </header>
+                    <DocumentListEditor
+                      items={applicationDocumentItems}
+                      onChange={updateDocumentListItem}
+                    />
+                  </section>
+                  <section className="cover-letter-editor-section">
+                    <header>
+                      <b>Kontakt auf dem Deckblatt</b>
+                      <small>
+                        Felder unabhängig vom Lebenslauf ein- oder ausblenden.
+                      </small>
+                    </header>
+                    <div className="visibility-checkbox-grid">
+                      {(
+                        [
+                          ["address", "Adresse"],
+                          ["phone", "Telefon"],
+                          ["email", "E-Mail"],
+                          ["linkedin", "LinkedIn"],
+                          ["github", "GitHub"],
+                          ["website", "Website"],
+                        ] as const
+                      ).map(([key, label]) => (
+                        <label className="checkbox-field compact" key={key}>
+                          <input
+                            type="checkbox"
+                            checked={docs.coverSheetContactVisibility[key]}
+                            onChange={(event) =>
+                              setDocumentPreview({
+                                applicationId: application.id,
+                                documents: {
+                                  ...docs,
+                                  coverSheetContactVisibility: {
+                                    ...docs.coverSheetContactVisibility,
+                                    [key]: event.target.checked,
+                                  },
                                 },
-                              },
-                            })
+                              })
+                            }
+                          />
+                          <span>{label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+              )}
+              {tab === "anschreiben" && (
+                <div className="cover-letter-editor-sections">
+                  <section className="cover-letter-editor-section">
+                    <header>
+                      <b>1. Briefkopf</b>
+                      <small>
+                        Automatisch ausgefüllt – bei Bedarf direkt anpassen
+                      </small>
+                    </header>
+                    <label className="field">
+                      <span>Name</span>
+                      <input
+                        name="coverSenderName"
+                        defaultValue={coverSenderName}
+                      />
+                    </label>
+                    <label className="field">
+                      <span>Berufsbezeichnung</span>
+                      <input
+                        name="coverSenderTitle"
+                        defaultValue={coverSenderTitle}
+                      />
+                    </label>
+                    <label className="field">
+                      <span>Kontaktzeile</span>
+                      <input
+                        name="coverSenderContact"
+                        defaultValue={coverSenderContact}
+                      />
+                    </label>
+                    <label className="field">
+                      <span>Empfängeradresse</span>
+                      <textarea
+                        name="coverRecipientAddress"
+                        rows={5}
+                        defaultValue={recipientLines.join("\n")}
+                      />
+                    </label>
+                  </section>
+                  <section className="cover-letter-editor-section">
+                    <header>
+                      <b>2. Betreffzeile</b>
+                      <small>Stelle und Referenz eindeutig benennen</small>
+                    </header>
+                    <label className="field">
+                      <span>Betreffzeile</span>
+                      <input
+                        name="coverSubject"
+                        defaultValue={createCoverSubject(
+                          application.job.title,
+                          docs.coverSubject,
+                        )}
+                      />
+                    </label>
+                    <div className="cover-subject-spacing-control">
+                      <div>
+                        <b>Abstand vor Betreff</b>
+                        <small>
+                          {docs.coverSubjectGapReduction
+                            ? `${docs.coverSubjectGapReduction} Zeile${docs.coverSubjectGapReduction === 1 ? "" : "n"} nach oben verschoben`
+                            : "Standardabstand"}
+                        </small>
+                      </div>
+                      <div>
+                        <button
+                          type="button"
+                          disabled={docs.coverSubjectGapReduction === 4}
+                          onClick={reduceCoverSubjectGap}>
+                          <ChevronUp size={15} />
+                          Betreff höher
+                        </button>
+                        {docs.coverSubjectGapReduction ? (
+                          <button type="button" onClick={resetCoverSubjectGap}>
+                            Standard
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
+                  </section>
+                  <section className="cover-letter-editor-section">
+                    <header>
+                      <b>3. Anrede</b>
+                      <small>
+                        Automatisch ausgefüllt – bei Bedarf direkt anpassen
+                      </small>
+                    </header>
+                    <label className="field">
+                      <span>Anrede</span>
+                      <input
+                        name="coverGreeting"
+                        defaultValue={coverGreeting}
+                      />
+                    </label>
+                  </section>
+                  <section className="cover-letter-editor-section">
+                    <header>
+                      <b>4. Einleitung</b>
+                      <small>
+                        2–3 prägnante Sätze mit direktem Stellenbezug
+                      </small>
+                    </header>
+                    <label className="field">
+                      <span>Einleitung</span>
+                      <textarea
+                        name="coverIntroduction"
+                        rows={4}
+                        defaultValue={docs.coverIntroduction}
+                      />
+                    </label>
+                  </section>
+                  <section className="cover-letter-editor-section">
+                    <header>
+                      <b>5. Hauptteil</b>
+                      <small>Die 2–3 stärksten belegbaren Argumente</small>
+                    </header>
+                    <label className="field">
+                      <span>Hauptteil</span>
+                      <textarea
+                        name="coverMainBody"
+                        rows={8}
+                        defaultValue={getCoverLetterMainBody(docs)}
+                      />
+                    </label>
+                    <label className="field">
+                      <span>Zusatzabsatz (optional)</span>
+                      <textarea
+                        name="coverExtraParagraph"
+                        rows={4}
+                        defaultValue={docs.coverExtraParagraph}
+                        placeholder="Optionaler zusätzlicher Absatz – leer lassen, wenn er nicht benötigt wird."
+                      />
+                    </label>
+                  </section>
+                  <section className="cover-letter-editor-section">
+                    <header>
+                      <b>6. Unternehmensbezug</b>
+                      <small>
+                        Aufgabe, passende Erfahrung und künftiger Beitrag
+                      </small>
+                    </header>
+                    <label className="field">
+                      <span>Unternehmensbezug</span>
+                      <textarea
+                        name="coverCompanyFit"
+                        rows={5}
+                        defaultValue={docs.coverCompanyFit}
+                      />
+                    </label>
+                  </section>
+                  <section className="cover-letter-editor-section">
+                    <header>
+                      <b>7. Schlussteil</b>
+                      <small>Kurzer Übergang zum persönlichen Gespräch</small>
+                    </header>
+                    <label className="field">
+                      <span>Schlussteil</span>
+                      <textarea
+                        name="coverClosing"
+                        rows={5}
+                        defaultValue={docs.coverClosing}
+                      />
+                    </label>
+                  </section>
+                  <section className="cover-letter-editor-section is-generated">
+                    <header>
+                      <b>8. Grußformel</b>
+                      <small>Professioneller Abschluss und Unterschrift</small>
+                    </header>
+                    <p>Mit freundlichen Grüßen</p>
+                    <div className="document-media-inline">
+                      <span>Unterschrift</span>
+                      <DocumentMediaCard
+                        kind="signature"
+                        label="Unterschrift"
+                        source={signatureSource}
+                        disabled={!profile}
+                        onPick={() => void pickProfileMedia("signature")}
+                        onRemove={() => void removeProfileMedia("signature")}
+                      />
+                    </div>
+                  </section>
+                  <section className="cover-letter-editor-section is-generated">
+                    <header>
+                      <b>9. Anlagen</b>
+                      <small>
+                        Namen ändern, Einträge ausblenden oder entfernen
+                      </small>
+                    </header>
+                    <label className="checkbox-field">
+                      <input
+                        type="checkbox"
+                        checked={docs.showCoverLetterAttachments}
+                        onChange={(event) =>
+                          setCoverLetterAttachmentsVisible(event.target.checked)
+                        }
+                      />
+                      <span>
+                        Abschnitt „9. Anlagen“ im Anschreiben anzeigen
+                      </span>
+                    </label>
+                    {docs.showCoverLetterAttachments ? (
+                      <DocumentListEditor
+                        items={applicationDocumentItems.filter(
+                          (item) => item.key !== "anschreiben",
+                        )}
+                        onChange={updateDocumentListItem}
+                      />
+                    ) : (
+                      <p className="document-list-empty">
+                        Der komplette Anlagenabschnitt ist ausgeblendet.
+                      </p>
+                    )}
+                  </section>
+                  <section
+                    className={`page-limit-status ${letterStatus.isOverRecommendedLength ? "warning" : "ok"}`}>
+                    <strong>Anschreiben: 1 A4-Seite</strong>
+                    <span>
+                      {letterStatus.characterCount.toLocaleString("de-DE")} /{" "}
+                      {letterStatus.recommendedMaximum.toLocaleString("de-DE")}{" "}
+                      empfohlene Zeichen
+                    </span>
+                    <small>
+                      {letterStatus.isOverRecommendedLength
+                        ? "Vorschau und PDF-Export werden automatisch auf eine A4-Seite eingepasst. Kürzen verbessert die Lesbarkeit."
+                        : "Der aktuelle Text liegt im gut lesbaren Ein-Seiten-Bereich."}
+                    </small>
+                  </section>
+                  <p className="word-sync-note">
+                    Beim Speichern wird die Word-Datei aus der persönlichen
+                    Anschreiben-Vorlage im Bewerbungsordner erstellt oder
+                    aktualisiert.
+                  </p>
+                </div>
+              )}
+              {tab === "email" && (
+                <div className="email-editor-sections">
+                  <section className="cover-letter-editor-section is-generated">
+                    <header>
+                      <b>Automatische E-Mail-Daten</b>
+                      <small>
+                        Anrede, Betreff und Absender werden aus Bewerbung und
+                        Profil übernommen
+                      </small>
+                    </header>
+                    <dl className="email-editor-metadata">
+                      <div>
+                        <dt>Betreff</dt>
+                        <dd>{email.subject}</dd>
+                      </div>
+                      <div>
+                        <dt>Anrede</dt>
+                        <dd>{email.salutation}</dd>
+                      </div>
+                      <div>
+                        <dt>Empfänger</dt>
+                        <dd>{email.recipientName || "Nicht angegeben"}</dd>
+                      </div>
+                      <div>
+                        <dt>E-Mail</dt>
+                        <dd>{email.recipientEmail || "Nicht angegeben"}</dd>
+                      </div>
+                      <div>
+                        <dt>Absender</dt>
+                        <dd>{email.senderName || "Nicht angegeben"}</dd>
+                      </div>
+                      <div>
+                        <dt>Absender-E-Mail</dt>
+                        <dd>{email.senderEmail || "Nicht angegeben"}</dd>
+                      </div>
+                    </dl>
+                  </section>
+                  <label className="field">
+                    <span>Nachricht</span>
+                    <textarea
+                      name="emailMessage"
+                      rows={8}
+                      defaultValue={email.message}
+                    />
+                  </label>
+                  <section className="cover-letter-editor-section">
+                    <header>
+                      <b>Anlagen</b>
+                      <small>
+                        Die Liste wird aus dem tatsächlichen Versandmodus
+                        erzeugt.
+                      </small>
+                    </header>
+                    <div className="segmented-design-control">
+                      <button
+                        className={
+                          docs.emailAttachmentMode === "package"
+                            ? "selected"
+                            : ""
+                        }
+                        type="button"
+                        onClick={() =>
+                          setDocumentPreview({
+                            applicationId: application.id,
+                            documents: {
+                              ...docs,
+                              emailAttachmentMode: "package",
+                            },
+                          })
+                        }>
+                        Gesamt-PDF
+                      </button>
+                      <button
+                        className={
+                          docs.emailAttachmentMode === "separate"
+                            ? "selected"
+                            : ""
+                        }
+                        type="button"
+                        onClick={() =>
+                          setDocumentPreview({
+                            applicationId: application.id,
+                            documents: {
+                              ...docs,
+                              emailAttachmentMode: "separate",
+                            },
+                          })
+                        }>
+                        Einzeldateien
+                      </button>
+                    </div>
+                    {docs.emailAttachmentMode === "package" ? (
+                      <label className="field">
+                        <span>Dateiname</span>
+                        <input
+                          name="emailPackageFileName"
+                          defaultValue={docs.emailPackageFileName}
+                        />
+                      </label>
+                    ) : (
+                      <DocumentListEditor
+                        items={applicationDocumentItems}
+                        onChange={updateDocumentListItem}
+                      />
+                    )}
+                  </section>
+                  {email.warnings.length ? (
+                    <p className="resume-sections-warning" role="status">
+                      {email.warnings.join(" ")}
+                    </p>
+                  ) : null}
+                  <p className="word-sync-note">
+                    Beim Speichern werden Email/Email.md und email.json im
+                    Bewerbungsordner aktualisiert.
+                  </p>
+                </div>
+              )}
+              {tab === "lebenslauf" && (
+                <>
+                  <section className="page-limit-status ok">
+                    <strong>
+                      Lebenslauf: {resumePlan.length} / 2 A4-Seiten
+                    </strong>
+                    <span>
+                      Einträge werden vollständig und ohne mitten im Eintrag
+                      umzubrechen verteilt.
+                    </span>
+                  </section>
+                  {profile ? (
+                    <>
+                      <ResumeSectionsPanel
+                        key={`${application.id}:${profile.id}`}
+                        profile={profile}
+                        singlePageExceeded={
+                          template.id === "kompakt" && resumePlan.length > 1
+                        }
+                        templateId={template.id}
+                        summaryValue={docs.resumeProfile}
+                        onSummaryChange={(summary) =>
+                          setDocumentPreview({
+                            applicationId: application.id,
+                            documents: { ...docs, resumeProfile: summary },
+                          })
+                        }
+                        onPickMedia={(kind) => void pickProfileMedia(kind)}
+                        onRemoveMedia={(kind) => void removeProfileMedia(kind)}
+                        onSave={saveResumeSections}
+                        onPreview={handleResumeSectionPreview}
+                      />
+                    </>
+                  ) : null}
+                  <button
+                    className="design-panel-trigger"
+                    type="button"
+                    aria-expanded={designPanelOpen}
+                    onClick={() => setDesignPanelOpen((current) => !current)}>
+                    <Palette size={18} />
+                    <span>
+                      <strong>Design und Schriftart</strong>
+                      <small>
+                        Farben, Abstände, Schrift, Spalten und Hintergrund
+                      </small>
+                    </span>
+                  </button>
+                  <section
+                    className={`document-design-panel ${designPanelOpen ? "" : "collapsed"}`}>
+                    <div className="design-panel-heading">
+                      <div>
+                        <span>Design und Schriftart</span>
+                        <small>
+                          Modell und Farben gelten auch für den PDF-Export.
+                        </small>
+                      </div>
+                      <div className="design-panel-heading-actions">
+                        <strong>{template.name}</strong>
+                        <button
+                          className="icon-button"
+                          type="button"
+                          aria-label="Designpanel schließen"
+                          onClick={() => setDesignPanelOpen(false)}>
+                          <X size={17} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="compact-template-grid">
+                      {templates.map((item) => (
+                        <button
+                          className={item.id === template.id ? "selected" : ""}
+                          key={item.id}
+                          type="button"
+                          onClick={() =>
+                            setDesign((current) =>
+                              selectDocumentTemplate(current, item.id),
+                            )
+                          }>
+                          <TemplateThumbnail
+                            template={item}
+                            accent={
+                              item.id === template.id
+                                ? design.accentColor
+                                : item.accent
+                            }
+                            secondary={
+                              item.id === template.id
+                                ? design.secondaryColor
+                                : item.secondary
+                            }
+                          />
+                          <span>{item.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="document-color-controls">
+                      <div className="color-preset-row">
+                        {colorPresets.map((preset) => (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            title={preset.name}
+                            aria-label={preset.name}
+                            style={
+                              {
+                                "--preset-accent": preset.accent,
+                                "--preset-secondary": preset.secondary,
+                              } as CSSProperties
+                            }
+                            onClick={() =>
+                              setDesign((current) => ({
+                                ...current,
+                                accentColor: preset.accent,
+                                secondaryColor: preset.secondary,
+                              }))
+                            }
+                          />
+                        ))}
+                      </div>
+                      <label>
+                        <span>Akzent</span>
+                        <input
+                          type="color"
+                          value={design.accentColor}
+                          onChange={(event) =>
+                            setDesign((current) => ({
+                              ...current,
+                              accentColor: event.target.value,
+                            }))
                           }
                         />
-                        <span>{label}</span>
                       </label>
-                    ))}
-                  </div>
-                </section>
+                      <label>
+                        <span>Fläche</span>
+                        <input
+                          type="color"
+                          value={design.secondaryColor}
+                          onChange={(event) =>
+                            setDesign((current) => ({
+                              ...current,
+                              secondaryColor: event.target.value,
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
+                    <div className="advanced-design-grid">
+                      <label className="design-range">
+                        <span>
+                          Seitenränder
+                          <b>{design.settings.marginLevel}</b>
+                        </span>
+                        <input
+                          aria-label="Seitenränder"
+                          type="range"
+                          min="1"
+                          max="10"
+                          step="1"
+                          value={design.settings.marginLevel}
+                          onChange={(event) =>
+                            updateDesignSetting(
+                              "marginLevel",
+                              Number(
+                                event.target.value,
+                              ) as DocumentDesignSettings["marginLevel"],
+                            )
+                          }
+                        />
+                        <small>
+                          <i>schmal</i>
+                          <i>breit</i>
+                        </small>
+                      </label>
+                      <label className="design-range">
+                        <span>
+                          Innenabstand
+                          <b>{design.settings.paddingLevel}</b>
+                        </span>
+                        <input
+                          aria-label="Innenabstand"
+                          type="range"
+                          min="1"
+                          max="10"
+                          step="1"
+                          value={design.settings.paddingLevel}
+                          onChange={(event) =>
+                            updateDesignSetting(
+                              "paddingLevel",
+                              Number(
+                                event.target.value,
+                              ) as DocumentDesignSettings["paddingLevel"],
+                            )
+                          }
+                        />
+                        <small>
+                          <i>kompakt</i>
+                          <i>luftig</i>
+                        </small>
+                      </label>
+                      <label className="design-range">
+                        <span>
+                          Abschnittsabstand
+                          <b>{design.settings.sectionSpacingLevel}</b>
+                        </span>
+                        <input
+                          aria-label="Abschnittsabstand"
+                          type="range"
+                          min="1"
+                          max="10"
+                          step="1"
+                          value={design.settings.sectionSpacingLevel}
+                          onChange={(event) =>
+                            updateDesignSetting(
+                              "sectionSpacingLevel",
+                              Number(
+                                event.target.value,
+                              ) as DocumentDesignSettings["sectionSpacingLevel"],
+                            )
+                          }
+                        />
+                        <small>
+                          <i>kompakt</i>
+                          <i>mehr Platz</i>
+                        </small>
+                      </label>
+                      <label className="design-range">
+                        <span>
+                          Zeilenhöhe
+                          <b>{design.settings.lineHeightLevel}</b>
+                        </span>
+                        <input
+                          aria-label="Zeilenhöhe"
+                          type="range"
+                          min="1"
+                          max="10"
+                          step="1"
+                          value={design.settings.lineHeightLevel}
+                          onChange={(event) =>
+                            updateDesignSetting(
+                              "lineHeightLevel",
+                              Number(
+                                event.target.value,
+                              ) as DocumentDesignSettings["lineHeightLevel"],
+                            )
+                          }
+                        />
+                        <small>
+                          <i>komprimiert</i>
+                          <i>geräumig</i>
+                        </small>
+                      </label>
+                    </div>
+                    <div className="document-color-controls extended">
+                      {(
+                        [
+                          ["textColor", "Lesetext"],
+                          ["headingColor", "Überschriften"],
+                          ["lineColor", "Linien"],
+                          ["backgroundColor", "Hintergrund"],
+                        ] as const
+                      ).map(([key, label]) => (
+                        <label key={key}>
+                          <span>{label}</span>
+                          <input
+                            type="color"
+                            value={design.settings[key]}
+                            onChange={(event) =>
+                              updateDesignSetting(key, event.target.value)
+                            }
+                          />
+                        </label>
+                      ))}
+                    </div>
+                    {!textContrastIsReadable ? (
+                      <p className="resume-sections-warning" role="status">
+                        Der Kontrast zwischen Lesetext und Hintergrund ist zu
+                        niedrig. Für professionelle Lesbarkeit bitte eine
+                        hellere oder dunklere Textfarbe wählen.
+                      </p>
+                    ) : null}
+                    <div className="advanced-design-grid">
+                      <label className="design-range">
+                        <span>
+                          Hintergrundintensität{" "}
+                          <b>{design.settings.backgroundShadeLevel}</b>
+                        </span>
+                        <input
+                          aria-label="Hintergrundintensität"
+                          type="range"
+                          min="1"
+                          max="10"
+                          step="1"
+                          value={design.settings.backgroundShadeLevel}
+                          onChange={(event) =>
+                            updateDesignSetting(
+                              "backgroundShadeLevel",
+                              Number(
+                                event.target.value,
+                              ) as DocumentDesignSettings["backgroundShadeLevel"],
+                            )
+                          }
+                        />
+                        <small>
+                          <i>sehr hell</i>
+                          <i>dunkel</i>
+                        </small>
+                      </label>
+                      <label className="field">
+                        <span>Hintergrund anwenden auf</span>
+                        <select
+                          value={design.settings.backgroundScope}
+                          onChange={(event) =>
+                            updateDesignSetting(
+                              "backgroundScope",
+                              event.target
+                                .value as DocumentDesignSettings["backgroundScope"],
+                            )
+                          }>
+                          <option value="page">Komplette Seite</option>
+                          <option value="sidebar">Sidebar</option>
+                          <option value="header">Header</option>
+                          <option value="sections">Abschnitte</option>
+                        </select>
+                      </label>
+                    </div>
+                    <label className="design-print-toggle">
+                      <input
+                        type="checkbox"
+                        checked={design.settings.syncAcrossDocuments}
+                        onChange={(event) =>
+                          updateDesignSetting(
+                            "syncAcrossDocuments",
+                            event.target.checked,
+                          )
+                        }
+                      />
+                      <span>Auf alle Bewerbungsunterlagen anwenden</span>
+                    </label>
+                    <div className="design-option-group">
+                      <span>Schriftgröße</span>
+                      <div className="segmented-design-control">
+                        {(["small", "medium", "large"] as const).map((size) => (
+                          <button
+                            className={
+                              design.settings.fontSize === size
+                                ? "selected"
+                                : ""
+                            }
+                            key={size}
+                            type="button"
+                            onClick={() =>
+                              updateDesignSetting("fontSize", size)
+                            }>
+                            {size === "small"
+                              ? "Small"
+                              : size === "medium"
+                                ? "Medium"
+                                : "Large"}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="design-font-grid">
+                      <label className="field">
+                        <span>Textschrift</span>
+                        <select
+                          value={design.settings.fontId}
+                          onChange={(event) =>
+                            updateDesignSetting(
+                              "fontId",
+                              event.target
+                                .value as DocumentDesignSettings["fontId"],
+                            )
+                          }>
+                          {documentFonts.map((font) => (
+                            <option key={font.id} value={font.id}>
+                              {font.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="field">
+                        <span>Überschrift</span>
+                        <select
+                          value={design.settings.headingFontId}
+                          onChange={(event) =>
+                            updateDesignSetting(
+                              "headingFontId",
+                              event.target
+                                .value as DocumentDesignSettings["headingFontId"],
+                            )
+                          }>
+                          {documentFonts.map((font) => (
+                            <option key={font.id} value={font.id}>
+                              {font.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                    <div className="design-option-group">
+                      <span>Ausgabemodus</span>
+                      <div className="segmented-design-control">
+                        {(["visual", "ats"] as const).map((mode) => (
+                          <button
+                            className={
+                              design.settings.resumeOutputMode === mode
+                                ? "selected"
+                                : ""
+                            }
+                            key={mode}
+                            type="button"
+                            onClick={() =>
+                              updateDesignSetting("resumeOutputMode", mode)
+                            }>
+                            {mode === "visual" ? "Visual" : "ATS optimiert"}
+                          </button>
+                        ))}
+                      </div>
+                      {isAtsMode ? (
+                        <p className="design-ats-background-note">
+                          ATS-Modus nutzt automatisch ein lineares, einspaltiges
+                          Layout mit reduzierter Visualisierung.
+                        </p>
+                      ) : null}
+                    </div>
+                    {template.atsInfo ? (
+                      <p className="design-ats-background-note">
+                        {template.atsInfo}
+                      </p>
+                    ) : null}
+                    <button
+                      className="button secondary design-reset-button"
+                      type="button"
+                      onClick={() =>
+                        setDesign((current) => ({
+                          ...current,
+                          settings: {
+                            ...defaultDocumentDesign,
+                            ...(template.designDefaults ?? {}),
+                          },
+                        }))
+                      }>
+                      Auf Standard zurücksetzen
+                    </button>
+                  </section>
+                  <section className="match-analysis">
+                    <header>
+                      <div>
+                        <span>Stellenanzeigen-Match</span>
+                        <strong>{keywordMatch.score}%</strong>
+                      </div>
+                      <i>
+                        <b style={{ width: `${keywordMatch.score}%` }} />
+                      </i>
+                    </header>
+                    <div>
+                      <p>Gefundene Kenntnisse</p>
+                      <div className="match-chips positive">
+                        {keywordMatch.matchedSkills.length ? (
+                          keywordMatch.matchedSkills.map((skill) => (
+                            <span key={skill}>{skill}</span>
+                          ))
+                        ) : (
+                          <small>Noch keine Profil-Kenntnis gefunden.</small>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <p>Begriffe aus der Stellenanzeige prüfen</p>
+                      <div className="match-chips suggestions">
+                        {keywordMatch.suggestions.length ? (
+                          keywordMatch.suggestions.map((keyword) => (
+                            <span key={keyword}>{keyword}</span>
+                          ))
+                        ) : (
+                          <small>
+                            Stellenanzeigentext für Vorschläge ergänzen.
+                          </small>
+                        )}
+                      </div>
+                    </div>
+                    <small>
+                      Vorschläge werden niemals automatisch in Ihren Lebenslauf
+                      übernommen.
+                    </small>
+                  </section>
+                </>
+              )}
+              <div className="editor-note">
+                <UserRound size={17} />
+                <p>
+                  Berufserfahrung, Ausbildung und Kenntnisse kommen aus dem
+                  ausgewählten Profil. Eigene Fähigkeiten werden niemals
+                  automatisch erfunden.
+                </p>
+              </div>
+              <button className="button primary full-button" type="submit">
+                <Save size={17} />{" "}
+                {tab === "anschreiben"
+                  ? "Texte speichern & Word aktualisieren"
+                  : "Texte speichern"}
+              </button>
+            </form>
+          </aside>
+        }
+        secondary={
+          <main
+            className="paper-stage"
+            ref={paperStageRef}
+            style={
+              {
+                "--document-preview-scale": previewScale,
+              } as CSSProperties
+            }>
+            {tab === "deckblatt" && (
+              <div
+                className={`document-paper document-deckblatt layout-${template.layout} ${designClassName}`}
+                style={paperStyle}>
+                <DocumentBackgroundLayer
+                  backgroundId={design.settings.backgroundId}
+                  atsMode={isAtsMode}
+                />
+                <div className="deckblatt-preview">
+                  <i className="paper-rule" />
+                  <section className="deckblatt-preview__hero">
+                    <div>
+                      <h1>{createCoverSubject(application.job.title)}</h1>
+                      <p className="paper-muted">
+                        bei {application.company.name}
+                      </p>
+                      {application.company.city ? (
+                        <p className="deckblatt-preview__location">
+                          Standort: {application.company.city}
+                        </p>
+                      ) : null}
+                      <p className="deckblatt-preview__location">
+                        {formatApplicationDate(application)}
+                      </p>
+                    </div>
+                    {photoSource ? (
+                      <img
+                        className="deckblatt-preview__photo"
+                        src={photoSource}
+                        alt={`Bewerbungsfoto von ${name}`}
+                      />
+                    ) : null}
+                  </section>
+                  <section className="deckblatt-preview__identity">
+                    <h2>{name}</h2>
+                    {coverSheetProfessionalTitle ? (
+                      <p>{coverSheetProfessionalTitle}</p>
+                    ) : null}
+                    {docs.deckblattStatement || profile?.summary ? (
+                      <p className="deckblatt-preview__statement">
+                        {docs.deckblattStatement || profile?.summary}
+                      </p>
+                    ) : null}
+                  </section>
+                  <section className="deckblatt-preview__details">
+                    <div>
+                      <h3>Bewerbungsunterlagen</h3>
+                      <ul>
+                        {deckblattDocuments.map((document) => (
+                          <li key={document}>{document}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      {deckblattCompetencies.length ? (
+                        <>
+                          <h3>Kernkompetenzen</h3>
+                          <p className="deckblatt-preview__competencies">
+                            {deckblattCompetencies.join(" · ")}
+                          </p>
+                        </>
+                      ) : null}
+                      {deckblattContacts.length ? (
+                        <>
+                          <h3>Kontakt</h3>
+                          <ul>
+                            {deckblattContacts.map((contact) => (
+                              <li key={contact.label}>
+                                <strong>{contact.label}</strong>{" "}
+                                {contact.href ? (
+                                  <a href={contact.href}>{contact.value}</a>
+                                ) : (
+                                  contact.value
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </>
+                      ) : null}
+                    </div>
+                  </section>
+                </div>
               </div>
             )}
             {tab === "anschreiben" && (
-              <div className="cover-letter-editor-sections">
-                <section className="cover-letter-editor-section">
-                  <header>
-                    <b>1. Briefkopf</b>
-                    <small>
-                      Automatisch ausgefüllt – bei Bedarf direkt anpassen
-                    </small>
-                  </header>
-                  <label className="field">
-                    <span>Name</span>
-                    <input
-                      name="coverSenderName"
-                      defaultValue={coverSenderName}
-                    />
-                  </label>
-                  <label className="field">
-                    <span>Berufsbezeichnung</span>
-                    <input
-                      name="coverSenderTitle"
-                      defaultValue={coverSenderTitle}
-                    />
-                  </label>
-                  <label className="field">
-                    <span>Kontaktzeile</span>
-                    <input
-                      name="coverSenderContact"
-                      defaultValue={coverSenderContact}
-                    />
-                  </label>
-                  <label className="field">
-                    <span>Empfängeradresse</span>
-                    <textarea
-                      name="coverRecipientAddress"
-                      rows={5}
-                      defaultValue={recipientLines.join("\n")}
-                    />
-                  </label>
-                </section>
-                <section className="cover-letter-editor-section">
-                  <header>
-                    <b>2. Betreffzeile</b>
-                    <small>Stelle und Referenz eindeutig benennen</small>
-                  </header>
-                  <label className="field">
-                    <span>Betreffzeile</span>
-                    <input
-                      name="coverSubject"
-                      defaultValue={createCoverSubject(
-                        application.job.title,
-                        docs.coverSubject,
-                      )}
-                    />
-                  </label>
-                  <div className="cover-subject-spacing-control">
-                    <div>
-                      <b>Abstand vor Betreff</b>
-                      <small>
-                        {docs.coverSubjectGapReduction
-                          ? `${docs.coverSubjectGapReduction} Zeile${docs.coverSubjectGapReduction === 1 ? "" : "n"} nach oben verschoben`
-                          : "Standardabstand"}
-                      </small>
-                    </div>
-                    <div>
-                      <button
-                        type="button"
-                        disabled={docs.coverSubjectGapReduction === 4}
-                        onClick={reduceCoverSubjectGap}>
-                        <ChevronUp size={15} />
-                        Betreff höher
-                      </button>
-                      {docs.coverSubjectGapReduction ? (
-                        <button type="button" onClick={resetCoverSubjectGap}>
-                          Standard
-                        </button>
-                      ) : null}
-                    </div>
-                  </div>
-                </section>
-                <section className="cover-letter-editor-section">
-                  <header>
-                    <b>3. Anrede</b>
-                    <small>
-                      Automatisch ausgefüllt – bei Bedarf direkt anpassen
-                    </small>
-                  </header>
-                  <label className="field">
-                    <span>Anrede</span>
-                    <input name="coverGreeting" defaultValue={coverGreeting} />
-                  </label>
-                </section>
-                <section className="cover-letter-editor-section">
-                  <header>
-                    <b>4. Einleitung</b>
-                    <small>2–3 prägnante Sätze mit direktem Stellenbezug</small>
-                  </header>
-                  <label className="field">
-                    <span>Einleitung</span>
-                    <textarea
-                      name="coverIntroduction"
-                      rows={4}
-                      defaultValue={docs.coverIntroduction}
-                    />
-                  </label>
-                </section>
-                <section className="cover-letter-editor-section">
-                  <header>
-                    <b>5. Hauptteil</b>
-                    <small>Die 2–3 stärksten belegbaren Argumente</small>
-                  </header>
-                  <label className="field">
-                    <span>Hauptteil</span>
-                    <textarea
-                      name="coverMainBody"
-                      rows={8}
-                      defaultValue={getCoverLetterMainBody(docs)}
-                    />
-                  </label>
-                  <label className="field">
-                    <span>Zusatzabsatz (optional)</span>
-                    <textarea
-                      name="coverExtraParagraph"
-                      rows={4}
-                      defaultValue={docs.coverExtraParagraph}
-                      placeholder="Optionaler zusätzlicher Absatz – leer lassen, wenn er nicht benötigt wird."
-                    />
-                  </label>
-                </section>
-                <section className="cover-letter-editor-section">
-                  <header>
-                    <b>6. Unternehmensbezug</b>
-                    <small>
-                      Aufgabe, passende Erfahrung und künftiger Beitrag
-                    </small>
-                  </header>
-                  <label className="field">
-                    <span>Unternehmensbezug</span>
-                    <textarea
-                      name="coverCompanyFit"
-                      rows={5}
-                      defaultValue={docs.coverCompanyFit}
-                    />
-                  </label>
-                </section>
-                <section className="cover-letter-editor-section">
-                  <header>
-                    <b>7. Schlussteil</b>
-                    <small>Kurzer Übergang zum persönlichen Gespräch</small>
-                  </header>
-                  <label className="field">
-                    <span>Schlussteil</span>
-                    <textarea
-                      name="coverClosing"
-                      rows={5}
-                      defaultValue={docs.coverClosing}
-                    />
-                  </label>
-                </section>
-                <section className="cover-letter-editor-section is-generated">
-                  <header>
-                    <b>8. Grußformel</b>
-                    <small>Professioneller Abschluss und Unterschrift</small>
-                  </header>
-                  <p>Mit freundlichen Grüßen</p>
-                  <div className="document-media-inline">
-                    <span>Unterschrift</span>
-                    <DocumentMediaCard
-                      kind="signature"
-                      label="Unterschrift"
-                      source={signatureSource}
-                      disabled={!profile}
-                      onPick={() => void pickProfileMedia("signature")}
-                      onRemove={() => void removeProfileMedia("signature")}
-                    />
-                  </div>
-                </section>
-                <section className="cover-letter-editor-section is-generated">
-                  <header>
-                    <b>9. Anlagen</b>
-                    <small>
-                      Namen ändern, Einträge ausblenden oder entfernen
-                    </small>
-                  </header>
-                  <label className="checkbox-field">
-                    <input
-                      type="checkbox"
-                      checked={docs.showCoverLetterAttachments}
-                      onChange={(event) =>
-                        setCoverLetterAttachmentsVisible(event.target.checked)
-                      }
-                    />
-                    <span>Abschnitt „9. Anlagen“ im Anschreiben anzeigen</span>
-                  </label>
-                  {docs.showCoverLetterAttachments ? (
-                    <DocumentListEditor
-                      items={applicationDocumentItems.filter(
-                        (item) => item.key !== "anschreiben",
-                      )}
-                      onChange={updateDocumentListItem}
-                    />
-                  ) : (
-                    <p className="document-list-empty">
-                      Der komplette Anlagenabschnitt ist ausgeblendet.
+              <div
+                className={`document-paper document-anschreiben letter-${letterStatus.density} letter-gap-${docs.coverSubjectGapReduction} layout-${template.layout} ${designClassName}`}
+                data-resume-template={template.id}
+                ref={letterPaperRef}
+                style={paperStyle}>
+                <DocumentBackgroundLayer
+                  backgroundId={design.settings.backgroundId}
+                  atsMode={isAtsMode}
+                />
+                <div className="letter-preview">
+                  <div className="letter-header">
+                    <p className="sender-line">
+                      <span className="sender-name">{coverSenderName}</span>
+                      <span className="sender-title">{coverSenderTitle}</span>
+                      <span className="sender-contact">
+                        {coverSenderContact}
+                      </span>
                     </p>
-                  )}
-                </section>
-                <section
-                  className={`page-limit-status ${letterStatus.isOverRecommendedLength ? "warning" : "ok"}`}>
-                  <strong>Anschreiben: 1 A4-Seite</strong>
-                  <span>
-                    {letterStatus.characterCount.toLocaleString("de-DE")} /{" "}
-                    {letterStatus.recommendedMaximum.toLocaleString("de-DE")}{" "}
-                    empfohlene Zeichen
-                  </span>
-                  <small>
-                    {letterStatus.isOverRecommendedLength
-                      ? "Vorschau und PDF-Export werden automatisch auf eine A4-Seite eingepasst. Kürzen verbessert die Lesbarkeit."
-                      : "Der aktuelle Text liegt im gut lesbaren Ein-Seiten-Bereich."}
-                  </small>
-                </section>
-                <p className="word-sync-note">
-                  Beim Speichern wird die Word-Datei aus der persönlichen
-                  Anschreiben-Vorlage im Bewerbungsordner erstellt oder
-                  aktualisiert.
-                </p>
+                  </div>
+                  <i className="paper-rule letter-rule" />
+                  <address>
+                    {recipientLines.map((line, index) => (
+                      <span key={`${index}-${line}`}>
+                        {line}
+                        {index < recipientLines.length - 1 ? <br /> : null}
+                      </span>
+                    ))}
+                  </address>
+                  <p className="paper-date">
+                    {profile?.city ? `${profile.city}, ` : ""}
+                    den {formatApplicationDateLong(application)}
+                  </p>
+                  <h3>
+                    {createCoverSubject(
+                      application.job.title,
+                      docs.coverSubject,
+                    )}
+                    {application.job.reference &&
+                    !(docs.coverSubject || "").includes(
+                      application.job.reference,
+                    )
+                      ? ` - Referenz ${application.job.reference}`
+                      : ""}
+                  </h3>
+                  <p className="letter-salutation">{coverGreeting}</p>
+                  <p className="letter-body">{docs.coverIntroduction}</p>
+                  <p className="letter-body">
+                    {getCoverLetterMainBody(docs) ||
+                      profile?.summary ||
+                      "Hauptteil ergänzen …"}
+                  </p>
+                  {docs.coverExtraParagraph ? (
+                    <p className="letter-body">{docs.coverExtraParagraph}</p>
+                  ) : null}
+                  <p className="letter-body">
+                    {docs.coverCompanyFit || "Unternehmensbezug ergänzen …"}
+                  </p>
+                  <p className="letter-body letter-closing">
+                    {docs.coverClosing}
+                  </p>
+                  <p className="letter-signature">
+                    <span>Mit freundlichen Grüßen</span>
+                    {signatureSource ? (
+                      <img
+                        className="signature-image"
+                        src={signatureSource}
+                        alt={`Unterschrift von ${name}`}
+                      />
+                    ) : null}
+                    <span className="signature-name">{name}</span>
+                  </p>
+                  {docs.showCoverLetterAttachments ? (
+                    <div className="letter-attachments">
+                      <strong>Anlagen</strong>
+                      {coverLetterAttachments.map((item) => (
+                        <span key={item}>{item}</span>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               </div>
             )}
             {tab === "email" && (
-              <div className="email-editor-sections">
-                <section className="cover-letter-editor-section is-generated">
+              <div className="document-paper document-email" style={paperStyle}>
+                <div className="email-preview">
                   <header>
-                    <b>Automatische E-Mail-Daten</b>
-                    <small>
-                      Anrede, Betreff und Absender werden aus Bewerbung und
-                      Profil übernommen
-                    </small>
-                  </header>
-                  <dl className="email-editor-metadata">
+                    <Mail size={30} />
                     <div>
-                      <dt>Betreff</dt>
-                      <dd>{email.subject}</dd>
+                      <p className="eyebrow">Bewerbungs-E-Mail</p>
+                      <h2>{email.subject}</h2>
+                    </div>
+                  </header>
+                  <dl>
+                    <div>
+                      <dt>Datum</dt>
+                      <dd>{email.applicationDate}</dd>
                     </div>
                     <div>
-                      <dt>Anrede</dt>
-                      <dd>{email.salutation}</dd>
+                      <dt>Firma</dt>
+                      <dd>{email.companyName}</dd>
+                    </div>
+                    <div>
+                      <dt>Stelle</dt>
+                      <dd>{email.jobTitle}</dd>
                     </div>
                     <div>
                       <dt>Empfänger</dt>
@@ -1349,1033 +2190,266 @@ export function DocumentsView({
                       <dt>Absender</dt>
                       <dd>{email.senderName || "Nicht angegeben"}</dd>
                     </div>
-                    <div>
-                      <dt>Absender-E-Mail</dt>
-                      <dd>{email.senderEmail || "Nicht angegeben"}</dd>
-                    </div>
                   </dl>
-                </section>
-                <label className="field">
-                  <span>Nachricht</span>
-                  <textarea
-                    name="emailMessage"
-                    rows={8}
-                    defaultValue={email.message}
-                  />
-                </label>
-                <section className="cover-letter-editor-section">
-                  <header>
-                    <b>Anlagen</b>
-                    <small>
-                      Die Liste wird aus dem tatsächlichen Versandmodus erzeugt.
-                    </small>
-                  </header>
-                  <div className="segmented-design-control">
-                    <button
-                      className={
-                        docs.emailAttachmentMode === "package" ? "selected" : ""
-                      }
-                      type="button"
-                      onClick={() =>
-                        setDocumentPreview({
-                          applicationId: application.id,
-                          documents: {
-                            ...docs,
-                            emailAttachmentMode: "package",
-                          },
-                        })
-                      }>
-                      Gesamt-PDF
-                    </button>
-                    <button
-                      className={
-                        docs.emailAttachmentMode === "separate"
-                          ? "selected"
-                          : ""
-                      }
-                      type="button"
-                      onClick={() =>
-                        setDocumentPreview({
-                          applicationId: application.id,
-                          documents: {
-                            ...docs,
-                            emailAttachmentMode: "separate",
-                          },
-                        })
-                      }>
-                      Einzeldateien
-                    </button>
-                  </div>
-                  {docs.emailAttachmentMode === "package" ? (
-                    <label className="field">
-                      <span>Dateiname</span>
-                      <input
-                        name="emailPackageFileName"
-                        defaultValue={docs.emailPackageFileName}
-                      />
-                    </label>
-                  ) : (
-                    <DocumentListEditor
-                      items={applicationDocumentItems}
-                      onChange={updateDocumentListItem}
-                    />
-                  )}
-                </section>
-                {email.warnings.length ? (
-                  <p className="resume-sections-warning" role="status">
-                    {email.warnings.join(" ")}
-                  </p>
-                ) : null}
-                <p className="word-sync-note">
-                  Beim Speichern werden Email/Email.md und email.json im
-                  Bewerbungsordner aktualisiert.
-                </p>
-              </div>
-            )}
-            {tab === "lebenslauf" && (
-              <>
-                <section className="page-limit-status ok">
-                  <strong>Lebenslauf: {resumePlan.length} / 2 A4-Seiten</strong>
-                  <span>
-                    Einträge werden vollständig und ohne mitten im Eintrag
-                    umzubrechen verteilt.
-                  </span>
-                </section>
-                {profile ? (
-                  <>
-                    <ResumeSectionsPanel
-                      key={`${application.id}:${profile.id}`}
-                      profile={profile}
-                      singlePageExceeded={
-                        template.id === "kompakt" && resumePlan.length > 1
-                      }
-                      templateId={template.id}
-                      summaryValue={docs.resumeProfile}
-                      onSummaryChange={(summary) => setDocumentPreview({ applicationId: application.id, documents: { ...docs, resumeProfile: summary } })}
-                      onPickMedia={(kind) => void pickProfileMedia(kind)}
-                      onRemoveMedia={(kind) => void removeProfileMedia(kind)}
-                      onSave={saveResumeSections}
-                      onPreview={handleResumeSectionPreview}
-                    />
-                  </>
-                ) : null}
-                <button
-                  className="design-panel-trigger"
-                  type="button"
-                  aria-expanded={designPanelOpen}
-                  onClick={() => setDesignPanelOpen((current) => !current)}>
-                  <Palette size={18} />
-                  <span>
-                    <strong>Design und Schriftart</strong>
-                    <small>
-                      Farben, Abstände, Schrift, Spalten und Hintergrund
-                    </small>
-                  </span>
-                </button>
-                <section
-                  className={`document-design-panel ${designPanelOpen ? "" : "collapsed"}`}>
-                  <div className="design-panel-heading">
-                    <div>
-                      <span>Design und Schriftart</span>
-                      <small>
-                        Modell und Farben gelten auch für den PDF-Export.
-                      </small>
-                    </div>
-                    <div className="design-panel-heading-actions">
-                      <strong>{template.name}</strong>
-                      <button
-                        className="icon-button"
-                        type="button"
-                        aria-label="Designpanel schließen"
-                        onClick={() => setDesignPanelOpen(false)}>
-                        <X size={17} />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="compact-template-grid">
-                    {templates.map((item) => (
-                      <button
-                        className={item.id === template.id ? "selected" : ""}
-                        key={item.id}
-                        type="button"
-                        onClick={() =>
-                          setDesign((current) => selectDocumentTemplate(current, item.id))
-                        }>
-                        <TemplateThumbnail
-                          template={item}
-                          accent={
-                            item.id === template.id
-                              ? design.accentColor
-                              : item.accent
-                          }
-                          secondary={
-                            item.id === template.id
-                              ? design.secondaryColor
-                              : item.secondary
-                          }
-                        />
-                        <span>{item.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                  <div className="document-color-controls">
-                    <div className="color-preset-row">
-                      {colorPresets.map((preset) => (
-                        <button
-                          key={preset.id}
-                          type="button"
-                          title={preset.name}
-                          aria-label={preset.name}
-                          style={
-                            {
-                              "--preset-accent": preset.accent,
-                              "--preset-secondary": preset.secondary,
-                            } as CSSProperties
-                          }
-                          onClick={() =>
-                            setDesign((current) => ({
-                              ...current,
-                              accentColor: preset.accent,
-                              secondaryColor: preset.secondary,
-                            }))
-                          }
-                        />
-                      ))}
-                    </div>
-                    <label>
-                      <span>Akzent</span>
-                      <input
-                        type="color"
-                        value={design.accentColor}
-                        onChange={(event) =>
-                          setDesign((current) => ({
-                            ...current,
-                            accentColor: event.target.value,
-                          }))
-                        }
-                      />
-                    </label>
-                    <label>
-                      <span>Fläche</span>
-                      <input
-                        type="color"
-                        value={design.secondaryColor}
-                        onChange={(event) =>
-                          setDesign((current) => ({
-                            ...current,
-                            secondaryColor: event.target.value,
-                          }))
-                        }
-                      />
-                    </label>
-                  </div>
-                  <div className="advanced-design-grid">
-                    <label className="design-range">
-                      <span>
-                        Seitenränder
-                        <b>{design.settings.marginLevel}</b>
-                      </span>
-                      <input
-                        aria-label="Seitenränder"
-                        type="range"
-                        min="1"
-                        max="10"
-                        step="1"
-                        value={design.settings.marginLevel}
-                        onChange={(event) =>
-                          updateDesignSetting(
-                            "marginLevel",
-                            Number(
-                              event.target.value,
-                            ) as DocumentDesignSettings["marginLevel"],
-                          )
-                        }
-                      />
-                      <small>
-                        <i>schmal</i>
-                        <i>breit</i>
-                      </small>
-                    </label>
-                    <label className="design-range">
-                      <span>
-                        Innenabstand
-                        <b>{design.settings.paddingLevel}</b>
-                      </span>
-                      <input
-                        aria-label="Innenabstand"
-                        type="range"
-                        min="1"
-                        max="10"
-                        step="1"
-                        value={design.settings.paddingLevel}
-                        onChange={(event) =>
-                          updateDesignSetting(
-                            "paddingLevel",
-                            Number(
-                              event.target.value,
-                            ) as DocumentDesignSettings["paddingLevel"],
-                          )
-                        }
-                      />
-                      <small>
-                        <i>kompakt</i>
-                        <i>luftig</i>
-                      </small>
-                    </label>
-                    <label className="design-range">
-                      <span>
-                        Abschnittsabstand
-                        <b>{design.settings.sectionSpacingLevel}</b>
-                      </span>
-                      <input
-                        aria-label="Abschnittsabstand"
-                        type="range"
-                        min="1"
-                        max="10"
-                        step="1"
-                        value={design.settings.sectionSpacingLevel}
-                        onChange={(event) =>
-                          updateDesignSetting(
-                            "sectionSpacingLevel",
-                            Number(
-                              event.target.value,
-                            ) as DocumentDesignSettings["sectionSpacingLevel"],
-                          )
-                        }
-                      />
-                      <small>
-                        <i>kompakt</i>
-                        <i>mehr Platz</i>
-                      </small>
-                    </label>
-                    <label className="design-range">
-                      <span>
-                        Zeilenhöhe
-                        <b>{design.settings.lineHeightLevel}</b>
-                      </span>
-                      <input
-                        aria-label="Zeilenhöhe"
-                        type="range"
-                        min="1"
-                        max="10"
-                        step="1"
-                        value={design.settings.lineHeightLevel}
-                        onChange={(event) =>
-                          updateDesignSetting(
-                            "lineHeightLevel",
-                            Number(
-                              event.target.value,
-                            ) as DocumentDesignSettings["lineHeightLevel"],
-                          )
-                        }
-                      />
-                      <small>
-                        <i>komprimiert</i>
-                        <i>geräumig</i>
-                      </small>
-                    </label>
-                  </div>
-                  <div className="document-color-controls extended">
-                    {(
-                      [
-                        ["textColor", "Lesetext"],
-                        ["headingColor", "Überschriften"],
-                        ["lineColor", "Linien"],
-                        ["backgroundColor", "Hintergrund"],
-                      ] as const
-                    ).map(([key, label]) => (
-                      <label key={key}>
-                        <span>{label}</span>
-                        <input
-                          type="color"
-                          value={design.settings[key]}
-                          onChange={(event) =>
-                            updateDesignSetting(key, event.target.value)
-                          }
-                        />
-                      </label>
-                    ))}
-                  </div>
-                  {!textContrastIsReadable ? (
-                    <p className="resume-sections-warning" role="status">
-                      Der Kontrast zwischen Lesetext und Hintergrund ist zu
-                      niedrig. Für professionelle Lesbarkeit bitte eine hellere
-                      oder dunklere Textfarbe wählen.
-                    </p>
-                  ) : null}
-                  <div className="advanced-design-grid">
-                    <label className="design-range">
-                      <span>
-                        Hintergrundintensität{" "}
-                        <b>{design.settings.backgroundShadeLevel}</b>
-                      </span>
-                      <input
-                        aria-label="Hintergrundintensität"
-                        type="range"
-                        min="1"
-                        max="10"
-                        step="1"
-                        value={design.settings.backgroundShadeLevel}
-                        onChange={(event) =>
-                          updateDesignSetting(
-                            "backgroundShadeLevel",
-                            Number(
-                              event.target.value,
-                            ) as DocumentDesignSettings["backgroundShadeLevel"],
-                          )
-                        }
-                      />
-                      <small>
-                        <i>sehr hell</i>
-                        <i>dunkel</i>
-                      </small>
-                    </label>
-                    <label className="field">
-                      <span>Hintergrund anwenden auf</span>
-                      <select
-                        value={design.settings.backgroundScope}
-                        onChange={(event) =>
-                          updateDesignSetting(
-                            "backgroundScope",
-                            event.target
-                              .value as DocumentDesignSettings["backgroundScope"],
-                          )
-                        }>
-                        <option value="page">Komplette Seite</option>
-                        <option value="sidebar">Sidebar</option>
-                        <option value="header">Header</option>
-                        <option value="sections">Abschnitte</option>
-                      </select>
-                    </label>
-                  </div>
-                  <label className="design-print-toggle">
-                    <input
-                      type="checkbox"
-                      checked={design.settings.syncAcrossDocuments}
-                      onChange={(event) =>
-                        updateDesignSetting(
-                          "syncAcrossDocuments",
-                          event.target.checked,
-                        )
-                      }
-                    />
-                    <span>Auf alle Bewerbungsunterlagen anwenden</span>
-                  </label>
-                  <div className="design-option-group">
-                    <span>Schriftgröße</span>
-                    <div className="segmented-design-control">
-                      {(["small", "medium", "large"] as const).map((size) => (
-                        <button
-                          className={
-                            design.settings.fontSize === size ? "selected" : ""
-                          }
-                          key={size}
-                          type="button"
-                          onClick={() => updateDesignSetting("fontSize", size)}>
-                          {size === "small"
-                            ? "Small"
-                            : size === "medium"
-                              ? "Medium"
-                              : "Large"}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="design-font-grid">
-                    <label className="field">
-                      <span>Textschrift</span>
-                      <select
-                        value={design.settings.fontId}
-                        onChange={(event) =>
-                          updateDesignSetting(
-                            "fontId",
-                            event.target
-                              .value as DocumentDesignSettings["fontId"],
-                          )
-                        }>
-                        {documentFonts.map((font) => (
-                          <option key={font.id} value={font.id}>
-                            {font.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="field">
-                      <span>Überschrift</span>
-                      <select
-                        value={design.settings.headingFontId}
-                        onChange={(event) =>
-                          updateDesignSetting(
-                            "headingFontId",
-                            event.target
-                              .value as DocumentDesignSettings["headingFontId"],
-                          )
-                        }>
-                        {documentFonts.map((font) => (
-                          <option key={font.id} value={font.id}>
-                            {font.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  </div>
-                  <div className="design-option-group">
-                    <span>Ausgabemodus</span>
-                    <div className="segmented-design-control">
-                      {(["visual", "ats"] as const).map((mode) => (
-                        <button
-                          className={
-                            design.settings.resumeOutputMode === mode
-                              ? "selected"
-                              : ""
-                          }
-                          key={mode}
-                          type="button"
-                          onClick={() =>
-                            updateDesignSetting("resumeOutputMode", mode)
-                          }>
-                          {mode === "visual" ? "Visual" : "ATS optimiert"}
-                        </button>
-                      ))}
-                    </div>
-                    {isAtsMode ? (
-                      <p className="design-ats-background-note">
-                        ATS-Modus nutzt automatisch ein lineares, einspaltiges
-                        Layout mit reduzierter Visualisierung.
-                      </p>
-                    ) : null}
-                  </div>
-                  {template.atsInfo ? (
-                    <p className="design-ats-background-note">
-                      {template.atsInfo}
-                    </p>
-                  ) : null}
-                  <button
-                    className="button secondary design-reset-button"
-                    type="button"
-                    onClick={() =>
-                      setDesign((current) => ({
-                        ...current,
-                        settings: {
-                          ...defaultDocumentDesign,
-                          ...(template.designDefaults ?? {}),
-                        },
-                      }))
-                    }>
-                    Auf Standard zurücksetzen
-                  </button>
-                </section>
-                <section className="match-analysis">
-                  <header>
-                    <div>
-                      <span>Stellenanzeigen-Match</span>
-                      <strong>{keywordMatch.score}%</strong>
-                    </div>
-                    <i>
-                      <b style={{ width: `${keywordMatch.score}%` }} />
-                    </i>
-                  </header>
-                  <div>
-                    <p>Gefundene Kenntnisse</p>
-                    <div className="match-chips positive">
-                      {keywordMatch.matchedSkills.length ? (
-                        keywordMatch.matchedSkills.map((skill) => (
-                          <span key={skill}>{skill}</span>
-                        ))
-                      ) : (
-                        <small>Noch keine Profil-Kenntnis gefunden.</small>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <p>Begriffe aus der Stellenanzeige prüfen</p>
-                    <div className="match-chips suggestions">
-                      {keywordMatch.suggestions.length ? (
-                        keywordMatch.suggestions.map((keyword) => (
-                          <span key={keyword}>{keyword}</span>
-                        ))
-                      ) : (
-                        <small>
-                          Stellenanzeigentext für Vorschläge ergänzen.
-                        </small>
-                      )}
-                    </div>
-                  </div>
-                  <small>
-                    Vorschläge werden niemals automatisch in Ihren Lebenslauf
-                    übernommen.
-                  </small>
-                </section>
-              </>
-            )}
-            <div className="editor-note">
-              <UserRound size={17} />
-              <p>
-                Berufserfahrung, Ausbildung und Kenntnisse kommen aus dem
-                ausgewählten Profil. Eigene Fähigkeiten werden niemals
-                automatisch erfunden.
-              </p>
-            </div>
-            <button className="button primary full-button" type="submit">
-              <Save size={17} />{" "}
-              {tab === "anschreiben"
-                ? "Texte speichern & Word aktualisieren"
-                : "Texte speichern"}
-            </button>
-          </form>
-          </aside>
-        }
-        secondary={
-          <main
-          className="paper-stage"
-          ref={paperStageRef}
-          style={
-            {
-              "--document-preview-scale": previewScale,
-            } as CSSProperties
-          }>
-          {tab === "deckblatt" && (
-            <div
-              className={`document-paper document-deckblatt layout-${template.layout} ${designClassName}`}
-              style={paperStyle}>
-              <DocumentBackgroundLayer
-                backgroundId={design.settings.backgroundId}
-                atsMode={isAtsMode}
-              />
-              <div className="deckblatt-preview">
-                <i className="paper-rule" />
-                <section className="deckblatt-preview__hero">
-                  <div>
-                    <h1>{createCoverSubject(application.job.title)}</h1>
-                    <p className="paper-muted">
-                      bei {application.company.name}
-                    </p>
-                    {application.company.city ? (
-                      <p className="deckblatt-preview__location">
-                        Standort: {application.company.city}
-                      </p>
-                    ) : null}
-                    <p className="deckblatt-preview__location">
-                      {formatApplicationDate(application)}
-                    </p>
-                  </div>
-                  {photoSource ? (
-                    <img
-                      className="deckblatt-preview__photo"
-                      src={photoSource}
-                      alt={`Bewerbungsfoto von ${name}`}
-                    />
-                  ) : null}
-                </section>
-                <section className="deckblatt-preview__identity">
-                  <h2>{name}</h2>
-                  {coverSheetProfessionalTitle ? (
-                    <p>{coverSheetProfessionalTitle}</p>
-                  ) : null}
-                  {docs.deckblattStatement || profile?.summary ? (
-                    <p className="deckblatt-preview__statement">
-                      {docs.deckblattStatement || profile?.summary}
-                    </p>
-                  ) : null}
-                </section>
-                <section className="deckblatt-preview__details">
-                  <div>
-                    <h3>Bewerbungsunterlagen</h3>
-                    <ul>
-                      {deckblattDocuments.map((document) => (
-                        <li key={document}>{document}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    {deckblattCompetencies.length ? (
-                      <>
-                        <h3>Kernkompetenzen</h3>
-                        <p className="deckblatt-preview__competencies">
-                          {deckblattCompetencies.join(" · ")}
-                        </p>
-                      </>
-                    ) : null}
-                    {deckblattContacts.length ? (
-                      <>
-                        <h3>Kontakt</h3>
+                  <section className="email-message-preview">
+                    <p>{email.salutation}</p>
+
+                    <p>{email.body}</p>
+
+                    <p>{email.greeting}</p>
+
+                    <p>{email.senderName || "Absender im Profil ergänzen"}</p>
+                    {email.attachments.length > 0 && (
+                      <div className="email-attachments-preview">
+                        <strong>Anlagen</strong>
+
                         <ul>
-                          {deckblattContacts.map((contact) => (
-                            <li key={contact.label}>
-                              <strong>{contact.label}</strong>{" "}
-                              {contact.href ? (
-                                <a href={contact.href}>{contact.value}</a>
-                              ) : (
-                                contact.value
-                              )}
-                            </li>
+                          {email.attachments.map((attachment) => (
+                            <li key={attachment}>{attachment}</li>
                           ))}
                         </ul>
-                      </>
-                    ) : null}
-                  </div>
-                </section>
-              </div>
-            </div>
-          )}
-          {tab === "anschreiben" && (
-            <div
-              className={`document-paper document-anschreiben letter-${letterStatus.density} letter-gap-${docs.coverSubjectGapReduction} layout-${template.layout} ${designClassName}`}
-              data-resume-template={template.id}
-              ref={letterPaperRef}
-              style={paperStyle}>
-              <DocumentBackgroundLayer
-                backgroundId={design.settings.backgroundId}
-                atsMode={isAtsMode}
-              />
-              <div className="letter-preview">
-                <div className="letter-header">
-                  <p className="sender-line">
-                    <span className="sender-name">{coverSenderName}</span>
-                    <span className="sender-title">{coverSenderTitle}</span>
-                    <span className="sender-contact">{coverSenderContact}</span>
-                  </p>
+                      </div>
+                    )}
+                  </section>
                 </div>
-                <i className="paper-rule letter-rule" />
-                <address>
-                  {recipientLines.map((line, index) => (
-                    <span key={`${index}-${line}`}>
-                      {line}
-                      {index < recipientLines.length - 1 ? <br /> : null}
-                    </span>
-                  ))}
-                </address>
-                <p className="paper-date">
-                  {profile?.city ? `${profile.city}, ` : ""}
-                  den {formatApplicationDateLong(application)}
-                </p>
-                <h3>
-                  {createCoverSubject(application.job.title, docs.coverSubject)}
-                  {application.job.reference &&
-                  !(docs.coverSubject || "").includes(application.job.reference)
-                    ? ` - Referenz ${application.job.reference}`
-                    : ""}
-                </h3>
-                <p className="letter-salutation">{coverGreeting}</p>
-                <p className="letter-body">{docs.coverIntroduction}</p>
-                <p className="letter-body">
-                  {getCoverLetterMainBody(docs) ||
-                    profile?.summary ||
-                    "Hauptteil ergänzen …"}
-                </p>
-                {docs.coverExtraParagraph ? (
-                  <p className="letter-body">{docs.coverExtraParagraph}</p>
-                ) : null}
-                <p className="letter-body">
-                  {docs.coverCompanyFit || "Unternehmensbezug ergänzen …"}
-                </p>
-                <p className="letter-body letter-closing">
-                  {docs.coverClosing}
-                </p>
-                <p className="letter-signature">
-                  <span>Mit freundlichen Grüßen</span>
-                  {signatureSource ? (
-                    <img
-                      className="signature-image"
-                      src={signatureSource}
-                      alt={`Unterschrift von ${name}`}
-                    />
-                  ) : null}
-                  <span className="signature-name">{name}</span>
-                </p>
-                {docs.showCoverLetterAttachments ? (
-                  <div className="letter-attachments">
-                    <strong>Anlagen</strong>
-                    {coverLetterAttachments.map((item) => (
-                      <span key={item}>{item}</span>
-                    ))}
-                  </div>
-                ) : null}
               </div>
-            </div>
-          )}
-          {tab === "email" && (
-            <div className="document-paper document-email" style={paperStyle}>
-              <div className="email-preview">
-                <header>
-                  <Mail size={30} />
-                  <div>
-                    <p className="eyebrow">Bewerbungs-E-Mail</p>
-                    <h2>{email.subject}</h2>
+            )}
+            {tab === "lebenslauf" &&
+              ((renderProfile) =>
+                resumePlan.map((plan) => (
+                  <div
+                    className={`document-paper document-lebenslauf layout-${template.layout} ${designClassName}`}
+                    key={plan.pageNumber}
+                    style={paperStyle}>
+                    <style>
+                      {getResumeIdentityVisibilityCss(
+                        renderProfile?.resumeSemanticSections,
+                      )}
+                    </style>
+                    <ManagedResumePreview
+                      profile={renderProfile}
+                      templateId={template.id}
+                      pageNumber={plan.pageNumber}
+                      totalPages={resumePlan.length}>
+                      <DocumentBackgroundLayer
+                        backgroundId={design.settings.backgroundId}
+                        atsMode={isAtsMode}
+                      />
+                      {template.id === "stilvoll" ? (
+                        <StilvollResume
+                          profile={renderProfile}
+                          name={name}
+                          atsMode={isAtsMode}
+                          plan={plan}
+                          totalPages={resumePlan.length}
+                          accentColor={design.accentColor}
+                          secondaryColor={design.secondaryColor}
+                          backgroundId={design.settings.backgroundId}
+                          photoSource={getProfileMediaSource(
+                            renderProfile?.photoPath,
+                          )}
+                          resumeProfile={docs.resumeProfile}
+                          sections={sections}
+                        />
+                      ) : template.id === "kompakt" ? (
+                        <KompaktResume
+                          profile={renderProfile}
+                          name={name}
+                          atsMode={isAtsMode}
+                          plan={plan}
+                          totalPages={resumePlan.length}
+                          accentColor={design.accentColor}
+                          secondaryColor={design.secondaryColor}
+                          backgroundId={design.settings.backgroundId}
+                          photoSource={getProfileMediaSource(
+                            renderProfile?.photoPath,
+                          )}
+                          resumeProfile={docs.resumeProfile}
+                          sections={sections}
+                        />
+                      ) : template.id === "einspaltig" ? (
+                        <EinspaltigResume
+                          profile={renderProfile}
+                          name={name}
+                          atsMode={isAtsMode}
+                          plan={plan}
+                          totalPages={resumePlan.length}
+                          accentColor={design.accentColor}
+                          secondaryColor={design.secondaryColor}
+                          backgroundId={design.settings.backgroundId}
+                          photoSource={getProfileMediaSource(
+                            renderProfile?.photoPath,
+                          )}
+                          resumeProfile={docs.resumeProfile}
+                          sections={sections}
+                        />
+                      ) : template.id === "klassisch" ? (
+                        <KlassischResume
+                          profile={renderProfile}
+                          name={name}
+                          atsMode={isAtsMode}
+                          plan={plan}
+                          totalPages={resumePlan.length}
+                          accentColor={design.accentColor}
+                          secondaryColor={design.secondaryColor}
+                          backgroundId={design.settings.backgroundId}
+                          photoSource={getProfileMediaSource(
+                            renderProfile?.photoPath,
+                          )}
+                          resumeProfile={docs.resumeProfile}
+                          sections={sections}
+                        />
+                      ) : template.id === "ivy-league" ? (
+                        <IvyLeagueResume
+                          profile={renderProfile}
+                          name={name}
+                          atsMode={isAtsMode}
+                          plan={plan}
+                          totalPages={resumePlan.length}
+                          accentColor={design.accentColor}
+                          secondaryColor={design.secondaryColor}
+                          backgroundId={design.settings.backgroundId}
+                          resumeProfile={docs.resumeProfile}
+                          sections={sections}
+                        />
+                      ) : template.id === "kreativ" ? (
+                        <KreativResume
+                          profile={renderProfile}
+                          name={name}
+                          atsMode={isAtsMode}
+                          plan={plan}
+                          totalPages={resumePlan.length}
+                          accentColor={design.accentColor}
+                          secondaryColor={design.secondaryColor}
+                          photoSource={getProfileMediaSource(
+                            renderProfile?.photoPath,
+                          )}
+                          resumeProfile={docs.resumeProfile}
+                          sections={sections}
+                        />
+                      ) : template.id === "zeitgenoessisch" ? (
+                        <ZeitgenoessischResume
+                          profile={renderProfile}
+                          name={name}
+                          atsMode={isAtsMode}
+                          plan={plan}
+                          totalPages={resumePlan.length}
+                          accentColor={design.accentColor}
+                          secondaryColor={design.secondaryColor}
+                          photoSource={getProfileMediaSource(
+                            renderProfile?.photoPath,
+                          )}
+                          resumeProfile={docs.resumeProfile}
+                          sections={sections}
+                        />
+                      ) : template.id === "zweispaltig" ? (
+                        <ZweispaltigResume
+                          profile={renderProfile}
+                          name={name}
+                          atsMode={isAtsMode}
+                          plan={plan}
+                          totalPages={resumePlan.length}
+                          accentColor={design.accentColor}
+                          secondaryColor={design.secondaryColor}
+                          photoSource={getProfileMediaSource(
+                            renderProfile?.photoPath,
+                          )}
+                          resumeProfile={docs.resumeProfile}
+                          sections={sections}
+                        />
+                      ) : template.id === "gepflegt" ? (
+                        <GepflegtResume
+                          profile={renderProfile}
+                          name={name}
+                          atsMode={isAtsMode}
+                          plan={plan}
+                          totalPages={resumePlan.length}
+                          accentColor={design.accentColor}
+                          secondaryColor={design.secondaryColor}
+                          photoSource={getProfileMediaSource(
+                            renderProfile?.photoPath,
+                          )}
+                          resumeProfile={docs.resumeProfile}
+                          sections={sections}
+                        />
+                      ) : template.id === "elegant" ? (
+                        <ElegantResume
+                          profile={renderProfile}
+                          name={name}
+                          atsMode={isAtsMode}
+                          plan={plan}
+                          totalPages={resumePlan.length}
+                          accentColor={design.accentColor}
+                          secondaryColor={design.secondaryColor}
+                          photoSource={getProfileMediaSource(
+                            renderProfile?.photoPath,
+                          )}
+                          resumeProfile={docs.resumeProfile}
+                          sections={sections}
+                        />
+                      ) : template.id === "tabellarisch" ? (
+                        <TabellarischResume
+                          profile={renderProfile}
+                          name={name}
+                          atsMode={isAtsMode}
+                          plan={plan}
+                          totalPages={resumePlan.length}
+                          accentColor={design.accentColor}
+                          secondaryColor={design.secondaryColor}
+                          photoSource={getProfileMediaSource(
+                            renderProfile?.photoPath,
+                          )}
+                          resumeProfile={docs.resumeProfile}
+                          sections={sections}
+                        />
+                      ) : template.id === "pehlione_white_blue" ||
+                        template.id === "pehlione_white" ? (
+                        <PehlioneResume
+                          templateId={
+                            template.id as
+                              | "pehlione_white_blue"
+                              | "pehlione_white"
+                          }
+                          profile={renderProfile}
+                          name={name}
+                          atsMode={isAtsMode}
+                          plan={plan}
+                          totalPages={resumePlan.length}
+                          accentColor={design.accentColor}
+                          secondaryColor={design.secondaryColor}
+                          resumeProfile={pehlioneResumeProfile}
+                          sections={sections}
+                        />
+                      ) : template.id === "modern" ? (
+                        <ModernResume
+                          profile={renderProfile}
+                          name={name}
+                          atsMode={isAtsMode}
+                          plan={plan}
+                          totalPages={resumePlan.length}
+                          accentColor={design.accentColor}
+                          secondaryColor={design.secondaryColor}
+                          photoSource={getProfileMediaSource(
+                            renderProfile?.photoPath,
+                          )}
+                          resumeProfile={docs.resumeProfile}
+                          sections={sections}
+                        />
+                      ) : (
+                        <ResumePreviewPage
+                          application={application}
+                          atsMode={isAtsMode}
+                          documents={docs}
+                          name={name}
+                          plan={plan}
+                          profile={renderProfile}
+                          sections={sections}
+                          totalPages={resumePlan.length}
+                        />
+                      )}
+                    </ManagedResumePreview>
                   </div>
-                </header>
-                <dl>
-                  <div>
-                    <dt>Datum</dt>
-                    <dd>{email.applicationDate}</dd>
-                  </div>
-                  <div>
-                    <dt>Firma</dt>
-                    <dd>{email.companyName}</dd>
-                  </div>
-                  <div>
-                    <dt>Stelle</dt>
-                    <dd>{email.jobTitle}</dd>
-                  </div>
-                  <div>
-                    <dt>Empfänger</dt>
-                    <dd>{email.recipientName || "Nicht angegeben"}</dd>
-                  </div>
-                  <div>
-                    <dt>E-Mail</dt>
-                    <dd>{email.recipientEmail || "Nicht angegeben"}</dd>
-                  </div>
-                  <div>
-                    <dt>Absender</dt>
-                    <dd>{email.senderName || "Nicht angegeben"}</dd>
-                  </div>
-                </dl>
-                <section className="email-message-preview">
-                  <p>{email.salutation}</p>
-
-                  <p>{email.body}</p>
-
-                  <p>{email.greeting}</p>
-
-                  <p>{email.senderName || "Absender im Profil ergänzen"}</p>
-                  {email.attachments.length > 0 && (
-                    <div className="email-attachments-preview">
-                      <strong>Anlagen</strong>
-
-                      <ul>
-                        {email.attachments.map((attachment) => (
-                          <li key={attachment}>{attachment}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </section>
-              </div>
-            </div>
-          )}
-          {tab === "lebenslauf" &&
-            ((renderProfile) =>
-              resumePlan.map((plan) => (
-                <div
-                  className={`document-paper document-lebenslauf layout-${template.layout} ${designClassName}`}
-                  key={plan.pageNumber}
-                  style={paperStyle}>
-                  <style>{getResumeIdentityVisibilityCss(renderProfile?.resumeSemanticSections)}</style>
-                  <ManagedResumePreview profile={renderProfile} templateId={template.id} pageNumber={plan.pageNumber} totalPages={resumePlan.length}>
-                  <DocumentBackgroundLayer
-                    backgroundId={design.settings.backgroundId}
-                    atsMode={isAtsMode}
-                  />
-                  {template.id === "stilvoll" ? (
-                    <StilvollResume
-                      profile={renderProfile}
-                      name={name}
-                      atsMode={isAtsMode}
-                      plan={plan}
-                      totalPages={resumePlan.length}
-                      accentColor={design.accentColor}
-                      secondaryColor={design.secondaryColor}
-                      backgroundId={design.settings.backgroundId}
-                      photoSource={getProfileMediaSource(
-                        renderProfile?.photoPath,
-                      )}
-                      resumeProfile={docs.resumeProfile}
-                      sections={sections}
-                    />
-                  ) : template.id === "kompakt" ? (
-                    <KompaktResume
-                      profile={renderProfile}
-                      name={name}
-                      atsMode={isAtsMode}
-                      plan={plan}
-                      totalPages={resumePlan.length}
-                      accentColor={design.accentColor}
-                      secondaryColor={design.secondaryColor}
-                      backgroundId={design.settings.backgroundId}
-                      photoSource={getProfileMediaSource(
-                        renderProfile?.photoPath,
-                      )}
-                      resumeProfile={docs.resumeProfile}
-                      sections={sections}
-                    />
-                  ) : template.id === "einspaltig" ? (
-                    <EinspaltigResume
-                      profile={renderProfile}
-                      name={name}
-                      atsMode={isAtsMode}
-                      plan={plan}
-                      totalPages={resumePlan.length}
-                      accentColor={design.accentColor}
-                      secondaryColor={design.secondaryColor}
-                      backgroundId={design.settings.backgroundId}
-                      photoSource={getProfileMediaSource(
-                        renderProfile?.photoPath,
-                      )}
-                      resumeProfile={docs.resumeProfile}
-                      sections={sections}
-                    />
-                  ) : template.id === "klassisch" ? (
-                    <KlassischResume
-                      profile={renderProfile}
-                      name={name}
-                      atsMode={isAtsMode}
-                      plan={plan}
-                      totalPages={resumePlan.length}
-                      accentColor={design.accentColor}
-                      secondaryColor={design.secondaryColor}
-                      backgroundId={design.settings.backgroundId}
-                      photoSource={getProfileMediaSource(
-                        renderProfile?.photoPath,
-                      )}
-                      resumeProfile={docs.resumeProfile}
-                      sections={sections}
-                    />
-                  ) : template.id === "ivy-league" ? (
-                    <IvyLeagueResume
-                      profile={renderProfile}
-                      name={name}
-                      atsMode={isAtsMode}
-                      plan={plan}
-                      totalPages={resumePlan.length}
-                      accentColor={design.accentColor}
-                      secondaryColor={design.secondaryColor}
-                      backgroundId={design.settings.backgroundId}
-                      resumeProfile={docs.resumeProfile}
-                      sections={sections}
-                    />
-                  ) : template.id === "kreativ" ? (
-                    <KreativResume
-                      profile={renderProfile}
-                      name={name}
-                      atsMode={isAtsMode}
-                      plan={plan}
-                      totalPages={resumePlan.length}
-                      accentColor={design.accentColor}
-                      secondaryColor={design.secondaryColor}
-                      photoSource={getProfileMediaSource(
-                        renderProfile?.photoPath,
-                      )}
-                      resumeProfile={docs.resumeProfile}
-                      sections={sections}
-                    />
-                  ) : template.id === "zeitgenoessisch" ? (
-                    <ZeitgenoessischResume
-                      profile={renderProfile}
-                      name={name}
-                      atsMode={isAtsMode}
-                      plan={plan}
-                      totalPages={resumePlan.length}
-                      accentColor={design.accentColor}
-                      secondaryColor={design.secondaryColor}
-                      photoSource={getProfileMediaSource(
-                        renderProfile?.photoPath,
-                      )}
-                      resumeProfile={docs.resumeProfile}
-                      sections={sections}
-                    />
-                  ) : template.id === "zweispaltig" ? (
-                    <ZweispaltigResume
-                      profile={renderProfile}
-                      name={name}
-                      atsMode={isAtsMode}
-                      plan={plan}
-                      totalPages={resumePlan.length}
-                      accentColor={design.accentColor}
-                      secondaryColor={design.secondaryColor}
-                      photoSource={getProfileMediaSource(
-                        renderProfile?.photoPath,
-                      )}
-                      resumeProfile={docs.resumeProfile}
-                      sections={sections}
-                    />
-                  ) : template.id === "gepflegt" ? (
-                    <GepflegtResume
-                      profile={renderProfile}
-                      name={name}
-                      atsMode={isAtsMode}
-                      plan={plan}
-                      totalPages={resumePlan.length}
-                      accentColor={design.accentColor}
-                      secondaryColor={design.secondaryColor}
-                      photoSource={getProfileMediaSource(
-                        renderProfile?.photoPath,
-                      )}
-                      resumeProfile={docs.resumeProfile}
-                      sections={sections}
-                    />
-                  ) : template.id === "elegant" ? (
-                    <ElegantResume
-                      profile={renderProfile}
-                      name={name}
-                      atsMode={isAtsMode}
-                      plan={plan}
-                      totalPages={resumePlan.length}
-                      accentColor={design.accentColor}
-                      secondaryColor={design.secondaryColor}
-                      photoSource={getProfileMediaSource(
-                        renderProfile?.photoPath,
-                      )}
-                      resumeProfile={docs.resumeProfile}
-                      sections={sections}
-                    />
-                  ) : template.id === "tabellarisch" ? (
-                    <TabellarischResume
-                      profile={renderProfile}
-                      name={name}
-                      atsMode={isAtsMode}
-                      plan={plan}
-                      totalPages={resumePlan.length}
-                      accentColor={design.accentColor}
-                      secondaryColor={design.secondaryColor}
-                      photoSource={getProfileMediaSource(
-                        renderProfile?.photoPath,
-                      )}
-                      resumeProfile={docs.resumeProfile}
-                      sections={sections}
-                    />
-                  ) : (template.id === "pehlione_white_blue" || template.id === "pehlione_white") ? (
-                    <PehlioneResume
-                      templateId={template.id as "pehlione_white_blue" | "pehlione_white"}
-                      profile={renderProfile}
-                      name={name}
-                      atsMode={isAtsMode}
-                      plan={plan}
-                      totalPages={resumePlan.length}
-                      accentColor={design.accentColor}
-                      secondaryColor={design.secondaryColor}
-                      resumeProfile={pehlioneResumeProfile}
-                      sections={sections}
-                    />
-                  ) : template.id === "modern" ? (
-                    <ModernResume
-                      profile={renderProfile}
-                      name={name}
-                      atsMode={isAtsMode}
-                      plan={plan}
-                      totalPages={resumePlan.length}
-                      accentColor={design.accentColor}
-                      secondaryColor={design.secondaryColor}
-                      photoSource={getProfileMediaSource(
-                        renderProfile?.photoPath,
-                      )}
-                      resumeProfile={docs.resumeProfile}
-                      sections={sections}
-                    />
-                  ) : (
-                    <ResumePreviewPage
-                      application={application}
-                      atsMode={isAtsMode}
-                      documents={docs}
-                      name={name}
-                      plan={plan}
-                      profile={renderProfile}
-                      sections={sections}
-                      totalPages={resumePlan.length}
-                    />
-                  )}
-                  </ManagedResumePreview>
-                </div>
-              )))(resumeRenderProfile)}
+                )))(resumeRenderProfile)}
           </main>
         }
       />

@@ -35,16 +35,20 @@ export const getApplicationDocumentItems = (
         label: attachment.fileName,
       })),
   ];
-  const settingsByKey = new Map(settings.map((setting) => [setting.key, setting]));
+  const settingsByKey = new Map(
+    settings.map((setting) => [setting.key, setting]),
+  );
 
   return candidates.flatMap((candidate) => {
     const setting = settingsByKey.get(candidate.key);
     if (setting?.isDeleted) return [];
-    return [{
-      ...candidate,
-      label: setting?.label.trim() || candidate.label,
-      isVisible: setting?.isVisible ?? true,
-    }];
+    return [
+      {
+        ...candidate,
+        label: setting?.label.trim() || candidate.label,
+        isVisible: setting?.isVisible ?? true,
+      },
+    ];
   });
 };
 

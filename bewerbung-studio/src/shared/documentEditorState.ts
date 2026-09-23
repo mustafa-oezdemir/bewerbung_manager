@@ -12,13 +12,20 @@ export const createDocumentDesignDraft = (application: Application) => ({
 
 export type DocumentDesignDraft = ReturnType<typeof createDocumentDesignDraft>;
 
-export const selectDocumentTemplate = (current: DocumentDesignDraft, templateId: string): DocumentDesignDraft => {
+export const selectDocumentTemplate = (
+  current: DocumentDesignDraft,
+  templateId: string,
+): DocumentDesignDraft => {
   if (current.templateId === templateId) return current;
   const template = getTemplate(templateId);
   const saved = current.templateDesigns[templateId];
   const templateDesigns = {
     ...current.templateDesigns,
-    [current.templateId]: { accentColor: current.accentColor, secondaryColor: current.secondaryColor, settings: current.settings },
+    [current.templateId]: {
+      accentColor: current.accentColor,
+      secondaryColor: current.secondaryColor,
+      settings: current.settings,
+    },
   };
   delete templateDesigns[templateId];
   return {
@@ -40,6 +47,7 @@ export const persistDocumentDraft = async (
   saveProfile: (profile: ApplicantProfile) => Promise<void>,
   saveApplication: (application: Application) => Promise<void>,
 ) => {
-  if (profile && profile.id === application.profileId) await saveProfile(profile);
+  if (profile && profile.id === application.profileId)
+    await saveProfile(profile);
   await saveApplication(application);
 };

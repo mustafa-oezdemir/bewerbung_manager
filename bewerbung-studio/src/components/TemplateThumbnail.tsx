@@ -1,5 +1,8 @@
 import type { CSSProperties } from "react";
-import { getReadableTextColor, type TemplateDefinition } from "../shared/templates";
+import {
+  getReadableTextColor,
+  type TemplateDefinition,
+} from "../shared/templates";
 
 type Props = {
   template: TemplateDefinition;
@@ -25,9 +28,9 @@ export function TemplateThumbnail({
           "--template-secondary": secondary,
           "--template-on-secondary": getReadableTextColor(secondary),
         } as CSSProperties
-      }
-    >
-      {(template.id === "pehlione_white_blue" || template.id === "pehlione_white") ? (
+      }>
+      {template.id === "pehlione_white_blue" ||
+      template.id === "pehlione_white" ? (
         <>
           <span className="pehlione-thumbnail-hero" />
           <span className="pehlione-thumbnail-sidebar" />

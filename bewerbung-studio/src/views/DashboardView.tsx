@@ -16,10 +16,7 @@ type Props = {
   onOpenCalendar: () => void;
 };
 
-export function DashboardView({
-  onOpenApplications,
-  onOpenCalendar,
-}: Props) {
+export function DashboardView({ onOpenApplications, onOpenCalendar }: Props) {
   const { applications, events } = useAppStore((state) => state.workspace);
   const selectApplication = useAppStore((state) => state.selectApplication);
   const now = new Date();
@@ -43,7 +40,8 @@ export function DashboardView({
   const actionableEvents = events.filter(
     (event) =>
       event.type !== "application-rejected" &&
-      (!event.applicationId || !rejectedApplicationIds.has(event.applicationId)),
+      (!event.applicationId ||
+        !rejectedApplicationIds.has(event.applicationId)),
   );
   const thisMonth = applications.filter(
     (application) =>
@@ -56,9 +54,7 @@ export function DashboardView({
   const upcoming = actionableEvents
     .filter(
       (event) =>
-        !event.cancelled &&
-        !event.completed &&
-        new Date(event.startAt) >= now,
+        !event.cancelled && !event.completed && new Date(event.startAt) >= now,
     )
     .sort(
       (left, right) =>
@@ -68,9 +64,7 @@ export function DashboardView({
   const due = actionableEvents
     .filter(
       (event) =>
-        !event.cancelled &&
-        !event.completed &&
-        new Date(event.startAt) < now,
+        !event.cancelled && !event.completed && new Date(event.startAt) < now,
     )
     .sort(
       (left, right) =>
@@ -84,7 +78,8 @@ export function DashboardView({
   const recent = [...applications]
     .sort(
       (left, right) =>
-        new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime(),
+        new Date(right.updatedAt).getTime() -
+        new Date(left.updatedAt).getTime(),
     )
     .slice(0, 5);
 
@@ -150,10 +145,14 @@ export function DashboardView({
         ))}
       </section>
 
-      <section className="surface notification-panel" aria-labelledby="notification-title">
+      <section
+        className="surface notification-panel"
+        aria-labelledby="notification-title">
         <header className="section-header">
           <div className="notification-heading">
-            <span className="notification-heading-emoji" aria-hidden="true">🔔</span>
+            <span className="notification-heading-emoji" aria-hidden="true">
+              🔔
+            </span>
             <div>
               <p className="eyebrow">Auf dem Laufenden</p>
               <h3 id="notification-title">Benachrichtigungen</h3>
@@ -170,15 +169,16 @@ export function DashboardView({
               <button
                 className={`notification-item ${overdue ? "overdue" : "upcoming"}`}
                 key={event.id}
-                onClick={() => openApplication(event.applicationId)}
-              >
+                onClick={() => openApplication(event.applicationId)}>
                 <span className="notification-emoji" aria-hidden="true">
                   {notificationEmoji(event.type, overdue)}
                 </span>
                 <span className="notification-copy">
                   <strong>{event.title}</strong>
                   <small>
-                    {overdue ? "Überfällig" : relativeEventDate(event.startAt, now)}
+                    {overdue
+                      ? "Überfällig"
+                      : relativeEventDate(event.startAt, now)}
                     {" · "}
                     {formatDate(event.startAt, !event.allDay)}
                   </small>
@@ -194,7 +194,10 @@ export function DashboardView({
             <span aria-hidden="true">✅</span>
             <div>
               <strong>Alles erledigt</strong>
-              <p>Aktuell gibt es keine offenen Erinnerungen oder anstehenden Termine.</p>
+              <p>
+                Aktuell gibt es keine offenen Erinnerungen oder anstehenden
+                Termine.
+              </p>
             </div>
           </div>
         )}
@@ -217,16 +220,17 @@ export function DashboardView({
                 <button
                   className="event-row"
                   key={event.id}
-                  onClick={() => openApplication(event.applicationId)}
-                >
+                  onClick={() => openApplication(event.applicationId)}>
                   <span className="date-tile">
                     <strong>
-                      {new Date(event.startAt)
-                        .toLocaleDateString("de-DE", { day: "2-digit" })}
+                      {new Date(event.startAt).toLocaleDateString("de-DE", {
+                        day: "2-digit",
+                      })}
                     </strong>
                     <small>
-                      {new Date(event.startAt)
-                        .toLocaleDateString("de-DE", { month: "short" })}
+                      {new Date(event.startAt).toLocaleDateString("de-DE", {
+                        month: "short",
+                      })}
                     </small>
                   </span>
                   <span>
@@ -297,11 +301,18 @@ export function DashboardView({
               <button
                 className="table-row"
                 key={application.id}
-                onClick={() => openApplication(application.id)}
-              >
-                <span><b>{application.company.name.slice(0, 1)}</b>{application.company.name}</span>
+                onClick={() => openApplication(application.id)}>
+                <span>
+                  <b>{application.company.name.slice(0, 1)}</b>
+                  {application.company.name}
+                </span>
                 <span>{application.job.title}</span>
-                <span><i className={`status-dot ${statusTone(application.status)}`} />{application.status}</span>
+                <span>
+                  <i
+                    className={`status-dot ${statusTone(application.status)}`}
+                  />
+                  {application.status}
+                </span>
                 <span>{formatDate(application.updatedAt)}</span>
               </button>
             ))}
