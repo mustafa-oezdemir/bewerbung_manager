@@ -2449,7 +2449,6 @@ Böylece sistemin temel veri akışı:
 
 Bu sürümde özellikle **“Profil'de gir → Lebenslauf'ta düzenle → tekrar aynı Profil'e kaydet”** davranışı ana mimari gereksinim haline getirildi.
 
-
 https://github.com/mustafa-oezdemir/bewerbung_manager.git repository'sinin güncel `main` branch'ini incele ve **BewerbungsManager → Lebenslauf** veri/ayar yönetimindeki persistence problemini düzelt.
 
 Bu görevde temel prensip şudur:
@@ -3335,3 +3334,6 @@ Son kaydedilen:
 aynen korunmalı ve yeniden yüklenmelidir.
 
 **Kaydedilen son durum her zaman kullanıcı için geçerli durumdur.**
+
+
+.
