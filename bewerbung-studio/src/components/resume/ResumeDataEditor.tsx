@@ -5,7 +5,7 @@ import {
   Save,
   Trash2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { ensureKnowledgeSection, syncLegacySkills } from "../../features/knowledge/knowledge.service";
 import { validateKnowledgeSection } from "../../features/knowledge/knowledge.validation";
 import {
@@ -25,6 +25,9 @@ type Props = {
   onPreview: (profile: ApplicantProfile | null) => void;
   onSave: (profile: ApplicantProfile) => Promise<void>;
   defaultOpen?: boolean;
+  section?: string;
+  controlledDraft?: ApplicantProfile;
+  onDraftChange?: Dispatch<SetStateAction<ApplicantProfile>>;
 };
 
 const cloneProfile = (profile: ApplicantProfile): ApplicantProfile => ({
@@ -89,19 +92,24 @@ export function ResumeDataEditor({
   onPreview,
   onSave,
   defaultOpen = false,
+  section,
+  controlledDraft,
+  onDraftChange,
 }: Props) {
-  const [draft, setDraft] = useState<ApplicantProfile>(() => cloneProfile(profile));
+  const [localDraft, setLocalDraft] = useState<ApplicantProfile>(() => cloneProfile(profile));
+  const draft = controlledDraft ?? localDraft;
+  const setDraft = onDraftChange ?? setLocalDraft;
   const [open, setOpen] = useState(defaultOpen);
 
   useEffect(() => {
-    setDraft(cloneProfile(profile));
+    if (!controlledDraft) setLocalDraft(cloneProfile(profile));
   }, [profile.id, profile.updatedAt]);
 
   useEffect(() => {
-    onPreview(draft);
+    if (!controlledDraft) onPreview(draft);
   }, [draft, onPreview]);
 
-  useEffect(() => () => onPreview(null), [onPreview]);
+  useEffect(() => () => { if (!controlledDraft) onPreview(null); }, [onPreview, Boolean(controlledDraft)]);
 
   const addExperience = () =>
     setDraft((current) => ({
@@ -173,8 +181,8 @@ export function ResumeDataEditor({
   const updateSection = () => void save();
 
   return (
-    <section className="resume-data-editor">
-      <button
+    <section className={section ? "resume-data-editor resume-managed-content" : "resume-data-editor"}>
+      {!section && <button
         className="resume-data-editor-trigger"
         type="button"
         aria-expanded={open}
@@ -184,21 +192,23 @@ export function ResumeDataEditor({
           <small>Einträge hinzufügen, ändern oder löschen</small>
         </span>
         <ChevronDown className={open ? "is-open" : ""} size={18} />
-      </button>
+      </button>}
 
-      {open ? (
+      {open || section ? (
         <div className="resume-data-editor-body">
-          <p className="resume-data-editor-hint">
+          <p className="resume-data-editor-hint" hidden={Boolean(section)}>
             Diese Daten gehören zum ausgewählten Profil und werden in allen
             damit verbundenen Bewerbungen verwendet.
           </p>
 
-          <details className="resume-data-group" open>
+          <details className="resume-data-group" open hidden={Boolean(section && section !== "personalData")}>
             <summary>Profil</summary>
             <div className="resume-data-field-grid resume-personal-fields">
+              {!section && <>
               <EditorInput label="Vorname" value={draft.firstName} onChange={(firstName) => setDraft((current) => ({ ...current, firstName }))} />
               <EditorInput label="Nachname" value={draft.lastName} onChange={(lastName) => setDraft((current) => ({ ...current, lastName }))} />
               <EditorInput label="Berufsbezeichnung" value={draft.title} onChange={(title) => setDraft((current) => ({ ...current, title }))} />
+              </>}
               <EditorInput label="Telefon" value={draft.phone} onChange={(phone) => setDraft((current) => ({ ...current, phone }))} />
               <EditorInput label="E-Mail" value={draft.email} onChange={(email) => setDraft((current) => ({ ...current, email }))} />
               <EditorInput label="Straße" value={draft.street} onChange={(street) => setDraft((current) => ({ ...current, street }))} />
@@ -208,7 +218,12 @@ export function ResumeDataEditor({
               <EditorInput label="LinkedIn" value={draft.linkedin} onChange={(linkedin) => setDraft((current) => ({ ...current, linkedin }))} />
               <EditorInput label="GitHub" value={draft.github} onChange={(github) => setDraft((current) => ({ ...current, github }))} />
               <EditorInput label="Portfolio" value={draft.portfolio} onChange={(portfolio) => setDraft((current) => ({ ...current, portfolio }))} />
+              {([['birthDate','Geburtsdatum'],['birthPlace','Geburtsort'],['nationality','Staatsangehörigkeit'],['familyStatus','Familienstand'],['children','Kinder']] as const).map(([key,label]) => <EditorInput key={key} label={label} value={draft[key]} onChange={(value) => setDraft((current) => ({ ...current, [key]: value }))} />)}
             </div>
+            <div className="manager-online-profiles">{draft.onlineProfiles.map((entry) => <div className="manager-block-item" key={entry.id}><EditorInput label="Online-Profil" value={entry.label} onChange={(label) => setDraft((current) => ({ ...current, onlineProfiles: current.onlineProfiles.map((item) => item.id === entry.id ? { ...item, label } : item) }))} /><EditorInput label="URL" value={entry.url} onChange={(url) => setDraft((current) => ({ ...current, onlineProfiles: current.onlineProfiles.map((item) => item.id === entry.id ? { ...item, url } : item) }))} /><button type="button" className="icon-button" aria-label="Online-Profil entfernen" onClick={() => setDraft((current) => ({ ...current, onlineProfiles: current.onlineProfiles.filter((item) => item.id !== entry.id) }))}><Trash2 size={14} /></button></div>)}<button type="button" className="button secondary" onClick={() => setDraft((current) => ({ ...current, onlineProfiles: [...current.onlineProfiles, { id: crypto.randomUUID(), label: "", url: "" }] }))}><Plus size={14} /> Online-Profil hinzufügen</button></div>
+          </details>
+          <details className="resume-data-group" open hidden={Boolean(section && section !== "summary")}>
+            <summary>Kurzprofil</summary>
             <label className="field">
               <span>{draft.resumeSectionTitles.summary}</span>
               <textarea
@@ -235,7 +250,7 @@ export function ResumeDataEditor({
             <SectionUpdateButton onClick={updateSection} />
           </details>
 
-          <details className="resume-data-group" open>
+          <details className="resume-data-group" open hidden={Boolean(section && section !== "strengths")}>
             <summary>{draft.resumeSectionTitles.strengths}</summary>
             <EditorInput
               label="Abschnittsüberschrift"
@@ -338,7 +353,7 @@ export function ResumeDataEditor({
             <SectionUpdateButton onClick={updateSection} />
           </details>
 
-          <details className="resume-data-group" open>
+          <details className="resume-data-group" open hidden={Boolean(section && section !== "experience")}>
             <summary>
               <span>{draft.resumeSectionTitles.experience} ({draft.experiences.length})</span>
             </summary>
@@ -409,7 +424,7 @@ export function ResumeDataEditor({
             <SectionUpdateButton onClick={updateSection} />
           </details>
 
-          <details className="resume-data-group" open>
+          <details className="resume-data-group" open hidden={Boolean(section && section !== "education")}>
             <summary>
               <span>{draft.resumeSectionTitles.education} ({draft.education.length})</span>
             </summary>
@@ -460,7 +475,7 @@ export function ResumeDataEditor({
             <SectionUpdateButton onClick={updateSection} />
           </details>
 
-          <details className="resume-data-group" open>
+          <details className="resume-data-group" open hidden={Boolean(section && section !== "knowledge")}>
             <summary>{draft.knowledgeSection.title || "Kenntnisse"}</summary>
             <KnowledgeSectionEditor
               value={draft.knowledgeSection}
@@ -471,7 +486,7 @@ export function ResumeDataEditor({
             <SectionUpdateButton onClick={updateSection} />
           </details>
 
-          <details className="resume-data-group" open>
+          <details className="resume-data-group" open hidden={Boolean(section && section !== "languages")}>
             <summary>{draft.resumeSectionTitles.languages}</summary>
             <EditorInput
               label="Abschnittsüberschrift"
@@ -495,7 +510,7 @@ export function ResumeDataEditor({
             <SectionUpdateButton onClick={updateSection} />
           </details>
 
-          <details className="resume-data-group" open>
+          <details className="resume-data-group" open hidden={Boolean(section && section !== "certifications")}>
             <summary>{draft.resumeSectionTitles.certifications}</summary>
             <EditorInput
               label="Abschnittsüberschrift"
@@ -520,6 +535,7 @@ export function ResumeDataEditor({
           </details>
 
           <ResumeSpecialSectionsEditor
+            selectedId={section?.startsWith("special:") ? section.slice(8) : section ? "__hidden" : undefined}
             value={draft.specialSections}
             onChange={(specialSections) =>
               setDraft((current) => ({ ...current, specialSections }))
@@ -527,7 +543,7 @@ export function ResumeDataEditor({
             onUpdate={updateSection}
           />
 
-          <div className="resume-data-actions">
+          <div className="resume-data-actions" hidden={Boolean(section)}>
             <button className="button secondary" type="button" onClick={reset}>
               <RotateCcw size={15} /> Verwerfen
             </button>
@@ -551,7 +567,7 @@ function EditorInput({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="field">
+    <label className="field" data-heading-editor={/überschrift/i.test(label) || undefined}>
       <span>{label}</span>
       <input value={value} onChange={(event) => onChange(event.target.value)} />
     </label>
@@ -584,11 +600,13 @@ const specialSectionLabels: Record<ResumeSpecialSectionKind, string> = {
   custom: "Eigener Abschnitt",
 };
 
-function ResumeSpecialSectionsEditor({
+export function ResumeSpecialSectionsEditor({
+  selectedId,
   value,
   onChange,
   onUpdate,
 }: {
+  selectedId?: string;
   value: ApplicantProfile["specialSections"];
   onChange: (value: ApplicantProfile["specialSections"]) => void;
   onUpdate: () => void;
@@ -621,7 +639,7 @@ function ResumeSpecialSectionsEditor({
 
   return (
     <div className="resume-special-section-groups">
-      <div className="resume-special-section-add">
+      <div className="resume-special-section-add" hidden={Boolean(selectedId)}>
         <label className="field">
           <span>Weiteren Profilabschnitt hinzufügen</span>
           <select
@@ -657,7 +675,7 @@ function ResumeSpecialSectionsEditor({
         </button>
       </div>
 
-      {value.map((section) => (
+      {value.filter((item) => !selectedId || item.id === selectedId).map((section) => (
         <details className="resume-data-group" key={section.id} open>
           <summary>{section.title || specialSectionLabels[section.kind]}</summary>
           <div className="resume-data-field-grid">
@@ -684,7 +702,7 @@ function ResumeSpecialSectionsEditor({
               </select>
             </label>
           </div>
-          <label className="checkbox-field">
+          <label className="checkbox-field" hidden={Boolean(selectedId)}>
             <input
               type="checkbox"
               checked={section.isVisible}

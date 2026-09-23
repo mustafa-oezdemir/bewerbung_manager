@@ -474,6 +474,11 @@ export const profileSchema = z.object({
       }),
     )
     .default([]),
+  resumeManagerLayouts: z.record(z.string(), z.array(z.object({
+    id: z.string().min(1),
+    zone: z.enum(["main", "sidebar"]),
+  }))).default({}),
+  resumeManagerOverrides: z.record(z.string(), z.object({ title: z.string().optional(), visible: z.boolean().optional() })).default({}),
   resumeSectionLayouts: z
     .record(
       z.string(),

@@ -94,6 +94,8 @@ const newProfile = (): ApplicantProfile => ({
   resumeSections: defaultSections,
   resumeSectionLayout: [],
   resumeSectionLayouts: {},
+  resumeManagerLayouts: {},
+  resumeManagerOverrides: {},
   resumeSemanticSections: defaultResumeSectionInstances(),
   resumePersonalFieldVisibility: { ...defaultResumePersonalFieldVisibility },
   resumeKnowledgeGroups: [],

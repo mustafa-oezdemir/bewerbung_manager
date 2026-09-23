@@ -1,3 +1,5 @@
+import { getResumeDisplayProfile } from "../shared/resumeDisplayProfile";
+import { ManagedResumePreview } from "../components/resume/ManagedResumePreview";
 import {
   ArrowLeft,
   ChevronUp,
@@ -28,7 +30,6 @@ import { TemplateThumbnail } from "../components/TemplateThumbnail";
 import { KnowledgeSectionRenderer } from "../components/document/KnowledgeSectionRenderer";
 import { DocumentBackgroundLayer } from "../components/document/DocumentBackgroundLayer";
 import { ResizableSplitView } from "../components/layout/ResizableSplitView";
-import { ResumeDataEditor } from "../components/resume/ResumeDataEditor";
 import { ResumeSectionsPanel } from "../components/resume/ResumeSectionsPanel";
 import { ElegantResume } from "../components/resume/templates/elegant";
 import { EinspaltigResume } from "../components/resume/templates/einspaltig";
@@ -39,11 +40,6 @@ import { KreativResume } from "../components/resume/templates/kreativ";
 import { IvyLeagueResume } from "../components/resume/templates/ivy-league";
 import { ModernResume } from "../components/resume/templates/modern";
 import { PehlioneResume } from "../components/resume/templates/pehlione";
-import {
-  getResumeEditorSettings,
-  mergeResumeDataDraft,
-  mergeResumeSectionDraft,
-} from "../features/resume-sections/resume-editor-settings";
 import { StilvollResume } from "../components/resume/templates/stilvoll";
 import { TabellarischResume } from "../components/resume/templates/tabellarisch";
 import { ZeitgenoessischResume } from "../components/resume/templates/zeitgenoessisch";
@@ -430,33 +426,7 @@ export function DocumentsView({
   } | null>(null);
   const handleResumeSectionPreview = useCallback(
     (templateId: string, previewProfile: ApplicantProfile | null) => {
-      setResumeSectionPreview((current) => {
-        if (!previewProfile) return null;
-        const base =
-          current?.templateId === templateId &&
-          current.profile.id === previewProfile.id
-            ? current.profile
-            : previewProfile;
-        return {
-          templateId,
-          profile: mergeResumeSectionDraft(base, previewProfile),
-        };
-      });
-    },
-    [],
-  );
-  const handleResumeDataPreview = useCallback(
-    (previewProfile: ApplicantProfile | null) => {
-      setResumeSectionPreview((current) => {
-        if (!previewProfile) return null;
-        const sectionDraft = current?.profile.id === previewProfile.id
-          ? current.profile
-          : undefined;
-        return {
-          templateId: current?.templateId ?? "",
-          profile: mergeResumeDataDraft(previewProfile, sectionDraft),
-        };
-      });
+      setResumeSectionPreview(previewProfile ? { templateId, profile: previewProfile } : null);
     },
     [],
   );
@@ -613,38 +583,7 @@ export function DocumentsView({
     resumeSectionPreview.profile.id === profile?.id
       ? resumeSectionPreview.profile
       : profile;
-  const resumeRenderProfile = renderProfile
-    ? (() => {
-        const visibility = {
-          ...defaultResumePersonalFieldVisibility,
-          ...renderProfile.resumePersonalFieldVisibility,
-        };
-        const photoIsVisible = getResumeSemanticSection(
-          renderProfile.resumeSemanticSections,
-          "photo",
-        ).visible;
-
-        return {
-          ...renderProfile,
-          street: visibility.address ? renderProfile.street : "",
-          postalCode: visibility.address ? renderProfile.postalCode : "",
-          city: visibility.address ? renderProfile.city : "",
-          country: visibility.address ? renderProfile.country : "",
-          phone: visibility.phone ? renderProfile.phone : "",
-          email: visibility.email ? renderProfile.email : "",
-          linkedin: visibility.linkedin ? renderProfile.linkedin : "",
-          github: visibility.github ? renderProfile.github : "",
-          portfolio: visibility.website ? renderProfile.portfolio : "",
-          onlineProfiles: renderProfile.onlineProfiles.filter((entry) =>
-            /xing/i.test(entry.label) ? visibility.xing : visibility.website,
-          ),
-          birthDate: visibility.birthDate ? renderProfile.birthDate : "",
-          birthPlace: visibility.birthPlace ? renderProfile.birthPlace : "",
-          nationality: visibility.nationality ? renderProfile.nationality : "",
-          photoPath: photoIsVisible ? renderProfile.photoPath : "",
-        };
-      })()
-    : undefined;
+  const resumeRenderProfile = getResumeDisplayProfile(renderProfile);
   const emailAttachments = resolveApplicationEmailAttachments(
     docs,
     deckblattDocuments,
@@ -738,6 +677,7 @@ export function DocumentsView({
                             : (template.id === "pehlione_white_blue" || template.id === "pehlione_white")
                               ? pehlionePaginationOptions
                               : undefined,
+    template.id,
   );
   const letterStatus = getLetterPageStatus(docs);
   const isAtsMode =
@@ -837,28 +777,8 @@ export function DocumentsView({
     });
   };
 
-  const saveResumeData = async (changedProfile: ApplicantProfile) => {
-    const preview =
-      resumeSectionPreview?.profile.id === changedProfile.id
-        ? resumeSectionPreview.profile
-        : undefined;
-    await saveProfile({
-      ...changedProfile,
-      ...(preview ? getResumeEditorSettings(preview) : {}),
-      updatedAt: new Date().toISOString(),
-    });
-  };
-
   const saveResumeSections = async (changedProfile: ApplicantProfile) => {
-    const preview =
-      resumeSectionPreview?.profile.id === changedProfile.id
-        ? resumeSectionPreview.profile
-        : changedProfile;
-    await saveProfile({
-      ...preview,
-      ...getResumeEditorSettings(changedProfile),
-      updatedAt: new Date().toISOString(),
-    });
+    await saveProfile({ ...changedProfile, updatedAt: new Date().toISOString() });
   };
 
   const pickProfileMedia = async (kind: ProfileMediaKind) => {
@@ -867,7 +787,7 @@ export function DocumentsView({
       await window.bewerbungsManager.media.pickProfileImage(kind);
     if (!selected) return;
     await saveProfile({
-      ...profile,
+      ...(resumeSectionPreview?.profile.id === profile.id ? resumeSectionPreview.profile : profile),
       [kind === "photo" ? "photoPath" : "signaturePath"]: selected.dataUrl,
       updatedAt: new Date().toISOString(),
     });
@@ -876,7 +796,7 @@ export function DocumentsView({
   const removeProfileMedia = async (kind: ProfileMediaKind) => {
     if (!profile) return;
     await saveProfile({
-      ...profile,
+      ...(resumeSectionPreview?.profile.id === profile.id ? resumeSectionPreview.profile : profile),
       [kind === "photo" ? "photoPath" : "signaturePath"]: "",
       updatedAt: new Date().toISOString(),
     });
@@ -1527,17 +1447,16 @@ export function DocumentsView({
                 </section>
                 {profile ? (
                   <>
-                    <ResumeDataEditor
-                      profile={profile}
-                      onPreview={handleResumeDataPreview}
-                      onSave={saveResumeData}
-                    />
                     <ResumeSectionsPanel
                       profile={profile}
                       singlePageExceeded={
                         template.id === "kompakt" && resumePlan.length > 1
                       }
                       templateId={template.id}
+                      summaryValue={docs.resumeProfile}
+                      onSummaryChange={(summary) => setDocumentPreview({ applicationId: application.id, documents: { ...docs, resumeProfile: summary } })}
+                      onPickMedia={(kind) => void pickProfileMedia(kind)}
+                      onRemoveMedia={(kind) => void removeProfileMedia(kind)}
                       onSave={saveResumeSections}
                       onPreview={handleResumeSectionPreview}
                     />
@@ -1943,31 +1862,6 @@ export function DocumentsView({
                       {template.atsInfo}
                     </p>
                   ) : null}
-                  <div className="design-option-group">
-                    <span>Dokumentmedien</span>
-                    <div className="document-media-grid">
-                      <DocumentMediaCard
-                        kind="photo"
-                        label="Lebenslauf-Foto"
-                        source={photoSource}
-                        disabled={!profile}
-                        onPick={() => void pickProfileMedia("photo")}
-                        onRemove={() => void removeProfileMedia("photo")}
-                      />
-                      <DocumentMediaCard
-                        kind="signature"
-                        label="Unterschrift"
-                        source={signatureSource}
-                        disabled={!profile}
-                        onPick={() => void pickProfileMedia("signature")}
-                        onRemove={() => void removeProfileMedia("signature")}
-                      />
-                    </div>
-                    <small className="design-option-hint">
-                      Die Auswahl wird im Profil gespeichert und direkt in
-                      Vorschau und PDF übernommen.
-                    </small>
-                  </div>
                   <button
                     className="button secondary design-reset-button"
                     type="button"
@@ -1983,15 +1877,6 @@ export function DocumentsView({
                     Auf Standard zurücksetzen
                   </button>
                 </section>
-                <label className="field">
-                  <span>Kurzprofil</span>
-                  <textarea
-                    name="resumeProfile"
-                    rows={9}
-                    defaultValue={docs.resumeProfile}
-                    placeholder="Rolle, Erfahrungsschwerpunkt und konkreter Mehrwert …"
-                  />
-                </label>
                 <section className="match-analysis">
                   <header>
                     <div>
@@ -2288,6 +2173,7 @@ export function DocumentsView({
                   key={plan.pageNumber}
                   style={paperStyle}>
                   <style>{getResumeIdentityVisibilityCss(renderProfile?.resumeSemanticSections)}</style>
+                  <ManagedResumePreview profile={renderProfile} templateId={template.id} pageNumber={plan.pageNumber} totalPages={resumePlan.length}>
                   <DocumentBackgroundLayer
                     backgroundId={design.settings.backgroundId}
                     atsMode={isAtsMode}
@@ -2499,6 +2385,7 @@ export function DocumentsView({
                       totalPages={resumePlan.length}
                     />
                   )}
+                  </ManagedResumePreview>
                 </div>
               )))(resumeRenderProfile)}
           </main>

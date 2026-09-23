@@ -25,18 +25,15 @@ describe("ResumeSectionsPanel flexible blocks", () => {
       />,
     );
 
-    expect(html).toContain('<details class="resume-semantic-system"><summary>');
-    expect(html).not.toContain('<details class="resume-semantic-system" open');
-    const sectionTable = html.split('<table class="resume-semantic-table">')[1].split('</table>')[0];
-    expect(sectionTable.match(/role="switch"/g)).toHaveLength(9);
-    expect(sectionTable).not.toContain("disabled");
-    expect(html).toContain("Besondere Kenntnisse · Bausteine");
-    expect(html).toContain("Kernkompetenzen");
+    expect(html).toContain("Abschnitte neu ordnen");
+    expect(html).toContain("Hauptspalte");
+    expect(html).toContain("Seitenleiste");
+    expect(html).not.toContain("9 Lebenslauf-Bereiche");
+    expect(html).not.toContain("Besondere Kenntnisse · Bausteine");
+    expect(html).not.toContain("Lebenslaufdaten bearbeiten");
+    expect(html.match(/aria-label="Kernkompetenzen ausblenden"/g)).toHaveLength(1);
+    expect(html).toContain('aria-label="Berufserfahrung ausblenden" aria-pressed="true"');
     expect(html).toContain("Technische Schwerpunkte");
-    expect(html).toContain("Position");
-    expect(html).toContain("Darstellung");
-    expect(html).toContain("Bereiche hinzufügen");
-    expect(html).toContain("Eigenen Bereich hinzufügen");
-    expect(html).toContain("Punkt hinzufügen");
+    expect(html).toContain("Bereich hinzufügen");
   });
 });

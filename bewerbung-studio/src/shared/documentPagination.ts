@@ -160,6 +160,7 @@ export const createResumePagePlan = (
   profile: ApplicantProfile | undefined,
   resumeProfile = "",
   options: ResumePaginationOptions = {},
+  templateId?: string,
 ): ResumePagePlan[] => {
   const firstPageCapacity =
     options.firstPageCapacity ?? FIRST_PAGE_CAPACITY;
@@ -181,6 +182,11 @@ export const createResumePagePlan = (
       }),
     ),
   ];
+  const managerLayout = templateId ? profile?.resumeManagerLayouts?.[templateId] : undefined;
+  if (managerLayout?.length) {
+    const order = managerLayout.map((item) => item.id);
+    items.sort((left, right) => order.indexOf(left.kind) - order.indexOf(right.kind));
+  }
   const totalMainWeight = items.reduce((total, item) => total + item.weight, 0);
   const firstPageWeight = Math.max(
     totalMainWeight,
@@ -212,7 +218,7 @@ export const createResumePagePlan = (
       pageOneWeight += item.weight;
     } else {
       pageTwoItems.push(item);
-      continueOnSecondPage = options.preserveItemOrder ?? false;
+      continueOnSecondPage = Boolean(managerLayout?.length) || (options.preserveItemOrder ?? false);
     }
   }
 

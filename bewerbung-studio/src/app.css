@@ -7206,6 +7206,31 @@ body.is-resizing-split-view * {
   overflow: visible;
 }
 
+.resume-manager { gap: 14px; }
+.manager-card { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.manager-card > .resume-section-card { border: 0; border-radius: 0; padding: 11px; }
+.manager-card.is-hidden > .resume-section-card { color: var(--muted); }
+.manager-card-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; padding: 6px 0; border: 0; color: inherit; background: transparent; text-align: left; font-size: .68rem; font-weight: 700; cursor: pointer; }
+.manager-card-title[aria-expanded="true"] svg { transform: rotate(180deg); }
+.manager-card-body { display: grid; gap: 12px; padding: 14px; border-top: 1px solid var(--line); }
+.manager-card-body .resume-data-editor { border: 0; background: transparent; }
+.resume-managed-content .resume-data-editor-body { padding: 0; border: 0; background: transparent; }
+.resume-managed-content [hidden] { display: none !important; }
+.resume-managed-content .resume-data-group { border: 0; background: transparent; }
+.resume-managed-content .resume-data-group > summary,
+.resume-managed-content .resume-data-section-update,
+.resume-managed-content [data-heading-editor] { display: none; }
+.manager-hint { margin: 0; color: var(--muted); font-size: .62rem; line-height: 1.5; }
+.manager-block-details > summary { cursor: pointer; padding: 8px 0; font-size: .68rem; font-weight: 600; }
+.manager-block-details[open] { display: grid; gap: 9px; }
+.manager-block-item { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; margin: 8px 0; }
+.manager-block-item input { min-width: 0; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
+.manager-add { display: flex; align-items: end; flex-wrap: wrap; gap: 8px; }
+.manager-add .field { flex: 1; }
+.manager-media { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.manager-media img { max-width: 100px; max-height: 90px; object-fit: contain; }
+.managed-resume-preview { display: contents; }
+
 .resume-semantic-system,
 .resume-personal-fields-panel,
 .resume-knowledge-groups-panel,

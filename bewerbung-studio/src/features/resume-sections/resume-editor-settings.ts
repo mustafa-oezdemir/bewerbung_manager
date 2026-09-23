@@ -6,6 +6,8 @@ export const getResumeEditorSettings = (profile: ApplicantProfile) => ({
   resumeSections: profile.resumeSections,
   resumeSectionLayout: profile.resumeSectionLayout,
   resumeSectionLayouts: profile.resumeSectionLayouts,
+  resumeManagerLayouts: profile.resumeManagerLayouts,
+  resumeManagerOverrides: profile.resumeManagerOverrides,
   resumeSemanticSections: profile.resumeSemanticSections,
   resumePersonalFieldVisibility: profile.resumePersonalFieldVisibility,
   resumeKnowledgeGroups: profile.resumeKnowledgeGroups,

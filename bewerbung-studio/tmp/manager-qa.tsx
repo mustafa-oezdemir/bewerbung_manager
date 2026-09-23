@@ -1,0 +1,11 @@
+import React, { useState, useCallback } from "react";
+import { createRoot } from "react-dom/client";
+import { ResumeSectionsPanel } from "../src/components/resume/ResumeSectionsPanel";
+import { profileSchema, applicationSchema } from "../src/shared/schema";
+import { buildDocumentHtml } from "../electron/documents";
+import "../src/app.css";
+const base = profileSchema.parse({id:crypto.randomUUID(),isDefault:true,firstName:"Mina",lastName:"Kaya",summary:"Softwareentwicklung und Datenanalyse.",email:"mina@example.com",strengths:[{id:crypto.randomUUID(),title:"Analytisches Denken",description:"Strukturierte Analyse",iconId:"symbol:dot"}],experiences:[{id:crypto.randomUUID(),from:"2021",to:"2025",role:"Entwicklerin",company:"Beispiel GmbH",achievements:["Schnittstellen entwickelt"]}],education:[{id:crypto.randomUUID(),from:"2018",to:"2021",degree:"Informatik",institution:"Hochschule"}],languages:["Deutsch C1"],certifications:["Softwareentwicklung"],updatedAt:new Date().toISOString()});
+const application = applicationSchema.parse({schemaVersion:1,id:crypto.randomUUID(),folderName:"demo",company:{name:"Beispiel GmbH"},contact:{},job:{title:"Entwicklerin"},status:"Entwurf",templateId:"pehlione_white",accentColor:"#08245C",secondaryColor:"#123456",documents:{},statusHistory:[],createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});
+function App(){const [profile,setProfile]=useState(base); const [live,setLive]=useState(base); const [template,setTemplate]=useState("pehlione_white"); const [saved,setSaved]=useState(false); const preview=useCallback((_id,p)=>{if(p)setLive(p)},[]);
+return <div style={{padding:20,display:"grid",gridTemplateColumns:"minmax(480px,660px) 800px",gap:20}}><div><label>Vorlage <select aria-label="Vorlage" value={template} onChange={e=>setTemplate(e.target.value)}>{["pehlione_white","modern","kompakt"].map(id=><option key={id}>{id}</option>)}</select></label>{saved&&<p role="status">Gespeichert</p>}<ResumeSectionsPanel profile={profile} templateId={template} singlePageExceeded={false} onPreview={preview} onSave={async p=>{setProfile(p);setSaved(true)}} /></div><iframe title="PDF-Vorschau" style={{width:794,height:1123,border:0}} srcDoc={buildDocumentHtml({...application,templateId:template},live,"lebenslauf")} /></div>}
+createRoot(document.getElementById("root")!).render(<App/>);

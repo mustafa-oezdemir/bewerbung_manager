@@ -1,3 +1,5 @@
+import { applyManagedResumeOutput, managedResumeCss } from "../src/shared/resumeManagedOutput";
+import { getResumeDisplayProfile } from "../src/shared/resumeDisplayProfile";
 import { getResumeIdentityVisibilityCss } from "../src/shared/resumeIdentityVisibility";
 import type {
   ApplicantProfile,
@@ -693,10 +695,11 @@ export const buildDocumentHtml = (
   profile: ApplicantProfile | undefined,
   target: "deckblatt" | "anschreiben" | "lebenslauf" | "mappe",
   attachments: readonly Attachment[] = [],
-) => {
+): string => {
   if (target === "deckblatt" || target === "mappe") {
     validateDeckblattData(application, profile);
   }
+  if (target === "lebenslauf") profile = getResumeDisplayProfile(profile);
   const template = getTemplate(application.templateId);
   const accent = application.accentColor || template.accent;
   const secondary = application.secondaryColor || template.secondary;
@@ -877,6 +880,7 @@ export const buildDocumentHtml = (
                           : (template.id === "pehlione_white_blue" || template.id === "pehlione_white")
                             ? pehlionePaginationOptions
                           : undefined,
+    template.id,
   );
 
   const renderExperience = (id: string) => {
@@ -3590,7 +3594,7 @@ export const buildDocumentHtml = (
     profile?.certifications ?? [],
   );
   const gepflegtStrengthMarkup = (ats = false) => {
-    if (!sections.skills || !gepflegtStrengths.length) return "";
+    if (!sections.strengths || !gepflegtStrengths.length) return "";
     if (ats) {
       return `<section><h3>Stärken</h3><ul>${gepflegtStrengths
         .map(
@@ -3805,8 +3809,10 @@ export const buildDocumentHtml = (
                             : renderResumePage,
     )
     .join("");
-  const selected = target === "mappe" ? [letter, cover, resume] : target === "deckblatt" ? [cover] : target === "anschreiben" ? [letter] : [resume];
-  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}${ivyLeagueDocumentCss}${extendedResumeDocumentCss}${klassischDocumentCss}${modernDocumentCss}${pehlioneDocumentCss}${pehlionePdfLayoutFixes}${pehlioneContactsCss}${gepflegtDocumentCss}${tabellarischDocumentCss}${getResumeIdentityVisibilityCss(profile?.resumeSemanticSections)}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
+  const cvHtml = target === "mappe" ? buildDocumentHtml(application, profile, "lebenslauf", attachments) : "";
+  const managedResume = cvHtml ? cvHtml.slice(cvHtml.indexOf("<body>") + 6, cvHtml.lastIndexOf("</body>")).replace(pageFitScript, "") : applyManagedResumeOutput(resume, profile, template.id);
+  const selected = target === "mappe" ? [letter, cover, managedResume] : target === "deckblatt" ? [cover] : target === "anschreiben" ? [letter] : [managedResume];
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${escapeHtml(company)} – ${escapeHtml(role)}</title><style>${documentCss(accent, secondary, onSecondary, designSettings)}${elegantDocumentCss}${zweispaltigDocumentCss}${zeitgenoessischDocumentCss}${kreativDocumentCss}${ivyLeagueDocumentCss}${extendedResumeDocumentCss}${klassischDocumentCss}${modernDocumentCss}${pehlioneDocumentCss}${pehlionePdfLayoutFixes}${pehlioneContactsCss}${gepflegtDocumentCss}${tabellarischDocumentCss}${getResumeIdentityVisibilityCss(profile?.resumeSemanticSections)}${managedResumeCss}</style></head><body>${selected.join("")}${pageFitScript}</body></html>`;
 };
 
 export const buildCoverLetterMarkdown = (

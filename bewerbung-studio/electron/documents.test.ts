@@ -3,6 +3,8 @@ import { applicationSchema, profileSchema } from "../src/shared/schema";
 import { resolveResumeSectionInstances } from "../src/features/resume-sections/resume-section-system";
 import { buildDocumentHtml } from "./documents";
 import { strengthSymbolOptions } from "../src/shared/strengthSymbols";
+import { parseHTML } from "linkedom";
+import { moveManagerSection, updateManagerSection } from "../src/features/resume-sections/resume-manager";
 
 const now = new Date("2026-07-19T10:00:00.000Z").toISOString();
 
@@ -33,6 +35,7 @@ const application = applicationSchema.parse({
 const profile = profileSchema.parse({
   id: "f42f1006-799c-48bc-a705-4fa4533b8ac8",
   isDefault: true,
+  resumeSemanticSections: resolveResumeSectionInstances([]).map((section) => section.semanticType === "photo" ? { ...section, visible: true, enabled: true } : section),
   firstName: "Mina",
   lastName: "Kaya",
   title: "Softwareentwicklerin",
@@ -57,6 +60,23 @@ const profile = profileSchema.parse({
 });
 
 describe("Lebenslauf-Dokumente", () => {
+  it.each(["pehlione_white", "pehlione_white_blue", "modern", "elegant", "zweispaltig", "zeitgenoessisch", "kreativ", "gepflegt", "kompakt", "stilvoll", "einspaltig", "klassisch", "tabellarisch", "ivy-league"])("applies the unified section order, custom content and visibility in %s", (templateId) => {
+    let managed = profileSchema.parse({ ...profile, education: [{ id: crypto.randomUUID(), from: "2018", to: "2021", degree: "Testabschluss", institution: "Testinstitut" }], specialSections: [{ id: "aaaa0000-0000-4000-8000-000000000000", kind: "volunteer", title: "Ehrenamt", isVisible: true, entries: [{ id: crypto.randomUUID(), title: "Vereinsarbeit" }] }] });
+    managed = moveManagerSection(managed, templateId, "education", "main", 0);
+    managed = updateManagerSection(managed, templateId, "education", { title: "Mein Bildungsweg" });
+    const { document } = parseHTML(buildDocumentHtml({ ...application, templateId }, managed, "lebenslauf"));
+    const education = document.querySelector('[data-managed-section="education"]');
+    const experience = document.querySelector('[data-managed-section="experience"]');
+    expect(education, `${templateId}: education`).not.toBeNull();
+    expect(experience, `${templateId}: experience`).not.toBeNull();
+    expect(education!.parentElement).toBe(experience!.parentElement);
+    const ordered = Array.from(education!.parentElement!.children);
+    expect(ordered.indexOf(education!)).toBeLessThan(ordered.indexOf(experience!));
+    expect(education!.textContent).toContain("Mein Bildungsweg");
+    expect(document.querySelectorAll('[data-managed-section="special:aaaa0000-0000-4000-8000-000000000000"]')).toHaveLength(1);
+    const hidden = updateManagerSection(managed, templateId, "education", { visible: false });
+    expect(parseHTML(buildDocumentHtml({ ...application, templateId }, hidden, "lebenslauf")).document.querySelector('[data-managed-section="education"]')).toBeNull();
+  });
   it("allows hiding career, education and identity sections without changing saved content", () => {
     const hiddenProfile = profileSchema.parse({
       ...profile,
@@ -1689,7 +1709,7 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).toContain('class="kompakt-pdf-strength"');
     expect(body).toContain("<h2>Softwareentwicklerin</h2>");
     expect(body).toContain("Java");
-    expect(body).toContain("&#9733;");
+    expect(body).toContain("★");
     expect(body).not.toContain("&#9873;");
     expect(body).toContain('<div class="kompakt-pdf-entry-heading"><h3>Senior Entwicklerin</h3><time>01/2022 – Heute</time></div>');
     expect(body).toContain('<p class="kompakt-pdf-meta"><strong>Beispiel GmbH</strong><span>Berlin</span></p>');
@@ -1708,6 +1728,7 @@ describe("Lebenslauf-Dokumente", () => {
     });
     const hiddenPhotoProfile = profileSchema.parse({
       ...profile,
+      resumeSemanticSections: resolveResumeSectionInstances([]),
       photoPath: "data:image/png;base64,iVBORw0KGgo=",
     });
     const html = buildDocumentHtml(kompaktApplication, hiddenPhotoProfile, "lebenslauf");
