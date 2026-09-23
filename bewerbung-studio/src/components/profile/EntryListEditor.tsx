@@ -1,4 +1,6 @@
 import { Plus, Trash2 } from "lucide-react";
+import { OrderControls } from "./OrderControls";
+import { moveListItem } from "../../shared/listOrder";
 
 type EntryListEditorProps = {
   values: string[];
@@ -25,6 +27,7 @@ export function EntryListEditor({
       <div className="entry-list-editor__items">
         {values.map((value, index) => (
           <div className="entry-list-editor__row" key={index}>
+            <OrderControls index={index} length={values.length} label={`Eintrag ${index + 1}`} onMove={(target) => onChange(moveListItem(values, index, target))} />
             <label className="field">
               <span>Eintrag {index + 1}</span>
               {multiline ? (
@@ -119,6 +122,7 @@ export function CertificateListEditor({
           const certificate = parseCertificate(value);
           return (
             <article className="certificate-list-editor__card" key={index}>
+              <OrderControls index={index} length={values.length} label={`Zertifikat ${index + 1}`} onMove={(target) => onChange(moveListItem(values, index, target))} />
               <div className="certificate-list-editor__fields">
                 <label className="field">
                   <span>Zertifikat / Weiterbildung</span>

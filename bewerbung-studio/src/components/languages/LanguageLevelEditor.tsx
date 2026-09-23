@@ -1,4 +1,6 @@
 import { Plus, Trash2 } from "lucide-react";
+import { OrderControls } from "../profile/OrderControls";
+import { moveListItem } from "../../shared/listOrder";
 import type { CSSProperties } from "react";
 import {
   cefrLanguageLevelCount,
@@ -59,6 +61,7 @@ export function LanguageLevelEditor({ values, onChange }: Props) {
 
           return (
             <article className="language-level-entry" key={index}>
+              <OrderControls index={index} length={values.length} label={language.name || `Sprache ${index + 1}`} onMove={(target) => onChange(moveListItem(values, index, target))} />
               <label className="field language-name-field">
                 <span>Sprache</span>
                 <input

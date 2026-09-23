@@ -15,6 +15,10 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { addTechnologyStrengths } from "../shared/strengthPresets";
+import { moveListItem } from "../shared/listOrder";
+import { OrderControls } from "../components/profile/OrderControls";
+import { ResumeSectionTitleEditor } from "../components/resume/ResumeSectionTitleEditor";
 import { KnowledgeSectionEditor } from "../components/knowledge/KnowledgeSectionEditor";
 import { LanguageLevelEditor } from "../components/languages/LanguageLevelEditor";
 import {
@@ -25,6 +29,8 @@ import { TechnologyIconPicker } from "../components/profile/TechnologyIconPicker
 import { defaultKnowledgeSection } from "../features/knowledge/knowledge.constants";
 import {
   defaultEditableResumeSectionTitles,
+  getResumeSectionTitle,
+  setResumeSectionTitle,
   type EditableResumeSectionTitle,
 } from "../features/resume-sections/resume-sections";
 import {
@@ -140,14 +146,12 @@ const normalizeProfileUrl = (value: string) => {
 const moveItem = <T extends { id: string }>(
   items: T[],
   id: string,
-  direction: -1 | 1,
+  direction: number,
 ) => {
   const index = items.findIndex((item) => item.id === id);
   const target = index + direction;
   if (index < 0 || target < 0 || target >= items.length) return items;
-  const next = [...items];
-  [next[index], next[target]] = [next[target], next[index]];
-  return next;
+  return moveListItem(items, index, target);
 };
 
 const reorderItem = <T extends { id: string }>(
@@ -313,24 +317,27 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
   ) => {
     const persisted = profiles.find((profile) => profile.id === draft.id);
     const base = persisted ? structuredClone(persisted) : structuredClone(draft);
-    const next = { ...base } as ApplicantProfile;
+    let next = { ...base } as ApplicantProfile;
     for (const key of keys) {
       if (key === "resumeSectionTitles" && sectionTitle) {
         next.resumeSectionTitles = {
           ...base.resumeSectionTitles,
-          [sectionTitle]: draft.resumeSectionTitles[sectionTitle],
+          [sectionTitle]: getResumeSectionTitle(draft, sectionTitle),
         };
       } else {
         (next as Record<ProfileKey, ApplicantProfile[ProfileKey]>)[key] =
           draft[key];
       }
     }
+    if (sectionTitle) next = setResumeSectionTitle(next, sectionTitle, getResumeSectionTitle(draft, sectionTitle));
+    if (keys.includes("knowledgeSection")) next = setResumeSectionTitle(next, "knowledge", getResumeSectionTitle(draft, "knowledge"));
     if (!validateBeforeSave(next)) return;
     setSavingSection(sectionId);
     try {
       const normalized = normalizedProfile(next);
       await saveProfile(normalized);
-      setDraft((current) => ({
+      setDraft((current) => {
+        const updated = {
         ...current,
         ...Object.fromEntries(
           keys
@@ -348,7 +355,10 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
             }
           : {}),
         updatedAt: normalized.updatedAt,
-      }));
+        };
+        if (sectionTitle) return setResumeSectionTitle(updated, sectionTitle, normalized.resumeSectionTitles[sectionTitle]);
+        return keys.includes("knowledgeSection") ? setResumeSectionTitle(updated, "knowledge", normalized.knowledgeSection.title) : updated;
+      });
       setSavedSection(sectionId);
       window.setTimeout(
         () => setSavedSection((current) => (current === sectionId ? undefined : current)),
@@ -750,19 +760,7 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
             saving={savingSection === "summary"}
             saved={savedSection === "summary"}
           >
-            <TextField
-              label="Überschrift im Lebenslauf"
-              value={draft.resumeSectionTitles.summary}
-              onChange={(summary) =>
-                setDraft((current) => ({
-                  ...current,
-                  resumeSectionTitles: {
-                    ...current.resumeSectionTitles,
-                    summary,
-                  },
-                }))
-              }
-            />
+            <ResumeSectionTitleEditor profile={draft} section="summary" onChange={setDraft} />
             <label className="field full">
               <span>Kurzprofil</span>
               <textarea
@@ -780,7 +778,7 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
 
           <EditorSection
             title="Stärken"
-            description="Stärken werden unabhängig von den Kenntnissen verwaltet."
+            description="Alle Vorlagen zeigen Stärken in 3 Spalten. Neun Einträge ergeben 3 Zeilen; die Reihenfolge bleibt erhalten."
             action={
               <button
                 type="button"
@@ -813,19 +811,10 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
             saving={savingSection === "strengths"}
             saved={savedSection === "strengths"}
           >
-            <TextField
-              label="Überschrift im Lebenslauf"
-              value={draft.resumeSectionTitles.strengths}
-              onChange={(strengths) =>
-                setDraft((current) => ({
-                  ...current,
-                  resumeSectionTitles: {
-                    ...current.resumeSectionTitles,
-                    strengths,
-                  },
-                }))
-              }
-            />
+            <button type="button" className="button secondary small-button" onClick={() => setDraft((current) => ({ ...current, strengths: addTechnologyStrengths(current.strengths) }))}>
+              <Plus size={15} /> Go / React / Spring Boot ergänzen
+            </button>
+            <ResumeSectionTitleEditor profile={draft} section="strengths" onChange={setDraft} />
             <div className="special-entry-list">
               {draft.strengths.map((strength, index) => (
                 <div className="special-entry-card" key={strength.id}>
@@ -953,19 +942,7 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
             saving={savingSection === "experience"}
             saved={savedSection === "experience"}
           >
-            <TextField
-              label="Überschrift im Lebenslauf"
-              value={draft.resumeSectionTitles.experience}
-              onChange={(experience) =>
-                setDraft((current) => ({
-                  ...current,
-                  resumeSectionTitles: {
-                    ...current.resumeSectionTitles,
-                    experience,
-                  },
-                }))
-              }
-            />
+            <ResumeSectionTitleEditor profile={draft} section="experience" onChange={setDraft} />
             <div className="resume-editor-list">
               {draft.experiences.map((experience, index) => (
                 <article
@@ -1161,19 +1138,7 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
             saving={savingSection === "education"}
             saved={savedSection === "education"}
           >
-            <TextField
-              label="Überschrift im Lebenslauf"
-              value={draft.resumeSectionTitles.education}
-              onChange={(education) =>
-                setDraft((current) => ({
-                  ...current,
-                  resumeSectionTitles: {
-                    ...current.resumeSectionTitles,
-                    education,
-                  },
-                }))
-              }
-            />
+            <ResumeSectionTitleEditor profile={draft} section="education" onChange={setDraft} />
             <div className="resume-editor-list">
               {draft.education.map((education, index) => (
                 <article
@@ -1301,9 +1266,9 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
             saved={savedSection === "knowledge"}
           >
             <KnowledgeSectionEditor
-              value={draft.knowledgeSection}
+              value={{ ...draft.knowledgeSection, title: getResumeSectionTitle(draft, "knowledge") }}
               onChange={(knowledgeSection) =>
-                setDraft((current) => ({ ...current, knowledgeSection }))
+                setDraft((current) => setResumeSectionTitle({ ...current, knowledgeSection }, "knowledge", knowledgeSection.title))
               }
               onCopyCategory={copyKnowledgeCategory}
             />
@@ -1322,19 +1287,7 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
             saving={savingSection === "languages"}
             saved={savedSection === "languages"}
           >
-            <TextField
-              label="Überschrift im Lebenslauf"
-              value={draft.resumeSectionTitles.languages}
-              onChange={(languages) =>
-                setDraft((current) => ({
-                  ...current,
-                  resumeSectionTitles: {
-                    ...current.resumeSectionTitles,
-                    languages,
-                  },
-                }))
-              }
-            />
+            <ResumeSectionTitleEditor profile={draft} section="languages" onChange={setDraft} />
             <LanguageLevelEditor
               values={draft.languages}
               onChange={(languages) =>
@@ -1355,19 +1308,7 @@ export function ProfileView({ onSaved }: { onSaved: () => void }) {
             saving={savingSection === "certifications"}
             saved={savedSection === "certifications"}
           >
-            <TextField
-              label="Überschrift im Lebenslauf"
-              value={draft.resumeSectionTitles.certifications}
-              onChange={(certifications) =>
-                setDraft((current) => ({
-                  ...current,
-                  resumeSectionTitles: {
-                    ...current.resumeSectionTitles,
-                    certifications,
-                  },
-                }))
-              }
-            />
+            <ResumeSectionTitleEditor profile={draft} section="certifications" onChange={setDraft} />
             <CertificateListEditor
               values={draft.certifications}
               onChange={(certifications) =>
@@ -1942,29 +1883,12 @@ function SortActions({
 }: {
   index: number;
   length: number;
-  onMove: (direction: -1 | 1) => void;
+  onMove: (direction: number) => void;
   onRemove: () => void;
 }) {
   return (
     <div className="sort-actions">
-      <button
-        type="button"
-        className="icon-button"
-        disabled={index === 0}
-        aria-label="Nach oben verschieben"
-        onClick={() => onMove(-1)}
-      >
-        <ArrowUp size={15} />
-      </button>
-      <button
-        type="button"
-        className="icon-button"
-        disabled={index === length - 1}
-        aria-label="Nach unten verschieben"
-        onClick={() => onMove(1)}
-      >
-        <ArrowDown size={15} />
-      </button>
+      <OrderControls index={index} length={length} onMove={(target) => onMove(target - index)} />
       <button
         type="button"
         className="icon-button danger"

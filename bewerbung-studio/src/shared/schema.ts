@@ -290,6 +290,12 @@ export const applicationSchema = z.object({
   accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   secondaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).default("#244766"),
   designSettings: documentDesignSchema.default(defaultDocumentDesign),
+  // Inactive templates only; the selected template uses the fields above.
+  templateDesigns: z.record(z.string(), z.object({
+    accentColor: hexColorSchema,
+    secondaryColor: hexColorSchema,
+    settings: documentDesignSchema,
+  })).default({}),
   profileId: z.uuid().optional(),
   notes: optionalText,
   sentAt: optionalIsoDate,

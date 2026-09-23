@@ -27,7 +27,7 @@ export function ResumeSectionsPanel({ profile, templateId, singlePageExceeded, o
   const [expanded, setExpanded] = useState<string | null>(null);
   const [dragged, setDragged] = useState<string | null>(null);
   const [newBlock, setNewBlock] = useState(resumeBlockRegistry[0].id);
-  useEffect(() => { setDraft(profile); }, [profile]);
+  useEffect(() => { setDraft(profile); }, [profile.id, profile.updatedAt]);
   useEffect(() => { onPreview(templateId, draft); }, [draft, onPreview, templateId]);
   useEffect(() => () => onPreview(templateId, null), [onPreview, templateId]);
   const entries = useMemo(() => getManagerSections(draft, templateId), [draft, templateId]);

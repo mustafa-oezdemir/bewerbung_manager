@@ -3,6 +3,7 @@ import type { ApplicantProfile } from "./schema";
 import { getManagerSections, type ManagerSection } from "../features/resume-sections/resume-manager";
 import { resolveKnowledgeGroups } from "../features/resume-sections/resume-section-system";
 import { getProfileMediaSource } from "./profileMedia";
+import { getTechnologyBrandIconMarkup } from "./technologyBrand";
 
 const escape = (value: string) => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 const aliases: Record<string, string[]> = {
@@ -23,6 +24,11 @@ export const managedResumeCss = `
 .managed-extra .managed-columns{display:grid;grid-template-columns:1fr 1fr;gap:2mm}
 [data-managed-section]{break-inside:avoid}
 [data-managed-moved], [data-managed-moved] :is(h2,h3,p,li,small){color:inherit!important}
+[data-managed-section="strengths"] .managed-strengths-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3mm;list-style:none;margin:0;padding:0}
+[data-managed-section="strengths"] .managed-strength-card{display:flex;flex-direction:column;align-items:flex-start;gap:1mm;min-width:0;margin:0;padding:0;border:0;break-inside:avoid;overflow-wrap:anywhere}
+[data-managed-section="strengths"] .managed-strength-card>svg{width:6mm;height:6mm;flex:none}
+[data-managed-section="strengths"] .managed-strength-card strong{font-size:1em;line-height:1.3}
+[data-managed-section="strengths"] .managed-strength-card p{margin:0;white-space:pre-line;font-size:.92em;line-height:1.4;color:inherit}
 `;
 
 // Both the React preview and the PDF use this pure HTML projection. It only
@@ -47,8 +53,8 @@ export const applyManagedResumeOutput = (html: string, profile: ApplicantProfile
     }
     if (!enabled("closing")) root.querySelectorAll('footer,[class*="-closing"]').forEach((node) => node.remove());
     if (!enabled("personalData")) root.querySelectorAll('address,[data-element-id$=".contacts"],[data-resume-personal],.resume-personal-data,.pehlione-contacts,.pehlione-ats-contact,.pehlione-pdf-ats-contact,.zeitgenoessisch-contacts,section:has(>.modern-contact-list)').forEach((node) => node.remove());
-    const number = pages.length ? rootIndex + 1 : pageNumber;
-    const last = pages.length ? rootIndex === pages.length - 1 : number === totalPages;
+    const number = pages.length > 1 ? rootIndex + 1 : pageNumber;
+    const last = pages.length > 1 ? rootIndex === pages.length - 1 : number === totalPages;
     const nodes = new Map<string, Element[]>();
     const sectionNodes = Array.from(root.querySelectorAll("section:not(.page)"));
     for (const node of sectionNodes) {
@@ -79,6 +85,35 @@ export const applyManagedResumeOutput = (html: string, profile: ApplicantProfile
       // Template-independent blocks appear once; native career entries remain
       // on their planned pages and are never copied across page boundaries.
       let content = "";
+      if (entry.id === "strengths") {
+        if (number !== 1) {
+          existing.forEach((node) => node.remove());
+          nodes.delete(entry.id);
+          continue;
+        }
+        // Read canonical records here: individual templates historically truncated
+        // this list or omitted entries without descriptions.
+        const explicit = profile.strengths.filter((item) => item.title.trim());
+        if (!explicit.length && !items.length && !existing.length) continue;
+        const strengths = items.length
+          ? items.map((item) => ({ title: item.text, description: item.description ?? "", iconId: "" }))
+          : explicit.length ? explicit : [...new Set(profile.skills.map((value) => value.trim()).filter(Boolean))].map((value) => {
+            const [title, ...description] = value.split(/\s+(?:–|—|:)\s+/);
+            return { title, description: description.join(" – "), iconId: "" };
+          });
+        if (strengths.length) {
+          const node = existing[0] ?? document.createElement("section");
+          const heading = node.querySelector("h2,h3")?.outerHTML ?? `<h3>${escape(entry.title)}</h3>`;
+          node.setAttribute("data-managed-section", "strengths");
+          if (!existing.length) node.className = "managed-extra";
+          node.innerHTML = `${heading}<div class="managed-strengths-grid">${strengths.map((item) => `<article class="managed-strength-card">${isAts ? "" : getTechnologyBrandIconMarkup(item.title, item.iconId)}<strong>${escape(item.title)}</strong>${item.description ? `<p>${escape(item.description)}</p>` : ""}</article>`).join("")}</div>`;
+          node.querySelector("h2,h3")!.textContent = entry.title;
+          existing.slice(1).forEach((duplicate) => duplicate.remove());
+          if (!existing.length) container(entry).appendChild(node);
+          nodes.set(entry.id, [node]);
+        }
+        continue;
+      }
       if (items.length && last) {
         const itemHtml = items.map((item) => `${group?.rendererType === "icon-list" && item.icon ? `<span aria-hidden="true">${escape(item.icon)}</span> ` : ""}${escape(item.text)}${item.level ? ` <small>${escape(item.level)}</small>` : ""}${item.description ? `<small>${escape(item.description)}</small>` : ""}`);
         content = group?.rendererType === "tag-list" ? `<div class="managed-tags">${itemHtml.map((item) => `<span>${item}</span>`).join("")}</div>`
@@ -103,7 +138,10 @@ export const applyManagedResumeOutput = (html: string, profile: ApplicantProfile
       } else {
         for (const node of existing) {
           const heading = node.querySelector("h2,h3");
-          if (heading && profile.resumeManagerOverrides?.[entry.id]?.title !== undefined) heading.textContent = entry.title;
+          if (heading) {
+            const continuation = /·\s*Fortsetzung/i.test(heading.textContent ?? "") ? " · Fortsetzung" : "";
+            heading.textContent = entry.title + continuation;
+          }
         }
       }
     }

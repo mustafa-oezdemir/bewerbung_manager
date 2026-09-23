@@ -708,6 +708,7 @@ export class DataStore {
       id: createId(),
       folderName,
       ...input,
+      templateDesigns: {},
       additionalContacts: input.additionalContacts ?? [],
       status: input.sentAt ? "Beworben" : "Entwurf",
       documents: {

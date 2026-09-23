@@ -15,6 +15,8 @@ import {
   type ApplicationInput,
 } from "../src/shared/schema";
 import { defaultDocumentDesign } from "../src/shared/documentDesign";
+import { createDocumentDesignDraft, selectDocumentTemplate } from "../src/shared/documentEditorState";
+import { setResumeSectionTitle } from "../src/features/resume-sections/resume-sections";
 import { DataStore } from "./storage";
 
 const applicationInput = (company: string): ApplicationInput => ({
@@ -226,6 +228,33 @@ describe("DataStore backups", () => {
         ),
       ),
     ).rejects.toThrow();
+  });
+
+  it("reloads the saved resume configuration from disk without leaking between applications or profiles", async () => {
+    await store.createApplication(applicationInput("Bewerbung A"));
+    const a = store.getWorkspace().applications[0];
+    await store.createApplication(applicationInput("Bewerbung B"));
+    const b = store.getWorkspace().applications.find((item) => item.id !== a.id)!;
+    const first = setResumeSectionTitle(profileSchema.parse({ id: crypto.randomUUID(), isDefault: true, firstName: "Mina", lastName: "Kaya", updatedAt: new Date().toISOString(), languages: ["Englisch – B2", "Deutsch – C1"], resumeManagerLayouts: { modern: [{ id: "education", zone: "main" }, { id: "experience", zone: "main" }] }, resumePersonalFieldVisibility: { address: false, phone: true, email: true, linkedin: false, github: false, website: false, birthDate: false, birthPlace: false, nationality: false, drivingLicense: false, xing: false } }), "experience", "Meine Praxis");
+    const second = profileSchema.parse({ ...first, id: crypto.randomUUID(), isDefault: false, firstName: "Ali", summary: "Profil B", languages: ["Türkisch – Muttersprache"] });
+    await store.saveProfile(first);
+    await store.saveProfile(second);
+    const original = { ...createDocumentDesignDraft(a), templateId: "modern", accentColor: "#112233", settings: { ...a.designSettings, marginLevel: 8 as const, fontId: "arial" as const } };
+    const other = selectDocumentTemplate(original, "klassisch");
+    await store.saveApplication({ ...a, profileId: first.id, templateId: other.templateId, accentColor: other.accentColor, secondaryColor: other.secondaryColor, designSettings: other.settings, templateDesigns: other.templateDesigns });
+    await store.saveApplication({ ...b, profileId: second.id });
+
+    const restarted = new DataStore(root);
+    await restarted.initialize();
+    const workspace = restarted.getWorkspace();
+    const savedA = workspace.applications.find((item) => item.id === a.id)!;
+    const savedB = workspace.applications.find((item) => item.id === b.id)!;
+    expect(selectDocumentTemplate(createDocumentDesignDraft(savedA), "modern").settings).toEqual(original.settings);
+    expect(selectDocumentTemplate(createDocumentDesignDraft(savedA), "modern").accentColor).toBe("#112233");
+    expect(savedB.templateId).toBe(b.templateId);
+    expect(savedB.templateDesigns).toEqual({});
+    expect(workspace.profiles.find((item) => item.id === first.id)).toEqual(first);
+    expect(workspace.profiles.find((item) => item.id === second.id)).toEqual(second);
   });
 
   it("does not replace unreadable existing workspace data with an empty workspace", async () => {

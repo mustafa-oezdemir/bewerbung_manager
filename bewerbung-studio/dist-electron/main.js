@@ -5198,11 +5198,21 @@ var defaultEditableResumeSectionTitles = {
 	languages: "Sprachen",
 	certifications: "Zertifikate"
 };
+var titleSemanticTypes = {
+	summary: "summary",
+	experience: "career",
+	education: "education",
+	knowledge: "knowledge"
+};
 var getResumeSectionTitle = (profile, type) => {
-	if (type === "knowledge") return profile?.knowledgeSection.title.trim() || resumeSectionLabels.knowledge;
+	const override = profile?.resumeManagerOverrides?.[type]?.title;
+	if (override?.trim()) return override;
+	const semantic = profile?.resumeSemanticSections.find((section) => section.semanticType === titleSemanticTypes[type])?.customTitle;
+	if (semantic?.trim()) return semantic;
+	if (type === "knowledge") return profile?.knowledgeSection.title.trim() ? profile.knowledgeSection.title : resumeSectionLabels.knowledge;
 	if (type in defaultEditableResumeSectionTitles) {
 		const editableType = type;
-		return profile?.resumeSectionTitles?.[editableType]?.trim() || defaultEditableResumeSectionTitles[editableType];
+		return (profile?.resumeSectionTitles?.[editableType]?.trim() ? profile.resumeSectionTitles[editableType] : "") || defaultEditableResumeSectionTitles[editableType];
 	}
 	return resumeSectionLabels[type];
 };
@@ -5582,6 +5592,11 @@ var applicationSchema = object({
 	accentColor: string().regex(/^#[0-9a-fA-F]{6}$/),
 	secondaryColor: string().regex(/^#[0-9a-fA-F]{6}$/).default("#244766"),
 	designSettings: documentDesignSchema.default(defaultDocumentDesign),
+	templateDesigns: record(string(), object({
+		accentColor: hexColorSchema,
+		secondaryColor: hexColorSchema,
+		settings: documentDesignSchema
+	})).default({}),
 	profileId: uuid().optional(),
 	notes: optionalText,
 	sentAt: optionalIsoDate,
@@ -19263,438 +19278,6 @@ var getManagerSections = (profile, templateId) => {
 var supportedProfileMedia = /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=\s]+$/i;
 var getProfileMediaSource = (value) => value && supportedProfileMedia.test(value) ? value : "";
 //#endregion
-//#region src/shared/resumeManagedOutput.ts
-var escape$1 = (value) => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;");
-var aliases = {
-	summary: [
-		"Zusammenfassung",
-		"Kurzprofil",
-		"Profil"
-	],
-	strengths: ["Stärken", "Kernkompetenzen"],
-	experience: [
-		"Berufserfahrung",
-		"Erfahrung",
-		"Beruflicher Werdegang"
-	],
-	education: ["Ausbildung", "Bildungsweg"],
-	knowledge: [
-		"Kenntnisse",
-		"Fähigkeiten",
-		"Technische Schwerpunkte",
-		"Besondere Kenntnisse"
-	],
-	certifications: [
-		"Zertifikate",
-		"Weiterbildungen",
-		"Weiterbildungen (Auswahl)",
-		"Erfolge"
-	],
-	languages: ["Sprachen"],
-	projects: ["Projekt-Highlight"]
-};
-var normalize = (value) => value.replace(/\s*·\s*Fortsetzung/i, "").trim().toLocaleLowerCase("de-DE");
-var managedResumeCss = `
-.managed-extra{margin:0 0 4mm;break-inside:avoid;color:inherit;font:inherit}
-.managed-extra h3{margin:0 0 2mm;font-size:1.08em;color:inherit}
-.managed-extra ul{padding-left:4mm;margin:0}.managed-extra li{margin-bottom:1mm}
-.managed-extra small{display:block;font-size:.92em}.managed-extra p{margin:1mm 0}
-.managed-extra .managed-tags{display:flex;flex-wrap:wrap;gap:1.5mm}
-.managed-extra .managed-tags span{border:1px solid currentColor;border-radius:2mm;padding:.7mm 1.5mm}
-.managed-extra .managed-columns{display:grid;grid-template-columns:1fr 1fr;gap:2mm}
-[data-managed-section]{break-inside:avoid}
-[data-managed-moved], [data-managed-moved] :is(h2,h3,p,li,small){color:inherit!important}
-`;
-var applyManagedResumeOutput = (html, profile, templateId, pageNumber = 1, totalPages = 1) => {
-	if (!profile) return html;
-	const { document } = parseHTML(`<html><body>${html}</body></html>`);
-	const entries = getManagerSections(profile, templateId);
-	const groups = resolveKnowledgeGroups(templateId, profile.resumeKnowledgeGroups);
-	const pages = Array.from(document.querySelectorAll(".cv-sheet"));
-	(pages.length ? pages : [document.body]).forEach((root, rootIndex) => {
-		const enabled = (id) => entries.find((entry) => entry.id === id)?.visible !== false;
-		if (!enabled("photo")) {
-			const source = getProfileMediaSource(profile.photoPath);
-			root.querySelectorAll("img").forEach((img) => {
-				if (img.getAttribute("src") === source || /photo|foto/i.test(img.className)) (img.closest("[class*=\"__photo\"],[class*=\"-header__photo\"],[class*=\"-header-photo\"]") ?? img).remove();
-			});
-		}
-		if (!enabled("closing")) root.querySelectorAll("footer,[class*=\"-closing\"]").forEach((node) => node.remove());
-		if (!enabled("personalData")) root.querySelectorAll("address,[data-element-id$=\".contacts\"],[data-resume-personal],.resume-personal-data,.pehlione-contacts,.pehlione-ats-contact,.pehlione-pdf-ats-contact,.zeitgenoessisch-contacts,section:has(>.modern-contact-list)").forEach((node) => node.remove());
-		const number = pages.length ? rootIndex + 1 : pageNumber;
-		const last = pages.length ? rootIndex === pages.length - 1 : number === totalPages;
-		const nodes = /* @__PURE__ */ new Map();
-		const sectionNodes = Array.from(root.querySelectorAll("section:not(.page)"));
-		for (const node of sectionNodes) {
-			const heading = node.querySelector("h2,h3");
-			if (!heading || heading.closest("section") !== node || heading.closest("article") && node.contains(heading.closest("article"))) continue;
-			const title = normalize(heading.textContent ?? "");
-			const elementId = node.getAttribute("data-element-id") ?? "";
-			const entry = entries.find((entry) => entry.id.startsWith("special:") && elementId === `special.${entry.id.slice(8)}`) ?? entries.find((entry) => !entry.fixed && normalize(entry.title) === title) ?? entries.find((entry) => (aliases[entry.id] ?? []).some((alias) => normalize(alias) === title)) ?? entries.find((entry) => !entry.fixed && elementId.endsWith(`.${entry.id}`));
-			if (entry) {
-				node.setAttribute("data-managed-section", entry.id);
-				nodes.set(entry.id, [...nodes.get(entry.id) ?? [], node]);
-			}
-		}
-		const isAts = Boolean(root.querySelector("[data-renderer=\"ats\"], [class*=\"-ats\"]"));
-		const main = root.querySelector(".pehlione-main,.pehlione-pdf-main,.elegant-main,.elegant-pdf-main,.modern-resume-left-column,.modern-pdf-left,.zweispaltig-main,.zweispaltig-pdf-main,.zeitgenoessisch-main,.zeit-pdf-main,.kreativ-main,.kreativ-pdf-main,.gepflegt-main,.gepflegt-pdf-main,.kompakt-left,.kompakt-pdf-columns>main,main") ?? nodes.get("experience")?.[0]?.parentElement ?? root.querySelector(".page-content") ?? root;
-		const sidebar = isAts ? main : root.querySelector("aside,.modern-resume-right-column,.modern-pdf-right,.elegant-sidebar,.elegant-pdf-sidebar,.zeitgenoessisch-sidebar,.zeit-pdf-sidebar,.kreativ-sidebar,.kreativ-pdf-sidebar,.zweispaltig-sidebar,.zweispaltig-pdf-sidebar,.gepflegt-sidebar,.gepflegt-pdf-sidebar,.kompakt-right") ?? main;
-		const container = (entry) => entry.zone === "sidebar" ? sidebar : main;
-		for (const entry of entries.filter((item) => !item.fixed)) {
-			const existing = nodes.get(entry.id) ?? [];
-			const group = groups.find((group) => group.id === entry.groupId);
-			const items = group?.items.filter((item) => item.visible && item.text.trim()).sort((a, b) => a.order - b.order) ?? [];
-			if (!entry.visible) {
-				existing.forEach((node) => node.remove());
-				nodes.delete(entry.id);
-				continue;
-			}
-			let content = "";
-			if (items.length && last) {
-				const itemHtml = items.map((item) => `${group?.rendererType === "icon-list" && item.icon ? `<span aria-hidden="true">${escape$1(item.icon)}</span> ` : ""}${escape$1(item.text)}${item.level ? ` <small>${escape$1(item.level)}</small>` : ""}${item.description ? `<small>${escape$1(item.description)}</small>` : ""}`);
-				content = group?.rendererType === "tag-list" ? `<div class="managed-tags">${itemHtml.map((item) => `<span>${item}</span>`).join("")}</div>` : ["two-column-list", "compact-grid"].includes(group?.rendererType ?? "") ? `<div class="managed-columns">${itemHtml.map((item) => `<div>${item}</div>`).join("")}</div>` : group?.rendererType === "text-list" ? itemHtml.map((item) => `<p>${item}</p>`).join("") : `<ul>${itemHtml.map((item) => `<li>${item}</li>`).join("")}</ul>`;
-			} else if (entry.id.startsWith("special:") && last && !existing.length) content = profile.specialSections.find((item) => item.id === entry.id.slice(8))?.entries.map((item) => `<article><strong>${escape$1(item.title)}</strong><p>${[
-				item.subtitle,
-				item.location,
-				item.date || [item.from, item.to].filter(Boolean).join(" – ")
-			].filter(Boolean).map(escape$1).join(" · ")}</p><p>${escape$1(item.description)}</p>${item.bullets.length ? `<ul>${item.bullets.map((bullet) => `<li>${escape$1(bullet)}</li>`).join("")}</ul>` : ""}${item.url ? `<p>${escape$1(item.url)}</p>` : ""}</article>`).join("") ?? "";
-			if (content) {
-				existing.forEach((node) => node.remove());
-				const node = document.createElement("section");
-				node.className = "managed-extra";
-				node.setAttribute("data-managed-section", entry.id);
-				node.innerHTML = `<h3>${escape$1(entry.title)}</h3>${content}`;
-				if (group?.pageBreakBefore) node.style.breakBefore = "page";
-				container(entry).appendChild(node);
-				nodes.set(entry.id, [node]);
-			} else if (items.length && !last) {
-				existing.forEach((node) => node.remove());
-				nodes.delete(entry.id);
-			} else for (const node of existing) {
-				const heading = node.querySelector("h2,h3");
-				if (heading && profile.resumeManagerOverrides?.[entry.id]?.title !== void 0) heading.textContent = entry.title;
-			}
-		}
-		for (const destination of profile.resumeManagerLayouts?.[templateId]?.length ? /* @__PURE__ */ new Set([main, sidebar]) : []) {
-			const moving = entries.filter((entry) => !entry.fixed && entry.visible && container(entry) === destination).flatMap((entry) => nodes.get(entry.id) ?? []);
-			if (!moving.length) continue;
-			const anchor = document.createComment("managed-sections");
-			const first = Array.from(destination.children).find((child) => moving.includes(child) || child.matches("footer,[class*='closing']"));
-			destination.insertBefore(anchor, first ?? null);
-			for (const node of moving) {
-				if (node.parentElement !== destination) node.setAttribute("data-managed-moved", "true");
-				destination.insertBefore(node, anchor);
-			}
-			anchor.remove();
-		}
-	});
-	return document.body.innerHTML;
-};
-//#endregion
-//#region src/shared/resumeDisplayProfile.ts
-var getResumeDisplayProfile = (profile) => {
-	if (!profile) return void 0;
-	const visible = {
-		...defaultResumePersonalFieldVisibility,
-		...profile.resumePersonalFieldVisibility
-	};
-	return {
-		...profile,
-		street: visible.address ? profile.street : "",
-		postalCode: visible.address ? profile.postalCode : "",
-		city: visible.address ? profile.city : "",
-		country: visible.address ? profile.country : "",
-		phone: visible.phone ? profile.phone : "",
-		email: visible.email ? profile.email : "",
-		linkedin: visible.linkedin ? profile.linkedin : "",
-		github: visible.github ? profile.github : "",
-		portfolio: visible.website ? profile.portfolio : "",
-		birthDate: visible.birthDate ? profile.birthDate : "",
-		birthPlace: visible.birthPlace ? profile.birthPlace : "",
-		nationality: visible.nationality ? profile.nationality : "",
-		photoPath: getResumeSemanticSection(profile.resumeSemanticSections, "photo").visible ? profile.photoPath : "",
-		onlineProfiles: profile.onlineProfiles.filter((entry) => /xing/i.test(entry.label) ? visible.xing : visible.website)
-	};
-};
-//#endregion
-//#region src/shared/resumeIdentityVisibility.ts
-var getResumeIdentityVisibilityCss = (sections) => {
-	const hidden = (type) => {
-		const section = getResumeSemanticSection(sections, type);
-		return !section.visible || !section.enabled;
-	};
-	const scope = ":is(.document-lebenslauf, .cv-sheet)";
-	const rules = [];
-	if (hidden("heading")) rules.push(`${scope} header:not([class*="section-heading"]) :is(h1,h2,[class*="__name"],[class*="__title"],[class*="__profession"],[class*="__kicker"],.kicker),${scope} .tabellarisch-pdf-continuation{display:none!important}`);
-	if (hidden("personalData")) rules.push(`${scope} :is(address,[data-element-id$=".contacts"],[data-resume-personal],.resume-personal-data,.pehlione-contacts,.pehlione-ats-contact,.pehlione-pdf-ats-contact,.zeitgenoessisch-contacts),${scope} section:has(>address),${scope} section:has(>.modern-contact-list){display:none!important}`);
-	return rules.join("\n");
-};
-//#endregion
-//#region src/shared/documentPagination.ts
-var FIRST_PAGE_CAPACITY = 30;
-var SECOND_PAGE_CAPACITY = 38;
-var RECOMMENDED_LETTER_CHARACTERS = 3300;
-var zweispaltigPaginationOptions = {
-	firstPageCapacity: 50,
-	secondPageCapacity: 54,
-	preserveItemOrder: true
-};
-var elegantPaginationOptions = {
-	firstPageCapacity: 50,
-	secondPageCapacity: 54,
-	preserveItemOrder: true
-};
-var kompaktPaginationOptions = {
-	firstPageCapacity: 50,
-	secondPageCapacity: 54,
-	preserveItemOrder: true
-};
-var kreativPaginationOptions = {
-	firstPageCapacity: 50,
-	secondPageCapacity: 54,
-	preserveItemOrder: true
-};
-var tabellarischPaginationOptions = {
-	firstPageCapacity: 48,
-	secondPageCapacity: 52,
-	preserveItemOrder: true
-};
-var modernPaginationOptions = {
-	firstPageCapacity: 50,
-	secondPageCapacity: 54,
-	preserveItemOrder: true
-};
-var pehlionePaginationOptions = {
-	firstPageCapacity: 50,
-	secondPageCapacity: 54,
-	preserveItemOrder: true
-};
-var gepflegtPaginationOptions = {
-	firstPageCapacity: 50,
-	secondPageCapacity: 54,
-	preserveItemOrder: true
-};
-var zeitgenoessischPaginationOptions = {
-	firstPageCapacity: 50,
-	secondPageCapacity: 54,
-	preserveItemOrder: true
-};
-var ivyLeaguePaginationOptions = {
-	firstPageCapacity: 50,
-	secondPageCapacity: 54,
-	preserveItemOrder: true
-};
-var stilvollPaginationOptions = {
-	firstPageCapacity: 50,
-	secondPageCapacity: 54,
-	preserveItemOrder: true
-};
-var einspaltigPaginationOptions = {
-	firstPageCapacity: 42,
-	secondPageCapacity: 50,
-	preserveItemOrder: true
-};
-var klassischPaginationOptions = {
-	firstPageCapacity: 50,
-	secondPageCapacity: 54,
-	preserveItemOrder: true
-};
-var textWeight = (value, charactersPerUnit = 95) => Math.max(0, Math.ceil(value.trim().length / charactersPerUnit));
-var experienceWeight = (experience) => 4 + textWeight(`${experience.role} ${experience.company}`, 70) + experience.achievements.filter((achievement) => achievement.trim()).reduce((total, achievement) => total + 1 + textWeight(achievement), 0);
-var educationWeight = (education) => 2 + textWeight(`${education.degree} ${education.institution}`, 80);
-var sidebarWeight = (profile, resumeProfile) => {
-	if (!profile) return 4;
-	const summary = resumeProfile || profile.summary;
-	const knowledgeCount = flattenKnowledgeNames(ensureKnowledgeSection(profile.knowledgeSection, profile.skills)).length;
-	return textWeight(summary, 105) + Math.ceil(knowledgeCount / 3) + Math.ceil(profile.languages.length / 2) + Math.ceil(profile.certifications.length / 2);
-};
-var densityForWeight = (weight, capacity) => {
-	if (weight > capacity * 1.3) return "dense";
-	if (weight > capacity * .9) return "compact";
-	return "standard";
-};
-var createResumePagePlan = (profile, resumeProfile = "", options = {}, templateId) => {
-	const firstPageCapacity = options.firstPageCapacity ?? FIRST_PAGE_CAPACITY;
-	const secondPageCapacity = options.secondPageCapacity ?? SECOND_PAGE_CAPACITY;
-	const items = [...(profile?.experiences ?? []).map((experience) => ({
-		kind: "experience",
-		id: experience.id,
-		weight: experienceWeight(experience)
-	})), ...(profile?.education ?? []).map((education) => ({
-		kind: "education",
-		id: education.id,
-		weight: educationWeight(education)
-	}))];
-	const managerLayout = templateId ? profile?.resumeManagerLayouts?.[templateId] : void 0;
-	if (managerLayout?.length) {
-		const order = managerLayout.map((item) => item.id);
-		items.sort((left, right) => order.indexOf(left.kind) - order.indexOf(right.kind));
-	}
-	const totalMainWeight = items.reduce((total, item) => total + item.weight, 0);
-	const firstPageWeight = Math.max(totalMainWeight, sidebarWeight(profile, resumeProfile));
-	if (firstPageWeight <= firstPageCapacity || items.length <= 1) return [{
-		pageNumber: 1,
-		items,
-		density: densityForWeight(firstPageWeight, firstPageCapacity)
-	}];
-	const pageOneItems = [];
-	const pageTwoItems = [];
-	let pageOneWeight = 0;
-	let continueOnSecondPage = false;
-	for (const item of items) if (!continueOnSecondPage && (pageOneItems.length === 0 || pageOneWeight + item.weight <= firstPageCapacity)) {
-		pageOneItems.push(item);
-		pageOneWeight += item.weight;
-	} else {
-		pageTwoItems.push(item);
-		continueOnSecondPage = Boolean(managerLayout?.length) || (options.preserveItemOrder ?? false);
-	}
-	if (pageTwoItems.length === 0 && pageOneItems.length > 1) {
-		pageTwoItems.unshift(pageOneItems.pop());
-		pageOneWeight = pageOneItems.reduce((total, item) => total + item.weight, 0);
-	}
-	const pageTwoWeight = pageTwoItems.reduce((total, item) => total + item.weight, 0);
-	return [{
-		pageNumber: 1,
-		items: pageOneItems,
-		density: densityForWeight(Math.max(pageOneWeight, sidebarWeight(profile, resumeProfile)), firstPageCapacity)
-	}, {
-		pageNumber: 2,
-		items: pageTwoItems,
-		density: densityForWeight(pageTwoWeight, secondPageCapacity)
-	}];
-};
-var getLetterPageStatus = (documents) => {
-	const characterCount = [
-		documents.coverSubject,
-		documents.coverIntroduction,
-		getCoverLetterMainBody(documents),
-		documents.coverCompanyFit,
-		documents.coverExtraParagraph,
-		documents.coverClosing
-	].reduce((total, value) => total + value.trim().length, 0);
-	return {
-		characterCount,
-		recommendedMaximum: RECOMMENDED_LETTER_CHARACTERS,
-		density: characterCount > RECOMMENDED_LETTER_CHARACTERS ? "dense" : characterCount > 2500 ? "compact" : "standard",
-		isOverRecommendedLength: characterCount > RECOMMENDED_LETTER_CHARACTERS
-	};
-};
-//#endregion
-//#region src/shared/contactPresentation.ts
-var internationalDigits = (value) => value.trim().replace(/^00/, "+").replace(/[^\d+]/g, "");
-/** Formats German mobile numbers for display without changing their stored value. */
-var formatPhoneForDisplay = (value = "") => {
-	const digits = internationalDigits(value).replace(/\D/g, "");
-	if (digits.startsWith("49") && /^1\d{9,10}$/.test(digits.slice(2))) return `+49 ${digits.slice(2, 5)} ${digits.slice(5)}`;
-	return value.trim();
-};
-var externalUrl = (value = "") => {
-	const trimmed = value.trim();
-	if (!trimmed) return "";
-	if (/^https?:\/\//i.test(trimmed)) return trimmed;
-	return `https://${trimmed.replace(/^[a-z][a-z\d+.-]*:(?:\/\/)?/i, "")}`;
-};
-/** Keeps the URL readable while the complete URL remains the link destination. */
-var formatUrlForDisplay = (value = "") => externalUrl(value).replace(/^https?:\/\//i, "").replace(/\/$/, "");
-//#endregion
-//#region src/shared/pehlioneContacts.ts
-var iconPaths = {
-	person: "<circle cx=\"12\" cy=\"7\" r=\"4\"/><path d=\"M4 21a8 8 0 0 1 16 0\"/>",
-	location: "<path d=\"M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z\"/><circle cx=\"12\" cy=\"10\" r=\"2.5\"/>",
-	phone: "<path d=\"M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.4 1.8.6 2.8.7a2 2 0 0 1 1.8 2.1Z\"/>",
-	email: "<rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\"/><path d=\"m3 6 9 7 9-7\"/>",
-	linkedin: "<rect x=\"3\" y=\"9\" width=\"4\" height=\"12\"/><circle cx=\"5\" cy=\"4\" r=\"2\"/><path d=\"M11 21V9h4v2c3-4 7-1 7 3v7h-4v-7c0-2-3-2-3 0v7Z\"/>",
-	github: "<path d=\"M9 19c-4.3 1.3-4.3-2.5-6-3m12 6v-3.9c0-1.1-.4-1.9-.8-2.3 2.7-.3 5.5-1.3 5.5-6A4.7 4.7 0 0 0 18.4 6a4.3 4.3 0 0 0-.1-3.8S17.2 1.9 14.4 3.7a13.4 13.4 0 0 0-6.8 0C4.8 1.9 3.7 2.2 3.7 2.2A4.3 4.3 0 0 0 3.6 6a4.7 4.7 0 0 0-1.3 3.3c0 4.7 2.8 5.7 5.5 6-.4.4-.8 1.1-.8 2.3V22\"/>",
-	website: "<circle cx=\"12\" cy=\"12\" r=\"9\"/><ellipse cx=\"12\" cy=\"12\" rx=\"4\" ry=\"9\"/><path d=\"M3 12h18M5 6h14M5 18h14\"/>"
-};
-var icon = (kind) => `<svg data-contact-icon="${kind}" viewBox="0 0 24 24" aria-hidden="true">${iconPaths[kind]}</svg>`;
-var escape = (value) => value.replace(/[&<>"']/g, (char) => ({
-	"&": "&amp;",
-	"<": "&lt;",
-	">": "&gt;",
-	"\"": "&quot;",
-	"'": "&#39;"
-})[char]);
-var getPehlioneContacts = (profile) => {
-	const visible = {
-		...defaultResumePersonalFieldVisibility,
-		...profile?.resumePersonalFieldVisibility
-	};
-	return [
-		{
-			key: "location",
-			label: "Ort",
-			visible: visible.address,
-			value: [profile?.city, profile?.country].filter(Boolean).join(", "),
-			href: ""
-		},
-		{
-			key: "phone",
-			label: "Telefon",
-			visible: visible.phone,
-			value: formatPhoneForDisplay(profile?.phone),
-			href: profile?.phone ? `tel:${profile.phone.replace(/[^\d+]/g, "")}` : ""
-		},
-		{
-			key: "email",
-			label: "E-Mail",
-			visible: visible.email,
-			value: profile?.email || "",
-			href: profile?.email ? `mailto:${profile.email}` : ""
-		},
-		{
-			key: "linkedin",
-			label: "LinkedIn",
-			visible: visible.linkedin,
-			value: formatUrlForDisplay(profile?.linkedin || ""),
-			href: externalUrl(profile?.linkedin || "")
-		},
-		{
-			key: "github",
-			label: "GitHub",
-			visible: visible.github,
-			value: formatUrlForDisplay(profile?.github || ""),
-			href: externalUrl(profile?.github || "")
-		},
-		{
-			key: "website",
-			label: "Website",
-			visible: visible.website,
-			value: formatUrlForDisplay(profile?.portfolio || ""),
-			href: externalUrl(profile?.portfolio || "")
-		}
-	].filter((item) => item.visible && item.value);
-};
-var renderPehlioneContacts = (profile) => {
-	const contacts = getPehlioneContacts(profile);
-	if (!contacts.length) return "";
-	return `<section class="pehlione-contacts"><h3>${icon("person")}<span>Kontakt</span></h3><ul>${contacts.map((item) => `<li data-contact-kind="${item.key}">${icon(item.key)}<div><strong>${item.label}</strong>${item.href ? `<a href="${escape(item.href)}">${escape(item.value)}</a>` : `<span>${escape(item.value)}</span>`}</div></li>`).join("")}</ul></section>`;
-};
-var pehlioneContactsCss = `
-.pehlione-contacts.pehlione-contacts{--contact-heading:#fff;--contact-text:#fff;margin:0 0 4.5mm;color:var(--contact-text);font-family:var(--doc-font,var(--body-font,"Source Sans 3",Arial,sans-serif));font-size:7.8pt;line-height:1.2;break-inside:avoid}
-.pehlione-resume--white .pehlione-contacts,.pehlione-pdf-white .pehlione-contacts{--contact-heading:var(--pehlione-primary,#08245c);--contact-text:#142235}
-.pehlione-contacts.pehlione-contacts h3{display:grid;grid-template-columns:8mm minmax(0,1fr);gap:2mm;align-items:center;margin:0 0 2mm;padding:0 0 1.5mm;border-bottom:.3mm solid var(--contact-heading);color:var(--contact-heading);font-family:inherit;font-size:9.7pt;font-weight:700;line-height:1.1;text-transform:uppercase}
-.pehlione-contacts.pehlione-contacts svg{display:block;width:4.2mm;height:4.2mm;fill:none;stroke:var(--contact-heading);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.pehlione-contacts.pehlione-contacts h3 svg{width:8mm;height:8mm}
-.pehlione-contacts.pehlione-contacts ul{display:grid;gap:1.35mm;margin:0;padding:0;list-style:none;font-size:7.8pt;line-height:1.2}
-.pehlione-contacts.pehlione-contacts li{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;align-items:start;margin:0;padding:0;break-inside:avoid}
-.pehlione-contacts.pehlione-contacts li>div{display:grid;gap:.25mm;min-width:0}
-.pehlione-contacts.pehlione-contacts strong{display:block;color:var(--contact-heading);font-size:7.8pt;font-weight:700;line-height:1.2}
-.pehlione-contacts.pehlione-contacts a,.pehlione-contacts.pehlione-contacts li span{color:var(--contact-text);font-size:7.4pt;line-height:1.2;text-decoration:none;overflow-wrap:anywhere}
-`;
-var pehlioneBlueprintMarkup = `<svg viewBox="0 0 240 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="#dcecff" stroke-width=".65">
-  <path d="M18 33 57 16 168 50 219 126 29 126Z M20 40 179 103 216 23 M57 16 76 91 168 50 M131 15H219M151 12V143M182 12V143M213 12V143M119 119H224M125 139H230" opacity=".65"/>
-  <polygon points="${Array.from({ length: 64 }, (_, index) => {
-	const radius = index % 4 === 0 || index % 4 === 3 ? 49 : 57;
-	const angle = index * Math.PI * 2 / 64;
-	return `${(76 + Math.cos(angle) * radius).toFixed(2)},${(91 + Math.sin(angle) * radius).toFixed(2)}`;
-}).join(" ")}" stroke-width="1.2"/>
-  <circle cx="76" cy="91" r="45"/><circle cx="76" cy="91" r="38"/><circle cx="76" cy="91" r="29"/><circle cx="76" cy="91" r="17" stroke-width="1.2"/>
-  <path d="M9 91H143M76 27V153M37 51 116 132M32 131 117 50" opacity=".5"/>
-  <circle cx="57" cy="16" r="4"/><circle cx="168" cy="50" r="3"/><circle cx="179" cy="103" r="4"/><circle cx="216" cy="23" r="3"/>
-  <path d="M53 16h8m-4-4v8M146 119h10m-5-5v10M208 139h10m-5-5v10"/>
-</svg>`;
-//#endregion
 //#region src/shared/strengthSymbols.ts
 var strengthSymbolOptions = [
 	{
@@ -23691,6 +23274,479 @@ var getTechnologyBrandIconMarkup = (technology, iconId = "") => {
 	return letterMark(technology.slice(0, 3).toLocaleUpperCase("en-US"));
 };
 //#endregion
+//#region src/shared/resumeManagedOutput.ts
+var escape$1 = (value) => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;");
+var aliases = {
+	summary: [
+		"Zusammenfassung",
+		"Kurzprofil",
+		"Profil"
+	],
+	strengths: ["Stärken", "Kernkompetenzen"],
+	experience: [
+		"Berufserfahrung",
+		"Erfahrung",
+		"Beruflicher Werdegang"
+	],
+	education: ["Ausbildung", "Bildungsweg"],
+	knowledge: [
+		"Kenntnisse",
+		"Fähigkeiten",
+		"Technische Schwerpunkte",
+		"Besondere Kenntnisse"
+	],
+	certifications: [
+		"Zertifikate",
+		"Weiterbildungen",
+		"Weiterbildungen (Auswahl)",
+		"Erfolge"
+	],
+	languages: ["Sprachen"],
+	projects: ["Projekt-Highlight"]
+};
+var normalize = (value) => value.replace(/\s*·\s*Fortsetzung/i, "").trim().toLocaleLowerCase("de-DE");
+var managedResumeCss = `
+.managed-extra{margin:0 0 4mm;break-inside:avoid;color:inherit;font:inherit}
+.managed-extra h3{margin:0 0 2mm;font-size:1.08em;color:inherit}
+.managed-extra ul{padding-left:4mm;margin:0}.managed-extra li{margin-bottom:1mm}
+.managed-extra small{display:block;font-size:.92em}.managed-extra p{margin:1mm 0}
+.managed-extra .managed-tags{display:flex;flex-wrap:wrap;gap:1.5mm}
+.managed-extra .managed-tags span{border:1px solid currentColor;border-radius:2mm;padding:.7mm 1.5mm}
+.managed-extra .managed-columns{display:grid;grid-template-columns:1fr 1fr;gap:2mm}
+[data-managed-section]{break-inside:avoid}
+[data-managed-moved], [data-managed-moved] :is(h2,h3,p,li,small){color:inherit!important}
+[data-managed-section="strengths"] .managed-strengths-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3mm;list-style:none;margin:0;padding:0}
+[data-managed-section="strengths"] .managed-strength-card{display:flex;flex-direction:column;align-items:flex-start;gap:1mm;min-width:0;margin:0;padding:0;border:0;break-inside:avoid;overflow-wrap:anywhere}
+[data-managed-section="strengths"] .managed-strength-card>svg{width:6mm;height:6mm;flex:none}
+[data-managed-section="strengths"] .managed-strength-card strong{font-size:1em;line-height:1.3}
+[data-managed-section="strengths"] .managed-strength-card p{margin:0;white-space:pre-line;font-size:.92em;line-height:1.4;color:inherit}
+`;
+var applyManagedResumeOutput = (html, profile, templateId, pageNumber = 1, totalPages = 1) => {
+	if (!profile) return html;
+	const { document } = parseHTML(`<html><body>${html}</body></html>`);
+	const entries = getManagerSections(profile, templateId);
+	const groups = resolveKnowledgeGroups(templateId, profile.resumeKnowledgeGroups);
+	const pages = Array.from(document.querySelectorAll(".cv-sheet"));
+	(pages.length ? pages : [document.body]).forEach((root, rootIndex) => {
+		const enabled = (id) => entries.find((entry) => entry.id === id)?.visible !== false;
+		if (!enabled("photo")) {
+			const source = getProfileMediaSource(profile.photoPath);
+			root.querySelectorAll("img").forEach((img) => {
+				if (img.getAttribute("src") === source || /photo|foto/i.test(img.className)) (img.closest("[class*=\"__photo\"],[class*=\"-header__photo\"],[class*=\"-header-photo\"]") ?? img).remove();
+			});
+		}
+		if (!enabled("closing")) root.querySelectorAll("footer,[class*=\"-closing\"]").forEach((node) => node.remove());
+		if (!enabled("personalData")) root.querySelectorAll("address,[data-element-id$=\".contacts\"],[data-resume-personal],.resume-personal-data,.pehlione-contacts,.pehlione-ats-contact,.pehlione-pdf-ats-contact,.zeitgenoessisch-contacts,section:has(>.modern-contact-list)").forEach((node) => node.remove());
+		const number = pages.length > 1 ? rootIndex + 1 : pageNumber;
+		const last = pages.length > 1 ? rootIndex === pages.length - 1 : number === totalPages;
+		const nodes = /* @__PURE__ */ new Map();
+		const sectionNodes = Array.from(root.querySelectorAll("section:not(.page)"));
+		for (const node of sectionNodes) {
+			const heading = node.querySelector("h2,h3");
+			if (!heading || heading.closest("section") !== node || heading.closest("article") && node.contains(heading.closest("article"))) continue;
+			const title = normalize(heading.textContent ?? "");
+			const elementId = node.getAttribute("data-element-id") ?? "";
+			const entry = entries.find((entry) => entry.id.startsWith("special:") && elementId === `special.${entry.id.slice(8)}`) ?? entries.find((entry) => !entry.fixed && normalize(entry.title) === title) ?? entries.find((entry) => (aliases[entry.id] ?? []).some((alias) => normalize(alias) === title)) ?? entries.find((entry) => !entry.fixed && elementId.endsWith(`.${entry.id}`));
+			if (entry) {
+				node.setAttribute("data-managed-section", entry.id);
+				nodes.set(entry.id, [...nodes.get(entry.id) ?? [], node]);
+			}
+		}
+		const isAts = Boolean(root.querySelector("[data-renderer=\"ats\"], [class*=\"-ats\"]"));
+		const main = root.querySelector(".pehlione-main,.pehlione-pdf-main,.elegant-main,.elegant-pdf-main,.modern-resume-left-column,.modern-pdf-left,.zweispaltig-main,.zweispaltig-pdf-main,.zeitgenoessisch-main,.zeit-pdf-main,.kreativ-main,.kreativ-pdf-main,.gepflegt-main,.gepflegt-pdf-main,.kompakt-left,.kompakt-pdf-columns>main,main") ?? nodes.get("experience")?.[0]?.parentElement ?? root.querySelector(".page-content") ?? root;
+		const sidebar = isAts ? main : root.querySelector("aside,.modern-resume-right-column,.modern-pdf-right,.elegant-sidebar,.elegant-pdf-sidebar,.zeitgenoessisch-sidebar,.zeit-pdf-sidebar,.kreativ-sidebar,.kreativ-pdf-sidebar,.zweispaltig-sidebar,.zweispaltig-pdf-sidebar,.gepflegt-sidebar,.gepflegt-pdf-sidebar,.kompakt-right") ?? main;
+		const container = (entry) => entry.zone === "sidebar" ? sidebar : main;
+		for (const entry of entries.filter((item) => !item.fixed)) {
+			const existing = nodes.get(entry.id) ?? [];
+			const group = groups.find((group) => group.id === entry.groupId);
+			const items = group?.items.filter((item) => item.visible && item.text.trim()).sort((a, b) => a.order - b.order) ?? [];
+			if (!entry.visible) {
+				existing.forEach((node) => node.remove());
+				nodes.delete(entry.id);
+				continue;
+			}
+			let content = "";
+			if (entry.id === "strengths") {
+				if (number !== 1) {
+					existing.forEach((node) => node.remove());
+					nodes.delete(entry.id);
+					continue;
+				}
+				const explicit = profile.strengths.filter((item) => item.title.trim());
+				if (!explicit.length && !items.length && !existing.length) continue;
+				const strengths = items.length ? items.map((item) => ({
+					title: item.text,
+					description: item.description ?? "",
+					iconId: ""
+				})) : explicit.length ? explicit : [...new Set(profile.skills.map((value) => value.trim()).filter(Boolean))].map((value) => {
+					const [title, ...description] = value.split(/\s+(?:–|—|:)\s+/);
+					return {
+						title,
+						description: description.join(" – "),
+						iconId: ""
+					};
+				});
+				if (strengths.length) {
+					const node = existing[0] ?? document.createElement("section");
+					const heading = node.querySelector("h2,h3")?.outerHTML ?? `<h3>${escape$1(entry.title)}</h3>`;
+					node.setAttribute("data-managed-section", "strengths");
+					if (!existing.length) node.className = "managed-extra";
+					node.innerHTML = `${heading}<div class="managed-strengths-grid">${strengths.map((item) => `<article class="managed-strength-card">${isAts ? "" : getTechnologyBrandIconMarkup(item.title, item.iconId)}<strong>${escape$1(item.title)}</strong>${item.description ? `<p>${escape$1(item.description)}</p>` : ""}</article>`).join("")}</div>`;
+					node.querySelector("h2,h3").textContent = entry.title;
+					existing.slice(1).forEach((duplicate) => duplicate.remove());
+					if (!existing.length) container(entry).appendChild(node);
+					nodes.set(entry.id, [node]);
+				}
+				continue;
+			}
+			if (items.length && last) {
+				const itemHtml = items.map((item) => `${group?.rendererType === "icon-list" && item.icon ? `<span aria-hidden="true">${escape$1(item.icon)}</span> ` : ""}${escape$1(item.text)}${item.level ? ` <small>${escape$1(item.level)}</small>` : ""}${item.description ? `<small>${escape$1(item.description)}</small>` : ""}`);
+				content = group?.rendererType === "tag-list" ? `<div class="managed-tags">${itemHtml.map((item) => `<span>${item}</span>`).join("")}</div>` : ["two-column-list", "compact-grid"].includes(group?.rendererType ?? "") ? `<div class="managed-columns">${itemHtml.map((item) => `<div>${item}</div>`).join("")}</div>` : group?.rendererType === "text-list" ? itemHtml.map((item) => `<p>${item}</p>`).join("") : `<ul>${itemHtml.map((item) => `<li>${item}</li>`).join("")}</ul>`;
+			} else if (entry.id.startsWith("special:") && last && !existing.length) content = profile.specialSections.find((item) => item.id === entry.id.slice(8))?.entries.map((item) => `<article><strong>${escape$1(item.title)}</strong><p>${[
+				item.subtitle,
+				item.location,
+				item.date || [item.from, item.to].filter(Boolean).join(" – ")
+			].filter(Boolean).map(escape$1).join(" · ")}</p><p>${escape$1(item.description)}</p>${item.bullets.length ? `<ul>${item.bullets.map((bullet) => `<li>${escape$1(bullet)}</li>`).join("")}</ul>` : ""}${item.url ? `<p>${escape$1(item.url)}</p>` : ""}</article>`).join("") ?? "";
+			if (content) {
+				existing.forEach((node) => node.remove());
+				const node = document.createElement("section");
+				node.className = "managed-extra";
+				node.setAttribute("data-managed-section", entry.id);
+				node.innerHTML = `<h3>${escape$1(entry.title)}</h3>${content}`;
+				if (group?.pageBreakBefore) node.style.breakBefore = "page";
+				container(entry).appendChild(node);
+				nodes.set(entry.id, [node]);
+			} else if (items.length && !last) {
+				existing.forEach((node) => node.remove());
+				nodes.delete(entry.id);
+			} else for (const node of existing) {
+				const heading = node.querySelector("h2,h3");
+				if (heading) {
+					const continuation = /·\s*Fortsetzung/i.test(heading.textContent ?? "") ? " · Fortsetzung" : "";
+					heading.textContent = entry.title + continuation;
+				}
+			}
+		}
+		for (const destination of profile.resumeManagerLayouts?.[templateId]?.length ? /* @__PURE__ */ new Set([main, sidebar]) : []) {
+			const moving = entries.filter((entry) => !entry.fixed && entry.visible && container(entry) === destination).flatMap((entry) => nodes.get(entry.id) ?? []);
+			if (!moving.length) continue;
+			const anchor = document.createComment("managed-sections");
+			const first = Array.from(destination.children).find((child) => moving.includes(child) || child.matches("footer,[class*='closing']"));
+			destination.insertBefore(anchor, first ?? null);
+			for (const node of moving) {
+				if (node.parentElement !== destination) node.setAttribute("data-managed-moved", "true");
+				destination.insertBefore(node, anchor);
+			}
+			anchor.remove();
+		}
+	});
+	return document.body.innerHTML;
+};
+//#endregion
+//#region src/shared/resumeDisplayProfile.ts
+var getResumeDisplayProfile = (profile) => {
+	if (!profile) return void 0;
+	const visible = {
+		...defaultResumePersonalFieldVisibility,
+		...profile.resumePersonalFieldVisibility
+	};
+	return {
+		...profile,
+		street: visible.address ? profile.street : "",
+		postalCode: visible.address ? profile.postalCode : "",
+		city: visible.address ? profile.city : "",
+		country: visible.address ? profile.country : "",
+		phone: visible.phone ? profile.phone : "",
+		email: visible.email ? profile.email : "",
+		linkedin: visible.linkedin ? profile.linkedin : "",
+		github: visible.github ? profile.github : "",
+		portfolio: visible.website ? profile.portfolio : "",
+		birthDate: visible.birthDate ? profile.birthDate : "",
+		birthPlace: visible.birthPlace ? profile.birthPlace : "",
+		nationality: visible.nationality ? profile.nationality : "",
+		photoPath: getResumeSemanticSection(profile.resumeSemanticSections, "photo").visible ? profile.photoPath : "",
+		onlineProfiles: profile.onlineProfiles.filter((entry) => /xing/i.test(entry.label) ? visible.xing : visible.website)
+	};
+};
+//#endregion
+//#region src/shared/resumeIdentityVisibility.ts
+var getResumeIdentityVisibilityCss = (sections) => {
+	const hidden = (type) => {
+		const section = getResumeSemanticSection(sections, type);
+		return !section.visible || !section.enabled;
+	};
+	const scope = ":is(.document-lebenslauf, .cv-sheet)";
+	const rules = [];
+	if (hidden("heading")) rules.push(`${scope} header:not([class*="section-heading"]) :is(h1,h2,[class*="__name"],[class*="__title"],[class*="__profession"],[class*="__kicker"],.kicker),${scope} .tabellarisch-pdf-continuation{display:none!important}`);
+	if (hidden("personalData")) rules.push(`${scope} :is(address,[data-element-id$=".contacts"],[data-resume-personal],.resume-personal-data,.pehlione-contacts,.pehlione-ats-contact,.pehlione-pdf-ats-contact,.zeitgenoessisch-contacts),${scope} section:has(>address),${scope} section:has(>.modern-contact-list){display:none!important}`);
+	return rules.join("\n");
+};
+//#endregion
+//#region src/shared/documentPagination.ts
+var FIRST_PAGE_CAPACITY = 30;
+var SECOND_PAGE_CAPACITY = 38;
+var RECOMMENDED_LETTER_CHARACTERS = 3300;
+var zweispaltigPaginationOptions = {
+	firstPageCapacity: 50,
+	secondPageCapacity: 54,
+	preserveItemOrder: true
+};
+var elegantPaginationOptions = {
+	firstPageCapacity: 50,
+	secondPageCapacity: 54,
+	preserveItemOrder: true
+};
+var kompaktPaginationOptions = {
+	firstPageCapacity: 50,
+	secondPageCapacity: 54,
+	preserveItemOrder: true
+};
+var kreativPaginationOptions = {
+	firstPageCapacity: 50,
+	secondPageCapacity: 54,
+	preserveItemOrder: true
+};
+var tabellarischPaginationOptions = {
+	firstPageCapacity: 48,
+	secondPageCapacity: 52,
+	preserveItemOrder: true
+};
+var modernPaginationOptions = {
+	firstPageCapacity: 50,
+	secondPageCapacity: 54,
+	preserveItemOrder: true
+};
+var pehlionePaginationOptions = {
+	firstPageCapacity: 50,
+	secondPageCapacity: 54,
+	preserveItemOrder: true
+};
+var gepflegtPaginationOptions = {
+	firstPageCapacity: 50,
+	secondPageCapacity: 54,
+	preserveItemOrder: true
+};
+var zeitgenoessischPaginationOptions = {
+	firstPageCapacity: 50,
+	secondPageCapacity: 54,
+	preserveItemOrder: true
+};
+var ivyLeaguePaginationOptions = {
+	firstPageCapacity: 50,
+	secondPageCapacity: 54,
+	preserveItemOrder: true
+};
+var stilvollPaginationOptions = {
+	firstPageCapacity: 50,
+	secondPageCapacity: 54,
+	preserveItemOrder: true
+};
+var einspaltigPaginationOptions = {
+	firstPageCapacity: 42,
+	secondPageCapacity: 50,
+	preserveItemOrder: true
+};
+var klassischPaginationOptions = {
+	firstPageCapacity: 50,
+	secondPageCapacity: 54,
+	preserveItemOrder: true
+};
+var textWeight = (value, charactersPerUnit = 95) => Math.max(0, Math.ceil(value.trim().length / charactersPerUnit));
+var experienceWeight = (experience) => 4 + textWeight(`${experience.role} ${experience.company}`, 70) + experience.achievements.filter((achievement) => achievement.trim()).reduce((total, achievement) => total + 1 + textWeight(achievement), 0);
+var educationWeight = (education) => 2 + textWeight(`${education.degree} ${education.institution}`, 80);
+var sidebarWeight = (profile, resumeProfile) => {
+	if (!profile) return 4;
+	const summary = resumeProfile || profile.summary;
+	const knowledgeCount = flattenKnowledgeNames(ensureKnowledgeSection(profile.knowledgeSection, profile.skills)).length;
+	return textWeight(summary, 105) + Math.ceil(knowledgeCount / 3) + Math.ceil(profile.languages.length / 2) + Math.ceil(profile.certifications.length / 2);
+};
+var densityForWeight = (weight, capacity) => {
+	if (weight > capacity * 1.3) return "dense";
+	if (weight > capacity * .9) return "compact";
+	return "standard";
+};
+var createResumePagePlan = (profile, resumeProfile = "", options = {}, templateId) => {
+	const firstPageCapacity = options.firstPageCapacity ?? FIRST_PAGE_CAPACITY;
+	const secondPageCapacity = options.secondPageCapacity ?? SECOND_PAGE_CAPACITY;
+	const items = [...(profile?.experiences ?? []).map((experience) => ({
+		kind: "experience",
+		id: experience.id,
+		weight: experienceWeight(experience)
+	})), ...(profile?.education ?? []).map((education) => ({
+		kind: "education",
+		id: education.id,
+		weight: educationWeight(education)
+	}))];
+	const managerLayout = templateId ? profile?.resumeManagerLayouts?.[templateId] : void 0;
+	if (managerLayout?.length) {
+		const order = managerLayout.map((item) => item.id);
+		items.sort((left, right) => order.indexOf(left.kind) - order.indexOf(right.kind));
+	}
+	const totalMainWeight = items.reduce((total, item) => total + item.weight, 0);
+	const firstPageWeight = Math.max(totalMainWeight, sidebarWeight(profile, resumeProfile));
+	if (firstPageWeight <= firstPageCapacity || items.length <= 1) return [{
+		pageNumber: 1,
+		items,
+		density: densityForWeight(firstPageWeight, firstPageCapacity)
+	}];
+	const pageOneItems = [];
+	const pageTwoItems = [];
+	let pageOneWeight = 0;
+	let continueOnSecondPage = false;
+	for (const item of items) if (!continueOnSecondPage && (pageOneItems.length === 0 || pageOneWeight + item.weight <= firstPageCapacity)) {
+		pageOneItems.push(item);
+		pageOneWeight += item.weight;
+	} else {
+		pageTwoItems.push(item);
+		continueOnSecondPage = Boolean(managerLayout?.length) || (options.preserveItemOrder ?? false);
+	}
+	if (pageTwoItems.length === 0 && pageOneItems.length > 1) {
+		pageTwoItems.unshift(pageOneItems.pop());
+		pageOneWeight = pageOneItems.reduce((total, item) => total + item.weight, 0);
+	}
+	const pageTwoWeight = pageTwoItems.reduce((total, item) => total + item.weight, 0);
+	return [{
+		pageNumber: 1,
+		items: pageOneItems,
+		density: densityForWeight(Math.max(pageOneWeight, sidebarWeight(profile, resumeProfile)), firstPageCapacity)
+	}, {
+		pageNumber: 2,
+		items: pageTwoItems,
+		density: densityForWeight(pageTwoWeight, secondPageCapacity)
+	}];
+};
+var getLetterPageStatus = (documents) => {
+	const characterCount = [
+		documents.coverSubject,
+		documents.coverIntroduction,
+		getCoverLetterMainBody(documents),
+		documents.coverCompanyFit,
+		documents.coverExtraParagraph,
+		documents.coverClosing
+	].reduce((total, value) => total + value.trim().length, 0);
+	return {
+		characterCount,
+		recommendedMaximum: RECOMMENDED_LETTER_CHARACTERS,
+		density: characterCount > RECOMMENDED_LETTER_CHARACTERS ? "dense" : characterCount > 2500 ? "compact" : "standard",
+		isOverRecommendedLength: characterCount > RECOMMENDED_LETTER_CHARACTERS
+	};
+};
+//#endregion
+//#region src/shared/contactPresentation.ts
+var internationalDigits = (value) => value.trim().replace(/^00/, "+").replace(/[^\d+]/g, "");
+/** Formats German mobile numbers for display without changing their stored value. */
+var formatPhoneForDisplay = (value = "") => {
+	const digits = internationalDigits(value).replace(/\D/g, "");
+	if (digits.startsWith("49") && /^1\d{9,10}$/.test(digits.slice(2))) return `+49 ${digits.slice(2, 5)} ${digits.slice(5)}`;
+	return value.trim();
+};
+var externalUrl = (value = "") => {
+	const trimmed = value.trim();
+	if (!trimmed) return "";
+	if (/^https?:\/\//i.test(trimmed)) return trimmed;
+	return `https://${trimmed.replace(/^[a-z][a-z\d+.-]*:(?:\/\/)?/i, "")}`;
+};
+/** Keeps the URL readable while the complete URL remains the link destination. */
+var formatUrlForDisplay = (value = "") => externalUrl(value).replace(/^https?:\/\//i, "").replace(/\/$/, "");
+//#endregion
+//#region src/shared/pehlioneContacts.ts
+var iconPaths = {
+	person: "<circle cx=\"12\" cy=\"7\" r=\"4\"/><path d=\"M4 21a8 8 0 0 1 16 0\"/>",
+	location: "<path d=\"M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z\"/><circle cx=\"12\" cy=\"10\" r=\"2.5\"/>",
+	phone: "<path d=\"M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.4 1.8.6 2.8.7a2 2 0 0 1 1.8 2.1Z\"/>",
+	email: "<rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\"/><path d=\"m3 6 9 7 9-7\"/>",
+	linkedin: "<rect x=\"3\" y=\"9\" width=\"4\" height=\"12\"/><circle cx=\"5\" cy=\"4\" r=\"2\"/><path d=\"M11 21V9h4v2c3-4 7-1 7 3v7h-4v-7c0-2-3-2-3 0v7Z\"/>",
+	github: "<path d=\"M9 19c-4.3 1.3-4.3-2.5-6-3m12 6v-3.9c0-1.1-.4-1.9-.8-2.3 2.7-.3 5.5-1.3 5.5-6A4.7 4.7 0 0 0 18.4 6a4.3 4.3 0 0 0-.1-3.8S17.2 1.9 14.4 3.7a13.4 13.4 0 0 0-6.8 0C4.8 1.9 3.7 2.2 3.7 2.2A4.3 4.3 0 0 0 3.6 6a4.7 4.7 0 0 0-1.3 3.3c0 4.7 2.8 5.7 5.5 6-.4.4-.8 1.1-.8 2.3V22\"/>",
+	website: "<circle cx=\"12\" cy=\"12\" r=\"9\"/><ellipse cx=\"12\" cy=\"12\" rx=\"4\" ry=\"9\"/><path d=\"M3 12h18M5 6h14M5 18h14\"/>"
+};
+var icon = (kind) => `<svg data-contact-icon="${kind}" viewBox="0 0 24 24" aria-hidden="true">${iconPaths[kind]}</svg>`;
+var escape = (value) => value.replace(/[&<>"']/g, (char) => ({
+	"&": "&amp;",
+	"<": "&lt;",
+	">": "&gt;",
+	"\"": "&quot;",
+	"'": "&#39;"
+})[char]);
+var getPehlioneContacts = (profile) => {
+	const visible = {
+		...defaultResumePersonalFieldVisibility,
+		...profile?.resumePersonalFieldVisibility
+	};
+	return [
+		{
+			key: "location",
+			label: "Ort",
+			visible: visible.address,
+			value: [profile?.city, profile?.country].filter(Boolean).join(", "),
+			href: ""
+		},
+		{
+			key: "phone",
+			label: "Telefon",
+			visible: visible.phone,
+			value: formatPhoneForDisplay(profile?.phone),
+			href: profile?.phone ? `tel:${profile.phone.replace(/[^\d+]/g, "")}` : ""
+		},
+		{
+			key: "email",
+			label: "E-Mail",
+			visible: visible.email,
+			value: profile?.email || "",
+			href: profile?.email ? `mailto:${profile.email}` : ""
+		},
+		{
+			key: "linkedin",
+			label: "LinkedIn",
+			visible: visible.linkedin,
+			value: formatUrlForDisplay(profile?.linkedin || ""),
+			href: externalUrl(profile?.linkedin || "")
+		},
+		{
+			key: "github",
+			label: "GitHub",
+			visible: visible.github,
+			value: formatUrlForDisplay(profile?.github || ""),
+			href: externalUrl(profile?.github || "")
+		},
+		{
+			key: "website",
+			label: "Website",
+			visible: visible.website,
+			value: formatUrlForDisplay(profile?.portfolio || ""),
+			href: externalUrl(profile?.portfolio || "")
+		}
+	].filter((item) => item.visible && item.value);
+};
+var renderPehlioneContacts = (profile) => {
+	const contacts = getPehlioneContacts(profile);
+	if (!contacts.length) return "";
+	return `<section class="pehlione-contacts"><h3>${icon("person")}<span>Kontakt</span></h3><ul>${contacts.map((item) => `<li data-contact-kind="${item.key}">${icon(item.key)}<div><strong>${item.label}</strong>${item.href ? `<a href="${escape(item.href)}">${escape(item.value)}</a>` : `<span>${escape(item.value)}</span>`}</div></li>`).join("")}</ul></section>`;
+};
+var pehlioneContactsCss = `
+.pehlione-contacts.pehlione-contacts{--contact-heading:#fff;--contact-text:#fff;margin:0 0 4.5mm;color:var(--contact-text);font-family:var(--doc-font,var(--body-font,"Source Sans 3",Arial,sans-serif));font-size:7.8pt;line-height:1.2;break-inside:avoid}
+.pehlione-resume--white .pehlione-contacts,.pehlione-pdf-white .pehlione-contacts{--contact-heading:var(--pehlione-primary,#08245c);--contact-text:#142235}
+.pehlione-contacts.pehlione-contacts h3{display:grid;grid-template-columns:8mm minmax(0,1fr);gap:2mm;align-items:center;margin:0 0 2mm;padding:0 0 1.5mm;border-bottom:.3mm solid var(--contact-heading);color:var(--contact-heading);font-family:inherit;font-size:9.7pt;font-weight:700;line-height:1.1;text-transform:uppercase}
+.pehlione-contacts.pehlione-contacts svg{display:block;width:4.2mm;height:4.2mm;fill:none;stroke:var(--contact-heading);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pehlione-contacts.pehlione-contacts h3 svg{width:8mm;height:8mm}
+.pehlione-contacts.pehlione-contacts ul{display:grid;gap:1.35mm;margin:0;padding:0;list-style:none;font-size:7.8pt;line-height:1.2}
+.pehlione-contacts.pehlione-contacts li{display:grid;grid-template-columns:5mm minmax(0,1fr);gap:1.5mm;align-items:start;margin:0;padding:0;break-inside:avoid}
+.pehlione-contacts.pehlione-contacts li>div{display:grid;gap:.25mm;min-width:0}
+.pehlione-contacts.pehlione-contacts strong{display:block;color:var(--contact-heading);font-size:7.8pt;font-weight:700;line-height:1.2}
+.pehlione-contacts.pehlione-contacts a,.pehlione-contacts.pehlione-contacts li span{color:var(--contact-text);font-size:7.4pt;line-height:1.2;text-decoration:none;overflow-wrap:anywhere}
+`;
+var pehlioneBlueprintMarkup = `<svg viewBox="0 0 240 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="none" stroke="#dcecff" stroke-width=".65">
+  <path d="M18 33 57 16 168 50 219 126 29 126Z M20 40 179 103 216 23 M57 16 76 91 168 50 M131 15H219M151 12V143M182 12V143M213 12V143M119 119H224M125 139H230" opacity=".65"/>
+  <polygon points="${Array.from({ length: 64 }, (_, index) => {
+	const radius = index % 4 === 0 || index % 4 === 3 ? 49 : 57;
+	const angle = index * Math.PI * 2 / 64;
+	return `${(76 + Math.cos(angle) * radius).toFixed(2)},${(91 + Math.sin(angle) * radius).toFixed(2)}`;
+}).join(" ")}" stroke-width="1.2"/>
+  <circle cx="76" cy="91" r="45"/><circle cx="76" cy="91" r="38"/><circle cx="76" cy="91" r="29"/><circle cx="76" cy="91" r="17" stroke-width="1.2"/>
+  <path d="M9 91H143M76 27V153M37 51 116 132M32 131 117 50" opacity=".5"/>
+  <circle cx="57" cy="16" r="4"/><circle cx="168" cy="50" r="3"/><circle cx="179" cy="103" r="4"/><circle cx="216" cy="23" r="3"/>
+  <path d="M53 16h8m-4-4v8M146 119h10m-5-5v10M208 139h10m-5-5v10"/>
+</svg>`;
+//#endregion
 //#region src/shared/pehlioneCompetencies.ts
 var unique$1 = (values) => [...new Set(values.map((value) => value.trim()).filter(Boolean))];
 var frontendTechnology = (value) => /^(react|typescript|javascript|html|css|vue|angular)/i.test(value.trim());
@@ -26809,6 +26865,7 @@ var DataStore = class {
 			id: createId(),
 			folderName,
 			...input,
+			templateDesigns: {},
 			additionalContacts: input.additionalContacts ?? [],
 			status: input.sentAt ? "Beworben" : "Entwurf",
 			documents: {

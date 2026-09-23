@@ -7698,3 +7698,9 @@ body.is-resizing-split-view * {
 .workspace-setup-card p { margin: 0; }
 
 .workspace-setup-card .button { justify-self: start; }
+.entry-list-editor__row > .sort-actions,
+.certificate-list-editor__card > .sort-actions,
+.language-level-entry > .sort-actions {
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+}

@@ -60,6 +60,14 @@ const profile = profileSchema.parse({
 });
 
 describe("Lebenslauf-Dokumente", () => {
+  it.each(["pehlione_white", "pehlione_white_blue", "modern", "elegant", "zweispaltig", "zeitgenoessisch", "kreativ", "gepflegt", "kompakt", "stilvoll", "einspaltig", "klassisch", "tabellarisch", "ivy-league"])("exports nine strengths in three columns in %s", (templateId) => {
+    const strengths = ["Go", "React", "Spring Boot", "SQL", "Docker", "Git", "Linux", "Java", "TypeScript"].map((title) => ({ id: crypto.randomUUID(), title, description: title === "Go" ? "Echo, Gin" : "", iconId: "" }));
+    const html = buildDocumentHtml({ ...application, templateId }, { ...profile, strengths }, "lebenslauf");
+    const { document } = parseHTML(html);
+    expect(document.querySelectorAll(".managed-strengths-grid")).toHaveLength(1);
+    expect(Array.from(document.querySelectorAll(".managed-strength-card strong")).map((node) => node.textContent)).toEqual(strengths.map((item) => item.title));
+    expect(html).toContain("grid-template-columns:repeat(3,minmax(0,1fr))");
+  });
   it.each(["pehlione_white", "pehlione_white_blue", "modern", "elegant", "zweispaltig", "zeitgenoessisch", "kreativ", "gepflegt", "kompakt", "stilvoll", "einspaltig", "klassisch", "tabellarisch", "ivy-league"])("applies the unified section order, custom content and visibility in %s", (templateId) => {
     let managed = profileSchema.parse({ ...profile, education: [{ id: crypto.randomUUID(), from: "2018", to: "2021", degree: "Testabschluss", institution: "Testinstitut" }], specialSections: [{ id: "aaaa0000-0000-4000-8000-000000000000", kind: "volunteer", title: "Ehrenamt", isVisible: true, entries: [{ id: crypto.randomUUID(), title: "Vereinsarbeit" }] }] });
     managed = moveManagerSection(managed, templateId, "education", "main", 0);
@@ -751,7 +759,7 @@ describe("Lebenslauf-Dokumente", () => {
       'class="document-background-layer programming-languages-layer"',
     );
     expect(html).toContain("knowledge-comma");
-    expect(html).toContain("<h3>Kenntnisse</h3>");
+    expect(html).toContain("<h3>Kenntnisse &amp; Zusatzangaben</h3>");
     expect(html).not.toContain("●●●●○");
     expect(html.indexOf("Zusammenfassung")).toBeLessThan(
       html.indexOf("Berufserfahrung"),
@@ -1384,7 +1392,7 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).toContain('data-template="ivy-league"');
     expect(body).toContain('data-no-fit="true"');
     expect(body).toContain("ivy-pdf-watercolor");
-    expect(body).toContain("ivy-pdf-strengths");
+    expect(body).toContain("managed-strengths-grid");
     expect(body).toContain("ivy-pdf-languages");
     expect(body).toContain("ivy-pdf-languages--columns-3");
     expect(html).toContain("grid-template-columns:auto auto;justify-content:start;gap:2mm");
@@ -1432,7 +1440,7 @@ describe("Lebenslauf-Dokumente", () => {
     );
     const body = html.slice(html.indexOf("<body>"));
 
-    expect(body).toContain("ivy-pdf-strengths");
+    expect(body).toContain("managed-strengths-grid");
     expect(body).toContain("Analytisches Denken");
     expect(body).not.toContain(">Kenntnisse<");
   });
@@ -1597,7 +1605,7 @@ describe("Lebenslauf-Dokumente", () => {
     );
     const body = html.slice(html.indexOf("<body>"));
 
-    expect(body).toContain("stilvoll-pdf-strengths");
+    expect(body).toContain("managed-strengths-grid");
     expect(body).toContain("Analytisches Denkvermögen");
     expect(body).not.toContain(">Kenntnisse<");
   });
@@ -1821,7 +1829,7 @@ describe("Lebenslauf-Dokumente", () => {
     expect(html).toContain(".einfach-pdf .managed-pdf-background{z-index:-1");
     expect(body).toContain('class="managed-pdf-background"');
     expect(body).toContain('<img class="einfach-pdf-photo"');
-    expect(body).toContain("einfach-pdf-strengths");
+    expect(body).toContain("managed-strengths-grid");
   });
 
   it("keeps strengths but omits Kenntnisse when the knowledge section is disabled", () => {
@@ -1948,7 +1956,7 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).toContain('data-template="klassisch"');
     expect(body).toContain('class="klassisch-pdf-background"');
     expect(body).toContain('<img class="klassisch-pdf-photo"');
-    expect(body).toContain("klassisch-pdf-strengths");
+    expect(body).toContain("managed-strengths-grid");
     expect(body).toContain("klassisch-pdf-entry-head");
     expect(html).toContain(".klassisch-pdf-background{position:absolute;inset:0;z-index:-1");
     expect(body).not.toContain("Seite 1 / 1");
@@ -2050,7 +2058,7 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).toContain('<img class="modern-pdf-photo"');
     expect(body).toContain("Zusammenfassung");
     expect(body).toContain("Erfahrung");
-    expect(body).toContain("Fähigkeiten");
+    expect(body).toContain("Kenntnisse &amp; Zusatzangaben");
     expect(body.indexOf("Zusammenfassung")).toBeLessThan(
       body.indexOf("Erfahrung"),
     );
@@ -2130,7 +2138,7 @@ describe("Lebenslauf-Dokumente", () => {
     const body = html.slice(html.indexOf("<body>"));
 
     expect(body).toContain("Stärken");
-    expect(body).toContain("modern-pdf-strength");
+    expect(body).toContain("managed-strengths-grid");
     expect(body).toContain("Maven, Spring Boot");
     expect(body).not.toContain(">Fähigkeiten<");
   });
@@ -2290,7 +2298,7 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).toContain('data-template="tabellarisch"');
     expect(body).toContain('data-no-fit="true"');
     expect(body).toContain("tabellarisch-pdf-background");
-    expect(body).toContain("tabellarisch-pdf-strengths");
+    expect(body).toContain("managed-strengths-grid");
     expect(body).toContain("tabellarisch-pdf-timeline");
     expect(html).toContain(
       '.tabellarisch-pdf-rail:before{position:absolute;top:2.5mm;bottom:-1mm',
@@ -2303,7 +2311,7 @@ describe("Lebenslauf-Dokumente", () => {
       body.indexOf(">Stärken<"),
     );
     expect(body.indexOf(">Stärken<")).toBeLessThan(
-      body.indexOf(">Erfahrung<"),
+      body.indexOf(">Berufserfahrung<"),
     );
     expect(body).not.toContain("column-timeline");
   });
@@ -2347,7 +2355,7 @@ describe("Lebenslauf-Dokumente", () => {
     const body = html.slice(html.indexOf("<body>"));
 
     expect(body).toContain(">Stärken<");
-    expect(body).toContain("tabellarisch-pdf-strengths");
+    expect(body).toContain("managed-strengths-grid");
     expect(body).toContain(">Java<");
     expect(body).toContain("Maven, Spring Boot");
     expect(body).toContain(">php<");
@@ -2438,7 +2446,7 @@ describe("Lebenslauf-Dokumente", () => {
     expect(body).toContain("gepflegt-pdf-sidebar");
     expect(body).toContain("gepflegt-pdf-photo");
     expect(body).toContain("gepflegt-pdf-contacts");
-    expect(body).toContain("gepflegt-pdf-strengths");
+    expect(body).toContain("managed-strengths-grid");
     expect(body).toContain("https://www.linkedin.com/in/mina-kaya/");
     expect(body.indexOf(">Zusammenfassung<")).toBeLessThan(
       body.indexOf(">Stärken<"),

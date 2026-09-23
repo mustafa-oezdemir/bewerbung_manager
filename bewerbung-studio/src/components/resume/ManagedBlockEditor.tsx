@@ -1,13 +1,13 @@
-import { ArrowDown, ArrowUp, Eye, EyeOff, Plus, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Plus, Trash2 } from "lucide-react";
+import { OrderControls } from "../profile/OrderControls";
+import { moveListItem } from "../../shared/listOrder";
 import { createResumeBlockItem, rendererTypeLabels, type ResumeBlockRendererType } from "../../features/resume-sections/knowledge-block-registry";
 import type { ResumeKnowledgeGroup } from "../../features/resume-sections/resume-section-system";
 
 export function ManagedBlockEditor({ group, onChange, onRemove }: { group: ResumeKnowledgeGroup; onChange: (change: Partial<ResumeKnowledgeGroup>) => void; onRemove?: () => void }) {
   const update = (id: string, change: Partial<ResumeKnowledgeGroup["items"][number]>) => onChange({ items: group.items.map((item) => item.id === id ? { ...item, ...change } : item) });
-  const move = (index: number, delta: number) => {
-    const items = [...group.items];
-    if (!items[index + delta]) return;
-    [items[index], items[index + delta]] = [items[index + delta], items[index]];
+  const move = (index: number, target: number) => {
+    const items = moveListItem(group.items, index, target);
     onChange({ items: items.map((item, order) => ({ ...item, order })) });
   };
   return <div className="manager-block-editor">
@@ -17,8 +17,7 @@ export function ManagedBlockEditor({ group, onChange, onRemove }: { group: Resum
       <input aria-label={`Beschreibung ${index + 1}`} placeholder="Beschreibung" value={item.description} onChange={(event) => update(item.id, { description: event.target.value })} />
       <div className="manager-item-actions">
         <button type="button" className="icon-button" aria-label={`Punkt ${item.visible ? "ausblenden" : "anzeigen"}`} aria-pressed={item.visible} onClick={() => update(item.id, { visible: !item.visible })}>{item.visible ? <Eye size={14} /> : <EyeOff size={14} />}</button>
-        <button type="button" className="icon-button" aria-label="Punkt nach oben" disabled={!index} onClick={() => move(index, -1)}><ArrowUp size={14} /></button>
-        <button type="button" className="icon-button" aria-label="Punkt nach unten" disabled={index === group.items.length - 1} onClick={() => move(index, 1)}><ArrowDown size={14} /></button>
+        <OrderControls index={index} length={group.items.length} label={`Punkt ${index + 1}`} onMove={(target) => move(index, target)} />
         <button type="button" className="icon-button" aria-label="Punkt löschen" onClick={() => onChange({ items: group.items.filter((candidate) => candidate.id !== item.id) })}><Trash2 size={14} /></button>
       </div>
       {["icon-list", "skill-level", "language-level"].includes(group.rendererType) && <input aria-label={`Symbol oder Niveau ${index + 1}`} placeholder={group.rendererType === "icon-list" ? "Symbol (z. B. →)" : "Niveau (z. B. B2)"} value={group.rendererType === "icon-list" ? item.icon : item.level} onChange={(event) => update(item.id, group.rendererType === "icon-list" ? { icon: event.target.value } : { level: event.target.value })} />}

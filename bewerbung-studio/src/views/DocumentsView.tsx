@@ -1,4 +1,6 @@
 import { getResumeDisplayProfile } from "../shared/resumeDisplayProfile";
+import { createDocumentDesignDraft, selectDocumentTemplate, persistDocumentDraft, type DocumentDesignDraft } from "../shared/documentEditorState";
+import { normalizeResumeDataDraft } from "../components/resume/ResumeDataEditor";
 import { ManagedResumePreview } from "../components/resume/ManagedResumePreview";
 import {
   ArrowLeft,
@@ -430,13 +432,17 @@ export function DocumentsView({
     },
     [],
   );
-  const [design, setDesign] = useState({
+  const [designDraft, setDesign] = useState<DocumentDesignDraft>(() => application ? createDocumentDesignDraft(application) : ({
     applicationId: "",
     templateId: templates[0].id,
     accentColor: templates[0].accent,
     secondaryColor: templates[0].secondary,
     settings: defaultDocumentDesign,
-  });
+    templateDesigns: {},
+  }));
+  const design = application && designDraft.applicationId !== application.id
+    ? createDocumentDesignDraft(application) : designDraft;
+  const persistedDocuments = JSON.stringify(application?.documents);
   const formRef = useRef<HTMLFormElement>(null);
   const paperStageRef = useRef<HTMLElement>(null);
   const letterPaperRef = useRef<HTMLDivElement>(null);
@@ -515,15 +521,9 @@ export function DocumentsView({
 
   useEffect(() => setTab(initialTab), [initialTab]);
   useEffect(() => {
-    if (!application || application.id === design.applicationId) return;
-    setDesign({
-      applicationId: application.id,
-      templateId: application.templateId,
-      accentColor: application.accentColor,
-      secondaryColor: application.secondaryColor,
-      settings: application.designSettings,
-    });
-  }, [application, design.applicationId]);
+    if (!application || application.id === designDraft.applicationId) return;
+    setDesign(createDocumentDesignDraft(application));
+  }, [application, designDraft.applicationId]);
   useEffect(() => {
     if (!application) {
       setDocumentPreview(null);
@@ -533,7 +533,7 @@ export function DocumentsView({
       applicationId: application.id,
       documents: application.documents,
     });
-  }, [application]);
+  }, [application?.id, persistedDocuments]);
 
   if (!application) {
     return (
@@ -815,6 +815,7 @@ export function DocumentsView({
       accentColor: design.accentColor,
       secondaryColor: design.secondaryColor,
       designSettings: design.settings,
+      templateDesigns: design.templateDesigns,
       documents: {
         coverSenderName: value("coverSenderName", docs.coverSenderName),
         coverSenderTitle: value("coverSenderTitle", docs.coverSenderTitle),
@@ -894,27 +895,22 @@ export function DocumentsView({
   const save = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const snapshot = applicationSnapshot(event.currentTarget);
-    await saveApplication(snapshot);
+    await persistDocumentDraft(snapshot, currentProfileDraft(), saveProfile, saveApplication);
     if (tab === "anschreiben") {
       await syncCoverLetter(snapshot.id);
     }
   };
 
+  const currentProfileDraft = () =>
+    resumeSectionPreview?.profile.id === profile?.id
+      ? normalizeResumeDataDraft(resumeSectionPreview.profile)
+      : undefined;
+
   const exportCurrentPdf = async (
     target: "deckblatt" | "anschreiben" | "lebenslauf" | "mappe",
   ) => {
     const snapshot = applicationSnapshot(formRef.current);
-    if (
-      (target === "lebenslauf" || target === "mappe") &&
-      resumeSectionPreview?.templateId === template.id &&
-      resumeSectionPreview.profile.id === profile?.id
-    ) {
-      await saveProfile({
-        ...resumeSectionPreview.profile,
-        updatedAt: new Date().toISOString(),
-      });
-    }
-    await saveApplication(snapshot);
+    await persistDocumentDraft(snapshot, currentProfileDraft(), saveProfile, saveApplication);
     await exportPdf(snapshot.id, target, snapshot);
   };
 
@@ -1448,6 +1444,7 @@ export function DocumentsView({
                 {profile ? (
                   <>
                     <ResumeSectionsPanel
+                      key={`${application.id}:${profile.id}`}
                       profile={profile}
                       singlePageExceeded={
                         template.id === "kompakt" && resumePlan.length > 1
@@ -1502,16 +1499,7 @@ export function DocumentsView({
                         key={item.id}
                         type="button"
                         onClick={() =>
-                          setDesign((current) => ({
-                            ...current,
-                            templateId: item.id,
-                            accentColor: item.accent,
-                            secondaryColor: item.secondary,
-                            settings: {
-                              ...current.settings,
-                              ...(item.designDefaults ?? {}),
-                            },
-                          }))
+                          setDesign((current) => selectDocumentTemplate(current, item.id))
                         }>
                         <TemplateThumbnail
                           template={item}

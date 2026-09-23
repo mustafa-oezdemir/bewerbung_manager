@@ -6,6 +6,11 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { addTechnologyStrengths } from "../../shared/strengthPresets";
+import { moveListItem } from "../../shared/listOrder";
+import { OrderControls } from "../profile/OrderControls";
+import { ResumeSectionTitleEditor } from "./ResumeSectionTitleEditor";
+import { getResumeSectionTitle, setResumeSectionTitle } from "../../features/resume-sections/resume-sections";
 import { ensureKnowledgeSection, syncLegacySkills } from "../../features/knowledge/knowledge.service";
 import { validateKnowledgeSection } from "../../features/knowledge/knowledge.validation";
 import {
@@ -51,6 +56,8 @@ export const normalizeResumeDataDraft = (
   linkedin: normalizeProfileUrl(draft.linkedin),
   github: normalizeProfileUrl(draft.github),
   portfolio: normalizeProfileUrl(draft.portfolio),
+  onlineProfiles: draft.onlineProfiles.map((entry) => ({ ...entry, url: normalizeProfileUrl(entry.url) })),
+  resumeSemanticSections: draft.resumeSemanticSections.map((section) => ({ ...section, customTitle: section.customTitle.trim() })),
   resumeSectionTitles: Object.fromEntries(
     Object.entries(draft.resumeSectionTitles).map(([key, title]) => [
       key,
@@ -234,37 +241,17 @@ export function ResumeDataEditor({
                 }
               />
             </label>
-            <EditorInput
-              label="Überschrift des Kurzprofils"
-              value={draft.resumeSectionTitles.summary}
-              onChange={(summary) =>
-                setDraft((current) => ({
-                  ...current,
-                  resumeSectionTitles: {
-                    ...current.resumeSectionTitles,
-                    summary,
-                  },
-                }))
-              }
-            />
+            <ResumeSectionTitleEditor profile={draft} section="summary" onChange={setDraft} />
             <SectionUpdateButton onClick={updateSection} />
           </details>
 
           <details className="resume-data-group" open hidden={Boolean(section && section !== "strengths")}>
             <summary>{draft.resumeSectionTitles.strengths}</summary>
-            <EditorInput
-              label="Abschnittsüberschrift"
-              value={draft.resumeSectionTitles.strengths}
-              onChange={(strengths) =>
-                setDraft((current) => ({
-                  ...current,
-                  resumeSectionTitles: {
-                    ...current.resumeSectionTitles,
-                    strengths,
-                  },
-                }))
-              }
-            />
+            <p>3 Spalten in allen Vorlagen · 9 Einträge ergeben 3 Zeilen.</p>
+            <button type="button" className="button secondary small-button" onClick={() => setDraft((current) => ({ ...current, strengths: addTechnologyStrengths(current.strengths) }))}>
+              <Plus size={15} /> Go / React / Spring Boot ergänzen
+            </button>
+            <ResumeSectionTitleEditor profile={draft} section="strengths" onChange={setDraft} />
             <button
               className="button secondary small-button"
               type="button"
@@ -286,8 +273,9 @@ export function ResumeDataEditor({
               <Plus size={15} /> Stärke hinzufügen
             </button>
             <div className="resume-data-list">
-              {draft.strengths.map((strength) => (
+              {draft.strengths.map((strength, index) => (
                 <article className="resume-data-card" key={strength.id}>
+                  <OrderControls index={index} length={draft.strengths.length} label={strength.title || "Stärke"} onMove={(target) => setDraft((current) => ({ ...current, strengths: moveListItem(current.strengths, index, target) }))} />
                   <div className="resume-data-card-heading">
                     <strong>{strength.title || "Neue Stärke"}</strong>
                     <button
@@ -357,25 +345,14 @@ export function ResumeDataEditor({
             <summary>
               <span>{draft.resumeSectionTitles.experience} ({draft.experiences.length})</span>
             </summary>
-            <EditorInput
-              label="Abschnittsüberschrift"
-              value={draft.resumeSectionTitles.experience}
-              onChange={(experience) =>
-                setDraft((current) => ({
-                  ...current,
-                  resumeSectionTitles: {
-                    ...current.resumeSectionTitles,
-                    experience,
-                  },
-                }))
-              }
-            />
+            <ResumeSectionTitleEditor profile={draft} section="experience" onChange={setDraft} />
             <button className="button secondary small-button" type="button" onClick={addExperience}>
               <Plus size={15} /> Station hinzufügen
             </button>
             <div className="resume-data-list">
-              {draft.experiences.map((experience) => (
+              {draft.experiences.map((experience, index) => (
                 <article className="resume-data-card" key={experience.id}>
+                  <OrderControls index={index} length={draft.experiences.length} label={experience.role || "Berufserfahrung"} onMove={(target) => setDraft((current) => ({ ...current, experiences: moveListItem(current.experiences, index, target) }))} />
                   <div className="resume-data-card-heading">
                     <strong>{experience.role || "Neue Station"}</strong>
                     <button
@@ -397,7 +374,11 @@ export function ResumeDataEditor({
                     <EditorInput label="Position" value={experience.role} onChange={(role) => setDraft((current) => ({ ...current, experiences: current.experiences.map((item) => item.id === experience.id ? { ...item, role } : item) }))} />
                     <EditorInput label="Unternehmen" value={experience.company} onChange={(company) => setDraft((current) => ({ ...current, experiences: current.experiences.map((item) => item.id === experience.id ? { ...item, company } : item) }))} />
                     <EditorInput label="Ort" value={experience.city} onChange={(city) => setDraft((current) => ({ ...current, experiences: current.experiences.map((item) => item.id === experience.id ? { ...item, city } : item) }))} />
+                    {([['legalForm', 'Rechtsform'], ['employmentType', 'Beschäftigungsart'], ['teamSize', 'Teamgröße']] as const).map(([key, label]) => <EditorInput key={key} label={label} value={experience[key]} onChange={(value) => setDraft((current) => ({ ...current, experiences: current.experiences.map((item) => item.id === experience.id ? { ...item, [key]: value } : item) }))} />)}
+                    <label className="checkbox-field"><input type="checkbox" checked={experience.isCurrent} onChange={(event) => setDraft((current) => ({ ...current, experiences: current.experiences.map((item) => item.id === experience.id ? { ...item, isCurrent: event.target.checked, to: event.target.checked ? "heute" : "" } : item) }))} />Aktuelle Position</label>
+                    <label className="field"><span>Beschreibung</span><textarea rows={3} value={experience.description} onChange={(event) => setDraft((current) => ({ ...current, experiences: current.experiences.map((item) => item.id === experience.id ? { ...item, description: event.target.value } : item) }))} /></label>
                   </div>
+                  {([['tasks', 'Aufgaben'], ['projects', 'Projekte'], ['technologies', 'Technologien']] as const).map(([key, label]) => <div key={key}><strong>{label}</strong><EntryListEditor values={experience[key]} multiline={key !== 'technologies'} onChange={(values) => setDraft((current) => ({ ...current, experiences: current.experiences.map((item) => item.id === experience.id ? { ...item, [key]: values } : item) }))} /></div>)}
                   <div className="field">
                     <span>Aufgaben & Erfolge</span>
                     <EntryListEditor
@@ -428,25 +409,14 @@ export function ResumeDataEditor({
             <summary>
               <span>{draft.resumeSectionTitles.education} ({draft.education.length})</span>
             </summary>
-            <EditorInput
-              label="Abschnittsüberschrift"
-              value={draft.resumeSectionTitles.education}
-              onChange={(education) =>
-                setDraft((current) => ({
-                  ...current,
-                  resumeSectionTitles: {
-                    ...current.resumeSectionTitles,
-                    education,
-                  },
-                }))
-              }
-            />
+            <ResumeSectionTitleEditor profile={draft} section="education" onChange={setDraft} />
             <button className="button secondary small-button" type="button" onClick={addEducation}>
               <Plus size={15} /> Ausbildung hinzufügen
             </button>
             <div className="resume-data-list">
-              {draft.education.map((education) => (
+              {draft.education.map((education, index) => (
                 <article className="resume-data-card" key={education.id}>
+                  <OrderControls index={index} length={draft.education.length} label={education.degree || "Ausbildung"} onMove={(target) => setDraft((current) => ({ ...current, education: moveListItem(current.education, index, target) }))} />
                   <div className="resume-data-card-heading">
                     <strong>{education.degree || "Neue Ausbildung"}</strong>
                     <button
@@ -468,6 +438,8 @@ export function ResumeDataEditor({
                     <EditorInput label="Abschluss" value={education.degree} onChange={(degree) => setDraft((current) => ({ ...current, education: current.education.map((item) => item.id === education.id ? { ...item, degree } : item) }))} />
                     <EditorInput label="Institution" value={education.institution} onChange={(institution) => setDraft((current) => ({ ...current, education: current.education.map((item) => item.id === education.id ? { ...item, institution } : item) }))} />
                     <EditorInput label="Ort" value={education.city} onChange={(city) => setDraft((current) => ({ ...current, education: current.education.map((item) => item.id === education.id ? { ...item, city } : item) }))} />
+                    {([['country', 'Land'], ['type', 'Typ'], ['fieldOfStudy', 'Fachrichtung'], ['grade', 'Note'], ['status', 'Status']] as const).map(([key, label]) => <EditorInput key={key} label={label} value={education[key]} onChange={(value) => setDraft((current) => ({ ...current, education: current.education.map((item) => item.id === education.id ? { ...item, [key]: value } : item) }))} />)}
+                    <label className="field"><span>Beschreibung</span><textarea rows={3} value={education.description} onChange={(event) => setDraft((current) => ({ ...current, education: current.education.map((item) => item.id === education.id ? { ...item, description: event.target.value } : item) }))} /></label>
                   </div>
                 </article>
               ))}
@@ -478,9 +450,9 @@ export function ResumeDataEditor({
           <details className="resume-data-group" open hidden={Boolean(section && section !== "knowledge")}>
             <summary>{draft.knowledgeSection.title || "Kenntnisse"}</summary>
             <KnowledgeSectionEditor
-              value={draft.knowledgeSection}
+              value={{ ...draft.knowledgeSection, title: getResumeSectionTitle(draft, "knowledge") }}
               onChange={(knowledgeSection) =>
-                setDraft((current) => ({ ...current, knowledgeSection }))
+                setDraft((current) => setResumeSectionTitle({ ...current, knowledgeSection }, "knowledge", knowledgeSection.title))
               }
             />
             <SectionUpdateButton onClick={updateSection} />
@@ -488,19 +460,7 @@ export function ResumeDataEditor({
 
           <details className="resume-data-group" open hidden={Boolean(section && section !== "languages")}>
             <summary>{draft.resumeSectionTitles.languages}</summary>
-            <EditorInput
-              label="Abschnittsüberschrift"
-              value={draft.resumeSectionTitles.languages}
-              onChange={(languages) =>
-                setDraft((current) => ({
-                  ...current,
-                  resumeSectionTitles: {
-                    ...current.resumeSectionTitles,
-                    languages,
-                  },
-                }))
-              }
-            />
+            <ResumeSectionTitleEditor profile={draft} section="languages" onChange={setDraft} />
             <LanguageLevelEditor
               values={draft.languages}
               onChange={(languages) =>
@@ -512,19 +472,7 @@ export function ResumeDataEditor({
 
           <details className="resume-data-group" open hidden={Boolean(section && section !== "certifications")}>
             <summary>{draft.resumeSectionTitles.certifications}</summary>
-            <EditorInput
-              label="Abschnittsüberschrift"
-              value={draft.resumeSectionTitles.certifications}
-              onChange={(certifications) =>
-                setDraft((current) => ({
-                  ...current,
-                  resumeSectionTitles: {
-                    ...current.resumeSectionTitles,
-                    certifications,
-                  },
-                }))
-              }
-            />
+            <ResumeSectionTitleEditor profile={draft} section="certifications" onChange={setDraft} />
             <CertificateListEditor
               values={draft.certifications}
               onChange={(certifications) =>
@@ -678,6 +626,7 @@ export function ResumeSpecialSectionsEditor({
       {value.filter((item) => !selectedId || item.id === selectedId).map((section) => (
         <details className="resume-data-group" key={section.id} open>
           <summary>{section.title || specialSectionLabels[section.kind]}</summary>
+          {!selectedId && <OrderControls index={value.findIndex((item) => item.id === section.id)} length={value.length} label={section.title} onMove={(target) => onChange(moveListItem(value, value.findIndex((item) => item.id === section.id), target))} />}
           <div className="resume-data-field-grid">
             <EditorInput
               label="Abschnittsüberschrift"
@@ -713,8 +662,9 @@ export function ResumeSpecialSectionsEditor({
             <span>Im Lebenslauf anzeigen</span>
           </label>
           <div className="resume-data-list">
-            {section.entries.map((entry) => (
+            {section.entries.map((entry, index) => (
               <article className="resume-data-card" key={entry.id}>
+                <OrderControls index={index} length={section.entries.length} label={entry.title || "Eintrag"} onMove={(target) => updateSection(section.id, { entries: moveListItem(section.entries, index, target) })} />
                 <div className="resume-data-card-heading">
                   <strong>{entry.title || "Neuer Eintrag"}</strong>
                   <button

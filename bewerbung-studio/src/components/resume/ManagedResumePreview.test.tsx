@@ -29,12 +29,26 @@ const components = {
   "ivy-league": IvyLeagueResume,
   "modern": ModernResume,
   "pehlione_white": PehlioneResume,
+  "pehlione_white_blue": PehlioneResume,
   "stilvoll": StilvollResume,
   "tabellarisch": TabellarischResume,
   "zeitgenoessisch": ZeitgenoessischResume,
   "zweispaltig": ZweispaltigResume
 };
 describe("managed template previews", () => {
+  it.each(Object.entries(components))("renders all nine strengths in order in %s", (templateId, component) => {
+    const strengths = ["Go", "React", "Spring Boot", "SQL", "Docker", "Git", "Linux", "Java", "TypeScript"].map((title, index) => ({ id: crypto.randomUUID(), title, description: index === 0 ? "Echo, Gin\nREST" : "", iconId: "" }));
+    const profile = profileSchema.parse({ id: crypto.randomUUID(), isDefault: true, firstName: "Mina", lastName: "Kaya", updatedAt: new Date().toISOString(), strengths });
+    const plan = createResumePagePlan(profile, "", {}, templateId)[0];
+    for (const atsMode of [false, true]) {
+      const child = createElement(component as unknown as ComponentType<Record<string, unknown>>, { profile, templateId, name: "Mina Kaya", atsMode, plan, totalPages: 1, accentColor: "#123456", secondaryColor: "#234567", photoSource: null, resumeProfile: "", sections: profile.resumeSections, backgroundId: "none" });
+      const html = renderToStaticMarkup(<ManagedResumePreview profile={profile} templateId={templateId} pageNumber={1} totalPages={1}>{child}</ManagedResumePreview>);
+      const { document } = parseHTML(html);
+      expect(document.querySelectorAll(".managed-strengths-grid")).toHaveLength(1);
+      expect(Array.from(document.querySelectorAll(".managed-strength-card strong")).map((node) => node.textContent)).toEqual(strengths.map((item) => item.title));
+      expect(document.querySelector(".managed-strength-card p")?.textContent).toBe("Echo, Gin\nREST");
+    }
+  });
   it.each(Object.entries(components))("moves native sections and retains one custom section in %s", (templateId, component) => {
     let profile = profileSchema.parse({ id: crypto.randomUUID(), isDefault: true, firstName: "Mina", lastName: "Kaya", summary: "Profiltext", updatedAt: new Date().toISOString(),
       experiences: [{id:crypto.randomUUID(),from:"2020",to:"2024",role:"Entwicklerin",company:"Arbeitgeber",achievements:[]}],

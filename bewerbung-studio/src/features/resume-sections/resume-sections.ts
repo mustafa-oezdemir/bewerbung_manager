@@ -1,4 +1,5 @@
 import type { ApplicantProfile } from "../../shared/schema";
+import { resolveResumeSectionInstances, type ResumeSemanticType } from "./resume-section-system";
 
 export const resumeSectionTypes = [
   "summary",
@@ -72,17 +73,44 @@ export const defaultEditableResumeSectionTitles = {
 export type EditableResumeSectionTitle =
   keyof typeof defaultEditableResumeSectionTitles;
 
+const titleSemanticTypes: Partial<Record<ResumeSectionType, ResumeSemanticType>> = {
+  summary: "summary", experience: "career", education: "education", knowledge: "knowledge",
+};
+
+export const setResumeSectionTitle = (profile: ApplicantProfile, type: ResumeSectionType, value: string): ApplicantProfile => {
+  const title = value.trim() ? value : resumeSectionLabels[type];
+  const semanticType = titleSemanticTypes[type];
+  const overrides = { ...profile.resumeManagerOverrides };
+  if (overrides[type]) {
+    const { title: _oldTitle, ...rest } = overrides[type];
+    overrides[type] = rest;
+  }
+  const groupTypes: Record<string, string> = { "core-competencies": "strengths", stärken: "strengths", strengths: "strengths", "technical-focus": "knowledge", kenntnisse: "knowledge", sprachen: "languages", languages: "languages", certificates: "certifications" };
+  return {
+    ...profile,
+    resumeManagerOverrides: overrides,
+    ...(type in defaultEditableResumeSectionTitles ? { resumeSectionTitles: { ...profile.resumeSectionTitles, [type]: title } } : {}),
+    ...(type === "knowledge" ? { knowledgeSection: { ...profile.knowledgeSection, title } } : {}),
+    resumeSemanticSections: semanticType ? resolveResumeSectionInstances(profile.resumeSemanticSections).map((section) => section.semanticType === semanticType ? { ...section, customTitle: value } : section) : profile.resumeSemanticSections,
+    resumeKnowledgeGroups: profile.resumeKnowledgeGroups.map((group) => groupTypes[group.semanticType] === type ? { ...group, title } : group),
+  };
+};
+
 export const getResumeSectionTitle = (
   profile: ApplicantProfile | undefined,
   type: ResumeSectionType,
 ) => {
+  const override = profile?.resumeManagerOverrides?.[type]?.title;
+  if (override?.trim()) return override;
+  const semantic = profile?.resumeSemanticSections.find((section) => section.semanticType === titleSemanticTypes[type])?.customTitle;
+  if (semantic?.trim()) return semantic;
   if (type === "knowledge") {
-    return profile?.knowledgeSection.title.trim() || resumeSectionLabels.knowledge;
+    return profile?.knowledgeSection.title.trim() ? profile.knowledgeSection.title : resumeSectionLabels.knowledge;
   }
   if (type in defaultEditableResumeSectionTitles) {
     const editableType = type as EditableResumeSectionTitle;
     return (
-      profile?.resumeSectionTitles?.[editableType]?.trim() ||
+      (profile?.resumeSectionTitles?.[editableType]?.trim() ? profile.resumeSectionTitles[editableType] : "") ||
       defaultEditableResumeSectionTitles[editableType]
     );
   }
