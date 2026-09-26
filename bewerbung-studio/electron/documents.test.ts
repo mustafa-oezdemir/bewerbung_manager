@@ -60,6 +60,41 @@ const profile = profileSchema.parse({
 });
 
 describe("Lebenslauf-Dokumente", () => {
+  it.each(["classic-professional", "modern-sidebar", "minimal-clean", "technical-developer", "executive-dark", "creative-accent", "pehlione_white", "pehlione_white_blue", "modern", "elegant", "zweispaltig", "zeitgenoessisch", "kreativ", "gepflegt", "kompakt", "stilvoll", "einspaltig", "klassisch", "tabellarisch", "ivy-league"])("uses shared contact icons in %s", (templateId) => {
+    const contactProfile = profileSchema.parse({
+      ...profile,
+      phone: "+49123456789",
+      linkedin: "https://linkedin.com/in/example",
+    });
+    const { document } = parseHTML(buildDocumentHtml(
+      applicationSchema.parse({ ...application, templateId }),
+      contactProfile,
+      "lebenslauf",
+    ));
+    for (const kind of ["phone", "email", "linkedin", "location"]) {
+      expect(document.querySelector(`svg[data-contact-icon="${kind}"]`)).not.toBeNull();
+    }
+  });
+
+  it.each(["visual", "ats"])("exports separate Tabellarisch social links in %s mode", (mode) => {
+    const contactProfile = profileSchema.parse({
+      ...profile,
+      linkedin: "https://linkedin.com/in/example",
+      github: "https://github.com/example",
+      portfolio: "https://example.com",
+    });
+    const documentApplication = applicationSchema.parse({
+      ...application,
+      templateId: "tabellarisch",
+      designSettings: { ...application.designSettings, resumeOutputMode: mode },
+    });
+    const { document } = parseHTML(buildDocumentHtml(documentApplication, contactProfile, "lebenslauf"));
+    const contacts = document.querySelector(".tabellarisch-pdf-contacts");
+    for (const [kind, url] of [["linkedin", contactProfile.linkedin], ["github", contactProfile.github], ["website", contactProfile.portfolio]]) {
+      expect(contacts?.querySelector(`[data-contact-kind="${kind}"] a`)?.getAttribute("href")).toBe(url);
+    }
+  });
+
   it.each(["pehlione_white", "pehlione_white_blue", "modern", "elegant", "zweispaltig", "zeitgenoessisch", "kreativ", "gepflegt", "kompakt", "stilvoll", "einspaltig", "klassisch", "tabellarisch", "ivy-league"])("exports nine strengths in three columns in %s", (templateId) => {
     const strengths = ["Go", "React", "Spring Boot", "SQL", "Docker", "Git", "Linux", "Java", "TypeScript"].map((title) => ({ id: crypto.randomUUID(), title, description: title === "Go" ? "Echo, Gin" : "", iconId: "" }));
     const html = buildDocumentHtml({ ...application, templateId }, { ...profile, strengths }, "lebenslauf");

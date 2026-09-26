@@ -1,11 +1,4 @@
-import {
-  CakeSlice,
-  Linkedin,
-  Mail,
-  MapPin,
-  Phone,
-  type LucideIcon,
-} from "lucide-react";
+import { ContactIcon } from "../ContactIcon";
 import { toKreativExternalHref } from "./kreativ.model";
 import type { KreativHeaderProps } from "./kreativ.types";
 
@@ -14,7 +7,6 @@ type KreativContact = {
   label: string;
   value: string | undefined;
   href: string;
-  Icon: LucideIcon;
 };
 
 export function KreativHeader({
@@ -38,14 +30,12 @@ export function KreativHeader({
       href: profile?.phone
         ? `tel:${profile.phone.replace(/[^\d+]/g, "")}`
         : "",
-      Icon: Phone,
     },
     {
       kind: "email",
       label: "E-Mail",
       value: profile?.email,
       href: profile?.email ? `mailto:${profile.email}` : "",
-      Icon: Mail,
     },
     {
       kind: "linkedin",
@@ -54,21 +44,18 @@ export function KreativHeader({
       href: profile?.linkedin
         ? toKreativExternalHref(profile.linkedin)
         : "",
-      Icon: Linkedin,
     },
     {
       kind: "location",
       label: "Wohnort",
       value: location,
       href: "",
-      Icon: MapPin,
     },
     {
       kind: "birth",
       label: "Geboren",
       value: birth,
       href: "",
-      Icon: CakeSlice,
     },
   ].filter((contact) => contact.value?.trim()) as KreativContact[];
 
@@ -87,10 +74,10 @@ export function KreativHeader({
         {profile?.title ? <h2>{profile.title}</h2> : null}
         {!compact && contacts.length ? (
           <address className="kreativ-header__contacts">
-            {contacts.map(({ Icon, ...contact }) => {
+            {contacts.map((contact) => {
               const content = (
                 <>
-                  <Icon aria-hidden="true" />
+                  <ContactIcon {...contact} />
                   <span>{contact.value}</span>
                 </>
               );

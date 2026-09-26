@@ -150,6 +150,14 @@
   text-decoration: none;
 }
 
+.tabellarisch-header__contacts > [data-contact-kind="github"] {
+  grid-column: 1;
+}
+
+.tabellarisch-header__contacts > [data-contact-kind="website"] {
+  grid-column: 2;
+}
+
 .tabellarisch-header__contacts svg {
   width: 3mm;
   height: 3mm;

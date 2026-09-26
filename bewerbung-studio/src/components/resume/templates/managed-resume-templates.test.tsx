@@ -117,6 +117,26 @@ const commonProps = {
 };
 
 describe("shared two-column contact headers", () => {
+  it.each([false, true])("shows GitHub alongside LinkedIn and portfolio in Tabellarisch (ATS: %s)", (atsMode) => {
+    const contactProfile = profileSchema.parse({
+      ...profile,
+      linkedin: "https://linkedin.com/in/example",
+      github: "https://github.com/example",
+      portfolio: "https://example.com",
+    });
+    const markup = renderToStaticMarkup(
+      <TabellarischHeader profile={contactProfile} name="Example" photoSource={null} atsMode={atsMode} />,
+    );
+    for (const url of [contactProfile.linkedin, contactProfile.github, contactProfile.portfolio]) {
+      expect(markup).toContain(`href="${url}"`);
+    }
+    expect(markup).toContain('data-contact-kind="github"');
+    if (!atsMode) {
+      expect(markup).toContain('data-contact-icon="github"');
+      expect(markup).toContain('data-contact-icon="website"');
+    }
+  });
+
   it("keeps a full LinkedIn URL visible and identifiable in every requested preview", () => {
     const linkedin =
       "https://www.linkedin.com/in/mustafa-oezdemir/";

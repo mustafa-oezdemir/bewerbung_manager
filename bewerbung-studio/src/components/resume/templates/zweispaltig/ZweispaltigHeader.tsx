@@ -1,13 +1,4 @@
-import {
-  AtSign,
-  CakeSlice,
-  Github,
-  Globe2,
-  Link as LinkIcon,
-  MapPin,
-  Phone,
-  type LucideIcon,
-} from "lucide-react";
+import { ContactIcon } from "../ContactIcon";
 import {
   toZweispaltigExternalHref,
   uniqueZweispaltigValues,
@@ -26,7 +17,6 @@ type ZweispaltigContact = {
   label: string;
   value: string | undefined;
   href: string;
-  Icon: LucideIcon;
 };
 
 export function ZweispaltigHeader({
@@ -53,14 +43,12 @@ export function ZweispaltigHeader({
       href: profile?.phone
         ? `tel:${profile.phone.replace(/[^\d+]/g, "")}`
         : "",
-      Icon: Phone,
     },
     {
       kind: "email",
       label: "E-Mail",
       value: profile?.email,
       href: profile?.email ? `mailto:${profile.email}` : "",
-      Icon: AtSign,
     },
     {
       kind: "linkedin",
@@ -69,21 +57,18 @@ export function ZweispaltigHeader({
       href: profile?.linkedin
         ? toZweispaltigExternalHref(profile.linkedin)
         : "",
-      Icon: LinkIcon,
     },
     {
       kind: "location",
       label: "Wohnort",
       value: location,
       href: "",
-      Icon: MapPin,
     },
     {
       kind: "birth",
       label: "Geboren",
       value: birth,
       href: "",
-      Icon: CakeSlice,
     },
     {
       kind: "github",
@@ -92,7 +77,6 @@ export function ZweispaltigHeader({
       href: profile?.github
         ? toZweispaltigExternalHref(profile.github)
         : "",
-      Icon: Github,
     },
     {
       kind: "portfolio",
@@ -101,7 +85,6 @@ export function ZweispaltigHeader({
       href: profile?.portfolio
         ? toZweispaltigExternalHref(profile.portfolio)
         : "",
-      Icon: Globe2,
     },
   ].filter((contact) => contact.value?.trim()) as ZweispaltigContact[];
 
@@ -130,7 +113,7 @@ export function ZweispaltigHeader({
 
         {!compact && contacts.length ? (
           <address className="zweispaltig-header__contacts">
-            {contacts.map(({ Icon, ...contact }) => {
+            {contacts.map((contact) => {
               const content = atsMode ? (
                 <>
                   <strong>{contact.label}</strong>
@@ -138,7 +121,7 @@ export function ZweispaltigHeader({
                 </>
               ) : (
                 <>
-                  <Icon aria-hidden="true" />
+                  <ContactIcon {...contact} />
                   <span>{contact.value}</span>
                 </>
               );

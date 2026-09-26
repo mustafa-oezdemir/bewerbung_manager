@@ -1,4 +1,4 @@
-import { AtSign, Link2, MapPin, Phone } from "lucide-react";
+import { ContactIcon } from "../ContactIcon";
 import { toTemplateExternalHref } from "../resume-template-data";
 import type { GepflegtHeaderProps } from "./gepflegt.types";
 
@@ -38,25 +38,25 @@ export function GepflegtHeader({
         <address className="gepflegt-header__contacts">
           {profile?.phone ? (
             <a href={`tel:${profile.phone.replace(/[^\d+]/g, "")}`}>
-              {!atsMode ? <Phone aria-hidden="true" /> : null}
+              {!atsMode ? <ContactIcon kind="phone" /> : null}
               <span>{profile.phone}</span>
             </a>
           ) : null}
           {profile?.email ? (
             <a href={`mailto:${profile.email}`}>
-              {!atsMode ? <AtSign aria-hidden="true" /> : null}
+              {!atsMode ? <ContactIcon kind="email" /> : null}
               <span>{profile.email}</span>
             </a>
           ) : null}
           {professionalLink ? (
             <a href={toTemplateExternalHref(professionalLink)}>
-              {!atsMode ? <Link2 aria-hidden="true" /> : null}
+              {!atsMode ? <ContactIcon href={toTemplateExternalHref(professionalLink)} /> : null}
               <span>{professionalLinkDisplay}</span>
             </a>
           ) : null}
           {location ? (
             <span>
-              {!atsMode ? <MapPin aria-hidden="true" /> : null}
+              {!atsMode ? <ContactIcon kind="location" /> : null}
               <span>{location}</span>
             </span>
           ) : null}

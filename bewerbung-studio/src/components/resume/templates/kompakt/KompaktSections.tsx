@@ -1,3 +1,4 @@
+import { ContactIcon } from "../ContactIcon";
 import type { ApplicantProfile } from "../../../../shared/schema";
 import { getResumeSectionTitle } from "../../../../features/resume-sections/resume-sections";
 import { TechnologyBrandIcon } from "../../TechnologyBrandIcon";
@@ -134,7 +135,7 @@ export function KompaktRightColumn({
           <address>
             {contacts.map((contact, index) => (
               <div key={`${contact.value}-${index}`}>
-                <i aria-hidden="true">{contact.icon}</i>
+                <i aria-hidden="true"><ContactIcon {...contact} /></i>
                 {contact.href ? (
                   <a href={contact.href}>{contact.value}</a>
                 ) : (

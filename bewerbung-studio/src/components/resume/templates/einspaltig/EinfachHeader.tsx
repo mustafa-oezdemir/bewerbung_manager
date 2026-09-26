@@ -1,3 +1,4 @@
+import { ContactIcon } from "../ContactIcon";
 import type { ApplicantProfile } from "../../../../shared/schema";
 import { toTemplateExternalHref } from "../resume-template-data";
 
@@ -75,7 +76,7 @@ export function EinfachHeader({
                 data-contact-kind={contact.kind}
                 key={`${contact.value}-${index}`}
               >
-                <i aria-hidden="true">{contact.icon}</i>
+                <i aria-hidden="true"><ContactIcon {...contact} /></i>
                 {contact.href ? (
                   <a href={contact.href}>{contact.value}</a>
                 ) : (

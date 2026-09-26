@@ -1,3 +1,4 @@
+import { renderContactIcon } from "../src/shared/contactIcons";
 import { applyManagedResumeOutput, managedResumeCss } from "../src/shared/resumeManagedOutput";
 import { getResumeDisplayProfile } from "../src/shared/resumeDisplayProfile";
 import { getResumeIdentityVisibilityCss } from "../src/shared/resumeIdentityVisibility";
@@ -648,6 +649,7 @@ const gepflegtDocumentCss = `
 `;
 
 const tabellarischDocumentCss = `
+  .tabellarisch-pdf-contact[data-contact-kind="github"]{grid-column:1}.tabellarisch-pdf-contact[data-contact-kind="website"]{grid-column:2}
   .tabellarisch-pdf{--tab-primary:var(--secondary);--tab-accent:var(--accent);--tab-text:#3f4850;--tab-muted:#6d747a;--tab-line:#c8cdd1;--tab-margin:max(15mm,var(--doc-margin));--tab-section-gap:max(6.3mm,var(--section-gap));--tab-entry-gap:4.4mm;position:relative;width:100%;height:100%;overflow:hidden;color:var(--tab-text);background:#fff;font-family:var(--body-font);font-size:max(8.7pt,var(--body-size));line-height:max(1.28,var(--body-line))}
   .tabellarisch-pdf *{box-sizing:border-box}.tabellarisch-pdf a{color:inherit;text-decoration:none}.tabellarisch-pdf-content{position:relative;z-index:2;height:100%;padding:max(15mm,var(--doc-margin)) var(--tab-margin) max(19mm,calc(var(--doc-margin) + 5mm))}
   .tabellarisch-pdf-background{position:absolute;top:0;right:0;z-index:0;width:100%;height:58mm;fill:none;stroke:var(--tab-line);stroke-width:1.15;opacity:.62;pointer-events:none}
@@ -743,12 +745,9 @@ export const buildDocumentHtml = (
       : photoSource
         ? `<span class="cv-avatar${side ? " side-avatar" : ""} has-image"><img class="cv-avatar-image" src="${escapeHtml(photoSource)}" alt=""></span>`
         : `<span class="cv-avatar${side ? " side-avatar" : ""}">${escapeHtml(initials)}</span>`;
-  const resumeContacts = profile
-    ? [profile.phone, profile.email, profile.city, profile.linkedin]
-        .filter(Boolean)
-        .map(escapeHtml)
-        .join(" · ")
-    : "Telefon · E-Mail · Ort";
+  const resumeContacts = getPehlioneContacts(profile)
+    .map((contact) => `<span style="display:inline-flex;align-items:center;gap:1mm;margin-right:3mm">${atsMode ? "" : renderContactIcon({ kind: contact.key })}${contact.href ? `<a href="${escapeHtml(contact.href)}">${escapeHtml(contact.value)}</a>` : escapeHtml(contact.value)}</span>`)
+    .join("");
   const applicationDate = formatApplicationDate(application);
   const applicationPlace = profile?.city || application.company.city;
   const longApplicationDate = `${applicationPlace ? `${applicationPlace}, ` : ""}den ${formatApplicationDateLong(application)}`;
@@ -951,7 +950,7 @@ export const buildDocumentHtml = (
     if (!contacts.length) return "";
     return `<address class="elegant-pdf-contacts">${contacts
       .map((contact) => {
-        const content = `<i aria-hidden="true">${contact.icon}</i><span>${escapeHtml(contact.value)}</span>`;
+        const content = `<i aria-hidden="true">${renderContactIcon(contact)}</i><span>${escapeHtml(contact.value)}</span>`;
         return contact.href
           ? `<a href="${escapeHtml(contact.href)}">${content}</a>`
           : `<span>${content}</span>`;
@@ -1172,25 +1171,7 @@ export const buildDocumentHtml = (
       | "portfolio"
       | "calendar",
   ) => {
-    const paths = {
-      phone:
-        '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.2 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13 1 .37 1.98.72 2.9a2 2 0 0 1-.45 2.11L8.1 10a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.92.35 1.9.59 2.9.72A2 2 0 0 1 22 16.92z"/>',
-      email:
-        '<circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/>',
-      linkedin:
-        '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
-      location:
-        '<path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0z"/><circle cx="12" cy="10" r="2.5"/>',
-      birth:
-        '<path d="M4 12h16v8H4zM7 12V9h10v3M8 6V4M12 6V4M16 6V4"/>',
-      github:
-        '<path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3.28-.36 6.72-1.61 6.72-7.25A5.7 5.7 0 0 0 19.22 3.3 5.3 5.3 0 0 0 19.07.1S17.88-.3 15 1.6a13.4 13.4 0 0 0-7 0C5.12-.3 3.93.1 3.93.1a5.3 5.3 0 0 0-.15 3.2 5.7 5.7 0 0 0-1.5 3.95c0 5.63 3.44 6.88 6.72 7.25A4.8 4.8 0 0 0 8 18v4"/><path d="M8 19c-3 .92-3-1.5-4-2"/>',
-      portfolio:
-        '<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 0 20M12 2a15.3 15.3 0 0 0 0 20"/>',
-      calendar:
-        '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/>',
-    } as const;
-    return `<svg aria-hidden="true" viewBox="0 0 24 24">${paths[kind]}</svg>`;
+    return renderContactIcon({ kind });
   };
 
   const zweispaltigContactMarkup = () => {
@@ -1247,7 +1228,7 @@ export const buildDocumentHtml = (
       .map((contact) => {
         const content = atsMode
           ? `<strong>${escapeHtml(contact.label)}</strong><span>${escapeHtml(contact.value)}</span>`
-          : `${zweispaltigIconMarkup(contact.kind as Exclude<Parameters<typeof zweispaltigIconMarkup>[0], "calendar">)}<span>${escapeHtml(contact.value)}</span>`;
+          : `${renderContactIcon(contact)}<span>${escapeHtml(contact.value)}</span>`;
         return contact.href
           ? `<a data-contact-kind="${contact.kind}" href="${escapeHtml(contact.href)}">${content}</a>`
           : `<span data-contact-kind="${contact.kind}">${content}</span>`;
@@ -1604,7 +1585,7 @@ export const buildDocumentHtml = (
           breakIndex > breakMarker.length
             ? `${escapeHtml(contactValue.slice(0, breakIndex))}<br>${escapeHtml(contactValue.slice(breakIndex))}`
             : escapeHtml(contactValue);
-        const content = `<i aria-hidden="true">${zeitIconMarkup(contact.icon)}</i><span>${visibleValue}</span>`;
+        const content = `<i aria-hidden="true">${renderContactIcon(contact)}</i><span>${visibleValue}</span>`;
         return contact.href
           ? `<a class="zeit-pdf-contact" href="${escapeHtml(contact.href)}">${content}</a>`
           : `<span class="zeit-pdf-contact">${content}</span>`;
@@ -1902,7 +1883,7 @@ export const buildDocumentHtml = (
     if (!kreativContacts.length) return "";
     return `<address class="kreativ-pdf-contacts">${kreativContacts
       .map((contact) => {
-        const content = `${contact.icon}<i>${escapeHtml(contact.value)}</i>`;
+        const content = `${renderContactIcon(contact)}<i>${escapeHtml(contact.value)}</i>`;
         return contact.href
           ? `<a aria-label="${escapeHtml(contact.label)}" data-contact-kind="${contact.kind}" href="${escapeHtml(contact.href)}">${content}</a>`
           : `<span aria-label="${escapeHtml(contact.label)}" data-contact-kind="${contact.kind}">${content}</span>`;
@@ -2240,11 +2221,11 @@ export const buildDocumentHtml = (
     .join(" | ");
   const ivyContacts = ivyContactValues.length
     ? `<address class="ivy-pdf-contacts">${ivyContactValues
-        .map((contact, index) => {
+        .map((contact) => {
           const value = contact.href
             ? `<a href="${escapeHtml(contact.href)}">${escapeHtml(contact.value)}</a>`
             : `<span>${escapeHtml(contact.value)}</span>`;
-          return `${index ? '<i aria-hidden="true">•</i>' : ""}${value}`;
+          return `${renderContactIcon(contact)}${value}`;
         })
         .join("")}</address>`
     : "";
@@ -2669,7 +2650,7 @@ export const buildDocumentHtml = (
         const content = contact.href
           ? `<a href="${escapeHtml(contact.href)}">${escapeHtml(contact.value)}</a>`
           : `<span>${escapeHtml(contact.value)}</span>`;
-        return `<span class="${contactClass}" data-contact-kind="${contact.kind}"><i aria-hidden="true">${contact.icon}</i>${content}</span>`;
+        return `<span class="${contactClass}" data-contact-kind="${contact.kind}"><i aria-hidden="true">${renderContactIcon(contact)}</i>${content}</span>`;
       })
       .join("");
     const photoClass =
@@ -2745,7 +2726,7 @@ export const buildDocumentHtml = (
         const content = contact.href
           ? `<a href="${escapeHtml(contact.href)}">${escapeHtml(contact.value)}</a>`
           : escapeHtml(contact.value);
-        return `<span class="kompakt-pdf-contact"><i aria-hidden="true">${contact.icon}</i>${content}</span>`;
+        return `<span class="kompakt-pdf-contact"><i aria-hidden="true">${renderContactIcon(contact)}</i>${content}</span>`;
       })
       .join("");
     const kompaktStrengths = sections.strengths
@@ -2836,7 +2817,7 @@ export const buildDocumentHtml = (
   const klassischContacts = managedContactValues
     .map((contact) => {
       const value = escapeHtml(contact.value);
-      return `<span data-contact-kind="${contact.kind}">${contact.href ? `<a href="${escapeHtml(contact.href)}">${value}</a>` : value}</span>`;
+      return `<span data-contact-kind="${contact.kind}">${renderContactIcon(contact)}${contact.href ? `<a href="${escapeHtml(contact.href)}">${value}</a>` : value}</span>`;
     })
     .join("");
   const klassischStrengths = managedStrengths.length
@@ -2981,7 +2962,7 @@ export const buildDocumentHtml = (
         const content = item.href
           ? `<a href="${escapeHtml(item.href)}">${value}</a>`
           : `<span>${value}</span>`;
-        return `<span class="modern-pdf-contact" data-contact-kind="${item.kind}">${ats ? "" : `<i aria-hidden="true">${item.icon}</i>`}${content}</span>`;
+        return `<span class="modern-pdf-contact" data-contact-kind="${item.kind}">${ats ? "" : `<i aria-hidden="true">${renderContactIcon(item)}</i>`}${content}</span>`;
       })
       .join("")}</address>`;
   };
@@ -3307,13 +3288,10 @@ export const buildDocumentHtml = (
     },
     {
       kind: "linkedin",
-      label: "Profil",
+      label: "LinkedIn",
       icon: tabellarischExtraIcon("profile"),
-      value:
-        profile?.linkedin || profile?.portfolio || profile?.github || "",
-      href: externalHref(
-        profile?.linkedin || profile?.portfolio || profile?.github,
-      ),
+      value: profile?.linkedin || "",
+      href: externalHref(profile?.linkedin),
     },
     {
       kind: "location",
@@ -3321,6 +3299,20 @@ export const buildDocumentHtml = (
       icon: kreativIconMarkup("location"),
       value: [profile?.city, profile?.country].filter(Boolean).join(", "),
       href: "",
+    },
+    {
+      kind: "github",
+      label: "GitHub",
+      icon: tabellarischExtraIcon("profile"),
+      value: profile?.github || "",
+      href: externalHref(profile?.github),
+    },
+    {
+      kind: "website",
+      label: "Portfolio",
+      icon: tabellarischExtraIcon("profile"),
+      value: profile?.portfolio || "",
+      href: externalHref(profile?.portfolio),
     },
     {
       kind: "birth",
@@ -3338,7 +3330,7 @@ export const buildDocumentHtml = (
         const value = contact.href
           ? `<a href="${escapeHtml(contact.href)}">${escapeHtml(contact.value)}</a>`
           : `<span>${escapeHtml(contact.value)}</span>`;
-        return `<span class="tabellarisch-pdf-contact" data-contact-kind="${contact.kind}">${ats ? `<strong>${escapeHtml(contact.label)}:</strong>` : contact.icon}${value}</span>`;
+        return `<span class="tabellarisch-pdf-contact" data-contact-kind="${contact.kind}">${ats ? `<strong>${escapeHtml(contact.label)}:</strong>` : renderContactIcon(contact)}${value}</span>`;
       })
       .join("")}</address>`;
   const tabellarischBackground = `<svg class="tabellarisch-pdf-background" viewBox="0 0 1000 260" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><defs><pattern id="tabellarisch-pdf-cubes" width="144" height="84" patternUnits="userSpaceOnUse"><path d="M72 0 144 42 72 84 0 42 72 0v84M0 42l72 42 72-42"/></pattern><linearGradient id="tabellarisch-pdf-fade" x1="0" x2="1"><stop offset="0" stop-color="white" stop-opacity="0"/><stop offset=".25" stop-color="white" stop-opacity=".45"/><stop offset=".48" stop-color="white" stop-opacity="1"/></linearGradient><mask id="tabellarisch-pdf-mask"><rect width="1000" height="260" fill="url(#tabellarisch-pdf-fade)"/></mask></defs><rect x="210" y="-44" width="850" height="310" fill="url(#tabellarisch-pdf-cubes)" mask="url(#tabellarisch-pdf-mask)"/></svg>`;
@@ -3525,7 +3517,7 @@ export const buildDocumentHtml = (
       ? `<address class="gepflegt-pdf-contacts">${gepflegtContacts
           .map((contact) => {
             const value = `<span>${escapeHtml(contact.value)}</span>`;
-            const content = `${ats ? "" : contact.icon}${value}`;
+            const content = `${ats ? "" : renderContactIcon(contact)}${value}`;
             return contact.href
               ? `<a class="gepflegt-pdf-contact" href="${escapeHtml(contact.href)}">${content}</a>`
               : `<span class="gepflegt-pdf-contact">${content}</span>`;

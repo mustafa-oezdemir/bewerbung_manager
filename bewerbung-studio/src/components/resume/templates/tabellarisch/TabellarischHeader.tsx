@@ -1,20 +1,12 @@
-import {
-  CakeSlice,
-  Link,
-  Mail,
-  MapPin,
-  Phone,
-  type LucideIcon,
-} from "lucide-react";
+import { ContactIcon } from "../ContactIcon";
 import { toExternalHref } from "./tabellarisch.model";
 import type { TabellarischHeaderProps } from "./tabellarisch.types";
 
 type HeaderContact = {
-  kind: "phone" | "email" | "linkedin" | "location" | "birth";
+  kind: "phone" | "email" | "linkedin" | "github" | "website" | "location" | "birth";
   label: string;
   value: string;
   href: string;
-  Icon: LucideIcon;
 };
 
 export function TabellarischHeader({
@@ -29,8 +21,6 @@ export function TabellarischHeader({
   const birth = [profile?.birthDate, profile?.birthPlace]
     .filter(Boolean)
     .join(" in ");
-  const profileLink =
-    profile?.linkedin || profile?.portfolio || profile?.github || "";
   const contacts: HeaderContact[] = [
     {
       kind: "phone",
@@ -39,35 +29,42 @@ export function TabellarischHeader({
       href: profile?.phone
         ? `tel:${profile.phone.replace(/[^\d+]/g, "")}`
         : "",
-      Icon: Phone,
     },
     {
       kind: "email",
       label: "E-Mail",
       value: profile?.email || "",
       href: profile?.email ? `mailto:${profile.email}` : "",
-      Icon: Mail,
     },
     {
       kind: "linkedin",
-      label: "Profil",
-      value: profileLink,
-      href: profileLink ? toExternalHref(profileLink) : "",
-      Icon: Link,
+      label: "LinkedIn",
+      value: profile?.linkedin || "",
+      href: profile?.linkedin ? toExternalHref(profile.linkedin) : "",
     },
     {
       kind: "location",
       label: "Wohnort",
       value: location,
       href: "",
-      Icon: MapPin,
+    },
+    {
+      kind: "github",
+      label: "GitHub",
+      value: profile?.github || "",
+      href: profile?.github ? toExternalHref(profile.github) : "",
+    },
+    {
+      kind: "website",
+      label: "Portfolio",
+      value: profile?.portfolio || "",
+      href: profile?.portfolio ? toExternalHref(profile.portfolio) : "",
     },
     {
       kind: "birth",
       label: "Geboren",
       value: birth,
       href: "",
-      Icon: CakeSlice,
     },
   ].filter((contact) => contact.value.trim()) as HeaderContact[];
 
@@ -83,10 +80,10 @@ export function TabellarischHeader({
         ) : null}
         {contacts.length ? (
           <address className="tabellarisch-header__contacts">
-            {contacts.map(({ Icon, ...contact }) => {
+            {contacts.map((contact) => {
               const content = (
                 <>
-                  {!atsMode ? <Icon aria-hidden="true" /> : null}
+                  {!atsMode ? <ContactIcon {...contact} /> : null}
                   {atsMode ? <strong>{contact.label}:</strong> : null}
                   <span>{contact.value}</span>
                 </>

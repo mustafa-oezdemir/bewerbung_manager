@@ -1,3 +1,4 @@
+import { ContactIcon } from "../ContactIcon";
 import { toElegantExternalHref } from "./elegant.model";
 import type { ElegantHeaderProps } from "./elegant.types";
 
@@ -68,7 +69,7 @@ export function ElegantHeader({
           {contacts.map((contact, index) => {
             const content = (
               <>
-                <i aria-hidden="true">{contact.icon}</i>
+                <i aria-hidden="true"><ContactIcon {...contact} /></i>
                 <span>{contact.value}</span>
               </>
             );

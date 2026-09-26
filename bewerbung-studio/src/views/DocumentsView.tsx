@@ -1,3 +1,5 @@
+import { ContactIcon } from "../components/resume/templates/ContactIcon";
+import { getPehlioneContacts } from "../shared/pehlioneContacts";
 import { getResumeDisplayProfile } from "../shared/resumeDisplayProfile";
 import {
   createDocumentDesignDraft,
@@ -243,9 +245,12 @@ function ResumePreviewPage({
           <h1>{name}</h1>
           <h2>{profile?.title || application.job.title}</h2>
           <p className="cv-contact-line">
-            {profile?.phone || "Telefon"} · {profile?.email || "E-Mail"} ·{" "}
-            {profile?.city || "Ort"}
-            {profile?.linkedin ? ` · ${profile.linkedin}` : ""}
+            {getPehlioneContacts(profile).map((contact) => (
+              <span key={contact.key} style={{ display: "inline-flex", alignItems: "center", gap: "1mm", marginRight: "3mm" }}>
+                {!atsMode ? <ContactIcon kind={contact.key} /> : null}
+                {contact.href ? <a href={contact.href}>{contact.value}</a> : contact.value}
+              </span>
+            ))}
           </p>
         </div>
         {showResumeAvatar ? avatar : null}

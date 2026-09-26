@@ -3,26 +3,8 @@
  * Renders contact details with icons: phone, email, location, LinkedIn, website
  */
 
-import {
-  CalendarDays,
-  Github,
-  Globe,
-  Linkedin,
-  Mail,
-  MapPin,
-  Phone,
-} from "lucide-react";
+import { ContactIcon } from "../ContactIcon";
 import type { ModernContactSectionProps } from "./modern.types";
-
-const iconMap: Record<string, React.ReactNode> = {
-  phone: <Phone size={16} />,
-  email: <Mail size={16} />,
-  location: <MapPin size={16} />,
-  linkedin: <Linkedin size={16} />,
-  website: <Globe size={16} />,
-  github: <Github size={16} />,
-  birth: <CalendarDays size={16} />,
-};
 
 export function ModernContactSection({
   profile,
@@ -139,7 +121,7 @@ export function ModernContactSection({
                 className="modern-contact-item__icon"
                 style={{ color: accentColor }}
               >
-                {iconMap[item.icon]}
+                <ContactIcon kind={item.key} />
               </div>
             ) : null}
             <span className="modern-contact-item__value">{item.value}</span>

@@ -1,23 +1,8 @@
-import {
-  AtSign,
-  Github,
-  Link2,
-  Linkedin,
-  MapPin,
-  Phone,
-} from "lucide-react";
+import { ContactIcon } from "../ContactIcon";
 import type { ApplicantProfile } from "../../../../shared/schema";
 import { toZeitgenoessischExternalHref } from "./zeitgenoessisch.model";
 import { ZeitgenoessischSectionHeading } from "./ZeitgenoessischSectionHeading";
 
-const contactIcon = {
-  phone: Phone,
-  email: AtSign,
-  portfolio: Link2,
-  linkedin: Linkedin,
-  location: MapPin,
-  github: Github,
-} as const;
 
 export function ZeitgenoessischContactSection({
   profile,
@@ -69,7 +54,7 @@ export function ZeitgenoessischContactSection({
         : "",
     },
   ].filter((contact) => contact.value?.trim()) as Array<{
-    kind: keyof typeof contactIcon;
+    kind: "phone" | "email" | "portfolio" | "linkedin" | "location" | "github";
     value: string;
     href: string;
   }>;
@@ -84,7 +69,6 @@ export function ZeitgenoessischContactSection({
       <ZeitgenoessischSectionHeading title="Kontakte" icon="contacts" />
       <div className="zeitgenoessisch-contact-list">
         {contacts.map((contact) => {
-          const Icon = contactIcon[contact.kind];
           const urlBreakMarker =
             contact.kind === "linkedin"
               ? "/in/"
@@ -100,7 +84,7 @@ export function ZeitgenoessischContactSection({
                 className="zeitgenoessisch-contact-item__icon"
                 aria-hidden="true"
               >
-                <Icon />
+                <ContactIcon kind={contact.kind} href={contact.href} />
               </span>
               <span className="zeitgenoessisch-contact-item__value">
                 {urlBreakIndex > urlBreakMarker.length ? (

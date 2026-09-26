@@ -1,3 +1,4 @@
+import { ContactIcon } from "../ContactIcon";
 import {
   toIvyLeagueExternalHref,
   uniqueIvyLeagueValues,
@@ -69,7 +70,7 @@ export function IvyLeagueHeader({
               className="ivy-league-header__contact"
               key={`${contact.value}-${index}`}
             >
-              {index ? <i aria-hidden="true">•</i> : null}
+              {!atsMode ? <ContactIcon {...contact} /> : null}
               {contact.href ? (
                 <a href={contact.href}>{contact.value}</a>
               ) : (
